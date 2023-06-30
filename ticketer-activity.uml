@@ -1,0 +1,40 @@
+@startuml
+title Bridge FA2 or FA1.2 tokens to L2 via Ticketer\nbatch of three operations
+
+|User|
+|FAToken|FA Token\n(FA 1.2 or FA2)
+|Ticketer|
+|L1 Tickets|
+|Rollup|
+|L2|
+
+
+|User|
+start
+|FAToken|
+:**approve**\n\nfrom: User\noperator: Ticketer;
+|User|
+end;
+start;
+|Ticketer|
+:**mint**\n\ntoken: Token\namount: nat\nowner: User;
+|FAToken|
+:**transfer**\n\nfrom: User\nto: Ticketer;
+|User|
+end;
+start;
+|Ticketer|
+:**export_ticket**\n\nfrom: null\nto: User\namount: nat;
+|L1 Tickets|
+:new ticket;
+|User|
+end;
+start;
+|Ticketer|
+|Rollup|
+:**bridge_tokens**\n\nticket: Ticket\namount: nat\n\n? to: address_l2\n? reveal_script: bytes;
+|L2|
+:**mint**\nticket: Ticket\namount: nat\nmetadata: bytes;
+
+|User|
+stop

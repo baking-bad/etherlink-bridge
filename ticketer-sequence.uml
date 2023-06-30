@@ -1,0 +1,39 @@
+@startuml
+actor       User          as User
+participant "FA Token" as FAToken
+participant "Ticketer" as Ticketer
+participant "L1 Tickets" as L1Tickets
+participant "Rollup" as Rollup
+participant "L2" as L2
+
+
+User -> FAToken : approve
+activate FAToken
+FAToken -> User
+deactivate FAToken
+
+User -> Ticketer : deposit
+activate Ticketer
+Ticketer -> FAToken : transfer
+activate FAToken
+note over FAToken: from: User\nto: Ticketer\namount: nat
+FAToken -> Ticketer
+deactivate FAToken
+note over Ticketer : convert token\nmetadata to payload
+note over L1Tickets : **new ticket**\n\nticketer: Ticketer\nowner: User\namount: nat\npayload: bytes
+Ticketer -> Rollup : bridge ticket
+activate Rollup
+note over Rollup : ticket: Ticket\nowner: User
+note over L1Tickets : **transfer ticket**\n\nticketer: Ticketer\nowner: User\namount: nat\nto: Rollup
+Rollup -> L2
+activate L2
+note over L2 : **mint L2 Ticket**
+L2-> Rollup
+deactivate L2
+Rollup -> Ticketer
+deactivate Rollup
+Ticketer -> User
+deactivate Ticketer
+
+
+@enduml

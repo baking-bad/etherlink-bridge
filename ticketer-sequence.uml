@@ -14,36 +14,24 @@ participant Rollup [
 note over Ticketer : **storage:**\nrollup_address
 / note over Rollup : **storage:**
 
-User -> FAToken : approve
-activate FAToken
-FAToken --> User
-deactivate FAToken
+User -> FAToken ++ : approve
+FAToken --> User --
 
-User -> Ticketer : deposit
-activate Ticketer
-Ticketer -> FAToken : transfer
-activate FAToken
+User -> Ticketer ++ : deposit
+Ticketer -> FAToken ++ : transfer
 note over FAToken: from: User\nto: Ticketer\namount: nat
-FAToken --> Ticketer
-deactivate FAToken
+FAToken --> Ticketer --
 note over Ticketer : convert token\nmetadata to payload
-create "L1 Ticket" as L1Ticket
-Ticketer -> L1Ticket : new ticket
+
+Ticketer -> "L1 Ticket" as L1Ticket ** : new ticket
 note over L1Ticket : **new ticket**\n\nticketer: Ticketer\nowner: User\namount: nat\npayload: bytes
-Ticketer -> Rollup : bridge ticket
-activate Rollup
+Ticketer -> Rollup ++ : bridge ticket
 note over Rollup : ticket: Ticket\nowner: User
 note over L1Ticket : **transfer ticket**\n\nticketer: Ticketer\nowner: User\namount: nat\nto: Rollup
-create "L2 Ticket" as L2Ticket
-Rollup -> L2Ticket
-activate L2Ticket
-note over L2Ticket : **new ticket**
-L2Ticket --> Rollup
-deactivate L2Ticket
-Rollup --> Ticketer
-deactivate Rollup
-Ticketer --> User
-deactivate Ticketer
 
+Rollup -> "L2 Ticket" as L2Ticket **
+note over L2Ticket : **new ticket**
+Rollup --> Ticketer --
+Ticketer --> User --
 
 @enduml

@@ -1,15 +1,22 @@
 @startuml
+title Bridge FA2 or FA1.2 tokens to L2 via Ticketer\nbatch of three operations
 actor       User          as User
-participant "FA Token" as FAToken
-participant "Ticketer" as Ticketer
-participant "L1 Tickets" as L1Tickets
-participant "Rollup" as Rollup
-participant "L2" as L2
+participant FAToken [
+    =FA Token
+]
+participant Ticketer [
+    =Ticketer
+]
+participant Rollup [
+    =Rollup
+]
 
+note over Ticketer : **storage:**\nrollup_address
+/ note over Rollup : **storage:**
 
 User -> FAToken : approve
 activate FAToken
-FAToken -> User
+FAToken --> User
 deactivate FAToken
 
 User -> Ticketer : deposit
@@ -17,22 +24,25 @@ activate Ticketer
 Ticketer -> FAToken : transfer
 activate FAToken
 note over FAToken: from: User\nto: Ticketer\namount: nat
-FAToken -> Ticketer
+FAToken --> Ticketer
 deactivate FAToken
 note over Ticketer : convert token\nmetadata to payload
-note over L1Tickets : **new ticket**\n\nticketer: Ticketer\nowner: User\namount: nat\npayload: bytes
+create "L1 Ticket" as L1Ticket
+Ticketer -> L1Ticket : new ticket
+note over L1Ticket : **new ticket**\n\nticketer: Ticketer\nowner: User\namount: nat\npayload: bytes
 Ticketer -> Rollup : bridge ticket
 activate Rollup
 note over Rollup : ticket: Ticket\nowner: User
-note over L1Tickets : **transfer ticket**\n\nticketer: Ticketer\nowner: User\namount: nat\nto: Rollup
-Rollup -> L2
-activate L2
-note over L2 : **mint L2 Ticket**
-L2-> Rollup
-deactivate L2
-Rollup -> Ticketer
+note over L1Ticket : **transfer ticket**\n\nticketer: Ticketer\nowner: User\namount: nat\nto: Rollup
+create "L2 Ticket" as L2Ticket
+Rollup -> L2Ticket
+activate L2Ticket
+note over L2Ticket : **new ticket**
+L2Ticket --> Rollup
+deactivate L2Ticket
+Rollup --> Ticketer
 deactivate Rollup
-Ticketer -> User
+Ticketer --> User
 deactivate Ticketer
 
 

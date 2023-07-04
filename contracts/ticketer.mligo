@@ -72,7 +72,7 @@ module Token = struct
             ("token", Bytes.pack token);
         ]
 
-    let from_payload (payload : Types.payload) : t =
+    let from_payload (payload_bytes : bytes) : t =
         // TODO: is it possible to match over token_type?
         (*
         let token_type_bytes_opt = Map.find_opt "token_type" payload.token_info in
@@ -89,6 +89,10 @@ module Token = struct
         token
         *)
 
+        let payload : Types.payload =
+            match Bytes.unpack payload_bytes with
+            | None -> failwith "PAYLOAD_UNPACK_FAIL"
+            | Some p -> p in
         let token_opt = Map.find_opt "token" payload.token_info in
         let token_bytes =
             match token_opt with
@@ -125,13 +129,13 @@ module Ticketer = struct
             token_info = Token.make_token_info token;
         } in
         // TODO: make Utility.create_ticket(payload) function
-        let sr_ticket : Types.payload ticket =
-            match Tezos.create_ticket (payload) amount with
+        let sr_ticket : bytes ticket =
+            match Tezos.create_ticket (Bytes.pack payload) amount with
             | None -> failwith "TICKET_CREATION_FAILED"
             | Some t -> t in
         let sender = Tezos.get_sender () in
         // TODO: make Utility.get_sender_contract() function
-        let sender_contract: Types.payload ticket contract =
+        let sender_contract: bytes ticket contract =
             match Tezos.get_contract_opt sender with
             | None -> failwith "FAILED_TO_GET_TICKET_ENTRYPOINT"
             | Some c -> c in
@@ -140,10 +144,16 @@ module Ticketer = struct
         let ticket_transfer_op = Tezos.transaction sr_ticket 0mutez sender_contract in
         [token_transfer_op; ticket_transfer_op], store
 
-    [@entry] let release (_, sr_ticket, destination : storage * (Types.payload ticket) * address) (store : storage) : return =
-        let (ticketer, (payload, amount)), _ = Tezos.read_ticket sr_ticket in
+    [@entry] let release (_, sr_ticket, destination : storage * (bytes ticket) * address) (store : storage) : return =
+        let (ticketer, (payload_bytes, amount)), _ = Tezos.read_ticket sr_ticket in
         let _ = if ticketer <> Tezos.get_self_address () then failwith "UNAUTHORIZED TICKETER" else unit in
-        let token = Token.from_payload payload in
+        (*
+        let payload =
+            match Bytes.unpack payload_bytes in
+            | None -> failwith "PAYLOAD_UNPACK_FAIL"
+            | Some p -> p in
+        *)
+        let token = Token.from_payload payload_bytes in
         let self = Tezos.get_self_address () in
         let transfer_op = Token.get_transfer_op token amount self destination in
         [transfer_op], store

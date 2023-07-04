@@ -2,6 +2,11 @@
 // TODO: consider make TokenInfo.t instead?
 module Types = struct
     type token_info = (string, bytes) map
+
+    type payload = {
+        token_id : nat;
+        token_info : token_info;
+    }
 end
 
 
@@ -58,12 +63,42 @@ module Token = struct
         | Fa12 addr -> Map.literal [
             ("contract_address", Bytes.pack addr);
             ("token_type", Bytes.pack "FA1.2");
+            ("token", Bytes.pack token);
         ]
         | Fa2 (addr, token_id) -> Map.literal [
             ("contract_address", Bytes.pack addr);
             ("token_id", Bytes.pack token_id);
             ("token_type", Bytes.pack "FA2");
+            ("token", Bytes.pack token);
         ]
+
+    let from_payload (payload : Types.payload) : t =
+        // TODO: is it possible to match over token_type?
+        (*
+        let token_type_bytes_opt = Map.find_opt "token_type" payload.token_info in
+        let token_type_bytes =
+            match token_type_bytes_opt with
+            | None -> failwith "TOKEN_TYPE_MISSING"
+            | Some t -> t in
+
+        let token =
+            match Bytes.unpack token_type_bytes with
+            | "FA1.2" -> Fa12 payload.token_info.contract_address
+            | "FA2" -> Fa2 (payload.token_info.contract_address, payload.token_info.token_id)
+            | _ -> failwith "UNSUPPORTED_TOKEN_TYPE" in
+        token
+        *)
+
+        let token_opt = Map.find_opt "token" payload.token_info in
+        let token_bytes =
+            match token_opt with
+            | None -> failwith "PACKED_TOKEN_MISSING"
+            | Some t -> t in
+        let token : t =
+            match Bytes.unpack token_bytes with
+            | None -> failwith "TOKEN_UNPACK_FAIL"
+            | Some t -> t in
+        token
 end
 
 module Ticketer = struct
@@ -74,11 +109,6 @@ module Ticketer = struct
         // TODO: decide, should we keep this ids registry or this is not required?
         token_ids : (Token.t, nat) big_map;
         next_token_id : nat;
-    }
-
-    type ticket_payload = {
-        token_id : nat;
-        token_info : Types.token_info;
     }
 
     type return = operation list * storage
@@ -94,21 +124,27 @@ module Ticketer = struct
             // TODO: add extra_metadata if there is any info about token
             token_info = Token.make_token_info token;
         } in
-        let sr_ticket : ticket_payload ticket =
+        // TODO: make Utility.create_ticket(payload) function
+        let sr_ticket : Types.payload ticket =
             match Tezos.create_ticket (payload) amount with
             | None -> failwith "TICKET_CREATION_FAILED"
             | Some t -> t in
         let sender = Tezos.get_sender () in
-        // TODO: special type for ticket_payload ticket? move to Types?
-        let sender_contract: ticket_payload ticket contract =
-        match Tezos.get_contract_opt sender with
-        | None -> failwith "FAILED_TO_GET_TICKET_ENTRYPOINT"
-        | Some c -> c in
+        // TODO: make Utility.get_sender_contract() function
+        let sender_contract: Types.payload ticket contract =
+            match Tezos.get_contract_opt sender with
+            | None -> failwith "FAILED_TO_GET_TICKET_ENTRYPOINT"
+            | Some c -> c in
         let self = Tezos.get_self_address () in
         let token_transfer_op = Token.get_transfer_op token amount sender self in
         let ticket_transfer_op = Tezos.transaction sr_ticket 0mutez sender_contract in
         [token_transfer_op; ticket_transfer_op], store
 
-    [@entry] let release (store, ticket, destination : storage * ticket * nat) (store : storage) : return =
-        [], store
+    [@entry] let release (_, sr_ticket, destination : storage * (Types.payload ticket) * address) (store : storage) : return =
+        let (ticketer, (payload, amount)), _ = Tezos.read_ticket sr_ticket in
+        let _ = if ticketer <> Tezos.get_self_address () then failwith "UNAUTHORIZED TICKETER" else unit in
+        let token = Token.from_payload payload in
+        let self = Tezos.get_self_address () in
+        let transfer_op = Token.get_transfer_op token amount self destination in
+        [transfer_op], store
 end

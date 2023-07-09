@@ -14,7 +14,8 @@ module Locker = struct
     }
     *)
 
-    type ticket_with_data_t = ticket_ty * address
+    type data_t = address
+    type ticket_with_data_t = ticket_ty * data_t
 
     type storage_t = ticket_with_data_t list
     type return_t = operation list * storage_t
@@ -25,6 +26,7 @@ module Locker = struct
     [@entry] let release () (store : storage_t) : return_t =
         (* Releases all tickets from storage *)
         // TODO: consider release tickets by id?
+        // TODO: do not rely on receiver added to the data, return to the sender
 
         let send (ticket_with_data : ticket_with_data_t) : operation =
             let ticket_string, receiver = ticket_with_data in

@@ -1,3 +1,4 @@
 build/
 .ligo/
 .env
+**/__pycache__/**

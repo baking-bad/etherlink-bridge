@@ -2,8 +2,7 @@ module Proxy = struct
     (* This contract helps user to send tickets with external data to the
         contracts *)
 
-    // TODO: update payload and use the same payload as Ticketer does
-    type ticket_ty = string ticket
+    type ticket_ty = bytes ticket
     type data_t = address
 
     (* Context is set by implicit address before ticket send

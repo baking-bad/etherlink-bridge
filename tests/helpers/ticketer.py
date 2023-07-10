@@ -1,4 +1,4 @@
-from scripts.helpers.contract import ContractHelper
+from tests.helpers.contract import ContractHelper
 from pytezos.client import PyTezosClient
 
 

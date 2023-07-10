@@ -1,5 +1,6 @@
 from tests.helpers.contract import ContractHelper
 from pytezos.client import PyTezosClient
+from scripts.utility import make_filename_from_build_name
 
 
 class Ticketer(ContractHelper):
@@ -14,4 +15,5 @@ class Ticketer(ContractHelper):
     def deploy_default(cls, client: PyTezosClient) -> 'Ticketer':
         """Deploys Ticketer with empty storage"""
 
-        return cls.deploy_from_build('ticketer', client, cls.storage)
+        filename = make_filename_from_build_name('ticketer')
+        return cls.deploy_from_file(filename, client, cls.storage)

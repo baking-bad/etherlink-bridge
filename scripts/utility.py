@@ -5,6 +5,10 @@ from os.path import dirname
 from os.path import join
 
 
+# Default address used as a placeholder in the contract storage
+DEFAULT_ADDRESS = 'tz1burnburnburnburnburnburnburjAYjjX'
+
+
 def pkh(client: PyTezosClient) -> str:
     return str(client.key.public_key_hash())
 
@@ -43,12 +47,9 @@ def get_address_from_op(op: dict) -> str:
     return originated_contract
 
 
-def load_contract_from_build(name: str) -> ContractInterface:
-    """ Loads contract from build directory by given name """
-
+def make_filename_from_build_name(name: str) -> str:
     build_dir = join(dirname(__file__), '..', 'build')
-    filename = join(build_dir, name + '.tz')
-    return ContractInterface.from_file(filename)
+    return join(build_dir, name + '.tz')
 
 
 def load_contract_from_address(

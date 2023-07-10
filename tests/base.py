@@ -1,6 +1,6 @@
 from pytezos.client import PyTezosClient
 from pytezos.sandbox.node import SandboxedNodeAutoBakeTestCase
-from tests.helpers import Ticketer, Proxy, Locker
+from tests.helpers import Ticketer, Proxy, Locker, FA2
 
 
 class BaseTestCase(SandboxedNodeAutoBakeTestCase):
@@ -20,3 +20,4 @@ class BaseTestCase(SandboxedNodeAutoBakeTestCase):
         self.ticketer = Ticketer.deploy_default(self.client)
         self.proxy = Proxy.deploy_default(self.client)
         self.locker = Locker.deploy_default(self.client)
+        self.fa2 = FA2.deploy_default(self.client)

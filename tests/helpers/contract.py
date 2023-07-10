@@ -3,7 +3,6 @@ from pytezos.client import PyTezosClient
 from dataclasses import dataclass
 from scripts.utility import (
     load_contract_from_address,
-    load_contract_from_build,
     find_op_by_hash,
     get_address_from_op,
 )
@@ -15,17 +14,17 @@ class ContractHelper:
     storage: dict
 
     @classmethod
-    def deploy_from_build(
+    def deploy_from_file(
         cls,
-        name: str,
+        filename: str,
         client: PyTezosClient,
         storage: dict
     ) -> 'ContractHelper':
-        """ Deploys contract from build directory by given name with given
-            storage using given client """
+        """ Deploys contract from filename with given storage
+            using given client """
 
-        print(f'deploying {name}...')
-        raw_contract = load_contract_from_build(name)
+        print(f'deploying contract from filename {filename}')
+        raw_contract = ContractInterface.from_file(filename)
         contract = raw_contract.using(key=client.key, shell=client.shell)
         opg = contract.originate(initial_storage=storage).send()
         print(f'success: {opg.hash()}')

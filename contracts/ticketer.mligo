@@ -131,7 +131,7 @@ module Ticketer = struct
 
     type return = operation list * storage
 
-    [@entry] let deposit (_, token, amount : storage * Token.t * nat) (store : storage) : return =
+    [@entry] let deposit (token, amount : Token.t * nat) (store : storage) : return =
         let token_id : nat =
             match Big_map.find_opt token store.token_ids with
             // TODO: need to add new token to the store.token_ids in None case
@@ -158,7 +158,7 @@ module Ticketer = struct
         let ticket_transfer_op = Tezos.transaction sr_ticket 0mutez sender_contract in
         [token_transfer_op; ticket_transfer_op], store
 
-    [@entry] let release (_, sr_ticket, destination : storage * (bytes ticket) * address) (store : storage) : return =
+    [@entry] let release (sr_ticket, destination : (bytes ticket) * address) (store : storage) : return =
         let (ticketer, (payload_bytes, amount)), _ = Tezos.read_ticket sr_ticket in
         let _ = if ticketer <> Tezos.get_self_address () then failwith "UNAUTHORIZED TICKETER" else unit in
         (*

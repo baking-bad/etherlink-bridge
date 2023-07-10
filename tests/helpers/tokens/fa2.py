@@ -5,6 +5,9 @@ from os.path import join
 from os.path import dirname
 
 
+LedgerKey = tuple[str, int]
+
+
 class FA2(ContractHelper):
     storage = {
         'administrator': DEFAULT_ADDRESS,
@@ -20,12 +23,31 @@ class FA2(ContractHelper):
         'treasury_address': DEFAULT_ADDRESS,
     }
 
-    # TODO: instead of deploy_default need to deploy with some tokens for addresses
     @classmethod
-    def deploy_default(cls, client: PyTezosClient) -> 'FA2':
+    def deploy(cls, client: PyTezosClient, balances: dict[LedgerKey, int]) -> 'FA2':
         """Deploys FA2 token with empty storage"""
 
         # TODO: move TOKENS_DIR to config?
         tokens_dir = join(dirname(__file__), '..', '..', 'tokens')
         filename = join(tokens_dir, 'fa2-fxhash.tz')
-        return cls.deploy_from_file(filename, client, cls.storage)
+        storage = cls.storage.copy()
+        storage['ledger'] = balances
+        # TODO: set token_metadata for all balances token_ids?
+        storage['token_metadata'] = {0: (0, {})}
+
+        return cls.deploy_from_file(filename, client, storage)
+
+    # TODO: balance_of:
+    # return self.contract.storage['ledger'][(address, token_id)]()
+
+    # TODO: transfer(address_from, address_to, token_id, amount):
+    '''
+        self.fa2.contract.transfer([{
+            'from_': address_from,
+            'txs': [{
+                'to_': address_to,
+                'token_id': token_id,
+                'amount': amount
+            }]
+        }]).send()
+    '''

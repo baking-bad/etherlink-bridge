@@ -9,12 +9,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
 
         self.ticketer.deposit(self.fa2, 100).send()
         self.bake_block()
-
-        # check token transfered:
-        # TODO: get some balance_of helper for FA2:
-        key = (self.ticketer.address, 0)
-        amount = self.fa2.contract.storage['ledger'][key]()  # type: ignore
-        assert amount == 100
+        assert self.fa2.get_balance(self.ticketer.address) == 100
 
         # TODO:
         # 1. create ticket with ticketer

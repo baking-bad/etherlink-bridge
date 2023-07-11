@@ -15,3 +15,7 @@ class TokenHelper(ContractHelper):
     @abstractmethod
     def as_dict(self) -> FA2AsDictType:
         pass
+
+    @abstractmethod
+    def get_balance(self, address: str) -> int:
+        pass

@@ -61,8 +61,12 @@ class FA2(TokenHelper):
             'fa2': (self.address, self.token_id)
         }
 
-    # TODO: balance_of:
-    # return self.contract.storage['ledger'][(address, token_id)]()
+    def get_balance(self, address: str) -> int:
+        key = (address, self.token_id)
+        balance = self.contract.storage['ledger'][key]()  # type: ignore
+        # TODO: return default 0 balance if no record in ledger?
+        assert isinstance(balance, int)
+        return balance
 
     # TODO: transfer(address_from, address_to, token_id, amount):
     '''

@@ -24,7 +24,7 @@ class BaseTestCase(SandboxedNodeAutoBakeTestCase):
         self.locker = Locker.deploy_default(self.manager)
 
         fa2_balances = {
-            (pkh(self.user), 0): 1000,
-            (pkh(self.manager), 0): 1000,
+            pkh(self.user): 1000,
+            pkh(self.manager): 1000,
         }
         self.fa2 = FA2.deploy(self.manager, fa2_balances)

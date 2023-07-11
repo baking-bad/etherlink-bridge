@@ -7,11 +7,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         self.fa2.allow(self.ticketer.address).send()
         self.bake_block()
 
-        # TODO: make a helper for Ticketer to simplify deposit
-        opg = self.ticketer.contract.deposit((
-            {'fa2': (self.fa2.contract.address, 0)},
-            100
-        )).send()
+        self.ticketer.deposit(self.fa2, 100).send()
         self.bake_block()
 
         # check token transfered:

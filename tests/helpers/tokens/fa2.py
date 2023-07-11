@@ -1,4 +1,7 @@
-from tests.helpers.contract import ContractHelper
+from tests.helpers.tokens.token import (
+    TokenHelper,
+    FA2AsDictType,
+)
 from scripts.utility import DEFAULT_ADDRESS
 from pytezos.client import PyTezosClient
 from os.path import join
@@ -7,10 +10,7 @@ from scripts.utility import pkh
 from pytezos.contract.call import ContractCall
 
 
-LedgerKey = tuple[str, int]
-
-
-class FA2(ContractHelper):
+class FA2(TokenHelper):
     default_storage = {
         'administrator': DEFAULT_ADDRESS,
         'all_tokens': 0,
@@ -24,29 +24,42 @@ class FA2(ContractHelper):
         'token_metadata': {},
         'treasury_address': DEFAULT_ADDRESS,
     }
+    token_id = 0
 
     @classmethod
-    def deploy(cls, client: PyTezosClient, balances: dict[LedgerKey, int]) -> 'FA2':
+    def deploy(
+        cls,
+        client: PyTezosClient,
+        balances: dict[str, int],
+        token_id: int = 0
+    ) -> 'FA2':
         """Deploys FA2 token with empty storage"""
 
         # TODO: move TOKENS_DIR to config / constants.py?
         tokens_dir = join(dirname(__file__), '..', '..', 'tokens')
         filename = join(tokens_dir, 'fa2-fxhash.tz')
         storage = cls.default_storage.copy()
-        storage['ledger'] = balances
-        # TODO: set token_metadata for all balances token_ids?
-        storage['token_metadata'] = {0: (0, {})}
-
+        storage['ledger'] = {
+            (address, token_id): amount
+            for address, amount in balances.items()
+        }
+        storage['token_metadata'] = {token_id: (token_id, {})}
+        cls.token_id = token_id
         return cls.deploy_from_file(filename, client, storage)
 
-    def allow(self, operator: str, token_id: int = 0) -> ContractCall:
+    def allow(self, operator: str) -> ContractCall:
         return self.contract.update_operators([{
             'add_operator': {
                 'owner': pkh(self.client),
                 'operator': operator,
-                'token_id': token_id,
+                'token_id': self.token_id,
             }
         }])
+
+    def as_dict(self) -> FA2AsDictType:
+        return {
+            'fa2': (self.address, self.token_id)
+        }
 
     # TODO: balance_of:
     # return self.contract.storage['ledger'][(address, token_id)]()

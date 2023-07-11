@@ -4,14 +4,7 @@ from scripts.utility import pkh
 
 class TicketerCommunicationTestCase(BaseTestCase):
     def test_wrap_and_send_ticket_using_proxy(self) -> None:
-        # TODO: make a helper for FA2 contract to simplify approve
-        self.fa2.contract.update_operators([{
-            'add_operator': {
-                'owner': pkh(self.manager),
-                'operator': self.ticketer.contract.address,
-                'token_id': 0
-            }
-        }]).send()
+        self.fa2.allow(self.ticketer.address).send()
         self.bake_block()
 
         # TODO: make a helper for Ticketer to simplify deposit
@@ -22,7 +15,9 @@ class TicketerCommunicationTestCase(BaseTestCase):
         self.bake_block()
 
         # check token transfered:
-        amount = self.fa2.contract.storage['ledger'][(self.ticketer.contract.address, 0)]()
+        # TODO: get some balance_of helper for FA2:
+        key = (self.ticketer.address, 0)
+        amount = self.fa2.contract.storage['ledger'][key]()  # type: ignore
         assert amount == 100
 
         # TODO:

@@ -6,20 +6,30 @@ from scripts.utility import (
     find_op_by_hash,
     get_address_from_op,
 )
+from typing import TypeVar, Type, Any
 
+
+T = TypeVar('T', bound='ContractHelper')
 
 @dataclass
 class ContractHelper:
     contract: ContractInterface
-    storage: dict
+    default_storage: Any
+    client: PyTezosClient
+    address: str
 
+    # TODO: consider splitting this deploy to two methods:
+    #       - first one will prepare origination operation
+    #       - second one will create ContractHelper from opg
+    #       (this will allow to call bake_block in tests between these two)
+    #       (this also allows batch originations)
     @classmethod
     def deploy_from_file(
-        cls,
+        cls: Type[T],
         filename: str,
         client: PyTezosClient,
-        storage: dict
-    ) -> 'ContractHelper':
+        storage: Any
+    ) -> T:
         """ Deploys contract from filename with given storage
             using given client """
 
@@ -36,5 +46,10 @@ class ContractHelper:
 
         return cls(
             contract=load_contract_from_address(client, address),
-            storage=storage,
+            default_storage=storage,
+            client=client,
+            address=address,
         )
+
+    # TODO: consider adding .using(**kwargs) method to ContracHelper that will
+    #       return new ContractHelper with contract.using(**kwargs)

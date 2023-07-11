@@ -30,8 +30,7 @@ def find_op_by_hash(client: PyTezosClient, opg: OperationGroup) -> dict:
     """ Finds operation group by operation hash """
 
     op = client.shell.blocks[-10:].find_operation(opg.hash())
-    assert type(op) is dict
-    return op
+    return op  # type: ignore
 
 
 def get_address_from_op(op: dict) -> str:

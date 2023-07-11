@@ -5,7 +5,7 @@ from scripts.utility import make_filename_from_build_name
 
 
 class Proxy(ContractHelper):
-    storage = {
+    default_storage = {
         'data': DEFAULT_ADDRESS,
         'receiver': DEFAULT_ADDRESS,
     }
@@ -15,4 +15,4 @@ class Proxy(ContractHelper):
         """Deploys Proxy with empty storage"""
 
         filename = make_filename_from_build_name('proxy')
-        return cls.deploy_from_file(filename, client, cls.storage)
+        return cls.deploy_from_file(filename, client, cls.default_storage)

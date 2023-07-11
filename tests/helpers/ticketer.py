@@ -4,7 +4,7 @@ from scripts.utility import make_filename_from_build_name
 
 
 class Ticketer(ContractHelper):
-    storage = {
+    default_storage = {
         'extra_metadata': {},
         'metadata': {},
         'token_ids': {},
@@ -16,4 +16,4 @@ class Ticketer(ContractHelper):
         """Deploys Ticketer with empty storage"""
 
         filename = make_filename_from_build_name('ticketer')
-        return cls.deploy_from_file(filename, client, cls.storage)
+        return cls.deploy_from_file(filename, client, cls.default_storage)

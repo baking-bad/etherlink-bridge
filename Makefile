@@ -8,3 +8,6 @@ compile:
 
 mypy:
 	poetry run mypy .
+
+test:
+	poetry run pytest

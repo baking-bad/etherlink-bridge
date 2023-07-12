@@ -10,6 +10,7 @@ class Ticketer(ContractHelper):
         'extra_metadata': {},
         'metadata': {},
         'token_ids': {},
+        'tokens': {},
         'next_token_id': 0,
     }
 

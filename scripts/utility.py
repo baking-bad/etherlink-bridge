@@ -1,3 +1,4 @@
+# TODO: consider move this file to tests directory
 from pytezos.client import PyTezosClient
 from pytezos.contract.interface import ContractInterface
 from pytezos.operation.group import OperationGroup
@@ -11,19 +12,6 @@ DEFAULT_ADDRESS = 'tz1burnburnburnburnburnburnburjAYjjX'
 
 def pkh(client: PyTezosClient) -> str:
     return str(client.key.public_key_hash())
-
-
-# TODO: use some number library for amount?
-def generate_ticket_params(ticketer: str, amount: int, destination: str) -> dict:
-    # TODO: need to find a way to encode ticket contents
-    return {
-        'ticket_contents': {"bytes": "TODO:"},
-        'ticket_ty': {"prim": "bytes"},
-        'ticket_ticketer': ticketer,
-        'ticket_amount': amount,
-        'destination': destination,
-        'entrypoint': 'send'
-    }
 
 
 def find_op_by_hash(client: PyTezosClient, opg: OperationGroup) -> dict:

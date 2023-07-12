@@ -11,3 +11,8 @@ class Locker(ContractHelper):
 
         filename = make_filename_from_build_name('locker')
         return cls.deploy_from_file(filename, client, cls.default_storage)
+
+    def get_tickets(self) -> list:
+        """Returns list of tickets in storage"""
+
+        return self.contract.storage()

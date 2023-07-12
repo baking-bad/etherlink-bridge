@@ -1,7 +1,7 @@
 from pytezos.contract.interface import ContractInterface
 from pytezos.client import PyTezosClient
 from dataclasses import dataclass
-from scripts.utility import (
+from tests.utility import (
     load_contract_from_address,
     find_op_by_hash,
     get_address_from_op,

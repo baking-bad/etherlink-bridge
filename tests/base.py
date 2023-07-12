@@ -1,7 +1,7 @@
 from pytezos.client import PyTezosClient
 from pytezos.sandbox.node import SandboxedNodeAutoBakeTestCase
 from tests.helpers import Ticketer, Proxy, Locker, FA2
-from scripts.utility import pkh
+from tests.utility import pkh
 
 
 class BaseTestCase(SandboxedNodeAutoBakeTestCase):

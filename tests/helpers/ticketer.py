@@ -1,6 +1,6 @@
 from tests.helpers.contract import ContractHelper
 from pytezos.client import PyTezosClient
-from scripts.utility import make_filename_from_build_name
+from tests.utility import make_filename_from_build_name
 from pytezos.contract.call import ContractCall
 from tests.helpers.tokens.token import TokenHelper
 

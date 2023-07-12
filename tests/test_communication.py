@@ -1,5 +1,5 @@
 from tests.base import BaseTestCase
-from scripts.utility import pkh
+from tests.utility import pkh
 
 
 class TicketerCommunicationTestCase(BaseTestCase):

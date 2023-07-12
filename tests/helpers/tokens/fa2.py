@@ -2,11 +2,11 @@ from tests.helpers.tokens.token import (
     TokenHelper,
     FA2AsDictType,
 )
-from scripts.utility import DEFAULT_ADDRESS
+from tests.utility import DEFAULT_ADDRESS
+from tests.utility import pkh
 from pytezos.client import PyTezosClient
 from os.path import join
 from os.path import dirname
-from scripts.utility import pkh
 from pytezos.contract.call import ContractCall
 
 

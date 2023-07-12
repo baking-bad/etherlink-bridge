@@ -1,7 +1,7 @@
 from tests.helpers.contract import ContractHelper
 from pytezos.client import PyTezosClient
-from scripts.utility import DEFAULT_ADDRESS
-from scripts.utility import make_filename_from_build_name
+from tests.utility import DEFAULT_ADDRESS
+from tests.utility import make_filename_from_build_name
 from typing import TypedDict
 from pytezos.contract.call import ContractCall
 

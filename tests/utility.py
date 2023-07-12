@@ -1,4 +1,3 @@
-# TODO: consider move this file to tests directory
 from pytezos.client import PyTezosClient
 from pytezos.contract.interface import ContractInterface
 from pytezos.operation.group import OperationGroup

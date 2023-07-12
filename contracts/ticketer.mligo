@@ -76,33 +76,12 @@ module Token = struct
         | Fa12 addr -> Map.literal [
             ("contract_address", Bytes.pack addr);
             ("token_type", Bytes.pack "FA1.2");
-            ("token", Bytes.pack token);
         ]
         | Fa2 (addr, token_id) -> Map.literal [
             ("contract_address", Bytes.pack addr);
             ("token_id", Bytes.pack token_id);
             ("token_type", Bytes.pack "FA2");
-            ("token", Bytes.pack token);
         ]
-
-    // TODO: separate from_token_info and unpack_token_info functions?
-    //       ^ [probably this doesn't matter after changing token loading process]
-    // TODO: instead of from_payload it is better to get token from storage by id
-    let from_payload (payload : Types.payload) : t =
-        let token_info : Types.token_info =
-            match Bytes.unpack payload.token_info with
-            | None -> failwith "PAYLOAD_UNPACK_FAIL"
-            | Some p -> p in
-        let token_opt = Map.find_opt "token" token_info in
-        let token_bytes =
-            match token_opt with
-            | None -> failwith "PACKED_TOKEN_MISSING"
-            | Some t -> t in
-        let token : t =
-            match Bytes.unpack token_bytes with
-            | None -> failwith "TOKEN_UNPACK_FAIL"
-            | Some t -> t in
-        token
 end
 
 module Ticketer = struct
@@ -112,17 +91,27 @@ module Ticketer = struct
         metadata : (string, bytes) big_map;
         // TODO: decide, should we keep this ids registry or this is not required?
         token_ids : (Token.t, nat) big_map;
+        tokens : (nat, Token.t) big_map;
         next_token_id : nat;
     }
 
     type return = operation list * storage
 
+    let add_token (token : Token.t) (store : storage) : storage = {
+            store with
+            token_ids = Big_map.add token store.next_token_id store.token_ids;
+            tokens = Big_map.add store.next_token_id token store.tokens;
+            next_token_id = store.next_token_id + 1n;
+        }
+
     [@entry] let deposit (token, amount : Token.t * nat) (store : storage) : return =
-        let token_id : nat =
+        // TODO: decide: should we limit Token.contract_address that allowed to be
+        //       converted to ticket? (it is easier to start with the most general
+        //       case, so the answer is "no" for now)
+        let new_store, token_id : storage * nat =
             match Big_map.find_opt token store.token_ids with
-            // TODO: need to add new token to the store.token_ids in None case
-            | None -> store.next_token_id
-            | Some id -> id in
+            | None -> (add_token token store, store.next_token_id)
+            | Some id -> (store, id) in
         let payload = {
             token_id = token_id;
             // TODO: add extra_metadata if there is any info about token
@@ -142,18 +131,15 @@ module Ticketer = struct
         let self = Tezos.get_self_address () in
         let token_transfer_op = Token.get_transfer_op token amount sender self in
         let ticket_transfer_op = Tezos.transaction sr_ticket 0mutez sender_contract in
-        [token_transfer_op; ticket_transfer_op], store
+        [token_transfer_op; ticket_transfer_op], new_store
 
     [@entry] let release (sr_ticket, destination : (Types.payload ticket) * address) (store : storage) : return =
         let (ticketer, (payload, amount)), _ = Tezos.read_ticket sr_ticket in
         let _ = if ticketer <> Tezos.get_self_address () then failwith "UNAUTHORIZED TICKETER" else unit in
-        (*
-        let payload =
-            match Bytes.unpack payload_bytes in
-            | None -> failwith "PAYLOAD_UNPACK_FAIL"
-            | Some p -> p in
-        *)
-        let token = Token.from_payload payload in
+        let token =
+            match Big_map.find_opt payload.token_id store.tokens with
+            | None -> failwith "TOKEN_NOT_FOUND"
+            | Some t -> t in
         let self = Tezos.get_self_address () in
         let transfer_op = Token.get_transfer_op token amount self destination in
         [transfer_op], store

@@ -13,12 +13,11 @@ module Locker = struct
     //       ticket duplications
     type ticket_with_data_t = {
         string_ticket: ticket_ty;
-        data: address;
+        routing_data: Types.routing_data;
     }
     *)
 
-    type data_t = address
-    type ticket_with_data_t = ticket_ty * data_t
+    type ticket_with_data_t = ticket_ty * Types.routing_data
 
     type storage_t = ticket_with_data_t list
     type return_t = operation list * storage_t
@@ -29,16 +28,16 @@ module Locker = struct
     [@entry] let release () (store : storage_t) : return_t =
         (* Releases all tickets from storage *)
         // TODO: consider release tickets by id?
-        // TODO: do not rely on receiver added to the data, return to the sender
 
         let send (ticket_with_data : ticket_with_data_t) : operation =
-            let ticket_string, receiver = ticket_with_data in
+            let sr_ticket, _ = ticket_with_data in
+            let receiver = Tezos.get_sender () in
             let receiver_contract: ticket_ty contract =
                 match Tezos.get_contract_opt receiver with
                 | None -> failwith Errors.failed_to_get_ticket_entrypoint
                 | Some c -> c in
             let (_, (_, _)), read_ticket =
-                Tezos.read_ticket ticket_string in
+                Tezos.read_ticket sr_ticket in
             Tezos.transaction read_ticket 0mutez receiver_contract in
 
         List.map send store, ([] : storage_t)

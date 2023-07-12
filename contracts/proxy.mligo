@@ -7,21 +7,18 @@ module Proxy = struct
         contracts *)
 
     type ticket_ty = Types.payload ticket
-    type data_t = address
-    // TODO: type data_t = pair (bytes %data) (map %routing_info string bytes)
-    // TODO: the same type used in locker, need to move this type to a separate module
 
-    (* Context is set by implicit address before ticket send
+    (* Context is set by implicit address before ticket send:
         - data is the data that will be added to the ticket
         - receiver is the address of the contract that will receive the ticket
     *)
     type context_t = {
-        data : data_t;
+        data : Types.routing_data;
         receiver : address;
     }
     // TODO: is it required to have empty context? (and reset it after each send?)
 
-    type ticket_with_data_t = ticket_ty * data_t
+    type ticket_with_data_t = ticket_ty * Types.routing_data
     type storage_t = context_t
     type return_t = operation list * storage_t
 

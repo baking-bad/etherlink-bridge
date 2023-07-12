@@ -1,4 +1,6 @@
 #import "./common/types.mligo" "Types"
+#import "./common/errors.mligo" "Errors"
+
 
 module Proxy = struct
     (* This contract helps user to send tickets with external data to the
@@ -35,7 +37,7 @@ module Proxy = struct
         // TODO: is it possible to unhardcode entrypoint name?
         // (check this: Tezos.get_contract_opt with "KT...%save")
             match Tezos.get_entrypoint_opt "%save" ctx.receiver with
-            | None -> failwith "FAILED_TO_GET_TICKET_ENTRYPOINT"
+            | None -> failwith Errors.failed_to_get_ticket_entrypoint
             | Some c -> c in
         let ticket_with_data : ticket_with_data_t =
             some_ticket, ctx.data in

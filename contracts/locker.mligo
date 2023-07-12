@@ -1,4 +1,6 @@
 #import "./common/types.mligo" "Types"
+#import "./common/errors.mligo" "Errors"
+
 
 module Locker = struct
     (* This is helper contract used to lock/release tickets in the same
@@ -33,7 +35,7 @@ module Locker = struct
             let ticket_string, receiver = ticket_with_data in
             let receiver_contract: ticket_ty contract =
                 match Tezos.get_contract_opt receiver with
-                | None -> failwith "FAILED_TO_GET_TICKET_ENTRYPOINT"
+                | None -> failwith Errors.failed_to_get_ticket_entrypoint
                 | Some c -> c in
             let (_, (_, _)), read_ticket =
                 Tezos.read_ticket ticket_string in

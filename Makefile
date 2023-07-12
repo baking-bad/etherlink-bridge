@@ -6,6 +6,9 @@ compile:
 	${LIGO_COMPILER} compile contract contracts/locker.mligo -m Locker -o build/locker.tz
 	${LIGO_COMPILER} compile contract contracts/ticketer.mligo -m Ticketer -o build/ticketer.tz
 
+install:
+	poetry install
+
 mypy:
 	poetry run mypy .
 

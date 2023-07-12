@@ -11,6 +11,7 @@ from pytezos.client import PyTezosClient
 from os.path import join
 from os.path import dirname
 from pytezos.contract.call import ContractCall
+from pytezos.operation.group import OperationGroup
 
 
 class FA2(TokenHelper):
@@ -30,12 +31,12 @@ class FA2(TokenHelper):
     token_id = 0
 
     @classmethod
-    def deploy(
+    def originate(
         cls,
         client: PyTezosClient,
         balances: dict[str, int],
         token_id: int = 0
-    ) -> 'FA2':
+    ) -> OperationGroup:
         """Deploys FA2 token with empty storage"""
 
         # TODO: move TOKENS_DIR to config / constants.py?
@@ -48,7 +49,7 @@ class FA2(TokenHelper):
         }
         storage['token_metadata'] = {token_id: (token_id, {})}
         cls.token_id = token_id
-        return cls.deploy_from_file(filename, client, storage)
+        return cls.originate_from_file(filename, client, storage)
 
     def allow(self, operator: str) -> ContractCall:
         return self.contract.update_operators([{

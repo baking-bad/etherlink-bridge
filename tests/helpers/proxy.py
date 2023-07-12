@@ -4,6 +4,7 @@ from tests.utility import DEFAULT_ADDRESS
 from tests.utility import make_filename_from_build_name
 from typing import TypedDict
 from pytezos.contract.call import ContractCall
+from pytezos.operation.group import OperationGroup
 
 
 class SetParams(TypedDict):
@@ -18,11 +19,11 @@ class Proxy(ContractHelper):
     }
 
     @classmethod
-    def deploy_default(cls, client: PyTezosClient) -> 'Proxy':
+    def originate_default(cls, client: PyTezosClient) -> OperationGroup:
         """Deploys Proxy with empty storage"""
 
         filename = make_filename_from_build_name('proxy')
-        return cls.deploy_from_file(filename, client, cls.default_storage)
+        return cls.originate_from_file(filename, client, cls.default_storage)
 
     def set(self, params: SetParams) -> ContractCall:
         return self.contract.set(params)

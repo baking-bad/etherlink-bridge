@@ -6,6 +6,7 @@ from tests.utility import (
     to_micheline,
     pack,
 )
+from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
 from tests.helpers.tokens.token import TokenHelper
 from typing import Any
@@ -24,11 +25,11 @@ class Ticketer(ContractHelper):
     }
 
     @classmethod
-    def deploy_default(cls, client: PyTezosClient) -> 'Ticketer':
+    def originate_default(cls, client: PyTezosClient) -> OperationGroup:
         """Deploys Ticketer with empty storage"""
 
         filename = make_filename_from_build_name('ticketer')
-        return cls.deploy_from_file(filename, client, cls.default_storage)
+        return cls.originate_from_file(filename, client, cls.default_storage)
 
     def deposit(self, token: TokenHelper, amount: int) -> ContractCall:
         params = (token.as_dict(), amount)

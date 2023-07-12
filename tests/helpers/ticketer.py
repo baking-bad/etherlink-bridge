@@ -32,12 +32,24 @@ class Ticketer(ContractHelper):
         return cls.originate_from_file(filename, client, cls.default_storage)
 
     def deposit(self, token: TokenHelper, amount: int) -> ContractCall:
+        """ Deposits given amount of given token to the contract """
+
         params = (token.as_dict(), amount)
         return self.contract.deposit(params)
 
     def get_token_id(self, token: TokenHelper) -> int:
+        """ Returns internal ticketer token id for given token
+            NOTE: if given token is not in storage, returned token id will
+                be equal to next_token_id, which allow to create ticket
+                params before token added to the storage (in bacth call)
+        """
+
         token_ids = self.contract.storage['token_ids']
-        token_id = token_ids[token.as_dict()]()  # type: ignore
+        try:
+            token_id = token_ids[token.as_dict()]()  # type: ignore
+        except KeyError:
+            token_id = self.contract.storage['next_token_id']()
+
         assert type(token_id) is int
         return token_id
 
@@ -48,6 +60,7 @@ class Ticketer(ContractHelper):
         destination: str,
         entrypoint: str
     ) -> dict[str, Any]:
+        """ Returns params for ticket transfer call """
 
         ticket_contents = {
             'token_id': self.get_token_id(token),

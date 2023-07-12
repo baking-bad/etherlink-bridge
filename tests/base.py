@@ -18,11 +18,7 @@ class BaseTestCase(SandboxedNodeTestCase):
     def setUp(self) -> None:
         self.activate_accs()
 
-        token_balances = {
-            pkh(self.user): 1000,
-            pkh(self.manager): 1000,
-        }
-
+        # Contracts deployment:
         ticketer_opg = Ticketer.originate_default(self.manager).send()
         self.bake_block()
         self.ticketer = Ticketer.create_from_opg(self.manager, ticketer_opg)
@@ -34,6 +30,15 @@ class BaseTestCase(SandboxedNodeTestCase):
         locker_opg = Locker.originate_default(self.manager).send()
         self.bake_block()
         self.locker = Locker.create_from_opg(self.manager, locker_opg)
+
+        # Tokens deployment:
+        token_balances = {
+            pkh(self.user): 1000,
+            pkh(self.manager): 1000,
+            self.ticketer.address: 0,
+            self.proxy.address: 0,
+            self.locker.address: 0,
+        }
 
         fa2_opg = FA2.originate(self.manager, token_balances).send()
         self.bake_block()

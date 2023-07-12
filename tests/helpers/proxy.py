@@ -1,20 +1,34 @@
 from tests.helpers.contract import ContractHelper
 from pytezos.client import PyTezosClient
-from tests.utility import DEFAULT_ADDRESS
-from tests.utility import make_filename_from_build_name
+from tests.utility import (
+    DEFAULT_ADDRESS,
+    make_filename_from_build_name,
+    pack,
+)
 from typing import TypedDict
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
 
 
+# TODO: consider moving this shared type somewhere else
+class RoutingData(TypedDict):
+    data: bytes
+    refund_address: str
+    info: dict[str, bytes]
+
+
 class SetParams(TypedDict):
-    data: str
+    data: RoutingData
     receiver: str
 
 
 class Proxy(ContractHelper):
     default_storage = {
-        'data': DEFAULT_ADDRESS,
+        'data': {
+            'data': pack('', 'string'),
+            'refund_address': DEFAULT_ADDRESS,
+            'info': {}
+        },
         'receiver': DEFAULT_ADDRESS,
     }
 

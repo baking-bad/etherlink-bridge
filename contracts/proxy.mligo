@@ -12,6 +12,9 @@ module Proxy = struct
         - data is the data that will be added to the ticket
         - receiver is the address of the contract that will receive the ticket
     *)
+    // TODO: implement per-user context to increase security
+    // TODO: consider clearing context after each send
+    // TODO: consider adding some id to simplify external indexing
     type context_t = {
         data : Types.routing_data;
         receiver : address;

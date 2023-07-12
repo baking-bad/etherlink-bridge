@@ -3,6 +3,10 @@ from pytezos.contract.interface import ContractInterface
 from pytezos.operation.group import OperationGroup
 from os.path import dirname
 from os.path import join
+from pytezos.michelson.parse import michelson_to_micheline
+from pytezos.michelson.types.base import MichelsonType
+from typing import Any
+
 
 
 # Default address used as a placeholder in the contract storage
@@ -47,3 +51,24 @@ def load_contract_from_address(
     contract = client.contract(contract_address)
     contract = contract.using(shell=client.shell, key=client.key)
     return contract
+
+
+def to_micheline(type_expression: str) -> dict:
+    """ Converts Michelson type expression string to Micheline expression
+        (reusing pytezos.michelson.parse.michelson_to_micheline) with
+        type checking
+    """
+
+    return michelson_to_micheline(type_expression)  # type: ignore
+
+def to_michelson_type(object: Any, type_expression: str) -> MichelsonType:
+    """ Converts Python object to Michelson type using given type expression """
+
+    micheline_expression = to_micheline(type_expression)
+    michelson_type = MichelsonType.match(micheline_expression)
+    return michelson_type.from_python_object(object)
+
+def pack(object: Any, type_expression: str) -> bytes:
+    """ Packs Python object to bytes using given type expression """
+
+    return to_michelson_type(object, type_expression).pack()

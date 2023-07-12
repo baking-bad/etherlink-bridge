@@ -2,8 +2,11 @@ from tests.helpers.tokens.token import (
     TokenHelper,
     FA2AsDictType,
 )
-from tests.utility import DEFAULT_ADDRESS
-from tests.utility import pkh
+from tests.utility import (
+    DEFAULT_ADDRESS,
+    pkh,
+    pack,
+)
 from pytezos.client import PyTezosClient
 from os.path import join
 from os.path import dirname
@@ -67,6 +70,13 @@ class FA2(TokenHelper):
         # TODO: return default 0 balance if no record in ledger?
         assert isinstance(balance, int)
         return balance
+
+    def make_token_info(self) -> dict[str, bytes]:
+        return {
+            'contract_address': pack(self.address, 'address'),
+            'token_id': pack(self.token_id, 'nat'),
+            'token_type': pack("FA2", 'string'),
+        }
 
     # TODO: transfer(address_from, address_to, token_id, amount):
     '''

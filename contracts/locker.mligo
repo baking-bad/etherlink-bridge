@@ -1,8 +1,10 @@
+#import "./common/types.mligo" "Types"
+
 module Locker = struct
     (* This is helper contract used to lock/release tickets in the same
         way Rollup would do *)
 
-    type ticket_ty = bytes ticket
+    type ticket_ty = Types.payload ticket
 
     (*
     // NOTE: the following record with ticket fails to be compiled without

@@ -1,9 +1,13 @@
+#import "./common/types.mligo" "Types"
+
 module Proxy = struct
     (* This contract helps user to send tickets with external data to the
         contracts *)
 
-    type ticket_ty = bytes ticket
+    type ticket_ty = Types.payload ticket
     type data_t = address
+    // TODO: type data_t = pair (bytes %data) (map %routing_info string bytes)
+    // TODO: the same type used in locker, need to move this type to a separate module
 
     (* Context is set by implicit address before ticket send
         - data is the data that will be added to the ticket
@@ -29,6 +33,7 @@ module Proxy = struct
         let ctx = store in
         let receiver_contract: ticket_with_data_t contract =
         // TODO: is it possible to unhardcode entrypoint name?
+        // (check this: Tezos.get_contract_opt with "KT...%save")
             match Tezos.get_entrypoint_opt "%save" ctx.receiver with
             | None -> failwith "FAILED_TO_GET_TICKET_ENTRYPOINT"
             | Some c -> c in

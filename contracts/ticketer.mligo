@@ -1,14 +1,5 @@
-// TODO: move this module to separate file
+#import "./common/types.mligo" "Types"
 // TODO: consider make TokenInfo.t instead?
-module Types = struct
-    type token_info = (string, bytes) map
-
-    type payload = {
-        token_id : nat;
-        token_info : bytes;
-    }
-end
-
 
 module Errors = struct
     let invalid_fa12 = "FA12_TRANSFER_MISSING"

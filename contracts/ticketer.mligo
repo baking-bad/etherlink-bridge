@@ -5,7 +5,7 @@ module Types = struct
 
     type payload = {
         token_id : nat;
-        token_info : token_info;
+        token_info : bytes;
     }
 end
 
@@ -86,28 +86,14 @@ module Token = struct
         ]
 
     // TODO: separate from_token_info and unpack_token_info functions?
-    let from_payload (payload_bytes : bytes) : t =
-        // TODO: is it possible to match over token_type?
-        (*
-        let token_type_bytes_opt = Map.find_opt "token_type" payload.token_info in
-        let token_type_bytes =
-            match token_type_bytes_opt with
-            | None -> failwith "TOKEN_TYPE_MISSING"
-            | Some t -> t in
-
-        let token =
-            match Bytes.unpack token_type_bytes with
-            | "FA1.2" -> Fa12 payload.token_info.contract_address
-            | "FA2" -> Fa2 (payload.token_info.contract_address, payload.token_info.token_id)
-            | _ -> failwith "UNSUPPORTED_TOKEN_TYPE" in
-        token
-        *)
-
-        let payload : Types.payload =
-            match Bytes.unpack payload_bytes with
+    //       ^ [probably this doesn't matter after changing token loading process]
+    // TODO: instead of from_payload it is better to get token from storage by id
+    let from_payload (payload : Types.payload) : t =
+        let token_info : Types.token_info =
+            match Bytes.unpack payload.token_info with
             | None -> failwith "PAYLOAD_UNPACK_FAIL"
             | Some p -> p in
-        let token_opt = Map.find_opt "token" payload.token_info in
+        let token_opt = Map.find_opt "token" token_info in
         let token_bytes =
             match token_opt with
             | None -> failwith "PACKED_TOKEN_MISSING"
@@ -140,16 +126,16 @@ module Ticketer = struct
         let payload = {
             token_id = token_id;
             // TODO: add extra_metadata if there is any info about token
-            token_info = Token.make_token_info token;
+            token_info = Bytes.pack (Token.make_token_info token);
         } in
         // TODO: make Utility.create_ticket(payload) function
-        let sr_ticket : bytes ticket =
-            match Tezos.create_ticket (Bytes.pack payload) amount with
+        let sr_ticket : Types.payload ticket =
+            match Tezos.create_ticket (payload) amount with
             | None -> failwith "TICKET_CREATION_FAILED"
             | Some t -> t in
         let sender = Tezos.get_sender () in
         // TODO: make Utility.get_sender_contract() function
-        let sender_contract: bytes ticket contract =
+        let sender_contract: Types.payload ticket contract =
             match Tezos.get_contract_opt sender with
             | None -> failwith "FAILED_TO_GET_TICKET_ENTRYPOINT"
             | Some c -> c in
@@ -158,8 +144,8 @@ module Ticketer = struct
         let ticket_transfer_op = Tezos.transaction sr_ticket 0mutez sender_contract in
         [token_transfer_op; ticket_transfer_op], store
 
-    [@entry] let release (sr_ticket, destination : (bytes ticket) * address) (store : storage) : return =
-        let (ticketer, (payload_bytes, amount)), _ = Tezos.read_ticket sr_ticket in
+    [@entry] let release (sr_ticket, destination : (Types.payload ticket) * address) (store : storage) : return =
+        let (ticketer, (payload, amount)), _ = Tezos.read_ticket sr_ticket in
         let _ = if ticketer <> Tezos.get_self_address () then failwith "UNAUTHORIZED TICKETER" else unit in
         (*
         let payload =
@@ -167,7 +153,7 @@ module Ticketer = struct
             | None -> failwith "PAYLOAD_UNPACK_FAIL"
             | Some p -> p in
         *)
-        let token = Token.from_payload payload_bytes in
+        let token = Token.from_payload payload in
         let self = Tezos.get_self_address () in
         let transfer_op = Token.get_transfer_op token amount self destination in
         [transfer_op], store

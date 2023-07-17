@@ -1,5 +1,5 @@
 @startuml
-title Bridge FA2 or FA1.2 tokens to L2 via Ticketer\nbatch of three operations
+title Bridge FA2 or FA1.2 tokens to L2 via Ticketer\nvia Proxy, batch of 4 operations
 actor       User          as User
 participant FAToken [
     =FA Token
@@ -7,12 +7,12 @@ participant FAToken [
 participant Ticketer [
     =Ticketer
 ]
+participant Proxy [
+    =Proxy
+]
 participant Rollup [
     =Rollup
 ]
-
-note over Ticketer : **storage:**\nrollup_address
-/ note over Rollup : **storage:**
 
 User -> FAToken ++ : approve
 FAToken --> User --
@@ -24,14 +24,21 @@ FAToken --> Ticketer --
 note over Ticketer : convert token\nmetadata to payload
 
 Ticketer -> "L1 Ticket" as L1Ticket ** : new ticket
-note over L1Ticket : **new ticket**\n\nticketer: Ticketer\nowner: User\namount: nat\npayload: bytes
-Ticketer -> Rollup ++ : bridge ticket
-note over Rollup : ticket: Ticket\nowner: User
-note over L1Ticket : **transfer ticket**\n\nticketer: Ticketer\nowner: User\namount: nat\nto: Rollup
+note over L1Ticket : **new ticket**\n\nticketer: Ticketer\nowner: User\namount: nat\npayload: pair nat bytes
+L1Ticket --> User
+deactivate Ticketer
+User -> Proxy ++ : set
+note over User : prepares **routing_data**:\n  data: bytes\n  refund_address: address\n  info: map string bytes
+note over Proxy : data: routing_data\nreceiver: Rollup
+Proxy --> User --
+
+User -> Proxy ++ : transfer ticket
+Proxy -> Rollup ++ : transfer ticket\nwith routing data
+note over L1Ticket : **transfer ticket**\n\nticketer: Ticketer\nowner: User\namount: nat\nto: Rollup\n\nwith **routing_data**:\n\ndata: bytes\nrefund_address: User\ninfo: map string bytes
 
 Rollup -> "L2 Ticket" as L2Ticket **
 note over L2Ticket : **new ticket**
-Rollup --> Ticketer --
-Ticketer --> User --
+Rollup --> Proxy --
+Proxy --> User --
 
 @enduml

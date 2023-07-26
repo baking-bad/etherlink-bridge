@@ -1,6 +1,7 @@
 #import "./common/tokens/index.mligo" "Token"
 #import "./common/types.mligo" "Types"
 #import "./common/errors.mligo" "Errors"
+#import "./common/utility.mligo" "Utility"
 
 
 module Ticketer = struct
@@ -36,17 +37,9 @@ module Ticketer = struct
             // TODO: add extra_metadata if there is any info about token
             token_info = Bytes.pack (Token.make_token_info token);
         } in
-        // TODO: make Utility.create_ticket(payload) function
-        let sr_ticket : Types.payload ticket =
-            match Tezos.create_ticket (payload) amount with
-            | None -> failwith Errors.ticket_creation_failed
-            | Some t -> t in
+        let sr_ticket = Utility.create_ticket (payload, amount) in
         let sender = Tezos.get_sender () in
-        // TODO: make Utility.get_sender_contract() function
-        let sender_contract: Types.payload ticket contract =
-            match Tezos.get_contract_opt sender with
-            | None -> failwith Errors.failed_to_get_ticket_entrypoint
-            | Some c -> c in
+        let sender_contract = Utility.get_ticket_entrypoint (sender) in
         let self = Tezos.get_self_address () in
         let token_transfer_op = Token.get_transfer_op token amount sender self in
         let ticket_transfer_op = Tezos.transaction sr_ticket 0mutez sender_contract in
@@ -54,7 +47,7 @@ module Ticketer = struct
 
     [@entry] let release (sr_ticket, destination : (Types.payload ticket) * address) (store : storage) : return =
         let (ticketer, (payload, amount)), _ = Tezos.read_ticket sr_ticket in
-        let _ = if ticketer <> Tezos.get_self_address () then failwith Errors.unauthorized_ticketer else unit in
+        let _ = Utility.assert_address_is_self ticketer in
         let token =
             match Big_map.find_opt payload.token_id store.tokens with
             | None -> failwith Errors.token_not_found

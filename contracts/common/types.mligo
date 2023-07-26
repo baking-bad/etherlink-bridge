@@ -12,3 +12,5 @@ type routing_data = {
     refund_address : address;
     info : routing_info;
 }
+
+type ticket_t = payload ticket

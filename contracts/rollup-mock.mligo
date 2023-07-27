@@ -3,11 +3,9 @@
 #import "./common/utility.mligo" "Utility"
 
 
-// TODO: find a good name, RollupMock?
-module Locker = struct
+module RollupMock = struct
     (* This is helper contract used to lock/release tickets in the same
         way Rollup would do *)
-
 
     type ticket_id_t = address * Types.payload
     type message_t = {

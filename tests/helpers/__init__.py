@@ -1,6 +1,6 @@
 from tests.helpers.ticketer import Ticketer
 from tests.helpers.proxy import Proxy
-from tests.helpers.locker import Locker
+from tests.helpers.rollup_mock import RollupMock
 from tests.helpers.tokens.fa2 import FA2
 
 
@@ -8,6 +8,6 @@ from tests.helpers.tokens.fa2 import FA2
 __all__ = [
     'Ticketer',
     'Proxy',
-    'Locker',
+    'RollupMock',
     'FA2',
 ]

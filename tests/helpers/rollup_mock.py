@@ -4,7 +4,7 @@ from tests.utility import make_filename_from_build_name
 from pytezos.operation.group import OperationGroup
 
 
-class Locker(ContractHelper):
+class RollupMock(ContractHelper):
     default_storage = {
         'tickets': {},
         'messages': {},
@@ -15,7 +15,7 @@ class Locker(ContractHelper):
     def originate_default(cls, client: PyTezosClient) -> OperationGroup:
         """Deploys Locker with empty storage"""
 
-        filename = make_filename_from_build_name('locker')
+        filename = make_filename_from_build_name('rollup-mock')
         return cls.originate_from_file(filename, client, cls.default_storage)
 
     # TODO: consider improving this generic list type

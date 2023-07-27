@@ -1,6 +1,6 @@
 from pytezos.client import PyTezosClient
 from pytezos.sandbox.node import SandboxedNodeTestCase
-from tests.helpers import Ticketer, Proxy, Locker, FA2
+from tests.helpers import Ticketer, Proxy, RollupMock, FA2
 from tests.utility import pkh
 
 
@@ -27,9 +27,9 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.bake_block()
         self.proxy = Proxy.create_from_opg(self.manager, proxy_opg)
 
-        locker_opg = Locker.originate_default(self.manager).send()
+        rollup_mock_opg = RollupMock.originate_default(self.manager).send()
         self.bake_block()
-        self.locker = Locker.create_from_opg(self.manager, locker_opg)
+        self.rollup_mock = RollupMock.create_from_opg(self.manager, rollup_mock_opg)
 
         # Tokens deployment:
         token_balances = {
@@ -37,7 +37,7 @@ class BaseTestCase(SandboxedNodeTestCase):
             pkh(self.manager): 1000,
             self.ticketer.address: 0,
             self.proxy.address: 0,
-            self.locker.address: 0,
+            self.rollup_mock.address: 0,
         }
 
         fa2_opg = FA2.originate(self.manager, token_balances).send()

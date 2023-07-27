@@ -51,7 +51,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
             self.ticketer.deposit(self.fa2, 100),
             self.proxy.set({
                 'data': routing_data,
-                'receiver': self.locker.address,
+                'receiver': self.rollup_mock.address,
             }),
             self.manager.transfer_ticket(**ticket_params),
         ).send()

@@ -1,9 +1,13 @@
 module TicketStorage = struct
     (* This is contract example that can release tickets stored in bigmap *)
 
+    type tickets_t = (nat, string ticket) big_map
+    type messages_t = (nat, string) big_map
+
+    // type storage_t = tickets_t * messages_t
     type storage_t = {
-        tickets : (nat, string ticket) big_map;
-        messages : (nat, string) big_map;
+        tickets : tickets_t;
+        messages : messages_t;
     }
     type return_t = operation list * storage_t
 
@@ -11,7 +15,8 @@ module TicketStorage = struct
     // -- not implemented
 
     [@entry] let release (ticket_id : nat) (store : storage_t) : return_t =
-        let ticket_opt, updated_tickets = Big_map.get_and_update ticket_id None store.tickets in
+        let { tickets; messages } = store in
+        let ticket_opt, updated_tickets = Big_map.get_and_update ticket_id None tickets in
         let ticket = Option.unopt ticket_opt in
         let sender = Tezos.get_sender () in
         let receiver_contract_opt = Tezos.get_contract_opt sender in
@@ -25,6 +30,9 @@ module TicketStorage = struct
         // [ticket_transfer_op], {tickets = updated_tickets; messages = store.messages}
 
         // Even this fails:
-        [ticket_transfer_op], store
-end
+        // [ticket_transfer_op], store
 
+        // [ticket_transfer_op], (updated_tickets, messages)
+        let updated_storage = {tickets = updated_tickets; messages = messages} in
+        [ticket_transfer_op], updated_storage
+end

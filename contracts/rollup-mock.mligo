@@ -31,9 +31,9 @@ module RollupMock = struct
         (* This entrypoint used to emulate L1 rollup entrypoint used to
             deposit tickets *)
         let { tickets; messages; next_id } = store in
-        let new_ticket, routing_data = ticket_with_data in
-        let (ticketer, (payload, amount)), new_ticket_readed =
-            Tezos.read_ticket new_ticket in
+        let { ticket; routing_data } = ticket_with_data in
+        let (ticketer, (payload, amount)), ticket_readed =
+            Tezos.read_ticket ticket in
         let ticket_id = (ticketer, payload) in
 
         // TODO: Utilities.merge_tickets(new_ticket, tickets)
@@ -43,9 +43,9 @@ module RollupMock = struct
         let comb_ticket : Types.ticket_t = match stored_ticket_opt with
             | Some stored_ticket ->
                 let joined_ticket_opt =
-                    Tezos.join_tickets (new_ticket_readed, stored_ticket) in
+                    Tezos.join_tickets (ticket_readed, stored_ticket) in
                 Option.unopt joined_ticket_opt
-            | None -> new_ticket_readed in
+            | None -> ticket_readed in
         let updated_tickets =
             Big_map.update ticket_id (Some comb_ticket) updated_tickets in
 

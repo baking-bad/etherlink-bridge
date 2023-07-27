@@ -36,8 +36,10 @@ module Proxy = struct
             match Tezos.get_entrypoint_opt "%save" ctx.receiver with
             | None -> failwith Errors.failed_to_get_ticket_entrypoint
             | Some c -> c in
-        let ticket_with_data : Types.ticket_with_data_t =
-            some_ticket, ctx.data in
+        let ticket_with_data : Types.ticket_with_data_t = {
+            ticket = some_ticket;
+            routing_data = ctx.data;
+        } in
         let op = Tezos.transaction ticket_with_data 0mutez receiver_contract in
         [op], store
 end

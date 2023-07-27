@@ -15,11 +15,7 @@ type routing_data = [@layout:comb] {
 
 type ticket_t = payload ticket
 
-(*
-// TODO:
-type ticket_with_data_t = {
-    string_ticket: Types.ticket_t;
-    routing_data: Types.routing_data;
+type ticket_with_data_t = [@layout:comb] {
+    ticket: ticket_t;
+    routing_data: routing_data;
 }
-*)
-type ticket_with_data_t = ticket_t * routing_data

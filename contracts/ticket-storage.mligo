@@ -19,6 +19,12 @@ module TicketStorage = struct
         let ticket_transfer_op = Tezos.transaction ticket 0mutez receiver_contract in
 
         // The following line fails to compile with ticket DUP error:
-        [ticket_transfer_op], {store with tickets = updated_tickets}
+        // [ticket_transfer_op], {store with tickets = updated_tickets}
+
+        // This fails too:
+        // [ticket_transfer_op], {tickets = updated_tickets; messages = store.messages}
+
+        // Even this fails:
+        [ticket_transfer_op], store
 end
 

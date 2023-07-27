@@ -8,16 +8,7 @@ module Locker = struct
     (* This is helper contract used to lock/release tickets in the same
         way Rollup would do *)
 
-    (*
-    // NOTE: the following record with ticket fails to be compiled without
-    //       ticket duplications
-    type ticket_with_data_t = {
-        string_ticket: Types.ticket_t;
-        routing_data: Types.routing_data;
-    }
-    *)
 
-    type ticket_with_data_t = Types.ticket_t * Types.routing_data
     type ticket_id_t = address * Types.payload
     type message_t = {
         ticket_id : ticket_id_t;
@@ -25,40 +16,61 @@ module Locker = struct
         receiver : address;
     }
 
+    type tickets_t = (ticket_id_t, Types.ticket_t) big_map
+    type messages_t = (nat, message_t) big_map
+    type next_id_t = nat
+
     type storage_t = {
-        tickets : (ticket_id_t, Types.ticket_t) big_map;
-        outbox : (nat, message_t) big_map;
-        next_id : nat;
+        tickets : tickets_t;
+        messages : messages_t;
+        next_id : next_id_t;
     }
     type return_t = operation list * storage_t
 
-    // TODO: this should be similar to L1 rollup entrypoint used to deposit tickets
-    // TODO: consider name it `deposit`?
+    // TODO: consider rename to `deposit`?
     // TODO: mint `L2` ticket and record relations between this `L2` ticket and `L1` ticket
-    [@entry] let save (ticket_with_data : ticket_with_data_t) (store : storage_t) : return_t =
-        let added_ticket, _ = ticket_with_data in
-        let (ticketer, (payload, amount)), new_ticket = Tezos.read_ticket added_ticket in
+    [@entry] let save (ticket_with_data : Types.ticket_with_data_t) (store : storage_t) : return_t =
+        (* This entrypoint used to emulate L1 rollup entrypoint used to
+            deposit tickets *)
+        let { tickets; messages; next_id } = store in
+        let new_ticket, routing_data = ticket_with_data in
+        let (ticketer, (payload, amount)), new_ticket_readed =
+            Tezos.read_ticket new_ticket in
         let ticket_id = (ticketer, payload) in
+
+        // TODO: Utilities.merge_tickets(new_ticket, tickets)
         // join tickets if contract already has one with the same payload:
-        let stored_ticket_opt = Big_map.find_opt ticket_id store.tickets in
+        let stored_ticket_opt, updated_tickets =
+            Big_map.get_and_update ticket_id None tickets in
         let comb_ticket : Types.ticket_t = match stored_ticket_opt with
             | Some stored_ticket ->
-                let joined_ticket_opt = Tezos.join_tickets (new_ticket, stored_ticket) in
+                let joined_ticket_opt =
+                    Tezos.join_tickets (new_ticket_readed, stored_ticket) in
                 Option.unopt joined_ticket_opt
-            | None -> new_ticket in
-        let new_tickets = Big_map.update ticket_id (Some comb_ticket) store.tickets in
+            | None -> new_ticket_readed in
+        let updated_tickets =
+            Big_map.update ticket_id (Some comb_ticket) updated_tickets in
 
         let l2_ticket = Utility.create_ticket (payload, amount) in
-        let sender = Tezos.get_sender () in
-        let sender_contract = Utility.get_ticket_entrypoint (sender) in
-        let ticket_transfer_op = Tezos.transaction l2_ticket 0mutez sender_contract in
-        [], { store with tickets = new_tickets }
-        // TODO: mint L2 ticket using routing data (or drop it and just use Tezos.sender)
+        let receiver_opt = Bytes.unpack routing_data.data in
+        let receiver = Option.unopt receiver_opt in
+        let receiver_contract = Utility.get_ticket_entrypoint (receiver) in
+        let ticket_transfer_op =
+            Tezos.transaction l2_ticket 0mutez receiver_contract in
+        let updated_storage = {
+            tickets = updated_tickets;
+            messages = messages;
+            next_id = next_id;
+        } in
+        [ticket_transfer_op], updated_storage
 
     // TODO: there should be `L2` entrypoint to `burn` ticket with some routing info
     // and allow anyone to release it on `L1` then
     // consider name: l2_burn?
     [@entry] let l2_burn (burn_ticket : Types.ticket_t) (store : storage_t) : return_t =
+        (* This entrypoint used to emulate L2 rollup entrypoint used to
+            burn L2 tickets and unlock L1 tickets *)
+        let { tickets; messages; next_id } = store in
         let (ticketer, (payload, amount)), _ = Tezos.read_ticket burn_ticket in
         let _ = Utility.assert_address_is_self ticketer in
         let new_message = {
@@ -67,27 +79,32 @@ module Locker = struct
             receiver = Tezos.get_sender ();
         } in
         let updated_store = {
-            store with
-            outbox = Big_map.update store.next_id (Some new_message) store.outbox;
-            next_id = store.next_id + 1n;
+            tickets = tickets;
+            messages = Big_map.update next_id (Some new_message) messages;
+            next_id = next_id + 1n;
         } in
         [], updated_store
 
-    // TODO: this should be similar to L1 rollup entrypoint that processes outbox message
-    // parameter: `outbox_message_id`?
     [@entry] let release (message_id : nat) (store : storage_t) : return_t =
-        (* Releases ticket by message_id *)
-        let message_opt = Big_map.find_opt message_id store.outbox in
+        (* Releases ticket by message_id, this entrypoint emulates L1 rollup
+            entrypoint which processes outbox L2->L1 transfer ticket message *)
+        let { tickets; messages; next_id } = store in
+        let message_opt, updated_messages =
+            Big_map.get_and_update message_id None messages in
         let message = Option.unopt message_opt in
-        let l1_ticket_opt = Big_map.find_opt message.ticket_id store.tickets in
+        let l1_ticket_opt, updated_tickets =
+            Big_map.get_and_update message.ticket_id None tickets in
         let l1_ticket = Option.unopt l1_ticket_opt in
-        let (_, (_, amount)), _ = Tezos.read_ticket l1_ticket in
+        let (_, (_, amount)), l1_ticket_readed = Tezos.read_ticket l1_ticket in
+
         // TODO: split ticket if amount is greater than message.amount
         let receiver_contract = Utility.get_ticket_entrypoint message.receiver in
-        let ticket_transfer_op = Tezos.transaction l1_ticket 0mutez receiver_contract in
+        let ticket_transfer_op = Tezos.transaction l1_ticket_readed 0mutez receiver_contract in
+
         let updated_store = {
-            store with
-            outbox = Big_map.remove message_id store.outbox;
+            tickets = updated_tickets;
+            messages = updated_messages;
+            next_id = next_id
         } in
         [ticket_transfer_op], updated_store
 end

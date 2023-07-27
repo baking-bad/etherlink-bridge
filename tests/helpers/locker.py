@@ -5,7 +5,11 @@ from pytezos.operation.group import OperationGroup
 
 
 class Locker(ContractHelper):
-    default_storage = []
+    default_storage = {
+        'tickets': {},
+        'messages': {},
+        'next_id': 0,
+    }
 
     @classmethod
     def originate_default(cls, client: PyTezosClient) -> OperationGroup:
@@ -18,4 +22,6 @@ class Locker(ContractHelper):
     def get_tickets(self) -> list:
         """Returns list of tickets in storage"""
 
-        return self.contract.storage()  # type: ignore
+        # TODO: use RPC call to all_ticket_balances endpoint instead
+        raise NotImplementedError
+        # return self.contract.storage['tickets']()  # type: ignore

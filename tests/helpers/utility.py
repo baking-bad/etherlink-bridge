@@ -38,7 +38,7 @@ def get_address_from_op(op: dict) -> str:
 
 
 def make_filename_from_build_name(name: str) -> str:
-    build_dir = join(dirname(__file__), '..', 'build')
+    build_dir = join(dirname(__file__), '..', '..', 'build')
     return join(build_dir, name + '.tz')
 
 
@@ -61,12 +61,14 @@ def to_micheline(type_expression: str) -> dict:
 
     return michelson_to_micheline(type_expression)  # type: ignore
 
+
 def to_michelson_type(object: Any, type_expression: str) -> MichelsonType:
     """ Converts Python object to Michelson type using given type expression """
 
     micheline_expression = to_micheline(type_expression)
     michelson_type = MichelsonType.match(micheline_expression)
     return michelson_type.from_python_object(object)
+
 
 def pack(object: Any, type_expression: str) -> bytes:
     """ Packs Python object to bytes using given type expression """

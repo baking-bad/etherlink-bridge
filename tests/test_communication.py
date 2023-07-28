@@ -1,6 +1,6 @@
 from tests.base import BaseTestCase
-from tests.helpers.proxy import RoutingData
-from tests.utility import (
+from tests.helpers.contracts.proxy import RoutingData
+from tests.helpers.utility import (
     pkh,
     pack,
 )

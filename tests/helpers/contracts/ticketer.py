@@ -1,6 +1,6 @@
-from tests.helpers.contract import ContractHelper
+from tests.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
-from tests.utility import (
+from tests.helpers.utility import (
     make_filename_from_build_name,
     to_michelson_type,
     to_micheline,
@@ -8,7 +8,7 @@ from tests.utility import (
 )
 from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
-from tests.helpers.tokens.token import TokenHelper
+from tests.helpers.contracts.tokens.token import TokenHelper
 from typing import Any
 
 

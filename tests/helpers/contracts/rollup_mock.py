@@ -1,6 +1,6 @@
-from tests.helpers.contract import ContractHelper
+from tests.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
-from tests.utility import make_filename_from_build_name
+from tests.helpers.utility import make_filename_from_build_name
 from pytezos.operation.group import OperationGroup
 from pytezos.rpc.query import RpcQuery
 

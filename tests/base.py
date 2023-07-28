@@ -1,7 +1,7 @@
 from pytezos.client import PyTezosClient
 from pytezos.sandbox.node import SandboxedNodeTestCase
-from tests.helpers import Ticketer, Proxy, RollupMock, FA2
-from tests.utility import pkh
+from tests.helpers.contracts import Ticketer, Proxy, RollupMock, FA2
+from tests.helpers.utility import pkh
 
 
 class BaseTestCase(SandboxedNodeTestCase):

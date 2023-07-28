@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from tests.helpers.contract import ContractHelper
+from tests.helpers.contracts.contract import ContractHelper
 from typing import Union, Tuple
 from pytezos.contract.call import ContractCall
-from tests.utility import pack
+from tests.helpers.utility import pack
 
 
 FA2AsDictType = dict[str, Union[str, Tuple[str, int]]]

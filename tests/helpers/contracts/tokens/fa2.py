@@ -1,8 +1,8 @@
-from tests.helpers.tokens.token import (
+from tests.helpers.contracts.tokens.token import (
     TokenHelper,
     FA2AsDictType,
 )
-from tests.utility import (
+from tests.helpers.utility import (
     DEFAULT_ADDRESS,
     pkh,
     pack,
@@ -40,7 +40,7 @@ class FA2(TokenHelper):
         """Deploys FA2 token with empty storage"""
 
         # TODO: move TOKENS_DIR to config / constants.py?
-        tokens_dir = join(dirname(__file__), '..', '..', 'tokens')
+        tokens_dir = join(dirname(__file__), '..', '..', '..', 'tokens')
         filename = join(tokens_dir, 'fa2-fxhash.tz')
         storage = cls.default_storage.copy()
         storage['ledger'] = {

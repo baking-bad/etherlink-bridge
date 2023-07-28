@@ -18,7 +18,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
 
         # First we check that ticketer has no tickets and no tokens:
         assert self.fa2.get_balance(self.ticketer.address) == 0
-        # TODO: assert len(self.locker.get_tickets()) == 0
+        assert len(self.rollup_mock.get_tickets()) == 0
 
         # Then we configure ticket transfer params and routing info:
         ticket_params = self.ticketer.make_ticket_transfer_params(
@@ -60,9 +60,10 @@ class TicketerCommunicationTestCase(BaseTestCase):
 
         # Finally we check that locker (Rollup) has tickets and ticketer has tokens:
         # TODO: improve this check and make sure ticket payload and amount is correct
-        # TODO: assert len(self.locker.get_tickets()) == 1
+        assert len(self.rollup_mock.get_tickets()) == 1
         assert self.fa2.get_balance(self.ticketer.address) == 100
         # TODO: check tickets count in locker and manager addresses
+        # TODO: check that L2 ticket created
 
         # TODO: release ticket
 

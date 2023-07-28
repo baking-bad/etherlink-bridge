@@ -5,6 +5,7 @@ from tests.helpers.utility import (
     pack,
 )
 from typing import cast
+from tests.helpers.tickets import get_all_ticket_balances_by_ticketer
 
 
 class TicketerCommunicationTestCase(BaseTestCase):
@@ -58,13 +59,49 @@ class TicketerCommunicationTestCase(BaseTestCase):
 
         self.bake_block()
 
-        # Finally we check that locker (Rollup) has tickets and ticketer has tokens:
-        # TODO: improve this check and make sure ticket payload and amount is correct
-        assert len(self.rollup_mock.get_tickets()) == 1
-        assert self.fa2.get_balance(self.ticketer.address) == 100
-        # TODO: check tickets count in locker and manager addresses
-        # TODO: check that L2 ticket created
+        # Finally we check:
+        # 1. That Rollup has L1 tickets:
+        rollup_tickets = self.rollup_mock.get_tickets()
+        assert len(rollup_tickets) == 1
+        ticket = rollup_tickets[0]
+        self.assertEqual(ticket['ticketer'], self.ticketer.address)
+        self.assertEqual(ticket['amount'], 25)
 
-        # TODO: release ticket
+        # 2. Ticketer has FA2 tokens:
+        assert self.fa2.get_balance(self.ticketer.address) == 100
+
+        # 3. Manager has L1 and L2 tickets:
+        manager_l1_tickets = get_all_ticket_balances_by_ticketer(
+            self.client,
+            pkh(self.manager),
+            self.ticketer.address
+        )
+        assert len(manager_l1_tickets) == 1
+        manager_l1_ticket = manager_l1_tickets[0]
+        self.assertEqual(manager_l1_ticket['amount'], 75)
+
+        # 4. Manager has L2 tickets:
+
+        # TODO: this query fails with "not found", looks like this query is
+        # not supported for implicit accounts, need to investigate more
+        # example which works: https://rpc.tzkt.io/mainnet/chains/main/blocks/BMCUaAr3P4aXrMSNRmspxqEErzuPhmpWBuenGsR3cmZwW1V2Pzq/context/contracts/KT1Hkg5qeNhfwpKW4fXvq7HGZB9z2EnmCCA9/all_ticket_balances
+        # and this is 404: https://rpc.tzkt.io/mainnet/chains/main/blocks/BMCUaAr3P4aXrMSNRmspxqEErzuPhmpWBuenGsR3cmZwW1V2Pzq/context/contracts/tz1UBZUkXpKGhYsP5KtzDNqLLchwF4uHrGjw/all_ticket_balances
+
+        manager_l2_tickets = get_all_ticket_balances_by_ticketer(
+            self.client,
+            pkh(self.manager),
+            self.rollup_mock.address
+        )
+        assert len(manager_l2_tickets) == 1
+        manager_l2_ticket = manager_l2_tickets[0]
+        self.assertEqual(manager_l2_ticket['amount'], 25)
+
+        # TODO: transfer some L2 tickets to another address
+        # TODO: burn some L2 tickets to get L1 tickets back on another address
+        # TODO: unpack L1 tickets to get back FA2 tokens
 
     # TODO: test_should_return_ticket_to_sender_if_wrong_payload
+    # TODO: test_minted_ticket_should_have_expected_content_and_type
+
+    # TODO: ? multiple users add same tickets to rollup mock
+    # TODO: ? different tickets from one ticketer

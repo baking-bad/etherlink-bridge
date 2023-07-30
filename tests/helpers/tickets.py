@@ -1,6 +1,10 @@
 from pytezos.client import PyTezosClient
 from pytezos.rpc.query import RpcQuery
 from typing import TypedDict
+from tests.helpers.contracts.tokens.token import TokenHelper
+from tests.helpers.utility import (
+    to_michelson_type,
+)
 
 
 class Ticket(TypedDict):
@@ -71,15 +75,21 @@ def get_ticket_balance(
     return int(result)
 
 
+# TODO: consider moving this function to the Ticketer and RollupMock helpers?
+#       (maybe create some intermediate class that supports this logic)
 def create_expected_ticket(
         ticketer: str,
         token_id: int,
-        payload: str,
+        token: TokenHelper,
         amount: int = 0,
     ) -> Ticket:
 
     """ Creates ticket that can be created by Ticketer and RollupMock
-        for given ticketer, token_id and amount """
+        for given ticketer, token_id and amount
+        ticketer: address of the ticketer contract
+        token_id: id of the ticket inside ticketer contract
+        token: L1 token used to create ticket payload
+    """
 
     content_type = {
         'prim': 'pair',
@@ -89,13 +99,17 @@ def create_expected_ticket(
         ]
     }
 
-    content = {
-        'prim': 'Pair',
-        'args': [
-            {'int': str(token_id)},
-            {'bytes': payload}
-        ]
+    ticket_contents = {
+        'token_id': token_id,
+        'token_info': token.make_token_info_bytes()
     }
+
+    content = to_michelson_type(
+        ticket_contents,
+        # TODO: this ticket type expression is duplicated, consider
+        #      moving it to some common place (?)
+        'pair (nat %token_id) (bytes %token_info)',
+    ).to_micheline_value()
 
     return {
         'ticketer': ticketer,

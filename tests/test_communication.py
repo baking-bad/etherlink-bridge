@@ -11,10 +11,6 @@ from tests.helpers.tickets import (
 )
 
 
-# Packed payload for the ticket created in the test below:
-PACKED_PAYLOAD = '05020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a0000001601d7c501ea0ec67b512caf24564077c1dceb105ac20007040100000008746f6b656e5f69640a000000030500000704010000000a746f6b656e5f747970650a00000009050100000003464132'
-
-
 class TicketerCommunicationTestCase(BaseTestCase):
     def test_wrap_and_send_ticket_using_proxy(self) -> None:
         # Bridging FA2 / FA1.2 token includes next steps:
@@ -64,7 +60,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         expected_l1_ticket = create_expected_ticket(
             ticketer=self.ticketer.address,
             token_id=0,
-            payload=PACKED_PAYLOAD,
+            token=self.fa2,
         )
         balance = get_ticket_balance(
             self.client,
@@ -88,7 +84,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         expected_l2_ticket = create_expected_ticket(
             ticketer=self.rollup_mock.address,
             token_id=0,
-            payload=PACKED_PAYLOAD,
+            token=self.fa2,
         )
         balance = get_ticket_balance(
             self.client,

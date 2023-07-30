@@ -1,10 +1,9 @@
 from tests.base import BaseTestCase
-from tests.helpers.contracts.proxy import RoutingData
+from tests.helpers.routing_data import create_routing_data
 from tests.helpers.utility import (
     pkh,
     pack,
 )
-from typing import cast
 from tests.helpers.tickets import (
     get_all_ticket_balances_by_ticketer,
     get_ticket_balance,
@@ -32,19 +31,13 @@ class TicketerCommunicationTestCase(BaseTestCase):
             entrypoint='send_ticket',
         )
 
-        # TODO: consider creating special helper for RoutingData
         # Here we create routing data for the proxy contract that will
         # create "L2" ticket in the Rollup (Locker) contract for manager:
         manager_address = pkh(self.manager)
-        routing_data = cast(RoutingData, {
-            'data': pack(manager_address, 'address'),
-            'refund_address': manager_address,
-            'info': {
-                'routing_type': pack('to_l2_address', 'string'),
-                'data_type': pack('address', 'string'),
-                'version': pack('0.1.0', 'string'),
-            }
-        })
+        routing_data = create_routing_data(
+            refund_address=manager_address,
+            l2_address=manager_address,
+        )
 
         # Then in one bulk we allow ticketer to transfer tokens,
         # deposit tokens to the ticketer, set routing info to the proxy
@@ -62,8 +55,8 @@ class TicketerCommunicationTestCase(BaseTestCase):
 
         self.bake_block()
 
-        # Finally we check:
-        # 1. That Rollup has L1 tickets:
+        # Checking operations results:
+        # 1. Rollup has L1 tickets:
         rollup_tickets = self.rollup_mock.get_tickets()
         assert len(rollup_tickets) == 1
         ticket = rollup_tickets[0]
@@ -73,7 +66,8 @@ class TicketerCommunicationTestCase(BaseTestCase):
         # 2. Ticketer has FA2 tokens:
         assert self.fa2.get_balance(self.ticketer.address) == 100
 
-        # 3. Manager has L2 tickets:
+        # 3. Manager has L1 tickets:
+        # TODO: add some test CONSTs with ticket CONTENT_TYPE and CONTENT
         l1_tickets_amount = get_ticket_balance(
             self.client,
             pkh(self.manager),
@@ -93,7 +87,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         )
         assert l2_tickets_amount == 25
 
-        # TODO: transfer some L2 tickets to another address
+        # Transfer some L2 tickets to another address
         # TODO: burn some L2 tickets to get L1 tickets back on another address
         # TODO: unpack L1 tickets to get back FA2 tokens
 

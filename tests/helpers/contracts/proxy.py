@@ -5,16 +5,10 @@ from tests.helpers.utility import (
     make_filename_from_build_name,
     pack,
 )
+from tests.helpers.routing_data import RoutingData
 from typing import TypedDict
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
-
-
-# TODO: consider moving this shared type somewhere else
-class RoutingData(TypedDict):
-    data: bytes
-    refund_address: str
-    info: dict[str, bytes]
 
 
 class SetParams(TypedDict):

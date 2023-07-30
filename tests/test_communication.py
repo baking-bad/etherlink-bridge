@@ -29,7 +29,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         assert len(self.rollup_mock.get_tickets()) == 0
 
         # Then we configure ticket transfer params and routing info:
-        ticket_params = self.ticketer.make_ticket_transfer_params(
+        transfer_params = self.ticketer.make_ticket_transfer_params(
             token=self.fa2,
             amount=25,
             destination=self.proxy.address,
@@ -54,7 +54,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
                 'data': routing_data,
                 'receiver': self.rollup_mock.address,
             }),
-            self.alice.transfer_ticket(**ticket_params),
+            self.alice.transfer_ticket(**transfer_params),
         ).send()
 
         self.bake_block()
@@ -97,8 +97,44 @@ class TicketerCommunicationTestCase(BaseTestCase):
         )
         self.assertEqual(balance, 25)
 
-        # Transfer some L2 tickets to another address
-        # TODO: burn some L2 tickets to get L1 tickets back on another address
+        # Transfer some L2 tickets to Bob's address
+        self.alice.transfer_ticket(
+            ticket_contents=expected_l2_ticket['content'],
+            ticket_ty=expected_l2_ticket['content_type'],
+            ticket_ticketer=expected_l2_ticket['ticketer'],
+            ticket_amount=10,
+            destination=pkh(self.bob),
+        ).send()
+        self.bake_block()
+
+        # Bob burns some L2 tickets to get L1 tickets back:
+        self.bob.transfer_ticket(
+            ticket_contents=expected_l2_ticket['content'],
+            ticket_ty=expected_l2_ticket['content_type'],
+            ticket_ticketer=expected_l2_ticket['ticketer'],
+            ticket_amount=5,
+            destination=self.rollup_mock.address,
+            entrypoint='l2_burn',
+        ).send()
+        self.bake_block()
+
+        # Checking that L2 burn created outbox message:
+        outbox_message = self.rollup_mock.get_message(0)
+        self.assertEqual(outbox_message['receiver'], pkh(self.bob))
+        self.assertEqual(outbox_message['amount'], 5)
+
+        # Anyone can trigger outbox message:
+        self.rollup_mock.release(0).send()
+        self.bake_block()
+
+        # Bob should have now L1 tickets too:
+        balance = get_ticket_balance(
+            self.client,
+            expected_l1_ticket,
+            pkh(self.bob),
+        )
+        self.assertEqual(balance, 5)
+
         # TODO: unpack L1 tickets to get back FA2 tokens
 
     # TODO: test_should_return_ticket_to_sender_if_wrong_payload

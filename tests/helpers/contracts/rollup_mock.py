@@ -26,3 +26,13 @@ class RollupMock(ContractHelper):
         """Returns list of tickets in storage"""
 
         return get_all_ticket_balances(self.client, self.address)
+
+    def get_message(self, message_id: int = 0) -> dict:
+        """Returns message from storage with given id"""
+
+        return self.contract.storage['messages'][message_id]()
+
+    def release(self, message_id: int = 0) -> OperationGroup:
+        """Releases message with given id"""
+
+        return self.contract.release(message_id)

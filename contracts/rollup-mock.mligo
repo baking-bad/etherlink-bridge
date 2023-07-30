@@ -89,10 +89,10 @@ module RollupMock = struct
         let { tickets; messages; next_id } = store in
         let message_opt, updated_messages =
             Big_map.get_and_update message_id None messages in
-        let message = Option.unopt message_opt in
+        let message = Option.unopt_with_error message_opt Errors.msg_not_found in
         let l1_ticket_opt, updated_tickets =
             Big_map.get_and_update message.ticket_id None tickets in
-        let l1_ticket = Option.unopt l1_ticket_opt in
+        let l1_ticket = Option.unopt_with_error l1_ticket_opt Errors.ticket_not_found in
         let (_, (_, amount)), l1_ticket_readed = Tezos.read_ticket l1_ticket in
 
         // TODO: split ticket if amount is greater than message.amount

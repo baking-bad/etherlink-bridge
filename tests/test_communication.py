@@ -61,40 +61,41 @@ class TicketerCommunicationTestCase(BaseTestCase):
 
         # Checking operations results:
         # 1. Rollup has L1 tickets:
-        rollup_tickets = self.rollup_mock.get_tickets()
-        assert len(rollup_tickets) == 1
-        ticket = rollup_tickets[0]
-        expected_ticket = create_expected_ticket(
+        expected_l1_ticket = create_expected_ticket(
             ticketer=self.ticketer.address,
             token_id=0,
             payload=PACKED_PAYLOAD,
-            amount=25,
         )
-        self.assertDictEqual(ticket, expected_ticket)
+        balance = get_ticket_balance(
+            self.client,
+            expected_l1_ticket,
+            self.rollup_mock.address,
+        )
+        self.assertEqual(balance, 25)
 
         # 2. Ticketer has FA2 tokens:
         assert self.fa2.get_balance(self.ticketer.address) == 100
 
         # 3. Alice has L1 tickets:
-        # TODO: add some test CONSTs with ticket CONTENT_TYPE and CONTENT
-        l1_tickets_amount = get_ticket_balance(
+        balance = get_ticket_balance(
             self.client,
+            expected_l1_ticket,
             pkh(self.alice),
-            self.ticketer.address,
-            ticket['content_type'],
-            ticket['content'],
         )
-        assert l1_tickets_amount == 75
+        self.assertEqual(balance, 75)
 
-        # 4. Manager has L2 tickets:
-        l2_tickets_amount = get_ticket_balance(
-            self.client,
-            pkh(self.alice),
-            self.rollup_mock.address,
-            ticket['content_type'],
-            ticket['content'],
+        # 4. Alice has L2 tickets:
+        expected_l2_ticket = create_expected_ticket(
+            ticketer=self.rollup_mock.address,
+            token_id=0,
+            payload=PACKED_PAYLOAD,
         )
-        assert l2_tickets_amount == 25
+        balance = get_ticket_balance(
+            self.client,
+            expected_l2_ticket,
+            pkh(self.alice),
+        )
+        self.assertEqual(balance, 25)
 
         # Transfer some L2 tickets to another address
         # TODO: burn some L2 tickets to get L1 tickets back on another address

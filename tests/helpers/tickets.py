@@ -50,10 +50,8 @@ def get_all_ticket_balances_by_ticketer(
 
 def get_ticket_balance(
     client: PyTezosClient,
+    ticket: Ticket,
     address: str,
-    ticketer: str,
-    content_type: dict,
-    content: dict,
 ) -> int:
     last_block_hash = client.shell.head.hash()
     query = RpcQuery(
@@ -63,9 +61,9 @@ def get_ticket_balance(
     )
 
     queried_ticket = {
-        'ticketer': ticketer,
-        'content_type': content_type,
-        'content': content,
+        'ticketer': ticket['ticketer'],
+        'content_type': ticket['content_type'],
+        'content': ticket['content'],
     }
 
     # TODO: looks like _post is not the best way to make RPC call

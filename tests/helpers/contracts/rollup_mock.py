@@ -6,6 +6,7 @@ from tests.helpers.tickets import (
     Ticket,
 )
 from pytezos.operation.group import OperationGroup
+from pytezos.contract.call import ContractCall
 
 
 class RollupMock(ContractHelper):
@@ -30,9 +31,11 @@ class RollupMock(ContractHelper):
     def get_message(self, message_id: int = 0) -> dict:
         """Returns message from storage with given id"""
 
-        return self.contract.storage['messages'][message_id]()
+        message = self.contract.storage['messages'][message_id]()
+        assert type(message) is dict
+        return message
 
-    def release(self, message_id: int = 0) -> OperationGroup:
+    def release(self, message_id: int = 0) -> ContractCall:
         """Releases message with given id"""
 
         return self.contract.release(message_id)

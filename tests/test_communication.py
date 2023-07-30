@@ -7,7 +7,12 @@ from tests.helpers.utility import (
 from tests.helpers.tickets import (
     get_all_ticket_balances_by_ticketer,
     get_ticket_balance,
+    create_expected_ticket,
 )
+
+
+# Packed payload for the ticket created in the test below:
+PACKED_PAYLOAD = '05020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a0000001601d7c501ea0ec67b512caf24564077c1dceb105ac20007040100000008746f6b656e5f69640a000000030500000704010000000a746f6b656e5f747970650a00000009050100000003464132'
 
 
 class TicketerCommunicationTestCase(BaseTestCase):
@@ -59,8 +64,13 @@ class TicketerCommunicationTestCase(BaseTestCase):
         rollup_tickets = self.rollup_mock.get_tickets()
         assert len(rollup_tickets) == 1
         ticket = rollup_tickets[0]
-        self.assertEqual(ticket['ticketer'], self.ticketer.address)
-        self.assertEqual(ticket['amount'], 25)
+        expected_ticket = create_expected_ticket(
+            ticketer=self.ticketer.address,
+            token_id=0,
+            payload=PACKED_PAYLOAD,
+            amount=25,
+        )
+        self.assertDictEqual(ticket, expected_ticket)
 
         # 2. Ticketer has FA2 tokens:
         assert self.fa2.get_balance(self.ticketer.address) == 100

@@ -71,3 +71,37 @@ def get_ticket_balance(
     # TODO: looks like _post is not the best way to make RPC call
     result = query._post(json=queried_ticket)  # type: ignore
     return int(result)
+
+
+def create_expected_ticket(
+        ticketer: str,
+        token_id: int,
+        payload: str,
+        amount: int = 0,
+    ) -> Ticket:
+
+    """ Creates ticket that can be created by Ticketer and RollupMock
+        for given ticketer, token_id and amount """
+
+    content_type = {
+        'prim': 'pair',
+        'args': [
+            {'prim': 'nat'},
+            {'prim': 'bytes'}
+        ]
+    }
+
+    content = {
+        'prim': 'Pair',
+        'args': [
+            {'int': str(token_id)},
+            {'bytes': payload}
+        ]
+    }
+
+    return {
+        'ticketer': ticketer,
+        'content_type': content_type,
+        'content': content,
+        'amount': amount,
+    }

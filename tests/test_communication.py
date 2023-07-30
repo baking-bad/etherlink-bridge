@@ -5,7 +5,10 @@ from tests.helpers.utility import (
     pack,
 )
 from typing import cast
-from tests.helpers.tickets import get_all_ticket_balances_by_ticketer
+from tests.helpers.tickets import (
+    get_all_ticket_balances_by_ticketer,
+    get_ticket_balance,
+)
 
 
 class TicketerCommunicationTestCase(BaseTestCase):
@@ -70,31 +73,25 @@ class TicketerCommunicationTestCase(BaseTestCase):
         # 2. Ticketer has FA2 tokens:
         assert self.fa2.get_balance(self.ticketer.address) == 100
 
-        # 3. Manager has L1 and L2 tickets:
-        manager_l1_tickets = get_all_ticket_balances_by_ticketer(
+        # 3. Manager has L2 tickets:
+        l1_tickets_amount = get_ticket_balance(
             self.client,
             pkh(self.manager),
-            self.ticketer.address
+            self.ticketer.address,
+            ticket['content_type'],
+            ticket['content'],
         )
-        assert len(manager_l1_tickets) == 1
-        manager_l1_ticket = manager_l1_tickets[0]
-        self.assertEqual(manager_l1_ticket['amount'], 75)
+        assert l1_tickets_amount == 75
 
         # 4. Manager has L2 tickets:
-
-        # TODO: this query fails with "not found", looks like this query is
-        # not supported for implicit accounts, need to investigate more
-        # example which works: https://rpc.tzkt.io/mainnet/chains/main/blocks/BMCUaAr3P4aXrMSNRmspxqEErzuPhmpWBuenGsR3cmZwW1V2Pzq/context/contracts/KT1Hkg5qeNhfwpKW4fXvq7HGZB9z2EnmCCA9/all_ticket_balances
-        # and this is 404: https://rpc.tzkt.io/mainnet/chains/main/blocks/BMCUaAr3P4aXrMSNRmspxqEErzuPhmpWBuenGsR3cmZwW1V2Pzq/context/contracts/tz1UBZUkXpKGhYsP5KtzDNqLLchwF4uHrGjw/all_ticket_balances
-
-        manager_l2_tickets = get_all_ticket_balances_by_ticketer(
+        l2_tickets_amount = get_ticket_balance(
             self.client,
             pkh(self.manager),
-            self.rollup_mock.address
+            self.rollup_mock.address,
+            ticket['content_type'],
+            ticket['content'],
         )
-        assert len(manager_l2_tickets) == 1
-        manager_l2_ticket = manager_l2_tickets[0]
-        self.assertEqual(manager_l2_ticket['amount'], 25)
+        assert l2_tickets_amount == 25
 
         # TODO: transfer some L2 tickets to another address
         # TODO: burn some L2 tickets to get L1 tickets back on another address

@@ -46,3 +46,28 @@ def get_all_ticket_balances_by_ticketer(
             tickets
         )
     )
+
+
+def get_ticket_balance(
+    client: PyTezosClient,
+    address: str,
+    ticketer: str,
+    content_type: dict,
+    content: dict,
+) -> int:
+    last_block_hash = client.shell.head.hash()
+    query = RpcQuery(
+        node=client.shell.node,
+        path='/chains/{}/blocks/{}/context/contracts/{}/ticket_balance',
+        params=['main', last_block_hash, address]
+    )
+
+    queried_ticket = {
+        'ticketer': ticketer,
+        'content_type': content_type,
+        'content': content,
+    }
+
+    # TODO: looks like _post is not the best way to make RPC call
+    result = query._post(json=queried_ticket)  # type: ignore
+    return int(result)

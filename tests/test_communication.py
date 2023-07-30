@@ -32,25 +32,24 @@ class TicketerCommunicationTestCase(BaseTestCase):
         )
 
         # Here we create routing data for the proxy contract that will
-        # create "L2" ticket in the Rollup (Locker) contract for manager:
-        manager_address = pkh(self.manager)
+        # create "L2" ticket in the Rollup contract for Alice:
         routing_data = create_routing_data(
-            refund_address=manager_address,
-            l2_address=manager_address,
+            refund_address=pkh(self.alice),
+            l2_address=pkh(self.alice),
         )
 
         # Then in one bulk we allow ticketer to transfer tokens,
         # deposit tokens to the ticketer, set routing info to the proxy
         # and transfer ticket to the Rollup (Locker) by sending created ticket
         # to the proxy contract, which will send it to the Rollup with routing info:
-        self.manager.bulk(
-            self.fa2.allow(self.ticketer.address),
-            self.ticketer.deposit(self.fa2, 100),
-            self.proxy.set({
+        self.alice.bulk(
+            self.fa2.using(self.alice).allow(self.ticketer.address),
+            self.ticketer.using(self.alice).deposit(self.fa2, 100),
+            self.proxy.using(self.alice).set({
                 'data': routing_data,
                 'receiver': self.rollup_mock.address,
             }),
-            self.manager.transfer_ticket(**ticket_params),
+            self.alice.transfer_ticket(**ticket_params),
         ).send()
 
         self.bake_block()
@@ -66,11 +65,11 @@ class TicketerCommunicationTestCase(BaseTestCase):
         # 2. Ticketer has FA2 tokens:
         assert self.fa2.get_balance(self.ticketer.address) == 100
 
-        # 3. Manager has L1 tickets:
+        # 3. Alice has L1 tickets:
         # TODO: add some test CONSTs with ticket CONTENT_TYPE and CONTENT
         l1_tickets_amount = get_ticket_balance(
             self.client,
-            pkh(self.manager),
+            pkh(self.alice),
             self.ticketer.address,
             ticket['content_type'],
             ticket['content'],
@@ -80,7 +79,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         # 4. Manager has L2 tickets:
         l2_tickets_amount = get_ticket_balance(
             self.client,
-            pkh(self.manager),
+            pkh(self.alice),
             self.rollup_mock.address,
             ticket['content_type'],
             ticket['content'],

@@ -8,8 +8,11 @@ class BaseTestCase(SandboxedNodeTestCase):
 
     def activate_accs(self) -> None:
         # TODO: consider adding some Account abstraction with `address` property
-        self.user = self.client.using(key='bootstrap1')
-        self.user.reveal()
+        self.alice = self.client.using(key='bootstrap1')
+        self.alice.reveal()
+
+        self.bob = self.client.using(key='bootstrap2')
+        self.bob.reveal()
 
         self.manager = self.client.using(key='bootstrap4')
         self.manager.reveal()
@@ -33,7 +36,8 @@ class BaseTestCase(SandboxedNodeTestCase):
 
         # Tokens deployment:
         token_balances = {
-            pkh(self.user): 1000,
+            pkh(self.alice): 1000,
+            pkh(self.bob): 1000,
             pkh(self.manager): 1000,
             self.ticketer.address: 0,
             self.proxy.address: 0,

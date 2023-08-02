@@ -8,9 +8,8 @@ module RollupMock = struct
         way Rollup would do *)
 
     type ticket_id_t = {
-        ticketer: address;
-        // TODO: consider use payload.tocken_id instead of full payload
-        payload: Types.payload;
+        ticketer : address;
+        token_id : nat;
     }
 
     type message_t = {
@@ -46,7 +45,8 @@ module RollupMock = struct
         let { ticket; routing_data } = ticket_with_data in
         let (ticketer, (payload, amount)), ticket_readed =
             Tezos.read_ticket ticket in
-        let ticket_id = { ticketer; payload } in
+        let token_id = payload.token_id in
+        let ticket_id = { ticketer; token_id } in
 
         // join tickets if contract already has one with the same payload:
         // TODO: Storage.get_or_create_l2_id(ticket_id, next_l2_id, l2_ids)

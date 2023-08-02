@@ -149,7 +149,8 @@ module RollupMock = struct
             | None -> failwith Errors.irreducible_amount in
         let receiver_contract = Utility.get_ticket_entrypoint message.receiver in
         let ticket_transfer_op = Tezos.transaction l1_ticket_send 0mutez receiver_contract in
-        // TODO: save l1_ticket_keep to the storage
+        let updated_tickets =
+            Big_map.update message.ticket_id (Some l1_ticket_keep) updated_tickets in
 
         let updated_store = {
             tickets = updated_tickets;

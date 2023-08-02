@@ -131,6 +131,13 @@ class TicketerCommunicationTestCase(BaseTestCase):
         )
         self.assertEqual(balance, 5)
 
+        # Rollup should have some L2 tickets left:
+        balance = get_ticket_balance(
+            self.client,
+            expected_l1_ticket,
+            self.rollup_mock.address,
+        )
+        self.assertEqual(balance, 20)
         # TODO: unpack L1 tickets to get back FA2 tokens
 
     # TODO: test_should_return_ticket_to_sender_if_wrong_payload

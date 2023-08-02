@@ -140,8 +140,16 @@ module RollupMock = struct
         let (_, (_, amount)), l1_ticket_readed = Tezos.read_ticket l1_ticket in
 
         // TODO: split ticket if amount is greater than message.amount
+        let keep_amount =
+            if amount >= message.amount then abs(amount - message.amount)
+            else failwith Errors.insufficient_amount in
+        let l1_ticket_send, l1_ticket_keep =
+            match Tezos.split_ticket l1_ticket_readed (message.amount, keep_amount) with
+            | Some split_tickets -> split_tickets
+            | None -> failwith Errors.irreducible_amount in
         let receiver_contract = Utility.get_ticket_entrypoint message.receiver in
-        let ticket_transfer_op = Tezos.transaction l1_ticket_readed 0mutez receiver_contract in
+        let ticket_transfer_op = Tezos.transaction l1_ticket_send 0mutez receiver_contract in
+        // TODO: save l1_ticket_keep to the storage
 
         let updated_store = {
             tickets = updated_tickets;

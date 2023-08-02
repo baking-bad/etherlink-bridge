@@ -9,6 +9,9 @@ type routing_info = (string, bytes) map
 
 type routing_data = [@layout:comb] {
     data : bytes;
+    // TODO: make `refund_info : bytes` instead of `address` to
+    // allow L2 -> L1 transfers for non-Tezos specific tokens?
+    // ALTERNATIVE: `or address bytes`?
     refund_address : address;
     info : routing_info;
 }

@@ -13,7 +13,10 @@ class RollupMock(ContractHelper):
     default_storage = {
         'tickets': {},
         'messages': {},
-        'next_id': 0,
+        'next_message_id': 0,
+        'next_l2_id': 0,
+        'l2_ids': {},
+        'ticket_ids': {},
     }
 
     @classmethod

@@ -45,6 +45,15 @@ module Ticketer = struct
         let ticket_transfer_op = Tezos.transaction sr_ticket 0mutez sender_contract in
         [token_transfer_op; ticket_transfer_op], new_store
 
+    // TODO: current implementation requires some proxy to release ticket from implicit
+    // address. It may be possible to simplify this by removing destination and
+    // allowing to release ticket to the address that sent it.
+    // OR: another proxy may be added to process ticket release
+    // OR: some internal mechanics may be added to release ticket in two steps
+    // OR: it is possible to improve Proxy to allow ticket transfers with arbitrary data
+
+    // OR: it might be good idea to have some routing_info in L2->L1 transfer
+    // and this ticketer might be the contract, who should process ticket release
     [@entry] let release (sr_ticket, destination : (Types.payload ticket) * address) (store : storage) : return =
         let (ticketer, (payload, amount)), _ = Tezos.read_ticket sr_ticket in
         let _ = Utility.assert_address_is_self ticketer in

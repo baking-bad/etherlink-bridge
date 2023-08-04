@@ -79,8 +79,11 @@ module RollupMock = struct
         } in
 
         let l2_ticket = Utility.create_ticket (l2_payload, amount) in
-        let receiver_opt = Bytes.unpack routing_data.data in
-        let receiver = Option.unopt receiver_opt in
+        let receiver = match routing_data.receiver with
+            | Address (receiver_address) -> receiver_address
+            | Bytes (receiver_bytes) ->
+                let receiver_opt = Bytes.unpack receiver_bytes in
+                Option.unopt receiver_opt in
         let receiver_contract = Utility.get_ticket_entrypoint (receiver) in
         let ticket_transfer_op =
             Tezos.transaction l2_ticket 0mutez receiver_contract in

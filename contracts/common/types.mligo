@@ -7,18 +7,22 @@ type payload = [@layout:comb] {
 
 type routing_info = (string, bytes) map
 
+type address_or_bytes = [@layout:comb]
+    | Address of address
+    | Bytes of bytes
+
 type routing_data = [@layout:comb] {
-    data : bytes;
-    // TODO: make `refund_info : bytes` instead of `address` to
-    // allow L2 -> L1 transfers for non-Tezos specific tokens?
-    // ALTERNATIVE: `or address bytes`?
-    refund_address : address;
+    // TODO: consider renaming to `receiver_address`?
+    receiver : address_or_bytes;
+    refund_address : address_or_bytes;
     info : routing_info;
 }
 
 type ticket_t = payload ticket
 
+// TODO: this type can be generalized to be used as AMB type
 type ticket_with_data_t = [@layout:comb] {
+    // TODO: rename ticket -> payload
     ticket: ticket_t;
     routing_data: routing_data;
 }

@@ -35,7 +35,7 @@ module Ticketer = struct
         let payload = {
             token_id = token_id;
             // TODO: add extra_metadata if there is any info about token
-            token_info = Bytes.pack (Token.make_token_info token);
+            token_info = Some (Bytes.pack (Token.make_token_info token));
         } in
         let sr_ticket = Utility.create_ticket (payload, amount) in
         let sender = Tezos.get_sender () in

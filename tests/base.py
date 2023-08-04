@@ -11,8 +11,8 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.alice = self.client.using(key='bootstrap1')
         self.alice.reveal()
 
-        self.bob = self.client.using(key='bootstrap2')
-        self.bob.reveal()
+        self.boris = self.client.using(key='bootstrap2')
+        self.boris.reveal()
 
         self.manager = self.client.using(key='bootstrap4')
         self.manager.reveal()
@@ -37,7 +37,7 @@ class BaseTestCase(SandboxedNodeTestCase):
         # Tokens deployment:
         token_balances = {
             pkh(self.alice): 1000,
-            pkh(self.bob): 1000,
+            pkh(self.boris): 1000,
             pkh(self.manager): 1000,
             self.ticketer.address: 0,
             self.proxy.address: 0,

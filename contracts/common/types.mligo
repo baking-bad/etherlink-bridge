@@ -2,7 +2,7 @@ type token_info = (string, bytes) map
 
 type payload = [@layout:comb] {
     token_id : nat;
-    token_info : bytes;
+    token_info : bytes option;
 }
 
 type routing_info = (string, bytes) map

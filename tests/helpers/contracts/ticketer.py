@@ -14,7 +14,7 @@ from typing import Any
 
 class Ticketer(ContractHelper):
     # TODO: consider moving this to some consts file?
-    TICKET_TYPE_EXPRESSION = 'pair (nat %token_id) (bytes %token_info)'
+    TICKET_TYPE_EXPRESSION = 'pair (nat %token_id) (option %token_info bytes)'
 
     default_storage = {
         'extra_metadata': {},

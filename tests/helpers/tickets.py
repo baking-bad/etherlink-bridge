@@ -95,8 +95,12 @@ def create_expected_ticket(
         'prim': 'pair',
         'args': [
             {'prim': 'nat'},
-            {'prim': 'bytes'}
-        ]
+            {'prim': 'option',
+                'args': [
+                    {'prim': 'bytes'}
+                ],
+            },
+        ],
     }
 
     ticket_contents = {
@@ -108,7 +112,7 @@ def create_expected_ticket(
         ticket_contents,
         # TODO: this ticket type expression is duplicated, consider
         #      moving it to some common place (?)
-        'pair (nat %token_id) (bytes %token_info)',
+        'pair (nat %token_id) (option %token_info bytes)',
     ).to_micheline_value()
 
     return {

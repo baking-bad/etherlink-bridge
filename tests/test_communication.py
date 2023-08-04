@@ -93,18 +93,18 @@ class TicketerCommunicationTestCase(BaseTestCase):
         )
         self.assertEqual(balance, 25)
 
-        # Transfer some L2 tickets to Bob's address
+        # Transfer some L2 tickets to Boris's address
         self.alice.transfer_ticket(
             ticket_contents=expected_l2_ticket['content'],
             ticket_ty=expected_l2_ticket['content_type'],
             ticket_ticketer=expected_l2_ticket['ticketer'],
             ticket_amount=10,
-            destination=pkh(self.bob),
+            destination=pkh(self.boris),
         ).send()
         self.bake_block()
 
-        # Bob burns some L2 tickets to get L1 tickets back:
-        self.bob.transfer_ticket(
+        # Boris burns some L2 tickets to get L1 tickets back:
+        self.boris.transfer_ticket(
             ticket_contents=expected_l2_ticket['content'],
             ticket_ty=expected_l2_ticket['content_type'],
             ticket_ticketer=expected_l2_ticket['ticketer'],
@@ -116,18 +116,18 @@ class TicketerCommunicationTestCase(BaseTestCase):
 
         # Checking that L2 burn created outbox message:
         outbox_message = self.rollup_mock.get_message(0)
-        self.assertEqual(outbox_message['receiver'], pkh(self.bob))
+        self.assertEqual(outbox_message['receiver'], pkh(self.boris))
         self.assertEqual(outbox_message['amount'], 5)
 
         # Anyone can trigger outbox message:
         self.rollup_mock.release(0).send()
         self.bake_block()
 
-        # Bob should have now L1 tickets too:
+        # Boris should have now L1 tickets too:
         balance = get_ticket_balance(
             self.client,
             expected_l1_ticket,
-            pkh(self.bob),
+            pkh(self.boris),
         )
         self.assertEqual(balance, 5)
 

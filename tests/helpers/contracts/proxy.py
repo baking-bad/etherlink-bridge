@@ -19,8 +19,8 @@ class SetParams(TypedDict):
 class Proxy(ContractHelper):
     default_storage = {
         'data': {
-            'data': pack('', 'string'),
-            'refund_address': DEFAULT_ADDRESS,
+            'receiver': {'bytes': pack('', 'string')},
+            'refund_address': {'bytes': pack('', 'string')},
             'info': {}
         },
         'receiver': DEFAULT_ADDRESS,

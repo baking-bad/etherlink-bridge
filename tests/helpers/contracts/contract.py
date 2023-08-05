@@ -57,7 +57,11 @@ class ContractHelper(ABC):
     def using(self: T, client: PyTezosClient) -> T:
         """ Returns new ContractHelper with updated client """
 
-        return replace(self, client=client)
+        return replace(
+            self,
+            client=client,
+            contract=client.contract(self.contract.address),
+        )
 
     @classmethod
     @abstractmethod

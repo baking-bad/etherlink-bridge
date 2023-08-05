@@ -8,12 +8,13 @@ from tests.helpers.utility import (
     get_address_from_op,
 )
 from typing import TypeVar, Type, Any
+from abc import ABC, abstractmethod
 
 
 T = TypeVar('T', bound='ContractHelper')
 
 @dataclass
-class ContractHelper:
+class ContractHelper(ABC):
     contract: ContractInterface
     client: PyTezosClient
     address: str
@@ -57,3 +58,10 @@ class ContractHelper:
         """ Returns new ContractHelper with updated client """
 
         return replace(self, client=client)
+
+    @classmethod
+    @abstractmethod
+    def originate_default(cls: Type[T], client: PyTezosClient) -> OperationGroup:
+        """ Deploys contract with default storage using given client """
+
+        pass

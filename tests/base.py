@@ -1,7 +1,15 @@
 from pytezos.client import PyTezosClient
 from pytezos.sandbox.node import SandboxedNodeTestCase
-from tests.helpers.contracts import Ticketer, Proxy, RollupMock, FA2
+from tests.helpers.contracts import (
+    Ticketer,
+    ProxyRouter,
+    ProxyTicketer,
+    RollupMock,
+    FA2,
+    ContractHelper,
+)
 from tests.helpers.utility import pkh
+from typing import Type, TypeVar
 
 
 class BaseTestCase(SandboxedNodeTestCase):
@@ -22,17 +30,16 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.activate_accs()
 
         # Contracts deployment:
-        ticketer_opg = Ticketer.originate_default(self.manager).send()
-        self.bake_block()
-        self.ticketer = Ticketer.create_from_opg(self.manager, ticketer_opg)
+        T = TypeVar('T', bound='ContractHelper')
+        def deploy_contract(cls: Type[T]) -> T:
+            opg = cls.originate_default(self.manager).send()
+            self.bake_block()
+            return cls.create_from_opg(self.manager, opg)
 
-        proxy_opg = Proxy.originate_default(self.manager).send()
-        self.bake_block()
-        self.proxy = Proxy.create_from_opg(self.manager, proxy_opg)
-
-        rollup_mock_opg = RollupMock.originate_default(self.manager).send()
-        self.bake_block()
-        self.rollup_mock = RollupMock.create_from_opg(self.manager, rollup_mock_opg)
+        self.ticketer = deploy_contract(Ticketer)
+        self.proxy_router = deploy_contract(ProxyRouter)
+        self.proxy_ticketer = deploy_contract(ProxyTicketer)
+        self.rollup_mock = deploy_contract(RollupMock)
 
         # Tokens deployment:
         token_balances = {
@@ -40,7 +47,8 @@ class BaseTestCase(SandboxedNodeTestCase):
             pkh(self.boris): 1000,
             pkh(self.manager): 1000,
             self.ticketer.address: 0,
-            self.proxy.address: 0,
+            self.proxy_router.address: 0,
+            self.proxy_ticketer.address: 0,
             self.rollup_mock.address: 0,
         }
 

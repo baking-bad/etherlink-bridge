@@ -16,15 +16,21 @@ class SetParams(TypedDict):
     receiver: str
 
 
-class Proxy(ContractHelper):
+class BaseProxy(ContractHelper):
     default_storage = {}
+    filename = 'filename-not-set'
 
     @classmethod
     def originate_default(cls, client: PyTezosClient) -> OperationGroup:
         """Deploys Proxy with empty storage"""
 
-        filename = make_filename_from_build_name('proxy-rollup-deposit')
-        return cls.originate_from_file(filename, client, cls.default_storage)
+        return cls.originate_from_file(cls.filename, client, cls.default_storage)
 
     def set(self, params: SetParams) -> ContractCall:
         return self.contract.set(params)
+
+class ProxyRouter(BaseProxy):
+    filename = make_filename_from_build_name('proxy-router')
+
+class ProxyTicketer(BaseProxy):
+    filename = make_filename_from_build_name('proxy-ticketer')

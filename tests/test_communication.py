@@ -28,7 +28,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         transfer_params = self.ticketer.make_ticket_transfer_params(
             token=self.fa2,
             amount=25,
-            destination=self.proxy.address,
+            destination=self.proxy_router.address,
             entrypoint='send_ticket',
         )
 
@@ -46,7 +46,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         self.alice.bulk(
             self.fa2.using(self.alice).allow(self.ticketer.address),
             self.ticketer.using(self.alice).deposit(self.fa2, 100),
-            self.proxy.using(self.alice).set({
+            self.proxy_router.using(self.alice).set({
                 'data': routing_data,
                 'receiver': self.rollup_mock.address,
             }),

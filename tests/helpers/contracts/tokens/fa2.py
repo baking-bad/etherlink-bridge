@@ -51,6 +51,10 @@ class FA2(TokenHelper):
         cls.token_id = token_id
         return cls.originate_from_file(filename, client, storage)
 
+    @classmethod
+    def originate_default(cls, client: PyTezosClient) -> OperationGroup:
+        return cls.originate(client, {})
+
     def allow(self, operator: str) -> ContractCall:
         return self.contract.update_operators([{
             'add_operator': {

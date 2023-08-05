@@ -13,9 +13,9 @@ type ('ticket, 'data) parameter_t = [@layout:comb]
 let set
         (type data_t)
         (ctx : data_t Storage.context_t)
-        (_ : data_t Storage.t)
+        (store : data_t Storage.t)
         : operation list * data_t Storage.t =
-    [], ctx
+    [], Big_map.update (Tezos.get_sender ()) (Some ctx) store
 
 
 let send_ticket
@@ -27,7 +27,10 @@ let send_ticket
     (* Resend ticket from user with data from the context
         to the receiver from the context *)
 
-    let ctx: data_t Storage.context_t = store in
+    let ctx_opt = Big_map.find_opt (Tezos.get_sender ()) store in
+    let ctx = match ctx_opt with
+        | None -> failwith Errors.context_is_not_set
+        | Some ctx -> ctx in
     let receiver_contract: receiver_t contract =
     // TODO: is it possible to unhardcode entrypoint name?
     // (check this: Tezos.get_contract_opt with "KT...%save")

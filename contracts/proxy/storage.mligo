@@ -2,7 +2,6 @@
     - data is the data that will be added to the ticket
     - receiver is the address of the contract that will receive the ticket
 *)
-// TODO: implement per-user context to increase security
 // TODO: consider clearing context after each send
 // TODO: consider adding some id to simplify external indexing
 
@@ -14,4 +13,5 @@ type 'data context_t = {
 }
 
 // TODO: is it required to have empty context? (and reset it after each send?)
-type 'data t = 'data context_t
+// Storage implements per-user context for increased security:
+type 'data t = (address, 'data context_t) big_map

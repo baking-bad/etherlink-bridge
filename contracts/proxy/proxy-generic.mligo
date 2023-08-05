@@ -33,9 +33,7 @@ let send_ticket
         | None -> failwith Errors.context_is_not_set
         | Some ctx -> ctx in
     let receiver_contract: receiver_t contract =
-    // TODO: is it possible to unhardcode entrypoint name?
-    // (check this: Tezos.get_contract_opt with "KT...%save")
-        match Tezos.get_entrypoint_opt "%save" ctx.receiver with
+        match Tezos.get_contract_opt ctx.receiver with
         | None -> failwith Errors.failed_to_get_ticket_entrypoint
         | Some c -> c in
     // TODO: some function to make payload?

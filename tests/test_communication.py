@@ -48,7 +48,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
             self.ticketer.using(self.alice).deposit(self.fa2, 100),
             self.proxy_router.using(self.alice).set({
                 'data': routing_data,
-                'receiver': self.rollup_mock.address,
+                'receiver': f'{self.rollup_mock.address}%save',
             }),
             self.alice.transfer_ticket(**transfer_params),
         ).send()
@@ -139,7 +139,32 @@ class TicketerCommunicationTestCase(BaseTestCase):
         )
         self.assertEqual(balance, 20)
 
-        # TODO: unpack L1 tickets to get back FA2 tokens
+        # Boris unpacks some L1 tickets to get back some FA2 tokens
+        self.boris.bulk(
+            self.proxy_ticketer.using(self.boris).set({
+                'data': pkh(self.boris),
+                'receiver': f'{self.ticketer.address}%release',
+            }),
+            self.boris.transfer_ticket(
+                ticket_contents=expected_l1_ticket['content'],
+                ticket_ty=expected_l1_ticket['content_type'],
+                ticket_ticketer=expected_l1_ticket['ticketer'],
+                ticket_amount=2,
+                destination=self.proxy_ticketer.address,
+                entrypoint='send_ticket',
+            )
+        ).send()
+        self.bake_block()
+
+        # Boris should have burned some L1 tickets:
+        balance = get_ticket_balance(
+            self.client,
+            expected_l1_ticket,
+            pkh(self.boris),
+        )
+        self.assertEqual(balance, 3)
+
+        # TODO: check Boris should have some FA2 tokens now
 
     # TODO: test_should_return_ticket_to_sender_if_wrong_payload
     # TODO: test_minted_ticket_should_have_expected_content_and_type

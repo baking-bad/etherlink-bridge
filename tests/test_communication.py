@@ -140,6 +140,8 @@ class TicketerCommunicationTestCase(BaseTestCase):
         self.assertEqual(balance, 20)
 
         # Boris unpacks some L1 tickets to get back some FA2 tokens
+        boris_tokens_before_burn = self.fa2.get_balance(pkh(self.boris))
+
         self.boris.bulk(
             self.proxy_ticketer.using(self.boris).set({
                 'data': pkh(self.boris),
@@ -164,7 +166,12 @@ class TicketerCommunicationTestCase(BaseTestCase):
         )
         self.assertEqual(balance, 3)
 
-        # TODO: check Boris should have some FA2 tokens now
+        # Boris should have more FA2 tokens now:
+        boris_tokens_after_burn = self.fa2.get_balance(pkh(self.boris))
+        self.assertEqual(
+            boris_tokens_after_burn,
+            boris_tokens_before_burn + 2
+        )
 
     # TODO: test_should_return_ticket_to_sender_if_wrong_payload
     # TODO: test_minted_ticket_should_have_expected_content_and_type

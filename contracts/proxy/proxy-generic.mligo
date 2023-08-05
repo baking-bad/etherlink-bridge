@@ -6,6 +6,7 @@
     contracts *)
 
 type ('ticket, 'data) parameter_t = [@layout:comb]
+    // TODO: consider changing entrypoint name to simple `send`
     | Send_ticket of 'ticket
     | Set of 'data Storage.context_t
 

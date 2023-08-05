@@ -54,14 +54,18 @@ module Ticketer = struct
 
     // OR: it might be good idea to have some routing_info in L2->L1 transfer
     // and this ticketer might be the contract, who should process ticket release
-    [@entry] let release (sr_ticket, destination : (Types.payload ticket) * address) (store : storage) : return =
-        let (ticketer, (payload, amount)), _ = Tezos.read_ticket sr_ticket in
+    [@entry] let release
+            (params : Types.ticket_with_receiver_t)
+            (store : storage)
+            : return =
+        let { ticket; receiver } = params in
+        let (ticketer, (payload, amount)), _ = Tezos.read_ticket ticket in
         let _ = Utility.assert_address_is_self ticketer in
         let token =
             match Big_map.find_opt payload.token_id store.tokens with
             | None -> failwith Errors.token_not_found
             | Some t -> t in
         let self = Tezos.get_self_address () in
-        let transfer_op = Token.get_transfer_op token amount self destination in
+        let transfer_op = Token.get_transfer_op token amount self receiver in
         [transfer_op], store
 end

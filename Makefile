@@ -7,6 +7,7 @@ compile:
 	${LIGO_COMPILER} compile expression cameligo Router.route_to_sender_lambda --init-file contracts/router.mligo > build/route-lambdas/to-sender.tz
 	${LIGO_COMPILER} compile contract contracts/proxy/proxy-router.mligo -o build/proxy-router.tz
 	${LIGO_COMPILER} compile contract contracts/proxy/proxy-ticketer.mligo -o build/proxy-ticketer.tz
+	${LIGO_COMPILER} compile contract contracts/proxy/proxy-l2-burn.mligo -o build/proxy-l2-burn.tz
 	${LIGO_COMPILER} compile contract contracts/rollup-mock.mligo -m RollupMock -o build/rollup-mock.tz
 	${LIGO_COMPILER} compile contract contracts/ticketer.mligo -m Ticketer -o build/ticketer.tz
 

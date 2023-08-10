@@ -2,12 +2,26 @@
 #import "./storage.mligo" "Storage"
 
 
-(* This contract helps user to send tickets with external data to the
-    contracts *)
+(*
+    Proxies is a collection of contracts that help implicit address to send
+    tickets with external data to the contracts.
+
+    Generic proxy contract allows to make proxies which allow different
+    types of data to be attached to the different types of tickets,
+    to be sended to the receiver.
+
+    To create a proxy contract, you need to provide types of the ticket and
+    external data added to the ticket, along with function that
+    creates a per-user context for the ticket and the data.
+
+    To use proxy, implicit address should first call `set` entrypoint
+    to set the external data for the ticket and determine the receiver.
+    Then, implicit address should call `send` entrypoint.
+*)
+
 
 type ('ticket, 'data) parameter_t = [@layout:comb]
-    // TODO: consider changing entrypoint name to simple `send`
-    | Send_ticket of 'ticket
+    | Send of 'ticket
     | Set of 'data Storage.context_t
 
 
@@ -19,7 +33,7 @@ let set
     [], Big_map.update (Tezos.get_sender ()) (Some ctx) store
 
 
-let send_ticket
+let send
         (type ticket_t data_t receiver_t)
         (some_ticket : ticket_t)
         (store : data_t Storage.t)
@@ -36,9 +50,9 @@ let send_ticket
         match Tezos.get_contract_opt ctx.receiver with
         | None -> failwith Errors.failed_to_get_ticket_entrypoint
         | Some c -> c in
-    // TODO: some function to make payload?
     let payload = make_ctx (some_ticket, ctx.data) in
     let op = Tezos.transaction payload 0mutez receiver_contract in
+    // TODO: need to clear context after each send for extra security
     [op], store
 
 
@@ -49,5 +63,5 @@ let main
         (store : data_t Storage.t)
         : operation list * data_t Storage.t =
     match params with
-    | Send_ticket ticket -> send_ticket ticket store make_ctx
+    | Send ticket -> send ticket store make_ctx
     | Set ctx -> set ctx store

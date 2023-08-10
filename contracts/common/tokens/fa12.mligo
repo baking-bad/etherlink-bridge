@@ -8,7 +8,18 @@ type transfer_params = [@layout:comb] {
     value: nat;
 }
 
-let get_transfer_op (from_: address) (to_: address) (addr: address) (value: nat) : operation =
-    match ((Tezos.get_entrypoint_opt "%transfer" addr) : transfer_params contract option) with
+let get_transfer_op
+        (from_: address)
+        (to_: address)
+        (addr: address)
+        (value: nat)
+        : operation =
+    match Tezos.get_entrypoint_opt "%transfer" addr with
     | None -> failwith Errors.invalid_fa12
-    | Some c -> let params = { from_ = from_; to_ = to_; value = value } in Tezos.transaction params 0mutez c
+    | Some c ->
+        let params = {
+            from_ = from_;
+            to_ = to_;
+            value = value
+        } in
+        Tezos.transaction params 0mutez c

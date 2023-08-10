@@ -7,6 +7,7 @@ from tests.helpers.contracts import (
     RollupMock,
     FA2,
     ContractHelper,
+    Router,
 )
 from tests.helpers.utility import pkh
 from typing import Type, TypeVar
@@ -40,6 +41,7 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.proxy_router = deploy_contract(ProxyRouter)
         self.proxy_ticketer = deploy_contract(ProxyTicketer)
         self.rollup_mock = deploy_contract(RollupMock)
+        self.router = deploy_contract(Router)
 
         # Tokens deployment:
         token_balances = {

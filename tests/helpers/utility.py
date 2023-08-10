@@ -37,8 +37,15 @@ def get_address_from_op(op: dict) -> str:
     return originated_contract
 
 
+def get_build_dir() -> str:
+    """ Returns path to the build directory """
+
+    return join(dirname(__file__), '..', '..', 'build')
+
+
+# TODO: remove the following function and use instead `get_build_dir`:
 def make_filename_from_build_name(name: str) -> str:
-    build_dir = join(dirname(__file__), '..', '..', 'build')
+    build_dir = get_build_dir()
     return join(build_dir, name + '.tz')
 
 

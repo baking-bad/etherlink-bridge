@@ -11,8 +11,13 @@ from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
 
 
-class SetParams(TypedDict):
+class ProxySetParams(TypedDict):
     data: RoutingData
+    receiver: str
+
+
+class TicketerSetParams(TypedDict):
+    data: str
     receiver: str
 
 
@@ -26,11 +31,16 @@ class BaseProxy(ContractHelper):
 
         return cls.originate_from_file(cls.filename, client, cls.default_storage)
 
-    def set(self, params: SetParams) -> ContractCall:
-        return self.contract.set(params)
 
 class ProxyRouter(BaseProxy):
     filename = make_filename_from_build_name('proxy-router')
 
+    def set(self, params: ProxySetParams) -> ContractCall:
+        return self.contract.set(params)
+
+
 class ProxyTicketer(BaseProxy):
     filename = make_filename_from_build_name('proxy-ticketer')
+
+    def set(self, params: TicketerSetParams) -> ContractCall:
+        return self.contract.set(params)

@@ -17,12 +17,18 @@ module Router = struct
     }
     type return = operation list * storage
 
-    let route_to_sender_lambda
-            (ticket, _routing_data : Types.ticket_t * Types.routing_data)
+    let route_to_l1_address_lambda
+            (ticket, routing_data : Types.ticket_t * Types.routing_data)
             : operation list =
-        let sender = Tezos.get_sender () in
-        let sender_contract = Utility.get_ticket_entrypoint (sender) in
-        let ticket_transfer_op = Tezos.transaction ticket 0mutez sender_contract in
+        // TODO: the next lines is copy from rollup-mock.mligo#L87, need to
+        // move this code to separate type file together with routing_data
+        let receiver = match routing_data.receiver with
+            | Address (receiver_address) -> receiver_address
+            | Bytes (receiver_bytes) ->
+                let receiver_opt = Bytes.unpack receiver_bytes in
+                Option.unopt receiver_opt in
+        let receiver_contract = Utility.get_ticket_entrypoint (receiver) in
+        let ticket_transfer_op = Tezos.transaction ticket 0mutez receiver_contract in
         [ticket_transfer_op]
 
     // TODO: route_to_l1_address_lambda implementation

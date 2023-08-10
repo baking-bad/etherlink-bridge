@@ -8,6 +8,7 @@ from tests.helpers.contracts import (
     FA2,
     ContractHelper,
     Router,
+    ProxyL2Burn,
 )
 from tests.helpers.utility import pkh
 from typing import Type, TypeVar
@@ -40,6 +41,7 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.ticketer = deploy_contract(Ticketer)
         self.proxy_router = deploy_contract(ProxyRouter)
         self.proxy_ticketer = deploy_contract(ProxyTicketer)
+        self.proxy_l2_burn = deploy_contract(ProxyL2Burn)
         self.rollup_mock = deploy_contract(RollupMock)
         self.router = deploy_contract(Router)
 

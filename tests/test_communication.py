@@ -35,8 +35,9 @@ class TicketerCommunicationTestCase(BaseTestCase):
         # Here we create routing data for the proxy contract that will
         # create "L2" ticket in the Rollup contract for Alice:
         routing_data = create_routing_data(
-            refund_address=pkh(self.alice),
-            l2_address=pkh(self.alice),
+            sender=pkh(self.alice),
+            receiver=pkh(self.alice),
+            routing_type='to_l1_address',
         )
 
         # Then in one bulk we allow ticketer to transfer tokens,
@@ -103,20 +104,38 @@ class TicketerCommunicationTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        # Boris burns some L2 tickets to get L1 tickets back:
-        self.boris.transfer_ticket(
-            ticket_contents=expected_l2_ticket['content'],
-            ticket_ty=expected_l2_ticket['content_type'],
-            ticket_ticketer=expected_l2_ticket['ticketer'],
-            ticket_amount=5,
-            destination=self.rollup_mock.address,
-            entrypoint='l2_burn',
+        # Boris burns some L2 tickets to get L1 tickets back using proxy:
+        self.boris.bulk(
+            self.proxy_l2_burn.using(self.boris).set({
+                'data': {
+                    'routing_data': create_routing_data(
+                        sender=pkh(self.boris),
+                        receiver=pkh(self.boris),
+                        routing_type='to_l1_address',
+                    ),
+                    'router': self.router.address,
+                },
+                'receiver': f'{self.rollup_mock.address}%l2_burn',
+            }),
+            self.boris.transfer_ticket(
+                ticket_contents=expected_l2_ticket['content'],
+                ticket_ty=expected_l2_ticket['content_type'],
+                ticket_ticketer=expected_l2_ticket['ticketer'],
+                ticket_amount=5,
+                destination=self.proxy_l2_burn.address,
+                entrypoint='send_ticket',
+            ),
         ).send()
+
         self.bake_block()
 
         # Checking that L2 burn created outbox message:
         outbox_message = self.rollup_mock.get_message(0)
-        self.assertEqual(outbox_message['receiver'], pkh(self.boris))
+        self.assertEqual(
+            outbox_message['routing_data']['receiver']['address'],
+            pkh(self.boris)
+        )
+        self.assertEqual(outbox_message['router'], self.router.address)
         self.assertEqual(outbox_message['amount'], 5)
 
         # Anyone can trigger outbox message:

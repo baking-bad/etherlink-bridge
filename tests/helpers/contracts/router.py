@@ -16,7 +16,7 @@ def read_router_lambda(lambda_name: str) -> str:
 class Router(ContractHelper):
 
     default_storage = {
-        'to_sender': read_router_lambda('to-sender'),
+        'to_l1_address': read_router_lambda('to-l1-address'),
     }
 
     @classmethod

@@ -1,5 +1,7 @@
 // TODO: need to have one rule for naming types, consider removing `_t` suffix
 // for types inside this file and adding `_t` suffix for types from other files
+// OR: maybe it is better to split this file to separate type files
+// and move all of them to types directory
 
 type token_info = (string, bytes) map
 

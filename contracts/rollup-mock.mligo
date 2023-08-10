@@ -12,12 +12,17 @@ module RollupMock = struct
         token_id : nat;
     }
 
+    (* Message is used to emulate L1->L2 outbox message
+        - ticket_id is used to find L1 ticket in storage
+        - amount of L1 ticket that should be unlocked
+        - routing_data is info that will be used to route message to L1
+        - router is address of L1 router contract that will be used to route message
+    *)
     type message_t = {
         ticket_id : ticket_id_t;
         amount : nat;
-        receiver : address;
-        // TODO: add routing_info or some data about L1 contract which
-        // should process message
+        routing_data : Types.routing_data;
+        router : address;
     }
 
     type storage_t = {
@@ -98,7 +103,10 @@ module RollupMock = struct
         } in
         [ticket_transfer_op], updated_storage
 
-    [@entry] let l2_burn (burn_ticket : Types.ticket_t) (store : storage_t) : return_t =
+    [@entry] let l2_burn
+            (l2_burn_params : Types.l2_burn_params)
+            (store : storage_t)
+            : return_t =
         (* This entrypoint used to emulate L2 rollup entrypoint used to
             burn L2 tickets and unlock L1 tickets *)
         let {
@@ -110,6 +118,7 @@ module RollupMock = struct
             ticket_ids;
         } = store in
 
+        let { ticket = burn_ticket; routing_data; router } = l2_burn_params in
         let (ticketer, (payload, amount)), _ = Tezos.read_ticket burn_ticket in
         let l2_id = payload.token_id in
         let ticket_id_opt = Big_map.find_opt l2_id ticket_ids in
@@ -118,7 +127,8 @@ module RollupMock = struct
         let new_message = {
             ticket_id = ticket_id;
             amount = amount;
-            receiver = Tezos.get_sender ();
+            routing_data = routing_data;
+            router = router;
         } in
         let updated_store = {
             tickets = tickets;
@@ -150,8 +160,16 @@ module RollupMock = struct
             match Tezos.split_ticket l1_ticket_readed (message.amount, keep_amount) with
             | Some split_tickets -> split_tickets
             | None -> failwith Errors.irreducible_amount in
-        let receiver_contract = Utility.get_ticket_entrypoint message.receiver in
-        let ticket_transfer_op = Tezos.transaction l1_ticket_send 0mutez receiver_contract in
+
+        let router_contract: Types.ticket_with_data_t contract =
+            match Tezos.get_contract_opt message.router with
+            | None -> failwith Errors.failed_to_get_router_entrypoint
+            | Some c -> c in
+        let ticket_with_routing_data = {
+            ticket = l1_ticket_send;
+            routing_data = message.routing_data;
+        } in
+        let ticket_transfer_op = Tezos.transaction ticket_with_routing_data 0mutez router_contract in
         let updated_tickets =
             Big_map.update message.ticket_id (Some l1_ticket_keep) updated_tickets in
 

@@ -43,12 +43,6 @@ def get_build_dir() -> str:
     return join(dirname(__file__), '..', '..', 'build')
 
 
-# TODO: remove the following function and use instead `get_build_dir`:
-def make_filename_from_build_name(name: str) -> str:
-    build_dir = get_build_dir()
-    return join(build_dir, name + '.tz')
-
-
 def load_contract_from_address(
     client: PyTezosClient,
     contract_address: str

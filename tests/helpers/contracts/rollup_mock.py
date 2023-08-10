@@ -1,12 +1,13 @@
 from tests.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
-from tests.helpers.utility import make_filename_from_build_name
+from tests.helpers.utility import get_build_dir
 from tests.helpers.tickets import (
     get_all_ticket_balances,
     Ticket,
 )
 from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
+from os.path import join
 
 
 class RollupMock(ContractHelper):
@@ -23,7 +24,7 @@ class RollupMock(ContractHelper):
     def originate_default(cls, client: PyTezosClient) -> OperationGroup:
         """Deploys Locker with empty storage"""
 
-        filename = make_filename_from_build_name('rollup-mock')
+        filename = join(get_build_dir(), 'rollup-mock.tz')
         return cls.originate_from_file(filename, client, cls.default_storage)
 
     def get_tickets(self) -> list[Ticket]:
@@ -38,7 +39,7 @@ class RollupMock(ContractHelper):
         assert type(message) is dict
         return message
 
-    def release(self, message_id: int = 0) -> ContractCall:
+    def l1_release(self, message_id: int = 0) -> ContractCall:
         """Releases message with given id"""
 
-        return self.contract.release(message_id)
+        return self.contract.l1_release(message_id)

@@ -28,7 +28,7 @@ def create_routing_data(
 
     return cast(RoutingData, {
         'receiver': {'address': receiver},
-        'refund_address': {'address': sender},
+        'sender': {'address': sender},
         'info': {
             'routing_type': pack(routing_type, 'string'),
             'version': pack('0.1.0', 'string'),

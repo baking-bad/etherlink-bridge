@@ -2,13 +2,14 @@ from tests.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
 from tests.helpers.utility import (
     DEFAULT_ADDRESS,
-    make_filename_from_build_name,
     pack,
+    get_build_dir,
 )
 from tests.helpers.routing_data import RoutingData
 from typing import TypedDict
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
+from os.path import join
 
 
 class RouterSetParams(TypedDict):
@@ -43,21 +44,21 @@ class BaseProxy(ContractHelper):
 
 
 class ProxyRouter(BaseProxy):
-    filename = make_filename_from_build_name('proxy-router')
+    filename = join(get_build_dir(), 'proxies', 'router.tz')
 
     def set(self, params: RouterSetParams) -> ContractCall:
         return self.contract.set(params)
 
 
 class ProxyTicketer(BaseProxy):
-    filename = make_filename_from_build_name('proxy-ticketer')
+    filename = join(get_build_dir(), 'proxies', 'ticketer.tz')
 
     def set(self, params: TicketerSetParams) -> ContractCall:
         return self.contract.set(params)
 
 
 class ProxyL2Burn(BaseProxy):
-    filename = make_filename_from_build_name('proxy-l2-burn')
+    filename = join(get_build_dir(), 'proxies', 'l2-burn.tz')
 
     def set(self, params: L2BurnSetParams) -> ContractCall:
         return self.contract.set(params)

@@ -29,7 +29,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
             token=self.fa2,
             amount=25,
             destination=self.proxy_router.address,
-            entrypoint='send_ticket',
+            entrypoint='send',
         )
 
         # Here we create routing data for the proxy contract that will
@@ -49,7 +49,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
             self.ticketer.using(self.alice).deposit(self.fa2, 100),
             self.proxy_router.using(self.alice).set({
                 'data': routing_data,
-                'receiver': f'{self.rollup_mock.address}%save',
+                'receiver': f'{self.rollup_mock.address}%l1_deposit',
             }),
             self.alice.transfer_ticket(**transfer_params),
         ).send()
@@ -123,7 +123,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
                 ticket_ticketer=expected_l2_ticket['ticketer'],
                 ticket_amount=5,
                 destination=self.proxy_l2_burn.address,
-                entrypoint='send_ticket',
+                entrypoint='send',
             ),
         ).send()
 
@@ -139,7 +139,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         self.assertEqual(outbox_message['amount'], 5)
 
         # Anyone can trigger outbox message:
-        self.rollup_mock.release(0).send()
+        self.rollup_mock.l1_release(0).send()
         self.bake_block()
 
         # Boris should have now L1 tickets too:
@@ -172,7 +172,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
                 ticket_ticketer=expected_l1_ticket['ticketer'],
                 ticket_amount=2,
                 destination=self.proxy_ticketer.address,
-                entrypoint='send_ticket',
+                entrypoint='send',
             )
         ).send()
         self.bake_block()

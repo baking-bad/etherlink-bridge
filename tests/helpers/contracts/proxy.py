@@ -6,7 +6,10 @@ from tests.helpers.utility import (
     get_build_dir,
 )
 from tests.helpers.routing_data import RoutingData
-from typing import TypedDict
+from typing import (
+    TypedDict,
+    Optional,
+)
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
 from os.path import join
@@ -41,6 +44,12 @@ class BaseProxy(ContractHelper):
         """Deploys Proxy with empty storage"""
 
         return cls.originate_from_file(cls.filename, client, cls.default_storage)
+
+    def get_context(self, address: str) -> Optional[dict]:
+        try:
+            return dict(self.contract.storage[address]())
+        except KeyError:
+            return None
 
 
 class ProxyRouter(BaseProxy):

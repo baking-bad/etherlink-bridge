@@ -10,7 +10,7 @@ from tests.helpers.contracts import (
     Router,
     ProxyL2Burn,
 )
-from tests.helpers.utility import pkh
+from tests.helpers.utility import pkh, pack
 from typing import Type, TypeVar
 
 
@@ -38,7 +38,6 @@ class BaseTestCase(SandboxedNodeTestCase):
             self.bake_block()
             return cls.create_from_opg(self.manager, opg)
 
-        self.ticketer = deploy_contract(Ticketer)
         self.proxy_router = deploy_contract(ProxyRouter)
         self.proxy_ticketer = deploy_contract(ProxyTicketer)
         self.proxy_l2_burn = deploy_contract(ProxyL2Burn)
@@ -50,12 +49,24 @@ class BaseTestCase(SandboxedNodeTestCase):
             pkh(self.alice): 1000,
             pkh(self.boris): 1000,
             pkh(self.manager): 1000,
-            self.ticketer.address: 0,
-            self.proxy_router.address: 0,
-            self.proxy_ticketer.address: 0,
-            self.rollup_mock.address: 0,
         }
 
         fa2_opg = FA2.originate(self.manager, token_balances).send()
         self.bake_block()
         self.fa2 = FA2.create_from_opg(self.manager, fa2_opg)
+
+        # Deploying Ticketer with external metadata:
+        fa2_key = ( "fa2", ( self.fa2.address, 0 ) )
+        fa2_external_metadata = {
+            'decimals': pack(12, 'nat'),
+            'symbol': pack('TEST', 'string'),
+        }
+
+        opg = Ticketer.originate_with_external_metadata(
+            self.manager,
+            external_metadata={
+                fa2_key: fa2_external_metadata
+            },
+        ).send()
+        self.bake_block()
+        self.ticketer = Ticketer.create_from_opg(self.manager, opg)

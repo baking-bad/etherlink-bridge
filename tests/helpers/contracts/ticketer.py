@@ -36,6 +36,21 @@ class Ticketer(ContractHelper):
         filename = join(get_build_dir(), 'ticketer.tz')
         return cls.originate_from_file(filename, client, cls.default_storage)
 
+    @classmethod
+    def originate_with_external_metadata(
+            cls,
+            client: PyTezosClient,
+            # TODO: add type for key as fa2 or fa12 token
+            external_metadata: dict[Any, dict[str, bytes]],
+        ) -> OperationGroup:
+        """Deploys Ticketer with external metadata"""
+
+        storage = cls.default_storage.copy()
+        storage['extra_metadata'] = external_metadata
+
+        filename = join(get_build_dir(), 'ticketer.tz')
+        return cls.originate_from_file(filename, client, storage)
+
     def deposit(self, token: TokenHelper, amount: int) -> ContractCall:
         """ Deposits given amount of given token to the contract """
 
@@ -57,29 +72,3 @@ class Ticketer(ContractHelper):
 
         assert type(token_id) is int
         return token_id
-
-    def make_ticket_transfer_params(
-        self,
-        token: TokenHelper,
-        amount: int,
-        destination: str,
-        entrypoint: str
-    ) -> dict[str, Any]:
-        """ Returns params for ticket transfer call """
-
-        ticket_contents = {
-            'token_id': self.get_token_id(token),
-            'token_info': token.make_token_info_bytes()
-        }
-
-        return {
-            'ticket_contents': to_michelson_type(
-                    ticket_contents,
-                    self.TICKET_TYPE_EXPRESSION,
-                ).to_micheline_value(),
-            'ticket_ty': to_micheline(self.TICKET_TYPE_EXPRESSION),
-            'ticket_ticketer': self.address,
-            'ticket_amount': amount,
-            'destination': destination,
-            'entrypoint': entrypoint,
-        }

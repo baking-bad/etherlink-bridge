@@ -1,6 +1,6 @@
 from tests.base import BaseTestCase
-from tests.helpers.utility import pkh
-from tests.helpers.tickets import create_expected_ticket
+from tests.helpers.utility import pkh, pack
+from tests.helpers.tickets import create_ticket
 from tests.helpers.contracts.proxy import TicketerSetParams
 
 
@@ -37,10 +37,16 @@ class ProxyTestCase(BaseTestCase):
             'data': pkh(self.boris),
             'receiver': f'{self.ticketer.address}%release',
         }
-        ticket = create_expected_ticket(
+        ticket = create_ticket(
             ticketer=self.ticketer.address,
             token_id=0,
-            token_info=self.fa2.make_token_info(),
+            token_info={
+                'contract_address': pack(self.fa2.address, 'address'),
+                'token_id': pack(self.fa2.token_id, 'nat'),
+                'token_type': pack("FA2", 'string'),
+                'decimals': pack(12, 'nat'),
+                'symbol': pack('TEST', 'string'),
+            },
         )
         self.boris.bulk(
             self.proxy_ticketer.using(self.boris).set(expected_context),

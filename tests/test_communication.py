@@ -7,7 +7,7 @@ from tests.helpers.utility import (
 from tests.helpers.tickets import (
     get_all_ticket_balances_by_ticketer,
     get_ticket_balance,
-    create_expected_ticket,
+    create_ticket,
 )
 
 
@@ -21,15 +21,22 @@ class TicketerCommunicationTestCase(BaseTestCase):
         #      we use special proxy contract to do this
 
         # First we check that ticketer has no tickets and no tokens:
-        assert self.fa2.get_balance(self.ticketer.address) == 0
+        with self.assertRaises(KeyError):
+            self.fa2.get_balance(self.ticketer.address)
         assert len(self.rollup_mock.get_tickets()) == 0
 
-        # Then we configure ticket transfer params and routing info:
-        transfer_params = self.ticketer.make_ticket_transfer_params(
-            token=self.fa2,
-            amount=25,
-            destination=self.proxy_router.address,
-            entrypoint='send',
+        # TODO: need to create some helper to manage ticket creation / transfers:
+        # TODO: need to allow to create token info from token + ticketer
+        l1_ticket = create_ticket(
+            ticketer=self.ticketer.address,
+            token_id=0,
+            token_info={
+                'contract_address': pack(self.fa2.address, 'address'),
+                'token_id': pack(self.fa2.token_id, 'nat'),
+                'token_type': pack("FA2", 'string'),
+                'decimals': pack(12, 'nat'),
+                'symbol': pack('TEST', 'string'),
+            },
         )
 
         # Here we create routing data for the proxy contract that will
@@ -50,21 +57,23 @@ class TicketerCommunicationTestCase(BaseTestCase):
                 'data': routing_data,
                 'receiver': f'{self.rollup_mock.address}%l1_deposit',
             }),
-            self.alice.transfer_ticket(**transfer_params),
+            self.alice.transfer_ticket(
+                ticket_contents = l1_ticket['content'],
+                ticket_ty = l1_ticket['content_type'],
+                ticket_ticketer = l1_ticket['ticketer'],
+                ticket_amount = 25,
+                destination = self.proxy_router.address,
+                entrypoint = 'send',
+            ),
         ).send()
 
         self.bake_block()
 
         # Checking operations results:
         # 1. Rollup has L1 tickets:
-        expected_l1_ticket = create_expected_ticket(
-            ticketer=self.ticketer.address,
-            token_id=0,
-            token_info=self.fa2.make_token_info(),
-        )
         balance = get_ticket_balance(
             self.client,
-            expected_l1_ticket,
+            l1_ticket,
             self.rollup_mock.address,
         )
         self.assertEqual(balance, 25)
@@ -75,35 +84,37 @@ class TicketerCommunicationTestCase(BaseTestCase):
         # 3. Alice has L1 tickets:
         balance = get_ticket_balance(
             self.client,
-            expected_l1_ticket,
+            l1_ticket,
             pkh(self.alice),
         )
         self.assertEqual(balance, 75)
 
         # 4. Alice has L2 tickets:
-        expected_l2_ticket = create_expected_ticket(
+        l2_ticket = create_ticket(
             ticketer=self.rollup_mock.address,
             token_id=0,
             token_info={
                 'contract_address': pack(self.fa2.address, 'address'),
                 'token_id': pack(self.fa2.token_id, 'nat'),
                 'token_type': pack("FA2", 'string'),
+                'decimals': pack(12, 'nat'),
+                'symbol': pack('TEST', 'string'),
                 'l1_ticketer': pack(self.ticketer.address, 'address'),
                 'l1_token_id': pack(0, 'nat'),
             },
         )
         balance = get_ticket_balance(
             self.client,
-            expected_l2_ticket,
+            l2_ticket,
             pkh(self.alice),
         )
         self.assertEqual(balance, 25)
 
         # Transfer some L2 tickets to Boris's address
         self.alice.transfer_ticket(
-            ticket_contents=expected_l2_ticket['content'],
-            ticket_ty=expected_l2_ticket['content_type'],
-            ticket_ticketer=expected_l2_ticket['ticketer'],
+            ticket_contents=l2_ticket['content'],
+            ticket_ty=l2_ticket['content_type'],
+            ticket_ticketer=l2_ticket['ticketer'],
             ticket_amount=10,
             destination=pkh(self.boris),
         ).send()
@@ -122,9 +133,9 @@ class TicketerCommunicationTestCase(BaseTestCase):
                 'receiver': f'{self.rollup_mock.address}%l2_burn',
             }),
             self.boris.transfer_ticket(
-                ticket_contents=expected_l2_ticket['content'],
-                ticket_ty=expected_l2_ticket['content_type'],
-                ticket_ticketer=expected_l2_ticket['ticketer'],
+                ticket_contents=l2_ticket['content'],
+                ticket_ty=l2_ticket['content_type'],
+                ticket_ticketer=l2_ticket['ticketer'],
                 ticket_amount=5,
                 destination=self.proxy_l2_burn.address,
                 entrypoint='send',
@@ -149,7 +160,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         # Boris should have now L1 tickets too:
         balance = get_ticket_balance(
             self.client,
-            expected_l1_ticket,
+            l1_ticket,
             pkh(self.boris),
         )
         self.assertEqual(balance, 5)
@@ -157,7 +168,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         # Rollup should have some L2 tickets left:
         balance = get_ticket_balance(
             self.client,
-            expected_l1_ticket,
+            l1_ticket,
             self.rollup_mock.address,
         )
         self.assertEqual(balance, 20)
@@ -171,9 +182,9 @@ class TicketerCommunicationTestCase(BaseTestCase):
                 'receiver': f'{self.ticketer.address}%release',
             }),
             self.boris.transfer_ticket(
-                ticket_contents=expected_l1_ticket['content'],
-                ticket_ty=expected_l1_ticket['content_type'],
-                ticket_ticketer=expected_l1_ticket['ticketer'],
+                ticket_contents=l1_ticket['content'],
+                ticket_ty=l1_ticket['content_type'],
+                ticket_ticketer=l1_ticket['ticketer'],
                 ticket_amount=2,
                 destination=self.proxy_ticketer.address,
                 entrypoint='send',
@@ -184,7 +195,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         # Boris should have burned some L1 tickets:
         balance = get_ticket_balance(
             self.client,
-            expected_l1_ticket,
+            l1_ticket,
             pkh(self.boris),
         )
         self.assertEqual(balance, 3)

@@ -28,10 +28,15 @@ module Ticketer = struct
         //       converted to ticket? (it is easier to start with the most general
         //       case, so the answer is "no" for now)
         let new_store, token_id = Storage.get_or_create_token_id token store in
+        let token_info = Token.make_token_info token in
+        let token_info_extra : Token.token_info_t =
+            match Map.find_opt token store.extra_metadata with
+            | None -> token_info
+            | Some extra_metadata ->
+                Token.merge_token_info token_info extra_metadata in
         let payload = {
             token_id = token_id;
-            // TODO: add extra_metadata if there is any info about token
-            token_info = Some (Bytes.pack (Token.make_token_info token));
+            token_info = Some (Bytes.pack token_info_extra);
         } in
         let ticket = Ticket.create_ticket payload amount in
         let sender = Tezos.get_sender () in

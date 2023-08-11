@@ -32,10 +32,11 @@ let create_l2_payload
         : payload_t =
     let token_info_map = Token.unopt_token_info payload.token_info in
     // TODO: assert that these keys don't already exist
-    let token_info_map =
-        Map.update "l1_token_id" (Some (Bytes.pack payload.token_id)) token_info_map in
-    let token_info_map =
-        Map.update "l1_ticketer" (Some (Bytes.pack ticketer)) token_info_map in
+    let l1_token_info = Map.literal [
+        ("l1_token_id", Bytes.pack payload.token_id);
+        ("l1_ticketer", Bytes.pack ticketer);
+    ] in
+    let token_info_map = Token.merge_token_info l1_token_info token_info_map in
     let token_info_opt = Some (Bytes.pack (token_info_map)) in
     {
         token_id = l2_id;

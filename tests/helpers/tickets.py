@@ -78,7 +78,7 @@ def get_ticket_balance(
 
 # TODO: consider moving this function to the Ticketer and RollupMock helpers?
 #       (maybe create some intermediate class that supports this logic)
-def create_expected_ticket(
+def create_ticket(
         ticketer: str,
         token_id: int,
         token_info: dict[str, bytes],

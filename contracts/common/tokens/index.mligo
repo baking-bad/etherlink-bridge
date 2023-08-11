@@ -52,3 +52,12 @@ let unopt_token_info
         | None -> failwith Errors.wrong_token_info_format
         | Some token_info -> token_info
     )
+
+let merge_token_info
+        (token_info_a : token_info_t)
+        (token_info_b : token_info_t)
+        : token_info_t =
+    let fold_info = fun (acc, key_value : (token_info_t * (string * bytes))) ->
+        let (key, value) = key_value in
+        Map.add key value acc in
+    Map.fold fold_info token_info_a token_info_b

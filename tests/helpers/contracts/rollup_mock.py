@@ -8,6 +8,7 @@ from tests.helpers.tickets import (
 from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
 from os.path import join
+from tests.helpers.metadata import make_metadata
 
 
 class RollupMock(ContractHelper):
@@ -18,6 +19,10 @@ class RollupMock(ContractHelper):
         'next_l2_id': 0,
         'l2_ids': {},
         'ticket_ids': {},
+        'metadata': make_metadata(
+            name='Rollup Mock',
+            description='The Rollup Mock is a component of the Bridge Protocol Prototype, designed to emulate the operations of a real smart rollup on both L1 and L2 sides.'
+        ),
     }
 
     @classmethod

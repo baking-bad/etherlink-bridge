@@ -30,7 +30,10 @@ let set
         (ctx : data_t Storage.context_t)
         (store : data_t Storage.t)
         : operation list * data_t Storage.t =
-    [], Big_map.update (Tezos.get_sender ()) (Some ctx) store
+    [], {
+        store with
+        context = Big_map.update (Tezos.get_sender ()) (Some ctx) store.context
+    }
 
 
 let send
@@ -42,8 +45,8 @@ let send
     (* Resend ticket from user with data from the context
         to the receiver from the context *)
 
-    let ctx_opt, updated_store =
-        Big_map.get_and_update (Tezos.get_sender ()) None store in
+    let ctx_opt, updated_context =
+        Big_map.get_and_update (Tezos.get_sender ()) None store.context in
     let ctx = match ctx_opt with
         | None -> failwith Errors.context_is_not_set
         | Some ctx -> ctx in
@@ -53,6 +56,7 @@ let send
         | Some c -> c in
     let payload = make_ctx (some_ticket, ctx.data) in
     let op = Tezos.transaction payload 0mutez receiver_contract in
+    let updated_store = { store with context = updated_context } in
     [op], updated_store
 
 

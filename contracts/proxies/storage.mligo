@@ -8,4 +8,7 @@ type 'data context_t = {
     receiver : address;
 }
 
-type 'data t = (address, 'data context_t) big_map
+type 'data t = {
+    context : (address, 'data context_t) big_map;
+    metadata : (string, bytes) big_map;
+}

@@ -3,6 +3,7 @@ from pytezos.client import PyTezosClient
 from tests.helpers.utility import get_build_dir
 from pytezos.operation.group import OperationGroup
 from os.path import join
+from tests.helpers.metadata import make_metadata
 
 
 def read_router_lambda(lambda_name: str) -> str:
@@ -16,7 +17,13 @@ def read_router_lambda(lambda_name: str) -> str:
 class Router(ContractHelper):
 
     default_storage = {
-        'to_l1_address': read_router_lambda('to-l1-address'),
+        'routes': {
+            'to_l1_address': read_router_lambda('to-l1-address'),
+        },
+        'metadata': make_metadata(
+            name='Router',
+            description='The Router is a component of the Bridge Protocol Prototype, designed to facilitate L2 to L1 transfers.',
+        ),
     }
 
     @classmethod

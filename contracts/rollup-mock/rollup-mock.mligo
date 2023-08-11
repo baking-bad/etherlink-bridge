@@ -37,7 +37,8 @@ module RollupMock = struct
             next_message_id;
             next_l2_id;
             l2_ids;
-            ticket_ids
+            ticket_ids;
+            metadata;
         } = store in
         let { payload = ticket; routing_data } = ticket_with_routing_data in
         let (ticketer, (payload, amount)), ticket = Tezos.read_ticket ticket in
@@ -66,6 +67,7 @@ module RollupMock = struct
             next_l2_id = updated_next_l2_id;
             l2_ids = updated_l2_ids;
             ticket_ids = updated_ticket_ids;
+            metadata = metadata;
         } in
         [ticket_transfer_op], updated_storage
 
@@ -82,7 +84,8 @@ module RollupMock = struct
             next_message_id;
             next_l2_id;
             ticket_ids;
-            l2_ids
+            l2_ids;
+            metadata;
         } = store in
 
         let message, updated_messages =
@@ -109,6 +112,7 @@ module RollupMock = struct
             next_l2_id = next_l2_id;
             l2_ids = l2_ids;
             ticket_ids = ticket_ids;
+            metadata = metadata;
         } in
         [ticket_transfer_op], updated_store
 
@@ -128,6 +132,7 @@ module RollupMock = struct
             next_l2_id;
             l2_ids;
             ticket_ids;
+            metadata;
         } = store in
 
         let { ticket = burn_ticket; routing_data; router } = l2_burn_params in
@@ -147,6 +152,7 @@ module RollupMock = struct
             next_l2_id = next_l2_id;
             l2_ids = l2_ids;
             ticket_ids = ticket_ids;
+            metadata = metadata;
         } in
         [], updated_store
 end

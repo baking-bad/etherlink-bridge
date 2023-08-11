@@ -16,6 +16,7 @@ type t = {
     next_l2_id : nat;
     l2_ids : l2_ids_t;
     ticket_ids : ticket_ids_t;
+    metadata : (string, bytes) big_map;
 }
 
 

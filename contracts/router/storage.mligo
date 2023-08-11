@@ -6,5 +6,6 @@ type route_t = (Ticket.t * RoutingData.t) -> operation list
 
 type t = {
     routes : (string, route_t) big_map;
+    metadata : (string, bytes) big_map;
 }
 

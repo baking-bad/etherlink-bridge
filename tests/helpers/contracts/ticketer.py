@@ -11,6 +11,7 @@ from pytezos.contract.call import ContractCall
 from tests.helpers.contracts.tokens.token import TokenHelper
 from typing import Any
 from os.path import join
+from tests.helpers.metadata import make_metadata
 
 
 class Ticketer(ContractHelper):
@@ -19,7 +20,10 @@ class Ticketer(ContractHelper):
 
     default_storage = {
         'extra_metadata': {},
-        'metadata': {},
+        'metadata': make_metadata(
+            name='Ticketer',
+            description='The Ticketer is a component of the Bridge Protocol Prototype, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
+        ),
         'token_ids': {},
         'tokens': {},
         'next_token_id': 0,

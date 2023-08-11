@@ -69,3 +69,17 @@ class ContractHelper(ABC):
         """ Deploys contract with default storage using given client """
 
         pass
+
+    @classmethod
+    def create_from_address(
+        cls: Type[T],
+        client: PyTezosClient,
+        address: str,
+    ) -> T:
+        """ Loads contract from given address using given client """
+
+        return cls(
+            contract=client.contract(address),
+            client=client,
+            address=address,
+        )

@@ -20,6 +20,8 @@ class TicketerCommunicationTestCase(BaseTestCase):
         #    - as far as implicit address can't send tickets with extra data
         #      we use special proxy contract to do this
 
+        # TODO: it is probably good idea to remove `self.` from all contracts
+
         # First we check that ticketer has no tickets and no tokens:
         with self.assertRaises(KeyError):
             self.fa2.get_balance(self.ticketer.address)

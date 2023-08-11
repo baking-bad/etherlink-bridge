@@ -35,3 +35,18 @@ let create_l2_payload
         token_id = l2_id;
         token_info = token_info;
     }
+
+let split_ticket
+        (ticket : t)
+        (split_amount : nat)
+        : t * t =
+    (* Splits ticket into two tickets with given amounts *)
+    let (_, (_, amount)), ticket = Tezos.read_ticket ticket in
+    let keep_amount =
+        if amount >= split_amount then abs(amount - split_amount)
+        else failwith Errors.insufficient_amount in
+    let ticket_a, ticket_b =
+        match Tezos.split_ticket ticket (split_amount, keep_amount) with
+        | Some split_tickets -> split_tickets
+        | None -> failwith Errors.irreducible_amount in
+    ticket_a, ticket_b

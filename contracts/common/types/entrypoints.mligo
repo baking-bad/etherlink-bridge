@@ -1,5 +1,6 @@
 #import "./routing-data.mligo" "RoutingData"
 #import "./ticket.mligo" "Ticket"
+#import "../errors.mligo" "Errors"
 
 
 // NOTE: this is entrypoint for rollup%l1_deposit and router%route
@@ -20,3 +21,8 @@ type l2_burn_params = [@layout:comb] {
     routing_data : RoutingData.t;
     router : address;
 }
+
+let get_router_contract (router : address) : ticket_with_routing_data contract =
+    match Tezos.get_contract_opt router with
+    | None -> failwith Errors.failed_to_get_router_entrypoint
+    | Some c -> c

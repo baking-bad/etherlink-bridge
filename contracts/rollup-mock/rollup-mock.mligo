@@ -1,5 +1,5 @@
-#import "../common/types/ticket.mligo" "Ticket"
 #import "../common/types/routing-data.mligo" "RoutingData"
+#import "../common/types/ticket.mligo" "Ticket"
 #import "../common/types/entrypoints.mligo" "Entrypoints"
 #import "./storage.mligo" "Storage"
 #import "./ticket-id.mligo" "TicketId"
@@ -69,38 +69,36 @@ module RollupMock = struct
         } in
         [ticket_transfer_op], updated_storage
 
+
     [@entry] let l1_release
             (message_id : nat)
             (store : Storage.t)
             : return_t =
         (* Releases ticket by message_id, this entrypoint emulates L1 rollup
             entrypoint which processes outbox L2->L1 transfer ticket message *)
-        let { tickets; messages; next_message_id; next_l2_id; ticket_ids; l2_ids } = store in
-        let message_opt, updated_messages =
-            Big_map.get_and_update message_id None messages in
-        let message = Option.unopt_with_error message_opt Errors.msg_not_found in
-        let l1_ticket_opt, updated_tickets =
-            Big_map.get_and_update message.ticket_id None tickets in
-        let l1_ticket = Option.unopt_with_error l1_ticket_opt Errors.ticket_not_found in
-        let (_, (_, amount)), l1_ticket_readed = Tezos.read_ticket l1_ticket in
+        let {
+            tickets;
+            messages;
+            next_message_id;
+            next_l2_id;
+            ticket_ids;
+            l2_ids
+        } = store in
 
-        let keep_amount =
-            if amount >= message.amount then abs(amount - message.amount)
-            else failwith Errors.insufficient_amount in
+        let message, updated_messages =
+            Storage.pop_message message_id messages in
+        let l1_ticket, updated_tickets =
+            Storage.pop_ticket message.ticket_id tickets in
         let l1_ticket_send, l1_ticket_keep =
-            match Tezos.split_ticket l1_ticket_readed (message.amount, keep_amount) with
-            | Some split_tickets -> split_tickets
-            | None -> failwith Errors.irreducible_amount in
+            Ticket.split_ticket l1_ticket message.amount in
 
-        let router_contract: Entrypoints.ticket_with_routing_data contract =
-            match Tezos.get_contract_opt message.router with
-            | None -> failwith Errors.failed_to_get_router_entrypoint
-            | Some c -> c in
+        let router_contract = Entrypoints.get_router_contract message.router in
         let ticket_with_routing_data = {
             payload = l1_ticket_send;
             routing_data = message.routing_data;
         } in
-        let ticket_transfer_op = Tezos.transaction ticket_with_routing_data 0mutez router_contract in
+        let ticket_transfer_op =
+            Tezos.transaction ticket_with_routing_data 0mutez router_contract in
         let updated_tickets =
             Big_map.update message.ticket_id (Some l1_ticket_keep) updated_tickets in
 
@@ -114,6 +112,9 @@ module RollupMock = struct
         } in
         [ticket_transfer_op], updated_store
 
+
+    // TODO: consider renaming to l2_deposit and both process native L2
+    // tickets and burning wrapped L1 tickets
     [@entry] let l2_burn
             (l2_burn_params : Entrypoints.l2_burn_params)
             (store : Storage.t)
@@ -131,9 +132,7 @@ module RollupMock = struct
 
         let { ticket = burn_ticket; routing_data; router } = l2_burn_params in
         let (ticketer, (payload, amount)), _ = Tezos.read_ticket burn_ticket in
-        let l2_id = payload.token_id in
-        let ticket_id_opt = Big_map.find_opt l2_id ticket_ids in
-        let ticket_id = Option.unopt ticket_id_opt in
+        let ticket_id = Storage.get_ticket_id payload.token_id ticket_ids in
         let _ = Utility.assert_address_is_self ticketer in
         let new_message = {
             ticket_id = ticket_id;

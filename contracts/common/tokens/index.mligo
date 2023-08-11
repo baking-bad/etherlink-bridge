@@ -1,5 +1,6 @@
 #import "./fa2.mligo" "TokenFa2"
 #import "./fa12.mligo" "TokenFa12"
+#import "../errors.mligo" "Errors"
 
 
 type token_info_t = (string, bytes) map
@@ -40,3 +41,14 @@ let make_token_info
         ("token_id", Bytes.pack token_id);
         ("token_type", Bytes.pack "FA2");
     ]
+
+let unopt_token_info
+        (token_info : bytes option)
+        : token_info_t =
+    match token_info with
+    | None -> Map.empty
+    | Some token_info_bytes -> (
+        match Bytes.unpack token_info_bytes with
+        | None -> failwith Errors.wrong_token_info_format
+        | Some token_info -> token_info
+    )

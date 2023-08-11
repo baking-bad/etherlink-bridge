@@ -60,7 +60,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         expected_l1_ticket = create_expected_ticket(
             ticketer=self.ticketer.address,
             token_id=0,
-            token=self.fa2,
+            token_info=self.fa2.make_token_info(),
         )
         balance = get_ticket_balance(
             self.client,
@@ -84,7 +84,13 @@ class TicketerCommunicationTestCase(BaseTestCase):
         expected_l2_ticket = create_expected_ticket(
             ticketer=self.rollup_mock.address,
             token_id=0,
-            token=self.fa2,
+            token_info={
+                'contract_address': pack(self.fa2.address, 'address'),
+                'token_id': pack(self.fa2.token_id, 'nat'),
+                'token_type': pack("FA2", 'string'),
+                'l1_ticketer': pack(self.ticketer.address, 'address'),
+                'l1_token_id': pack(0, 'nat'),
+            },
         )
         balance = get_ticket_balance(
             self.client,
@@ -195,3 +201,5 @@ class TicketerCommunicationTestCase(BaseTestCase):
 
     # TODO: ? multiple users add same tickets to rollup mock
     # TODO: ? different tickets from one ticketer
+
+    # TODO: test that L2 ticket have correct L1 ticketer address and token id

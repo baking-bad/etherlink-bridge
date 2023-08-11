@@ -40,7 +40,7 @@ class ProxyTestCase(BaseTestCase):
         ticket = create_expected_ticket(
             ticketer=self.ticketer.address,
             token_id=0,
-            token=self.fa2,
+            token_info=self.fa2.make_token_info(),
         )
         self.boris.bulk(
             self.proxy_ticketer.using(self.boris).set(expected_context),

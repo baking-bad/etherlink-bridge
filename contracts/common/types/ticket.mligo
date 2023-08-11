@@ -1,4 +1,5 @@
 #import "../errors.mligo" "Errors"
+#import "../tokens/index.mligo" "Token"
 
 
 type payload_t = [@layout:comb] {
@@ -26,14 +27,19 @@ let get_ticket_entrypoint
 
 let create_l2_payload
         (payload : payload_t)
-        (_ticketer : address)
+        (ticketer : address)
         (l2_id : nat)
         : payload_t =
-    // TODO: patch payload.token_info and add ticketer and L1 ticketer id to it
-    //       reuse common/tokens/index.mligo as Token with Token.token_info
-    let token_info = payload.token_info in {
+    let token_info_map = Token.unopt_token_info payload.token_info in
+    // TODO: assert that these keys don't already exist
+    let token_info_map =
+        Map.update "l1_token_id" (Some (Bytes.pack payload.token_id)) token_info_map in
+    let token_info_map =
+        Map.update "l1_ticketer" (Some (Bytes.pack ticketer)) token_info_map in
+    let token_info_opt = Some (Bytes.pack (token_info_map)) in
+    {
         token_id = l2_id;
-        token_info = token_info;
+        token_info = token_info_opt;
     }
 
 let split_ticket

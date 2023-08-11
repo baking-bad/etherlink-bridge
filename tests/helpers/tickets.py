@@ -4,6 +4,7 @@ from typing import TypedDict
 from tests.helpers.contracts.tokens.token import TokenHelper
 from tests.helpers.utility import (
     to_michelson_type,
+    pack,
 )
 
 
@@ -80,7 +81,7 @@ def get_ticket_balance(
 def create_expected_ticket(
         ticketer: str,
         token_id: int,
-        token: TokenHelper,
+        token_info: dict[str, bytes],
         amount: int = 0,
     ) -> Ticket:
 
@@ -103,9 +104,11 @@ def create_expected_ticket(
         ],
     }
 
+    # TODO: consider moving this to some consts file? [2], another in token.py
+    MAP_TOKEN_INFO_TYPE = 'map %token_info string bytes'
     ticket_contents = {
         'token_id': token_id,
-        'token_info': token.make_token_info_bytes()
+        'token_info': pack(token_info, MAP_TOKEN_INFO_TYPE),
     }
 
     content = to_michelson_type(

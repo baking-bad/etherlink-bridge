@@ -1,5 +1,3 @@
-type routing_info = (string, bytes) map
-
 type address_or_bytes = [@layout:comb]
     | Address of address
     | Bytes of bytes
@@ -7,9 +5,6 @@ type address_or_bytes = [@layout:comb]
 type t = [@layout:comb] {
     receiver : address_or_bytes;
     sender : address_or_bytes;
-    // TODO: consider removing roiting_info and limit the bridge logic
-    // to simply transferring the token to the given address
-    info : routing_info;
 }
 
 let get_receiver (data : t) : address =

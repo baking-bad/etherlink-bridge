@@ -17,9 +17,7 @@ def read_router_lambda(lambda_name: str) -> str:
 class Router(ContractHelper):
 
     default_storage = {
-        'routes': {
-            'to_l1_address': read_router_lambda('to-l1-address'),
-        },
+        'routes': {},
         'metadata': make_metadata(
             name='Router',
             description='The Router is a component of the Bridge Protocol Prototype, designed to facilitate L2 to L1 transfers.',

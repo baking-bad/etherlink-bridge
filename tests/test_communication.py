@@ -37,7 +37,6 @@ class TicketerCommunicationTestCase(BaseTestCase):
         routing_data = create_routing_data(
             sender=pkh(self.alice),
             receiver=pkh(self.alice),
-            routing_type='to_l1_address',
         )
 
         # Then in one bulk we allow ticketer to transfer tokens,
@@ -111,7 +110,6 @@ class TicketerCommunicationTestCase(BaseTestCase):
                     'routing_data': create_routing_data(
                         sender=pkh(self.boris),
                         receiver=pkh(self.boris),
-                        routing_type='to_l1_address',
                     ),
                     'router': self.router.address,
                 },

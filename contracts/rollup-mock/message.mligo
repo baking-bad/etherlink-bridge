@@ -12,5 +12,4 @@ type t = {
     ticket_id : TicketId.t;
     amount : nat;
     routing_data : RoutingData.t;
-    router : address;
 }

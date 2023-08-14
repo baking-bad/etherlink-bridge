@@ -95,13 +95,10 @@ module RollupMock = struct
         let l1_ticket_send, l1_ticket_keep =
             Ticket.split_ticket l1_ticket message.amount in
 
-        let router_contract = Entrypoints.get_router_contract message.router in
-        let ticket_with_routing_data = {
-            payload = l1_ticket_send;
-            routing_data = message.routing_data;
-        } in
+        let receiver = RoutingData.get_receiver message.routing_data in
+        let receiver_contract = Ticket.get_ticket_entrypoint receiver in
         let ticket_transfer_op =
-            Tezos.transaction ticket_with_routing_data 0mutez router_contract in
+            Tezos.transaction l1_ticket_send 0mutez receiver_contract in
         let updated_tickets =
             Big_map.update message.ticket_id (Some l1_ticket_keep) updated_tickets in
 
@@ -120,7 +117,7 @@ module RollupMock = struct
     // TODO: consider renaming to l2_deposit and both process native L2
     // tickets and burning wrapped L1 tickets
     [@entry] let l2_burn
-            (l2_burn_params : Entrypoints.l2_burn_params)
+            (l2_burn_params : Entrypoints.ticket_with_routing_data)
             (store : Storage.t)
             : return_t =
         (* This entrypoint used to emulate L2 rollup entrypoint used to
@@ -135,7 +132,7 @@ module RollupMock = struct
             metadata;
         } = store in
 
-        let { ticket = burn_ticket; routing_data; router } = l2_burn_params in
+        let { payload = burn_ticket; routing_data } = l2_burn_params in
         let (ticketer, (payload, amount)), _ = Tezos.read_ticket burn_ticket in
         let ticket_id = Storage.get_ticket_id payload.token_id ticket_ids in
         let _ = Utility.assert_address_is_self ticketer in
@@ -143,7 +140,6 @@ module RollupMock = struct
             ticket_id = ticket_id;
             amount = amount;
             routing_data = routing_data;
-            router = router;
         } in
         let updated_store = {
             tickets = tickets;

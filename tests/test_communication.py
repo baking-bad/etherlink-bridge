@@ -1,5 +1,4 @@
 from tests.base import BaseTestCase
-from tests.helpers.routing_data import create_routing_data
 from tests.helpers.utility import (
     pkh,
     pack,
@@ -41,13 +40,6 @@ class TicketerCommunicationTestCase(BaseTestCase):
             },
         )
 
-        # Here we create routing data for the proxy contract that will
-        # create "L2" ticket in the Rollup contract for Alice:
-        routing_data = create_routing_data(
-            sender=pkh(self.alice),
-            receiver=pkh(self.alice),
-        )
-
         # Then in one bulk we allow ticketer to transfer tokens,
         # deposit tokens to the ticketer, set routing info to the proxy
         # and transfer ticket to the Rollup (Locker) by sending created ticket
@@ -55,8 +47,10 @@ class TicketerCommunicationTestCase(BaseTestCase):
         self.alice.bulk(
             self.fa2.using(self.alice).allow(self.ticketer.address),
             self.ticketer.using(self.alice).deposit(self.fa2, 100),
-            self.proxy_router.using(self.alice).set({
-                'data': routing_data,
+            self.proxy_l1_deposit.using(self.alice).set({
+                'data': {
+                    'address': pkh(self.alice)
+                },
                 'receiver': f'{self.rollup_mock.address}%l1_deposit',
             }),
             self.alice.transfer_ticket(
@@ -64,7 +58,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
                 ticket_ty = l1_ticket['content_type'],
                 ticket_ticketer = l1_ticket['ticketer'],
                 ticket_amount = 25,
-                destination = self.proxy_router.address,
+                destination = self.proxy_l1_deposit.address,
                 entrypoint = 'send',
             ),
         ).send()
@@ -126,11 +120,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         self.boris.bulk(
             self.proxy_l2_burn.using(self.boris).set({
                 'data': {
-                    'routing_data': create_routing_data(
-                        sender=pkh(self.boris),
-                        receiver=pkh(self.boris),
-                    ),
-                    'router': self.router.address,
+                    'address': pkh(self.boris),
                 },
                 'receiver': f'{self.rollup_mock.address}%l2_burn',
             }),
@@ -149,10 +139,9 @@ class TicketerCommunicationTestCase(BaseTestCase):
         # Checking that L2 burn created outbox message:
         outbox_message = self.rollup_mock.get_message(0)
         self.assertEqual(
-            outbox_message['routing_data']['receiver']['address'],
+            outbox_message['routing_data']['address'],
             pkh(self.boris)
         )
-        self.assertEqual(outbox_message['router'], self.router.address)
         self.assertEqual(outbox_message['amount'], 5)
 
         # Anyone can trigger outbox message:

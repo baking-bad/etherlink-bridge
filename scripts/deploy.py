@@ -5,17 +5,15 @@ import os
 from pytezos.client import PyTezosClient
 from tests.helpers.contracts import (
     Ticketer,
-    ProxyRouter,
+    ProxyRouterL1Deposit,
+    ProxyRouterL2Burn,
     ProxyTicketer,
     RollupMock,
     FA2,
     ContractHelper,
-    Router,
-    ProxyL2Burn,
 )
 from tests.helpers.utility import pkh, pack
 from typing import Type, TypeVar, Any
-from tests.helpers.routing_data import create_routing_data
 from tests.helpers.tickets import create_ticket
 
 
@@ -44,11 +42,10 @@ def deploy_contracts(
         manager.wait(opg)
         return cls.create_from_opg(manager, opg)
 
-    proxy_router = deploy_contract(ProxyRouter)
+    proxy_l1_deposit = deploy_contract(ProxyRouterL1Deposit)
     proxy_ticketer = deploy_contract(ProxyTicketer)
-    proxy_l2_burn = deploy_contract(ProxyL2Burn)
+    proxy_l2_burn = deploy_contract(ProxyRouterL2Burn)
     rollup_mock = deploy_contract(RollupMock)
-    router = deploy_contract(Router)
 
     # Deploying Ticketer with external metadata:
     fa2_key = ( "fa2", ( fa2.address, 0 ) )
@@ -68,11 +65,10 @@ def deploy_contracts(
 
     return {
         'fa2': fa2,
-        'proxy_router': proxy_router,
+        'proxy_l1_deposit': proxy_l1_deposit,
         'proxy_ticketer': proxy_ticketer,
         'proxy_l2_burn': proxy_l2_burn,
         'rollup_mock': rollup_mock,
-        'router': router,
         'ticketer': ticketer,
     }
 
@@ -88,14 +84,14 @@ def load_contracts(
     }
 
 
+# TODO: fill with deployed contracts
 CONTRACTS = {
-    'fa2':            (FA2,           'KT1XTdYiaN1rHVJd5Tz9JUNF4UrKXggkaeN6'),
-    'proxy_router':   (ProxyRouter,   'KT1Sak5wzi1unorD2x6Yx36QwDAjjq52LB1P'),
-    'proxy_ticketer': (ProxyTicketer, 'KT1RTUDVanfWh2cxwbYWo2mjxFhbhQtumMaP'),
-    'proxy_l2_burn':  (ProxyL2Burn,   'KT1F4LWzfz7N65a6QAzYLHcceD592r1bFWSx'),
-    'rollup_mock':    (RollupMock,    'KT1AsGzrvDPnEeYKkX7avLmYZ8dXNzgaJSsJ'),
-    'router':         (Router,        'KT1JK3qwyYak5PDgRvKiLUYLWzrdpcmJVdjs'),
-    'ticketer':       (Ticketer,      'KT1Ms11t3ADzvW3gvx9K9p84a1ZtW4z9LbjL'),
+    'fa2':              (FA2,                  ''),
+    'proxy_l1_depoist': (ProxyRouterL1Deposit, ''),
+    'proxy_ticketer':   (ProxyTicketer,        ''),
+    'proxy_l2_burn':    (ProxyRouterL2Burn,    ''),
+    'rollup_mock':      (RollupMock,           ''),
+    'ticketer':         (Ticketer,             ''),
 }
 
 
@@ -110,11 +106,10 @@ def run_interactions(
 
     # TODO: reuse some of this code in tests/test_communication.py
     fa2 = contracts['fa2']
-    proxy_router = contracts['proxy_router']
+    proxy_l1_deposit = contracts['proxy_l1_deposit']
     proxy_ticketer = contracts['proxy_ticketer']
     proxy_l2_burn = contracts['proxy_l2_burn']
     rollup_mock = contracts['rollup_mock']
-    router = contracts['router']
     ticketer = contracts['ticketer']
 
     l1_ticket = create_ticket(
@@ -150,11 +145,10 @@ def run_interactions(
     opg = alice.bulk(
         fa2.using(alice).allow(ticketer.address),
         ticketer.using(alice).deposit(fa2, 100),
-        proxy_router.using(alice).set({
-            'data': create_routing_data(
-                sender=pkh(alice),
-                receiver=pkh(alice),
-            ),
+        proxy_l1_deposit.using(alice).set({
+            'data': {
+                'address': pkh(alice),
+            },
             'receiver': f'{rollup_mock.address}%l1_deposit',
         }),
         alice.transfer_ticket(
@@ -162,7 +156,7 @@ def run_interactions(
             ticket_ty = l1_ticket['content_type'],
             ticket_ticketer = l1_ticket['ticketer'],
             ticket_amount = 25,
-            destination = proxy_router.address,
+            destination = proxy_l1_deposit.address,
             entrypoint = 'send',
         ),
     ).send()
@@ -182,11 +176,7 @@ def run_interactions(
     opg = boris.bulk(
         proxy_l2_burn.using(boris).set({
             'data': {
-                'routing_data': create_routing_data(
-                    sender=pkh(boris),
-                    receiver=pkh(boris),
-                ),
-                'router': router.address,
+                'address': pkh(boris),
             },
             'receiver': f'{rollup_mock.address}%l2_burn',
         }),

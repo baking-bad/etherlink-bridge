@@ -5,10 +5,10 @@ from tests.helpers.utility import (
     pack,
     get_build_dir,
 )
-from tests.helpers.routing_data import RoutingData
 from typing import (
     TypedDict,
     Optional,
+    Union,
 )
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
@@ -16,23 +16,19 @@ from os.path import join
 from tests.helpers.metadata import make_metadata
 
 
+class AddressData(TypedDict):
+    address: str
+
+class BytesData(TypedDict):
+    bytes: bytes
+
 class RouterSetParams(TypedDict):
-    data: RoutingData
+    data: Union[AddressData, BytesData]
     receiver: str
 
 
 class TicketerSetParams(TypedDict):
     data: str
-    receiver: str
-
-
-class RoutingDataAndRouter(TypedDict):
-    routing_data: RoutingData
-    router: str
-
-
-class L2BurnSetParams(TypedDict):
-    data: RoutingDataAndRouter
     receiver: str
 
 
@@ -56,12 +52,26 @@ class BaseProxy(ContractHelper):
             return None
 
 
-class ProxyRouter(BaseProxy):
+class ProxyRouterL1Deposit(BaseProxy):
     default_storage = {
         'context': {},
         'metadata': make_metadata(
-            name='Proxy for Router',
-            description='The Proxy for the Router is a component of the Bridge Protocol Prototype, used to enable the transfer of implicit address tickets to the Router contract to the %route entrypoint on L1 side.',
+            name='Proxy for Rollup Mock L1',
+            description='The Proxy for the RollupMock L1 is a component of the Bridge Protocol Prototype, used to enable the transfer of implicit address tickets to the Rollup Mock contract to the %l1_deposit entrypoint on L1 side.',
+        ),
+    }
+    filename = join(get_build_dir(), 'proxies', 'router.tz')
+
+    def set(self, params: RouterSetParams) -> ContractCall:
+        return self.contract.set(params)
+
+
+class ProxyRouterL2Burn(BaseProxy):
+    default_storage = {
+        'context': {},
+        'metadata': make_metadata(
+            name='Proxy for Rollup Mock L2',
+            description='The Proxy for the RollupMock L2 is a component of the Bridge Protocol Prototype, used to enable the transfer of implicit address tickets to the Rollup Mock contract to the %l2_burn entrypoint on L2 side.',
         ),
     }
     filename = join(get_build_dir(), 'proxies', 'router.tz')
@@ -81,18 +91,4 @@ class ProxyTicketer(BaseProxy):
     filename = join(get_build_dir(), 'proxies', 'ticketer.tz')
 
     def set(self, params: TicketerSetParams) -> ContractCall:
-        return self.contract.set(params)
-
-
-class ProxyL2Burn(BaseProxy):
-    default_storage = {
-        'context': {},
-        'metadata': make_metadata(
-            name='Proxy for Rollup Mock',
-            description='The Proxy for the RollupMock is a component of the Bridge Protocol Prototype, used to enable the transfer of implicit address tickets to the RollupMock contract to the %l2_burn entrypoint on L2 side.',
-        ),
-    }
-    filename = join(get_build_dir(), 'proxies', 'l2-burn.tz')
-
-    def set(self, params: L2BurnSetParams) -> ContractCall:
         return self.contract.set(params)

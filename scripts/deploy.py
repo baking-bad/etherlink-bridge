@@ -86,12 +86,12 @@ def load_contracts(
 
 # TODO: fill with deployed contracts
 CONTRACTS = {
-    'fa2':              (FA2,                  ''),
-    'proxy_l1_depoist': (ProxyRouterL1Deposit, ''),
-    'proxy_ticketer':   (ProxyTicketer,        ''),
-    'proxy_l2_burn':    (ProxyRouterL2Burn,    ''),
-    'rollup_mock':      (RollupMock,           ''),
-    'ticketer':         (Ticketer,             ''),
+    'fa2':              (FA2,                  'KT1997NGB73v2Kvn2StdJg3UmpTDvfk4BwmQ'),
+    'proxy_l1_deposit': (ProxyRouterL1Deposit, 'KT1Ko8NVvwTwxGxdjUrfYcbpThTYz3bXUkts'),
+    'proxy_ticketer':   (ProxyTicketer,        'KT1TBo8EsamwiuAqDdb99cyXtDFoDL2PrNr8'),
+    'proxy_l2_burn':    (ProxyRouterL2Burn,    'KT1KUrnRVkneoQtnJ9J7ZerQ4hueauvY3M7a'),
+    'rollup_mock':      (RollupMock,           'KT1Pc5oYtazVu7CZxgFFmxhKs6iqKv2HH583'),
+    'ticketer':         (Ticketer,             'KT1Bp5joDhfbLnrm3gBmu6jPjt8b3fftUihB'),
 }
 
 
@@ -119,7 +119,7 @@ def run_interactions(
             'contract_address': pack(fa2.address, 'address'),
             'token_id': pack(fa2.token_id, 'nat'),
             'token_type': pack('FA2', 'string'),
-            'decimals': pack(12, 'nat'),
+            'decimals': pack(0, 'nat'),
             'symbol': pack('TEST', 'string'),
         },
     )
@@ -131,7 +131,7 @@ def run_interactions(
             'contract_address': pack(fa2.address, 'address'),
             'token_id': pack(fa2.token_id, 'nat'),
             'token_type': pack('FA2', 'string'),
-            'decimals': pack(12, 'nat'),
+            'decimals': pack(0, 'nat'),
             'symbol': pack('TEST', 'string'),
             'l1_ticketer': pack(ticketer.address, 'address'),
             'l1_token_id': pack(0, 'nat'),

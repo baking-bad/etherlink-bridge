@@ -34,12 +34,6 @@ contract ERC20Wrapper is Context, AccessControlEnumerable, ERC20 {
         this;
     }
 
-    // TODO: this mint function is only for testing purposes
-    //       need to find a way to mint tokens without public mint function
-    function mint(address to, uint256 amount) public virtual {
-        _mint(to, amount);
-    }
-
     /**
      * @dev Mints `amount` tokens for `to` address if provided `ticketer`
      * address and `identifier` are correct.

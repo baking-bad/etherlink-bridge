@@ -13,19 +13,32 @@ contract CounterTest is Test {
 
     function setUp() public {
         alice = vm.addr(0x1);
-        vm.label(alice, "Alice");
         bob = vm.addr(0x2);
+        vm.label(alice, "Alice");
         vm.label(bob, "Bob");
         bridge = new BridgePrecompile();
         token = new ERC20Wrapper("some tickiter", 0, address(bridge));
-        token.mint(alice, 100);
     }
 
-    function test_Transfer() public {
+    function test_BridgeCanMintToken() public {
+        assertEq(token.balanceOf(alice), 0);
+        bridge.deposit(address(token), alice, 100, "some tickiter", 0);
         assertEq(token.balanceOf(alice), 100);
+    }
+
+    function test_RevertWhen_AliceTriesMintToken() public {
         vm.prank(alice);
-        token.transfer(bob, 50);
-        assertEq(token.balanceOf(alice), 50);
-        assertEq(token.balanceOf(bob), 50);
+        vm.expectRevert("ERC20Wrapper: must have minter role to mint");
+        token.deposit(alice, 100, "some tickiter", 0);
+    }
+
+    function test_RevertWhen_TicketerIsWrong() public {
+        vm.expectRevert("ERC20Wrapper: wrong ticketer");
+        bridge.deposit(address(token), alice, 100, "some other tickiter", 0);
+    }
+
+    function test_RevertWhen_IdentifierIsWrong() public {
+        vm.expectRevert("ERC20Wrapper: wrong identifier");
+        bridge.deposit(address(token), alice, 100, "some tickiter", 1);
     }
 }

@@ -3,9 +3,11 @@ pragma solidity ^0.8.21;
 
 import {Test} from "forge-std/Test.sol";
 import {ERC20Wrapper} from "../src/ERC20Wrapper.sol";
+import {BridgePrecompile} from "../src/BridgePrecompile.sol";
 
 contract CounterTest is Test {
     ERC20Wrapper public token;
+    BridgePrecompile public bridge;
     address public alice;
     address public bob;
 
@@ -14,7 +16,8 @@ contract CounterTest is Test {
         vm.label(alice, "Alice");
         bob = vm.addr(0x2);
         vm.label(bob, "Bob");
-        token = new ERC20Wrapper();
+        bridge = new BridgePrecompile();
+        token = new ERC20Wrapper("some tickiter", 0, address(bridge));
         token.mint(alice, 100);
     }
 

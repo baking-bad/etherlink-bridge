@@ -1,2 +1,2 @@
-# Bridge Tezos-Eterlink prototype
+# Bridge Tezos-Etherlink prototype
 

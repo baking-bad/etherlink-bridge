@@ -1,0 +1,3 @@
+[submodule "components/etherlink-l2-side/lib/forge-std"]
+	path = components/etherlink-l2-side/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std

@@ -5,7 +5,7 @@ import {Test} from "forge-std/Test.sol";
 import {ERC20Wrapper} from "../src/ERC20Wrapper.sol";
 import {BridgePrecompile} from "../src/BridgePrecompile.sol";
 
-contract CounterTest is Test {
+contract ERC20WrapperTest is Test {
     ERC20Wrapper public token;
     BridgePrecompile public bridge;
     address public alice;

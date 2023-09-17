@@ -2,7 +2,8 @@
 pragma solidity >=0.8.21;
 
 import {ERC20} from "openzeppelin-contracts/token/ERC20/ERC20.sol";
-import {AccessControlEnumerable} from "openzeppelin-contracts/access/AccessControlEnumerable.sol";
+import {AccessControlEnumerable} from
+    "openzeppelin-contracts/access/AccessControlEnumerable.sol";
 import {Context} from "openzeppelin-contracts/utils/Context.sol";
 import {BridgePrecompile} from "./BridgePrecompile.sol";
 
@@ -23,7 +24,9 @@ contract ERC20Wrapper is Context, AccessControlEnumerable, ERC20 {
      * @param kernel_ address of the rollup kernel which is responsible for
      *        minting and burning tokens
      */
-    constructor(string memory ticketer_, uint256 identifier_, address kernel_) ERC20("TODO: Name", "TODO: Symbol") {
+    constructor(string memory ticketer_, uint256 identifier_, address kernel_)
+        ERC20("TODO: Name", "TODO: Symbol")
+    {
         _ticketer = ticketer_;
         _identifier = identifier_;
         _kernel = kernel_;
@@ -44,8 +47,16 @@ contract ERC20Wrapper is Context, AccessControlEnumerable, ERC20 {
      * - `ticketer` must be equal to the ticketer address of the contract.
      * - `identifier` must be equal to the identifier of the contract.
      */
-    function deposit(address to, uint256 amount, string memory ticketer, uint256 identifier) public virtual {
-        require(hasRole(MINTER_ROLE, _msgSender()), "ERC20Wrapper: must have minter role to mint");
+    function deposit(
+        address to,
+        uint256 amount,
+        string memory ticketer,
+        uint256 identifier
+    ) public virtual {
+        require(
+            hasRole(MINTER_ROLE, _msgSender()),
+            "ERC20Wrapper: must have minter role to mint"
+        );
         bytes32 ticketerBytes = keccak256(abi.encodePacked(ticketer));
         bytes32 _ticketerBytes = keccak256(abi.encodePacked(_ticketer));
         require(ticketerBytes == _ticketerBytes, "ERC20Wrapper: wrong ticketer");

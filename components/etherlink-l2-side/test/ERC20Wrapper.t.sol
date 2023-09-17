@@ -47,7 +47,9 @@ contract CounterTest is Test {
         bridge.deposit(address(token), alice, 100, "some ticketer", 0);
         assertEq(token.balanceOf(alice), 100);
         vm.prank(alice);
-        bytes memory expectedData = abi.encodeCall(bridge.withdraw, ("some receiver", 50, "some ticketer", 0));
+        bytes memory expectedData = abi.encodeCall(
+            bridge.withdraw, ("some receiver", 50, "some ticketer", 0)
+        );
         vm.expectCall(address(bridge), expectedData);
         token.withdraw("some receiver", 50);
         assertEq(token.balanceOf(alice), 50);

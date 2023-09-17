@@ -54,14 +54,14 @@ contract ERC20Wrapper is Context, AccessControlEnumerable, ERC20 {
     }
 
     /**
-     * @dev Burns `amount` tokens from the caller's account and creates
+     * Burns `amount` tokens from the caller's account and creates
      * transaction to withdraw `amount` tokens from L2 to L1.
      *
      * Requirements:
      *
      * - `amount` must be less or equal to the balance of the caller.
      */
-    function withdraw(uint256 amount, string memory receiver) public {
+    function withdraw(string memory receiver, uint256 amount) public {
         _burn(_msgSender(), amount);
         BridgePrecompile bridge = BridgePrecompile(_kernel);
         bridge.withdraw(receiver, amount, _ticketer, _identifier);

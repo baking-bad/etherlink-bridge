@@ -2,10 +2,10 @@
 pragma solidity ^0.8.21;
 
 import {Test} from "forge-std/Test.sol";
-import {ERC20Wrapper, hashToken} from "../src/ERC20Wrapper.sol";
+import {ERC20Wrapper, IERC20Wrapper, hashToken} from "../src/ERC20Wrapper.sol";
 import {BridgePrecompile} from "../src/BridgePrecompile.sol";
 
-contract ERC20WrapperTest is Test {
+contract ERC20WrapperTest is Test, IERC20Wrapper {
     ERC20Wrapper public token;
     BridgePrecompile public bridge;
     address public alice;
@@ -78,5 +78,24 @@ contract ERC20WrapperTest is Test {
         );
 
         assertEq(anotherToken.decimals(), 6);
+    }
+
+    function test_ShouldEmitDepositEventOnDeposit() public {
+        // Only first topic is indexed, so we check it and check
+        // that data the same (last argument is true))):
+        vm.expectEmit(true, false, false, true);
+        emit Deposit(bob, 100);
+        bridge.deposit(address(token), bob, 100, tokenHash);
+    }
+
+    function test_ShouldEmitWithdrawEventOnWithdraw() public {
+        bridge.deposit(address(token), bob, 100, tokenHash);
+        bytes32 receiver = "some receiver";
+        vm.prank(bob);
+        // Only first and second topics are indexed, so we check them
+        // and check that data the same:
+        vm.expectEmit(true, true, false, true);
+        emit Withdraw(bob, receiver, 100);
+        token.withdraw(receiver, 100);
     }
 }

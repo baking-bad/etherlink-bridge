@@ -12,10 +12,30 @@ function hashToken(string memory ticketer, uint256 identifier)
 }
 
 /**
+ * @dev Interface of the ERC20Wrapper.
+ * TODO: need to understand whether other methods need to be added here
+ *       such as withdraw, deposit, etc.
+ * TODO: need to understand should it be derived from IERC20 or not.
+ */
+interface IERC20Wrapper {
+    /**
+     * @dev Emitted when succesful deposit is made.
+     */
+    event Deposit(address indexed to, uint256 amount);
+
+    /**
+     * @dev Emitted when succesful withdraw is made.
+     */
+    event Withdraw(
+        address indexed from, bytes32 indexed receiver, uint256 amount
+    );
+}
+
+/**
  * ERC20 Wrapper is a ERC20 token contract which represents a L1 token
  * on L2.
  */
-contract ERC20Wrapper is ERC20 {
+contract ERC20Wrapper is ERC20, IERC20Wrapper {
     uint256 private _tokenHash;
     address private _kernel;
     uint8 private _decimals;
@@ -63,6 +83,7 @@ contract ERC20Wrapper is ERC20 {
         );
         require(_tokenHash == tokenHash, "ERC20Wrapper: wrong token hash");
         _mint(to, amount);
+        emit Deposit(to, amount);
     }
 
     /**
@@ -74,9 +95,11 @@ contract ERC20Wrapper is ERC20 {
      * - `amount` must be less or equal to the balance of the caller.
      */
     function withdraw(bytes32 receiver, uint256 amount) public {
-        _burn(_msgSender(), amount);
+        address from = _msgSender();
+        _burn(from, amount);
         BridgePrecompile bridge = BridgePrecompile(_kernel);
         bridge.withdraw(receiver, amount, _tokenHash);
+        emit Withdraw(from, receiver, amount);
     }
 
     function decimals() public view virtual override returns (uint8) {

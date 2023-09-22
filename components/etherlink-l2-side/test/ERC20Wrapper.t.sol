@@ -50,11 +50,12 @@ contract ERC20WrapperTest is Test {
     function test_WithdrawCallsBridgePrecompile() public {
         bridge.deposit(address(token), alice, 100, tokenHash);
         assertEq(token.balanceOf(alice), 100);
-        vm.prank(alice);
+        bytes32 receiver = "some receiver";
         bytes memory expectedData =
-            abi.encodeCall(bridge.withdraw, ("some receiver", 50, tokenHash));
+            abi.encodeCall(bridge.withdraw, (receiver, 50, tokenHash));
         vm.expectCall(address(bridge), expectedData);
-        token.withdraw("some receiver", 50);
+        vm.prank(alice);
+        token.withdraw(receiver, 50);
         assertEq(token.balanceOf(alice), 50);
     }
 }

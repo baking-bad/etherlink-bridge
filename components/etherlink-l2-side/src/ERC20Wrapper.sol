@@ -71,7 +71,7 @@ contract ERC20Wrapper is Context, AccessControlEnumerable, ERC20 {
      *
      * - `amount` must be less or equal to the balance of the caller.
      */
-    function withdraw(string memory receiver, uint256 amount) public {
+    function withdraw(bytes32 receiver, uint256 amount) public {
         _burn(_msgSender(), amount);
         BridgePrecompile bridge = BridgePrecompile(_kernel);
         bridge.withdraw(receiver, amount, _tokenHash);

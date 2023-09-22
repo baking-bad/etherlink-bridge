@@ -79,6 +79,9 @@ contract ERC20Wrapper is ERC20 {
         bridge.withdraw(receiver, amount, _tokenHash);
     }
 
-    // TODO: reimplement get decimals function
+    function decimals() public view virtual override returns (uint8) {
+        return _decimals;
+    }
+
     // TODO: getTicketer, getIdentifier, getRollupKernel
 }

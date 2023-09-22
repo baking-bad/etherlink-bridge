@@ -65,4 +65,18 @@ contract ERC20WrapperTest is Test {
         token.withdraw(receiver, 50);
         assertEq(token.balanceOf(alice), 50);
     }
+
+    function test_ShouldReturnCorrectDecimals() public {
+        assertEq(token.decimals(), 18);
+        ERC20Wrapper anotherToken = new ERC20Wrapper(
+            "some ticketer",
+            0,
+            address(bridge),
+            "Another token",
+            "ATKN",
+            6
+        );
+
+        assertEq(anotherToken.decimals(), 6);
+    }
 }

@@ -31,7 +31,7 @@ contract ERC20WrapperTest is Test {
 
     function test_RevertWhen_AliceTriesMintToken() public {
         vm.prank(alice);
-        vm.expectRevert("ERC20Wrapper: must have minter role to mint");
+        vm.expectRevert("ERC20Wrapper: only kernel allowed to mint tokens");
         token.deposit(alice, 100, tokenHash);
     }
 

@@ -2,9 +2,6 @@
 pragma solidity >=0.8.21;
 
 import {ERC20} from "openzeppelin-contracts/token/ERC20/ERC20.sol";
-import {AccessControlEnumerable} from
-    "openzeppelin-contracts/access/AccessControlEnumerable.sol";
-import {Context} from "openzeppelin-contracts/utils/Context.sol";
 import {BridgePrecompile} from "./BridgePrecompile.sol";
 
 function hashToken(string memory ticketer, uint256 identifier)
@@ -18,8 +15,7 @@ function hashToken(string memory ticketer, uint256 identifier)
  * ERC20 Wrapper is a ERC20 token contract which represents a L1 token
  * on L2.
  */
-contract ERC20Wrapper is Context, AccessControlEnumerable, ERC20 {
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+contract ERC20Wrapper is ERC20 {
     uint256 private _tokenHash;
     address private _kernel;
 
@@ -34,20 +30,18 @@ contract ERC20Wrapper is Context, AccessControlEnumerable, ERC20 {
     {
         _tokenHash = hashToken(ticketer_, identifier_);
         _kernel = kernel_;
-        _setupRole(DEFAULT_ADMIN_ROLE, kernel_);
-        _setupRole(MINTER_ROLE, kernel_);
         // TODO: find a way to provide some metadata during deployment
         //       [maybe create some kind of ERC20Factory?]
         this;
     }
 
     /**
-     * @dev Mints `amount` tokens for `to` address if provided `ticketer`
+     * Mints `amount` tokens for `to` address if provided `ticketer`
      * address and `identifier` are correct.
      *
      * Requirements:
      *
-     * - the caller must have the `MINTER_ROLE`.
+     * - only kernel address allowed to mint tokens.
      * - `tokenHash` must be equal to the token hash of the ticketer
      * and identifier used during deployment.
      */
@@ -56,8 +50,8 @@ contract ERC20Wrapper is Context, AccessControlEnumerable, ERC20 {
         virtual
     {
         require(
-            hasRole(MINTER_ROLE, _msgSender()),
-            "ERC20Wrapper: must have minter role to mint"
+            _kernel == _msgSender(),
+            "ERC20Wrapper: only kernel allowed to mint tokens"
         );
         require(_tokenHash == tokenHash, "ERC20Wrapper: wrong token hash");
         _mint(to, amount);

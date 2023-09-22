@@ -7,15 +7,20 @@ import {AccessControlEnumerable} from
 import {Context} from "openzeppelin-contracts/utils/Context.sol";
 import {BridgePrecompile} from "./BridgePrecompile.sol";
 
+function hashToken(string memory ticketer, uint256 identifier)
+    pure
+    returns (uint256)
+{
+    return uint256(keccak256(abi.encodePacked(ticketer, identifier)));
+}
+
 /**
  * ERC20 Wrapper is a ERC20 token contract which represents a L1 token
  * on L2.
  */
 contract ERC20Wrapper is Context, AccessControlEnumerable, ERC20 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    // TODO: consider using bytes32 for ticketer?
-    string private _ticketer;
-    uint256 private _identifier;
+    uint256 private _tokenHash;
     address private _kernel;
 
     /**
@@ -27,8 +32,7 @@ contract ERC20Wrapper is Context, AccessControlEnumerable, ERC20 {
     constructor(string memory ticketer_, uint256 identifier_, address kernel_)
         ERC20("TODO: Name", "TODO: Symbol")
     {
-        _ticketer = ticketer_;
-        _identifier = identifier_;
+        _tokenHash = hashToken(ticketer_, identifier_);
         _kernel = kernel_;
         _setupRole(DEFAULT_ADMIN_ROLE, kernel_);
         _setupRole(MINTER_ROLE, kernel_);
@@ -44,23 +48,18 @@ contract ERC20Wrapper is Context, AccessControlEnumerable, ERC20 {
      * Requirements:
      *
      * - the caller must have the `MINTER_ROLE`.
-     * - `ticketer` must be equal to the ticketer address of the contract.
-     * - `identifier` must be equal to the identifier of the contract.
+     * - `tokenHash` must be equal to the token hash of the ticketer
+     * and identifier used during deployment.
      */
-    function deposit(
-        address to,
-        uint256 amount,
-        string memory ticketer,
-        uint256 identifier
-    ) public virtual {
+    function deposit(address to, uint256 amount, uint256 tokenHash)
+        public
+        virtual
+    {
         require(
             hasRole(MINTER_ROLE, _msgSender()),
             "ERC20Wrapper: must have minter role to mint"
         );
-        bytes32 ticketerBytes = keccak256(abi.encodePacked(ticketer));
-        bytes32 _ticketerBytes = keccak256(abi.encodePacked(_ticketer));
-        require(ticketerBytes == _ticketerBytes, "ERC20Wrapper: wrong ticketer");
-        require(identifier == _identifier, "ERC20Wrapper: wrong identifier");
+        require(_tokenHash == tokenHash, "ERC20Wrapper: wrong token hash");
         _mint(to, amount);
     }
 
@@ -75,7 +74,7 @@ contract ERC20Wrapper is Context, AccessControlEnumerable, ERC20 {
     function withdraw(string memory receiver, uint256 amount) public {
         _burn(_msgSender(), amount);
         BridgePrecompile bridge = BridgePrecompile(_kernel);
-        bridge.withdraw(receiver, amount, _ticketer, _identifier);
+        bridge.withdraw(receiver, amount, _tokenHash);
     }
 
     // TODO: getTicketer, getIdentifier, getRollupKernel

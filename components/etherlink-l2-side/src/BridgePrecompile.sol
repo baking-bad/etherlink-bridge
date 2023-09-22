@@ -12,17 +12,13 @@ contract BridgePrecompile {
         address wrapper,
         address to,
         uint256 amount,
-        string memory ticketer,
-        uint256 identifier
+        uint256 tokenHash
     ) public {
         ERC20Wrapper token = ERC20Wrapper(wrapper);
-        token.deposit(to, amount, ticketer, identifier);
+        token.deposit(to, amount, tokenHash);
     }
 
-    function withdraw(
-        string memory receiver,
-        uint256 amount,
-        string memory ticketer,
-        uint256 identifier
-    ) public {}
+    function withdraw(string memory receiver, uint256 amount, uint256 tokenHash)
+        public
+    {}
 }

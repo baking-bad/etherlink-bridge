@@ -18,20 +18,28 @@ function hashToken(string memory ticketer, uint256 identifier)
 contract ERC20Wrapper is ERC20 {
     uint256 private _tokenHash;
     address private _kernel;
+    uint8 private _decimals;
 
     /**
      * @param ticketer_ whitelisted Tezos L1 address of the ticketer contract
      * @param identifier_ identifier of the L1 token (ticket id)
      * @param kernel_ address of the rollup kernel which is responsible for
      *        minting and burning tokens
+     * @param name_ name of the token
+     * @param symbol_ symbol of the token
+     * @param decimals_ number of decimals of the token
      */
-    constructor(string memory ticketer_, uint256 identifier_, address kernel_)
-        ERC20("TODO: Name", "TODO: Symbol")
-    {
+    constructor(
+        string memory ticketer_,
+        uint256 identifier_,
+        address kernel_,
+        string memory name_,
+        string memory symbol_,
+        uint8 decimals_
+    ) ERC20(name_, symbol_) {
         _tokenHash = hashToken(ticketer_, identifier_);
         _kernel = kernel_;
-        // TODO: find a way to provide some metadata during deployment
-        //       [maybe create some kind of ERC20Factory?]
+        _decimals = decimals_;
         this;
     }
 
@@ -71,5 +79,6 @@ contract ERC20Wrapper is ERC20 {
         bridge.withdraw(receiver, amount, _tokenHash);
     }
 
+    // TODO: reimplement get decimals function
     // TODO: getTicketer, getIdentifier, getRollupKernel
 }

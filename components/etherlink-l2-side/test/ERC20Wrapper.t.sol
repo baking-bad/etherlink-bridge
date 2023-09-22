@@ -18,7 +18,14 @@ contract ERC20WrapperTest is Test {
         vm.label(alice, "Alice");
         vm.label(bob, "Bob");
         bridge = new BridgePrecompile();
-        token = new ERC20Wrapper("some ticketer", 0, address(bridge));
+        token = new ERC20Wrapper(
+            "some ticketer",
+            0,
+            address(bridge),
+            "Token",
+            "TKN",
+            18
+        );
         tokenHash = hashToken("some ticketer", 0);
     }
 

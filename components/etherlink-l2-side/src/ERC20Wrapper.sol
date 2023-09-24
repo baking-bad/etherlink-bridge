@@ -4,7 +4,7 @@ pragma solidity >=0.8.21;
 import {ERC20} from "openzeppelin-contracts/token/ERC20/ERC20.sol";
 import {BridgePrecompile} from "./BridgePrecompile.sol";
 
-function hashToken(bytes20 ticketer, bytes32 identifier)
+function hashToken(bytes20 ticketer, bytes memory identifier)
     pure
     returns (uint256)
 {
@@ -51,7 +51,7 @@ contract ERC20Wrapper is ERC20, IERC20Wrapper {
      */
     constructor(
         bytes20 ticketer_,
-        bytes32 identifier_,
+        bytes memory identifier_,
         address kernel_,
         string memory name_,
         string memory symbol_,

@@ -13,10 +13,9 @@ contract ERC20WrapperTest is Test, IERC20Wrapper {
     uint256 public tokenHash;
     bytes20 public ticketer = bytes20("some ticketer");
     bytes20 public wrongTicketer = bytes20("some other ticketer");
-    bytes32 public identifier = keccak256(abi.encodePacked("forged identifier"));
-    bytes32 public wrongIdentifier =
-        keccak256(abi.encodePacked("another forged identifier"));
-    bytes32 receiver = "some receiver";
+    bytes public identifier = abi.encodePacked("forged identifier");
+    bytes public wrongIdentifier = abi.encodePacked("another forged identifier");
+    bytes32 public receiver = "some receiver";
 
     function setUp() public {
         vm.label(alice, "Alice");

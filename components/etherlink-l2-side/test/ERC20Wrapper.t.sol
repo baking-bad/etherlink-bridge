@@ -8,25 +8,29 @@ import {BridgePrecompile} from "../src/BridgePrecompile.sol";
 contract ERC20WrapperTest is Test, IERC20Wrapper {
     ERC20Wrapper public token;
     BridgePrecompile public bridge;
-    address public alice;
-    address public bob;
+    address public alice = vm.addr(0x1);
+    address public bob = vm.addr(0x2);
     uint256 public tokenHash;
+    bytes20 public ticketer = bytes20("some ticketer");
+    bytes20 public wrongTicketer = bytes20("some other ticketer");
+    bytes32 public identifier = keccak256(abi.encodePacked("forged identifier"));
+    bytes32 public wrongIdentifier =
+        keccak256(abi.encodePacked("another forged identifier"));
+    bytes32 receiver = "some receiver";
 
     function setUp() public {
-        alice = vm.addr(0x1);
-        bob = vm.addr(0x2);
         vm.label(alice, "Alice");
         vm.label(bob, "Bob");
         bridge = new BridgePrecompile();
         token = new ERC20Wrapper(
-            "some ticketer",
-            0,
+            ticketer,
+            identifier,
             address(bridge),
             "Token",
             "TKN",
             18
         );
-        tokenHash = hashToken("some ticketer", 0);
+        tokenHash = hashToken(ticketer, identifier);
     }
 
     function test_BridgeCanMintToken() public {
@@ -44,20 +48,19 @@ contract ERC20WrapperTest is Test, IERC20Wrapper {
 
     function test_RevertWhen_TicketerIsWrong() public {
         vm.expectRevert("ERC20Wrapper: wrong token hash");
-        uint256 wrongTokenHash = hashToken("some other ticketer", 0);
+        uint256 wrongTokenHash = hashToken(wrongTicketer, identifier);
         bridge.deposit(address(token), alice, 100, wrongTokenHash);
     }
 
     function test_RevertWhen_IdentifierIsWrong() public {
         vm.expectRevert("ERC20Wrapper: wrong token hash");
-        uint256 wrongTokenHash = hashToken("some ticketer", 1);
+        uint256 wrongTokenHash = hashToken(ticketer, wrongIdentifier);
         bridge.deposit(address(token), alice, 100, wrongTokenHash);
     }
 
     function test_WithdrawCallsBridgePrecompile() public {
         bridge.deposit(address(token), alice, 100, tokenHash);
         assertEq(token.balanceOf(alice), 100);
-        bytes32 receiver = "some receiver";
         bytes memory expectedData =
             abi.encodeCall(bridge.withdraw, (receiver, 50, tokenHash));
         vm.expectCall(address(bridge), expectedData);
@@ -69,8 +72,8 @@ contract ERC20WrapperTest is Test, IERC20Wrapper {
     function test_ShouldReturnCorrectDecimals() public {
         assertEq(token.decimals(), 18);
         ERC20Wrapper anotherToken = new ERC20Wrapper(
-            "some ticketer",
-            0,
+            ticketer,
+            identifier,
             address(bridge),
             "Another token",
             "ATKN",
@@ -90,7 +93,6 @@ contract ERC20WrapperTest is Test, IERC20Wrapper {
 
     function test_ShouldEmitWithdrawEventOnWithdraw() public {
         bridge.deposit(address(token), bob, 100, tokenHash);
-        bytes32 receiver = "some receiver";
         vm.prank(bob);
         // Only first and second topics are indexed, so we check them
         // and check that data the same:

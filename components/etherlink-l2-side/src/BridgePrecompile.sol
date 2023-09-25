@@ -18,7 +18,7 @@ contract BridgePrecompile {
         token.deposit(to, amount, tokenHash);
     }
 
-    function withdraw(bytes32 receiver, uint256 amount, uint256 tokenHash)
+    function withdraw(bytes20 receiver, uint256 amount, uint256 tokenHash)
         public
     {}
 }

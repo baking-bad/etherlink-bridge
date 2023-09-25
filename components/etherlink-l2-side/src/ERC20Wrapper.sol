@@ -27,7 +27,7 @@ interface IERC20Wrapper {
      * @dev Emitted when succesful withdraw is made.
      */
     event Withdraw(
-        address indexed from, bytes32 indexed receiver, uint256 amount
+        address indexed from, bytes20 indexed receiver, uint256 amount
     );
 }
 
@@ -94,7 +94,7 @@ contract ERC20Wrapper is ERC20, IERC20Wrapper {
      *
      * - `amount` must be less or equal to the balance of the caller.
      */
-    function withdraw(bytes32 receiver, uint256 amount) public {
+    function withdraw(bytes20 receiver, uint256 amount) public {
         address from = _msgSender();
         _burn(from, amount);
         BridgePrecompile bridge = BridgePrecompile(_kernel);

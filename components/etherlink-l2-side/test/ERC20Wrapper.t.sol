@@ -15,7 +15,7 @@ contract ERC20WrapperTest is Test, IERC20Wrapper {
     bytes20 public wrongTicketer = bytes20("some other ticketer");
     bytes public identifier = abi.encodePacked("forged identifier");
     bytes public wrongIdentifier = abi.encodePacked("another forged identifier");
-    bytes32 public receiver = "some receiver";
+    bytes20 public receiver = bytes20("some receiver");
 
     function setUp() public {
         vm.label(alice, "Alice");

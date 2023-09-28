@@ -3,6 +3,7 @@ pragma solidity >=0.8.21;
 
 import {ERC20} from "openzeppelin-contracts/token/ERC20/ERC20.sol";
 import {BridgePrecompile} from "./BridgePrecompile.sol";
+import {IDeposit} from "./IDeposit.sol";
 
 function hashToken(bytes20 ticketer, bytes memory identifier)
     pure
@@ -12,30 +13,10 @@ function hashToken(bytes20 ticketer, bytes memory identifier)
 }
 
 /**
- * @dev Interface of the ERC20Wrapper.
- * TODO: need to understand whether other methods need to be added here
- *       such as withdraw, deposit, etc.
- * TODO: need to understand should it be derived from IERC20 or not.
- */
-interface IERC20Wrapper {
-    /**
-     * @dev Emitted when succesful deposit is made.
-     */
-    event Deposit(address indexed to, uint256 amount);
-
-    /**
-     * @dev Emitted when succesful withdraw is made.
-     */
-    event Withdraw(
-        address indexed from, bytes20 indexed receiver, uint256 amount
-    );
-}
-
-/**
  * ERC20 Wrapper is a ERC20 token contract which represents a L1 token
  * on L2.
  */
-contract ERC20Wrapper is ERC20, IERC20Wrapper {
+contract ERC20Wrapper is ERC20, IDeposit {
     uint256 private _tokenHash;
     address private _kernel;
     uint8 private _decimals;
@@ -73,17 +54,19 @@ contract ERC20Wrapper is ERC20, IERC20Wrapper {
      * - `tokenHash` must be equal to the token hash of the ticketer
      * and identifier used during deployment.
      */
-    function deposit(address to, uint256 amount, uint256 tokenHash)
-        public
-        virtual
-    {
+    function deposit(
+        bytes32 depositId,
+        address to,
+        uint256 amount,
+        uint256 tokenHash
+    ) public {
         require(
             _kernel == _msgSender(),
             "ERC20Wrapper: only kernel allowed to mint tokens"
         );
         require(_tokenHash == tokenHash, "ERC20Wrapper: wrong token hash");
         _mint(to, amount);
-        emit Deposit(to, amount);
+        emit Deposit(depositId, to, amount);
     }
 
     /**
@@ -98,11 +81,10 @@ contract ERC20Wrapper is ERC20, IERC20Wrapper {
         address from = _msgSender();
         _burn(from, amount);
         BridgePrecompile bridge = BridgePrecompile(_kernel);
-        bridge.withdraw(receiver, amount, _tokenHash);
-        emit Withdraw(from, receiver, amount);
+        bridge.withdraw(from, receiver, amount, _tokenHash);
     }
 
-    function decimals() public view virtual override returns (uint8) {
+    function decimals() public view override returns (uint8) {
         return _decimals;
     }
 

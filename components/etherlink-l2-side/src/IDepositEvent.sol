@@ -8,9 +8,11 @@ interface IDepositEvent {
     /**
      * @dev Emitted when succesful deposit is made.
      */
-    // TODO: add address of ERC contract?
-    // TODO: add tokenHash
     event Deposit(
-        bytes32 indexed depositId, address indexed to, uint256 amount
+        bytes32 indexed depositId,
+        uint256 indexed tokenHash,
+        address token,
+        address indexed receiver,
+        uint256 amount
     );
 }

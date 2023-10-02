@@ -8,9 +8,10 @@ interface IWithdrawEvent {
     /**
      * @dev Emitted when succesful withdraw is made.
      */
-    // TODO: add tokenHash to event?
     event Withdraw(
         bytes32 indexed withdrawalId,
+        uint256 tokenHash,
+        address wrapper,
         uint256 messageId,
         uint256 outboxLevel,
         address indexed sender,

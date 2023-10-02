@@ -3,7 +3,7 @@ pragma solidity >=0.8.21;
 
 import {ERC20} from "openzeppelin-contracts/token/ERC20/ERC20.sol";
 import {BridgePrecompile} from "./BridgePrecompile.sol";
-import {IDeposit} from "./IDeposit.sol";
+import {IDepositEvent} from "./IDepositEvent.sol";
 
 function hashToken(bytes20 ticketer, bytes memory identifier)
     pure
@@ -16,7 +16,7 @@ function hashToken(bytes20 ticketer, bytes memory identifier)
  * ERC20 Wrapper is a ERC20 token contract which represents a L1 token
  * on L2.
  */
-contract ERC20Wrapper is ERC20, IDeposit {
+contract ERC20Wrapper is ERC20, IDepositEvent {
     uint256 private _tokenHash;
     address private _kernel;
     uint8 private _decimals;

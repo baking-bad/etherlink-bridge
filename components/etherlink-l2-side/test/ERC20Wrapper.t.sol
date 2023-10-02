@@ -4,10 +4,10 @@ pragma solidity ^0.8.21;
 import {Test} from "forge-std/Test.sol";
 import {ERC20Wrapper, hashToken} from "../src/ERC20Wrapper.sol";
 import {BridgePrecompile} from "../src/BridgePrecompile.sol";
-import {IDeposit} from "../src/IDeposit.sol";
-import {IWithdraw} from "../src/IWithdraw.sol";
+import {IDepositEvent} from "../src/IDepositEvent.sol";
+import {IWithdrawEvent} from "../src/IWithdrawEvent.sol";
 
-contract ERC20WrapperTest is Test, IDeposit, IWithdraw {
+contract ERC20WrapperTest is Test, IDepositEvent, IWithdrawEvent {
     ERC20Wrapper public token;
     BridgePrecompile public bridge;
     address public alice = vm.addr(0x1);

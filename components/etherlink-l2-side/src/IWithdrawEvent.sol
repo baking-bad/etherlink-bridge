@@ -4,10 +4,11 @@ pragma solidity >=0.8.21;
 /**
  * @dev Interface of the contract which can emit Withdraw event.
  */
-interface IWithdraw {
+interface IWithdrawEvent {
     /**
      * @dev Emitted when succesful withdraw is made.
      */
+    // TODO: add tokenHash to event?
     event Withdraw(
         bytes32 indexed withdrawalId,
         uint256 messageId,

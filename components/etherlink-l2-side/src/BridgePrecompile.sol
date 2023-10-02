@@ -2,9 +2,9 @@
 pragma solidity >=0.8.21;
 
 import {ERC20Wrapper} from "./ERC20Wrapper.sol";
-import {IWithdraw} from "./IWithdraw.sol";
+import {IWithdrawEvent} from "./IWithdrawEvent.sol";
 
-contract BridgePrecompile is IWithdraw {
+contract BridgePrecompile is IWithdrawEvent {
     // TODO: is uint256 enough for messageId?
     uint256 private outboxMessageId;
     uint256 private outboxLevel;

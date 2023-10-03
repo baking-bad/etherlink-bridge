@@ -93,9 +93,14 @@ contract Kernel {
         address wrapper,
         uint256 amount
     ) public {
+        // TODO: assert only bridge precompile ca call this
         bytes20 ticketer = _tokens[tokenHash].ticketer;
         bytes memory identifier = _tokens[tokenHash].identifier;
         bytes32 ticketWrapper = hashTicketOwner(ticketer, identifier, wrapper);
+        uint256 ticketBalance = _tickets[ticketWrapper];
+        if (ticketBalance < amount) {
+            revert("Kernel: ticket balance is not enough");
+        }
         _tickets[ticketWrapper] -= amount;
         // NOTE: here the withdraw outbox message should be sent to L1
     }

@@ -34,5 +34,11 @@ contract KernelTest is BaseTest {
         assertEq(kernel.getBalance(ticketer, identifier, address(token)), 60);
     }
 
-    // TODO: test_ShouldNotAllowToWithdrawMoreThanTicketBalance
+    function test_RevertWhen_WithdrawMoreThanTicketBalance() public {
+        kernel.inboxDeposit(address(token), bob, 1, ticketer, identifier);
+        assertEq(kernel.getBalance(ticketer, identifier, address(token)), 1);
+        vm.prank(address(bridge));
+        vm.expectRevert("Kernel: ticket balance is not enough");
+        kernel.finalizeWithdraw(tokenHash, address(token), 2);
+    }
 }

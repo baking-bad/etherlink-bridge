@@ -13,6 +13,11 @@ function hashTicketOwner(
     return keccak256(abi.encodePacked(ticketer, identifier, owner));
 }
 
+struct TokenData {
+    bytes20 ticketer;
+    bytes identifier;
+}
+
 /**
  * The Kernel is mock contract that used to represent the rollup kernel
  * on L2 side, which is resposible for bridging tokens between L1 and L2.
@@ -24,11 +29,6 @@ contract Kernel {
     address private _bridge;
     uint256 private _inboxLevel;
     uint256 private _inboxMessageId;
-
-    struct TokenData {
-        bytes20 ticketer;
-        bytes identifier;
-    }
 
     mapping(uint256 => TokenData) private _tokens;
     mapping(bytes32 => uint256) private _tickets;
@@ -79,13 +79,13 @@ contract Kernel {
         return _tickets[ticket];
     }
 
-    function getTicketerAndIdentifier(uint256 tokenHash)
+    function getTokenData(uint256 tokenHash)
         public
         view
-        returns (bytes20, bytes memory)
+        returns (TokenData memory)
     {
         TokenData memory tokenData = _tokens[tokenHash];
-        return (tokenData.ticketer, tokenData.identifier);
+        return tokenData;
     }
 
     function finalizeWithdraw(
@@ -97,5 +97,6 @@ contract Kernel {
         bytes memory identifier = _tokens[tokenHash].identifier;
         bytes32 ticketWrapper = hashTicketOwner(ticketer, identifier, wrapper);
         _tickets[ticketWrapper] -= amount;
+        // NOTE: here the withdraw outbox message should be sent to L1
     }
 }

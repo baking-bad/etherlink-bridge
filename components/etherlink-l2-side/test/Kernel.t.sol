@@ -41,4 +41,11 @@ contract KernelTest is BaseTest {
         vm.expectRevert("Kernel: ticket balance is not enough");
         kernel.finalizeWithdraw(tokenHash, address(token), 2);
     }
+
+    function test_RevertWhen_FinalizeWithdrawCalledNotByBridge() public {
+        kernel.inboxDeposit(address(token), bob, 10, ticketer, identifier);
+        vm.prank(bob);
+        vm.expectRevert("Kernel: only bridge allowed to finalize withdraw");
+        kernel.finalizeWithdraw(tokenHash, address(token), 1);
+    }
 }

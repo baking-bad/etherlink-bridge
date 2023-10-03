@@ -8,6 +8,7 @@ interface IWithdrawEvent {
     /**
      * @dev Emitted when succesful withdraw is made.
      */
+    // TODO: consider rename wrapper to ticketHolder?
     event Withdraw(
         bytes32 indexed withdrawalId,
         uint256 tokenHash,

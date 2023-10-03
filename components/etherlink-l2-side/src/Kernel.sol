@@ -93,7 +93,10 @@ contract Kernel {
         address wrapper,
         uint256 amount
     ) public {
-        // TODO: assert only bridge precompile ca call this
+        require(
+            _bridge == msg.sender,
+            "Kernel: only bridge allowed to finalize withdraw"
+        );
         bytes20 ticketer = _tokens[tokenHash].ticketer;
         bytes memory identifier = _tokens[tokenHash].identifier;
         bytes32 ticketWrapper = hashTicketOwner(ticketer, identifier, wrapper);

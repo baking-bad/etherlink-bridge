@@ -37,4 +37,13 @@ contract BridgePrecompileTest is BaseTest, IDepositEvent, IWithdrawEvent {
         );
         token.withdraw(receiver, 100);
     }
+
+    function test_RevertWhen_DepositCalledNotFromKernel() public {
+        vm.prank(alice);
+        bytes32 depositId = keccak256(abi.encodePacked(uint256(0), uint256(0)));
+        vm.expectRevert(
+            "BridgePrecompile: only kernel allowed to deposit tokens"
+        );
+        bridge.deposit(depositId, address(token), bob, 10000, tokenHash);
+    }
 }

@@ -22,6 +22,17 @@ contract KernelTest is BaseTest {
         assertEq(tokenData.identifier, identifier);
     }
 
-    // TODO: test_ShouldDecreaseTicketBalanceOfTokenIfWithdrawSucceed
+    function test_ShouldDecreaseTicketBalanceOfTokenIfWithdrawSucceed()
+        public
+    {
+        assertEq(kernel.getBalance(ticketer, identifier, address(token)), 0);
+        kernel.inboxDeposit(address(token), alice, 100, ticketer, identifier);
+        assertEq(kernel.getBalance(ticketer, identifier, address(token)), 100);
+        assertEq(kernel.getBalance(ticketer, identifier, alice), 0);
+        vm.prank(alice);
+        token.withdraw(receiver, 40);
+        assertEq(kernel.getBalance(ticketer, identifier, address(token)), 60);
+    }
+
     // TODO: test_ShouldNotAllowToWithdrawMoreThanTicketBalance
 }

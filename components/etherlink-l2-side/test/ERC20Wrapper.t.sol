@@ -45,6 +45,15 @@ contract ERC20WrapperTest is Test, IDepositEvent, IWithdrawEvent {
         assertEq(token.totalSupply(), 100);
     }
 
+    function test_ShouldIncreaseTicketBalanceOfTokenIfDepositSucceed() public {
+        kernel.inboxDeposit(address(token), alice, 100, ticketer, identifier);
+        assertEq(kernel.getBalance(ticketer, identifier, address(token)), 100);
+        assertEq(kernel.getBalance(ticketer, identifier, alice), 0);
+    }
+
+    // TODO: test_ShouldIncreaseTicketBalanceOfReceiverIfWrongTokenAddress
+    // TODO: test_ShouldAddTokenDataIfDepositSucceed
+
     function test_RevertWhen_AliceTriesMintToken() public {
         vm.prank(alice);
         vm.expectRevert("ERC20Wrapper: only kernel allowed to mint tokens");
@@ -64,6 +73,9 @@ contract ERC20WrapperTest is Test, IDepositEvent, IWithdrawEvent {
             address(token), alice, 100, ticketer, wrongIdentifier
         );
     }
+
+    // TODO: test_ShouldDecreaseTicketBalanceOfTokenIfWithdrawSucceed
+    // TODO: test_ShouldNotAllowToWithdrawMoreThanTicketBalance
 
     function test_WithdrawCallsBridgePrecompile() public {
         kernel.inboxDeposit(address(token), alice, 100, ticketer, identifier);

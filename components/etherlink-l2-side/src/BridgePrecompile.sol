@@ -4,6 +4,7 @@ pragma solidity >=0.8.21;
 import {ERC20Wrapper} from "./ERC20Wrapper.sol";
 import {IWithdrawEvent} from "./IWithdrawEvent.sol";
 import {IDepositEvent} from "./IDepositEvent.sol";
+import {Kernel} from "./Kernel.sol";
 
 /**
  * BridgePrecompile is a special contract which is used to represent
@@ -16,13 +17,15 @@ contract BridgePrecompile is IWithdrawEvent, IDepositEvent {
     // TODO: is uint256 enough for messageId?
     uint256 private _outboxMessageId;
     uint256 private _outboxLevel;
+    address private _kernel;
 
     // TODO: methods to set messageId & outboxLevel?
 
-    constructor() {
+    constructor(address kernel) {
         this;
         _outboxMessageId = 0;
         _outboxLevel = 0;
+        _kernel = kernel;
     }
 
     function deposit(
@@ -32,7 +35,10 @@ contract BridgePrecompile is IWithdrawEvent, IDepositEvent {
         uint256 amount,
         uint256 tokenHash
     ) public {
-        // TODO: add require that will allow only kernel to emit events
+        require(
+            _kernel == msg.sender,
+            "BridgePrecompile: only kernel allowed to deposit tokens"
+        );
         emit Deposit(depositId, tokenHash, wrapper, receiver, amount);
     }
 
@@ -55,10 +61,11 @@ contract BridgePrecompile is IWithdrawEvent, IDepositEvent {
             receiver,
             amount
         );
-        // TODO: call Kernel to update the ledger of L2 tickets
-        // NOTE: in the final implementation no real call should be made
-        //       the BridgePrecompile should be allowed to modify the ledger
-        //       directly.
         _outboxMessageId += 1;
+        Kernel kernel = Kernel(_kernel);
+        // NOTE: in the final implementation no real call to Kernel should be
+        //       made, the BridgePrecompile should be allowed to modify the
+        //       ledger directly without calling Kernel
+        kernel.finalizeWithdraw(tokenHash, wrapper, amount);
     }
 }

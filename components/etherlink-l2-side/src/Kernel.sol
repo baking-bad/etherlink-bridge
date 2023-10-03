@@ -33,9 +33,14 @@ contract Kernel {
     mapping(uint256 => TokenData) private _tokens;
     mapping(bytes32 => uint256) private _tickets;
 
-    constructor(address bridge) {
-        _bridge = bridge;
+    constructor() {
+        // TODO: does this initialization required, or uint256 already
+        //       initializes to the zero value?
         _inboxLevel = 0;
+    }
+
+    function setBridge(address bridge) public {
+        _bridge = bridge;
     }
 
     function inboxDeposit(
@@ -83,7 +88,14 @@ contract Kernel {
         return (tokenData.ticketer, tokenData.identifier);
     }
 
-    // TODO: implement finalizeWithdraw which should be called by the
-    //       BridgePrecompile contract and which should update the L2
-    //       tickets ledger.
+    function finalizeWithdraw(
+        uint256 tokenHash,
+        address wrapper,
+        uint256 amount
+    ) public {
+        bytes20 ticketer = _tokens[tokenHash].ticketer;
+        bytes memory identifier = _tokens[tokenHash].identifier;
+        bytes32 ticketWrapper = hashTicketOwner(ticketer, identifier, wrapper);
+        _tickets[ticketWrapper] -= amount;
+    }
 }

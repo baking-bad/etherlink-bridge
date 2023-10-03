@@ -24,8 +24,9 @@ contract ERC20WrapperTest is Test, IDepositEvent, IWithdrawEvent {
     function setUp() public {
         vm.label(alice, "Alice");
         vm.label(bob, "Bob");
-        bridge = new BridgePrecompile();
-        kernel = new Kernel(address(bridge));
+        kernel = new Kernel();
+        bridge = new BridgePrecompile(address(kernel));
+        kernel.setBridge(address(bridge));
         token = new ERC20Wrapper(
             ticketer,
             identifier,

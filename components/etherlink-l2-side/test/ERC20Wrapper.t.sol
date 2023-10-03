@@ -1,59 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.21;
 
-import {Test} from "forge-std/Test.sol";
-import {ERC20Wrapper, hashToken} from "../src/ERC20Wrapper.sol";
-import {BridgePrecompile} from "../src/BridgePrecompile.sol";
-import {Kernel} from "../src/Kernel.sol";
-import {IDepositEvent} from "../src/IDepositEvent.sol";
-import {IWithdrawEvent} from "../src/IWithdrawEvent.sol";
+import {BaseTest} from "./Base.t.sol";
+import {ERC20Wrapper} from "../src/ERC20Wrapper.sol";
 
-contract ERC20WrapperTest is Test, IDepositEvent, IWithdrawEvent {
-    ERC20Wrapper public token;
-    BridgePrecompile public bridge;
-    Kernel public kernel;
-    address public alice = vm.addr(0x1);
-    address public bob = vm.addr(0x2);
-    uint256 public tokenHash;
-    bytes20 public ticketer = bytes20("some ticketer");
-    bytes20 public wrongTicketer = bytes20("some other ticketer");
-    bytes public identifier = abi.encodePacked("forged identifier");
-    bytes public wrongIdentifier = abi.encodePacked("another forged identifier");
-    bytes20 public receiver = bytes20("some receiver");
-
-    function setUp() public {
-        vm.label(alice, "Alice");
-        vm.label(bob, "Bob");
-        kernel = new Kernel();
-        bridge = new BridgePrecompile(address(kernel));
-        kernel.setBridge(address(bridge));
-        token = new ERC20Wrapper(
-            ticketer,
-            identifier,
-            address(kernel),
-            address(bridge),
-            "Token",
-            "TKN",
-            18
-        );
-        tokenHash = hashToken(ticketer, identifier);
-    }
-
+contract ERC20WrapperTest is BaseTest {
     function test_BridgeCanMintToken() public {
         assertEq(token.balanceOf(alice), 0);
         kernel.inboxDeposit(address(token), alice, 100, ticketer, identifier);
         assertEq(token.balanceOf(alice), 100);
         assertEq(token.totalSupply(), 100);
     }
-
-    function test_ShouldIncreaseTicketBalanceOfTokenIfDepositSucceed() public {
-        kernel.inboxDeposit(address(token), alice, 100, ticketer, identifier);
-        assertEq(kernel.getBalance(ticketer, identifier, address(token)), 100);
-        assertEq(kernel.getBalance(ticketer, identifier, alice), 0);
-    }
-
-    // TODO: test_ShouldIncreaseTicketBalanceOfReceiverIfWrongTokenAddress
-    // TODO: test_ShouldAddTokenDataIfDepositSucceed
 
     function test_RevertWhen_AliceTriesMintToken() public {
         vm.prank(alice);
@@ -74,9 +31,6 @@ contract ERC20WrapperTest is Test, IDepositEvent, IWithdrawEvent {
             address(token), alice, 100, ticketer, wrongIdentifier
         );
     }
-
-    // TODO: test_ShouldDecreaseTicketBalanceOfTokenIfWithdrawSucceed
-    // TODO: test_ShouldNotAllowToWithdrawMoreThanTicketBalance
 
     function test_WithdrawCallsBridgePrecompile() public {
         kernel.inboxDeposit(address(token), alice, 100, ticketer, identifier);
@@ -102,37 +56,5 @@ contract ERC20WrapperTest is Test, IDepositEvent, IWithdrawEvent {
         );
 
         assertEq(anotherToken.decimals(), 6);
-    }
-
-    function test_ShouldEmitDepositEventOnDeposit() public {
-        // All topics are indexed, so we check all of them and
-        // that data the same (last argument is true):
-        vm.expectEmit(true, true, true, true);
-        bytes32 depositId = keccak256(abi.encodePacked(uint256(0), uint256(0)));
-        emit Deposit(depositId, tokenHash, address(token), bob, 100);
-        kernel.inboxDeposit(address(token), bob, 100, ticketer, identifier);
-    }
-
-    function test_ShouldEmitWithdrawEventOnWithdraw() public {
-        kernel.inboxDeposit(address(token), bob, 100, ticketer, identifier);
-        vm.prank(bob);
-        // All topics are indexed, so we check them all
-        // and check that data the same:
-        vm.expectEmit(true, true, true, true);
-        uint256 messageId = 0;
-        uint256 outboxLevel = 0;
-        bytes32 withdrawalId =
-            keccak256(abi.encodePacked(messageId, outboxLevel));
-        emit Withdraw(
-            withdrawalId,
-            tokenHash,
-            address(token),
-            messageId,
-            outboxLevel,
-            bob,
-            receiver,
-            100
-        );
-        token.withdraw(receiver, 100);
     }
 }

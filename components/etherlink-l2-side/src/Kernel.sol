@@ -3,7 +3,6 @@ pragma solidity >=0.8.21;
 
 import {ERC20Wrapper, hashToken} from "./ERC20Wrapper.sol";
 import {BridgePrecompile} from "./BridgePrecompile.sol";
-import "forge-std/console.sol";
 
 function hashTicketOwner(
     bytes20 ticketer,

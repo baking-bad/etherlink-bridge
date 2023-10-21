@@ -79,7 +79,7 @@ contract ERC20Wrapper is ERC20 {
      *
      * - `amount` must be less or equal to the balance of the caller.
      */
-    function withdraw(bytes20 receiver, uint256 amount) public {
+    function withdraw(bytes memory receiver, uint256 amount) public {
         address from = _msgSender();
         _burn(from, amount);
         BridgePrecompile bridge = BridgePrecompile(_bridge);

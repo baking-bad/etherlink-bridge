@@ -17,7 +17,7 @@ contract BaseTest is Test {
     bytes20 public wrongTicketer = bytes20("some other ticketer");
     bytes public identifier = abi.encodePacked("forged identifier");
     bytes public wrongIdentifier = abi.encodePacked("another forged identifier");
-    bytes20 public receiver = bytes20("some receiver");
+    bytes public receiver = bytes("some receiver % entrypoint");
 
     function setUp() public {
         vm.label(alice, "Alice");

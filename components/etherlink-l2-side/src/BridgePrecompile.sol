@@ -44,7 +44,7 @@ contract BridgePrecompile is IWithdrawEvent, IDepositEvent {
 
     function withdraw(
         address from,
-        bytes20 receiver,
+        bytes memory receiver,
         uint256 amount,
         uint256 tokenHash
     ) public {

@@ -16,7 +16,7 @@ interface IWithdrawEvent {
         uint256 messageId,
         uint256 outboxLevel,
         address indexed sender,
-        bytes20 indexed receiver,
+        bytes indexed receiver,
         uint256 amount
     );
 }

@@ -1,7 +1,6 @@
 from tests.helpers.contracts.ticketer import Ticketer
 from tests.helpers.contracts.proxy import (
-    ProxyRouterL1Deposit,
-    ProxyRouterL2Burn,
+    ProxyRouterDeposit,
     ProxyTicketer,
 )
 from tests.helpers.contracts.rollup_mock import RollupMock
@@ -12,8 +11,7 @@ from tests.helpers.contracts.contract import ContractHelper
 # Allowing reimporting from this module:
 __all__ = [
     'Ticketer',
-    'ProxyRouterL1Deposit',
-    'ProxyRouterL2Burn',
+    'ProxyRouterDeposit',
     'ProxyTicketer',
     'RollupMock',
     'FA2',

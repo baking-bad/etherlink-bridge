@@ -9,6 +9,18 @@ from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
 from os.path import join
 from tests.helpers.metadata import make_metadata
+from typing import TypedDict
+
+
+class TicketId(TypedDict):
+    token_id: int
+    ticketer: str
+
+
+class Message(TypedDict):
+    ticket_id: TicketId
+    amount: int
+    routing_data: bytes
 
 
 class RollupMock(ContractHelper):
@@ -16,12 +28,9 @@ class RollupMock(ContractHelper):
         'tickets': {},
         'messages': {},
         'next_message_id': 0,
-        'next_l2_id': 0,
-        'l2_ids': {},
-        'ticket_ids': {},
         'metadata': make_metadata(
             name='Rollup Mock',
-            description='The Rollup Mock is a component of the Bridge Protocol Prototype, designed to emulate the operations of a real smart rollup on both L1 and L2 sides.'
+            description='The Rollup Mock is a component of the Bridge Protocol Prototype, designed to emulate the operations of a real smart rollup on L1 side.'
         ),
     }
 
@@ -44,7 +53,12 @@ class RollupMock(ContractHelper):
         assert type(message) is dict
         return message
 
-    def l1_release(self, message_id: int = 0) -> ContractCall:
+    def create_outbox_message(self, message: Message) -> ContractCall:
+        """Creates new message with given params"""
+
+        return self.contract.create_outbox_message(message)
+
+    def execute_outbox_message(self, message_id: int = 0) -> ContractCall:
         """Releases message with given id"""
 
-        return self.contract.l1_release(message_id)
+        return self.contract.execute_outbox_message(message_id)

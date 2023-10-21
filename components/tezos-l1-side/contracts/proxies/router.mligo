@@ -6,8 +6,8 @@
 
 
 (*
-    This is proxy for implicit address to call for the
-    RollupMock%l2_burn and RollupMock%l1_deposit entrypoints.
+    This is proxy for implicit address to call the
+    RollupMock%deposit entrypoint.
 
     Transfered type for these entrypoints is a pair of routing data
     and the ticket itself as payload.

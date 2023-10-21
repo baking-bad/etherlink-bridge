@@ -16,14 +16,8 @@ from os.path import join
 from tests.helpers.metadata import make_metadata
 
 
-class AddressData(TypedDict):
-    address: str
-
-class BytesData(TypedDict):
-    bytes: bytes
-
 class RouterSetParams(TypedDict):
-    data: Union[AddressData, BytesData]
+    data: bytes
     receiver: str
 
 
@@ -52,26 +46,12 @@ class BaseProxy(ContractHelper):
             return None
 
 
-class ProxyRouterL1Deposit(BaseProxy):
+class ProxyRouterDeposit(BaseProxy):
     default_storage = {
         'context': {},
         'metadata': make_metadata(
             name='Proxy for Rollup Mock L1',
-            description='The Proxy for the RollupMock L1 is a component of the Bridge Protocol Prototype, used to enable the transfer of implicit address tickets to the Rollup Mock contract to the %l1_deposit entrypoint on L1 side.',
-        ),
-    }
-    filename = join(get_build_dir(), 'proxies', 'router.tz')
-
-    def set(self, params: RouterSetParams) -> ContractCall:
-        return self.contract.set(params)
-
-
-class ProxyRouterL2Burn(BaseProxy):
-    default_storage = {
-        'context': {},
-        'metadata': make_metadata(
-            name='Proxy for Rollup Mock L2',
-            description='The Proxy for the RollupMock L2 is a component of the Bridge Protocol Prototype, used to enable the transfer of implicit address tickets to the Rollup Mock contract to the %l2_burn entrypoint on L2 side.',
+            description='The Proxy for the RollupMock L1 is a component of the Bridge Protocol Prototype, used to enable the transfer of implicit address tickets to the Rollup Mock contract to the %deposit entrypoint on L1 side.',
         ),
     }
     filename = join(get_build_dir(), 'proxies', 'router.tz')

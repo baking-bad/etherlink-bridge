@@ -2,8 +2,7 @@ from pytezos.client import PyTezosClient
 from pytezos.sandbox.node import SandboxedNodeTestCase
 from tests.helpers.contracts import (
     Ticketer,
-    ProxyRouterL1Deposit,
-    ProxyRouterL2Burn,
+    ProxyRouterDeposit,
     ProxyTicketer,
     RollupMock,
     FA2,
@@ -37,9 +36,8 @@ class BaseTestCase(SandboxedNodeTestCase):
             self.bake_block()
             return cls.create_from_opg(self.manager, opg)
 
-        self.proxy_l1_deposit = deploy_contract(ProxyRouterL1Deposit)
+        self.proxy_deposit = deploy_contract(ProxyRouterDeposit)
         self.proxy_ticketer = deploy_contract(ProxyTicketer)
-        self.proxy_l2_burn = deploy_contract(ProxyRouterL2Burn)
         self.rollup_mock = deploy_contract(RollupMock)
 
         # Tokens deployment:

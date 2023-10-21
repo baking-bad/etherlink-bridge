@@ -5,8 +5,7 @@ import os
 from pytezos.client import PyTezosClient
 from tests.helpers.contracts import (
     Ticketer,
-    ProxyRouterL1Deposit,
-    ProxyRouterL2Burn,
+    ProxyRouterDeposit,
     ProxyTicketer,
     RollupMock,
     FA2,
@@ -42,9 +41,8 @@ def deploy_contracts(
         manager.wait(opg)
         return cls.create_from_opg(manager, opg)
 
-    proxy_l1_deposit = deploy_contract(ProxyRouterL1Deposit)
+    proxy_deposit = deploy_contract(ProxyRouterDeposit)
     proxy_ticketer = deploy_contract(ProxyTicketer)
-    proxy_l2_burn = deploy_contract(ProxyRouterL2Burn)
     rollup_mock = deploy_contract(RollupMock)
 
     # Deploying Ticketer with external metadata:
@@ -65,9 +63,8 @@ def deploy_contracts(
 
     return {
         'fa2': fa2,
-        'proxy_l1_deposit': proxy_l1_deposit,
+        'proxy_deposit': proxy_deposit,
         'proxy_ticketer': proxy_ticketer,
-        'proxy_l2_burn': proxy_l2_burn,
         'rollup_mock': rollup_mock,
         'ticketer': ticketer,
     }
@@ -87,9 +84,8 @@ def load_contracts(
 # TODO: fill with deployed contracts
 CONTRACTS = {
     'fa2':              (FA2,                  'KT1997NGB73v2Kvn2StdJg3UmpTDvfk4BwmQ'),
-    'proxy_l1_deposit': (ProxyRouterL1Deposit, 'KT1Ko8NVvwTwxGxdjUrfYcbpThTYz3bXUkts'),
+    'proxy_deposit':    (ProxyRouterDeposit,   'KT1Ko8NVvwTwxGxdjUrfYcbpThTYz3bXUkts'),
     'proxy_ticketer':   (ProxyTicketer,        'KT1TBo8EsamwiuAqDdb99cyXtDFoDL2PrNr8'),
-    'proxy_l2_burn':    (ProxyRouterL2Burn,    'KT1KUrnRVkneoQtnJ9J7ZerQ4hueauvY3M7a'),
     'rollup_mock':      (RollupMock,           'KT1Pc5oYtazVu7CZxgFFmxhKs6iqKv2HH583'),
     'ticketer':         (Ticketer,             'KT1Bp5joDhfbLnrm3gBmu6jPjt8b3fftUihB'),
 }
@@ -106,9 +102,8 @@ def run_interactions(
 
     # TODO: reuse some of this code in tests/test_communication.py
     fa2 = contracts['fa2']
-    proxy_l1_deposit = contracts['proxy_l1_deposit']
+    proxy_deposit = contracts['proxy_deposit']
     proxy_ticketer = contracts['proxy_ticketer']
-    proxy_l2_burn = contracts['proxy_l2_burn']
     rollup_mock = contracts['rollup_mock']
     ticketer = contracts['ticketer']
 
@@ -145,7 +140,7 @@ def run_interactions(
     opg = alice.bulk(
         fa2.using(alice).allow(ticketer.address),
         ticketer.using(alice).deposit(fa2, 100),
-        proxy_l1_deposit.using(alice).set({
+        proxy_deposit.using(alice).set({
             'data': {
                 'address': pkh(alice),
             },
@@ -156,7 +151,7 @@ def run_interactions(
             ticket_ty = l1_ticket['content_type'],
             ticket_ticketer = l1_ticket['ticketer'],
             ticket_amount = 25,
-            destination = proxy_l1_deposit.address,
+            destination = proxy_deposit.address,
             entrypoint = 'send',
         ),
     ).send()
@@ -172,27 +167,16 @@ def run_interactions(
     ).send()
     alice.wait(opg)
 
-    # 3. Boris burns some L2 tickets to get L1 tickets back using proxy:
-    opg = boris.bulk(
-        proxy_l2_burn.using(boris).set({
-            'data': {
-                'address': pkh(boris),
-            },
-            'receiver': f'{rollup_mock.address}%l2_burn',
-        }),
-        boris.transfer_ticket(
-            ticket_contents=l2_ticket['content'],
-            ticket_ty=l2_ticket['content_type'],
-            ticket_ticketer=l2_ticket['ticketer'],
-            ticket_amount=5,
-            destination=proxy_l2_burn.address,
-            entrypoint='send',
-        ),
-    ).send()
+    # 3. Boris creates outbox message bridging some L2 tokens to L1:
+    opg = rollup_mock.using(boris).create_outbox_message({
+        'ticket_id': 0,
+        'amount': 5,
+        'routing_data': pack(pkh(boris), 'address'),
+    }).send()
     boris.wait(opg)
 
     # 4. Rollup releases L1 tickets:
-    opg = rollup_mock.l1_release(0).send()
+    opg = rollup_mock.execute_outbox_message(0).send()
     boris.wait(opg)
 
     # 5. Boris unpacks L1 tickets to get FA2 tokens:

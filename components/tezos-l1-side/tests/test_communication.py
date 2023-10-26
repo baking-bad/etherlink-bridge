@@ -54,7 +54,10 @@ class TicketerCommunicationTestCase(BaseTestCase):
             fa2.using(alice).allow(ticketer.address),
             ticketer.using(alice).deposit(fa2, 100),
             proxy_deposit.using(alice).set({
-                'data': 'Alice L2 address'.encode('utf-8'),
+                'data': {
+                    'wrapper': 'Wrapper L2 address'.encode('utf-8'),
+                    'receiver': 'Alice L2 address'.encode('utf-8'),
+                },
                 'receiver': f'{rollup_mock.address}%deposit',
             }),
             # TODO: ticket helper may be good here: alice.transfer_ticket(ticket, 25, dest, entry)

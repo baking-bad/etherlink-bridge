@@ -16,8 +16,13 @@ from os.path import join
 from tests.helpers.metadata import make_metadata
 
 
+class RoutingData(TypedDict):
+    wrapper: bytes
+    receiver: bytes
+
+
 class RouterSetParams(TypedDict):
-    data: bytes
+    data: RoutingData
     receiver: str
 
 

@@ -65,7 +65,7 @@ module RollupMock = struct
         let l1_ticket_send, l1_ticket_keep =
             Ticket.split_ticket l1_ticket message.amount in
 
-        let receiver = RoutingData.get_receiver message.routing_data in
+        let receiver = RoutingData.get_receiver_l2_to_l1 message.routing_data in
         let receiver_contract = Ticket.get_ticket_entrypoint receiver in
         let ticket_transfer_op =
             Tezos.transaction l1_ticket_send 0mutez receiver_contract in

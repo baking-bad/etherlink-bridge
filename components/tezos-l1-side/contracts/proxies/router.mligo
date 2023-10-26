@@ -13,7 +13,7 @@
     and the ticket itself as payload.
 *)
 
-type data_t = RoutingData.t
+type data_t = RoutingData.l1_to_l2_t
 type ticket_t = Ticket.t
 type storage_t = data_t Storage.t
 type parameter_t = (ticket_t, data_t) Generic.parameter_t

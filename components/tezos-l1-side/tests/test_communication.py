@@ -50,15 +50,15 @@ class TicketerCommunicationTestCase(BaseTestCase):
         # deposit tokens to the ticketer, set routing info to the proxy
         # and transfer ticket to the Rollup (Locker) by sending created ticket
         # to the proxy contract, which will send it to the Rollup with routing info:
+        wrapper = bytes.fromhex('0101010101010101010101010101010101010101')
+        receiver = bytes.fromhex('0202020202020202020202020202020202020202')
+
         alice.bulk(
             fa2.using(alice).allow(ticketer.address),
             ticketer.using(alice).deposit(fa2, 100),
             proxy_deposit.using(alice).set({
-                'data': {
-                    'wrapper': 'Wrapper L2 address'.encode('utf-8'),
-                    'receiver': 'Alice L2 address'.encode('utf-8'),
-                },
-                'receiver': f'{rollup_mock.address}%deposit',
+                'data': wrapper + receiver,
+                'receiver': f'{rollup_mock.address}%rollup',
             }),
             # TODO: ticket helper may be good here: alice.transfer_ticket(ticket, 25, dest, entry)
             alice.transfer_ticket(
@@ -119,7 +119,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         )
         self.assertEqual(balance, 5)
 
-        # Rollup should have some L2 tickets left:
+        # Rollup should have some L1 tickets left:
         balance = get_ticket_balance(
             self.client,
             ticket,

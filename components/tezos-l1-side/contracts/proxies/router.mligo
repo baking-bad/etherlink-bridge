@@ -20,11 +20,13 @@ type parameter_t = (ticket_t, data_t) Generic.parameter_t
 
 let make_ctx
         (ticket, data : ticket_t * data_t)
-        : Entrypoints.ticket_with_routing_data =
-    {
-        routing_data = data;
-        payload = ticket;
-    }
+        : Entrypoints.rollup_entry =
+    let deposit : Entrypoints.deposit = {
+        routing_info = data;
+        ticket = ticket;
+    } in
+    let deposit_or_bytes : Entrypoints.deposit_or_bytes = (M_left deposit) in
+    let payload : Entrypoints.rollup_entry = (M_left deposit_or_bytes) in payload
 
 let main : parameter_t -> storage_t -> operation list * storage_t =
     Generic.main make_ctx

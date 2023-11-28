@@ -36,7 +36,7 @@ module Ticketer = struct
                 Token.merge_token_info token_info extra_metadata in
         let payload = {
             token_id = token_id;
-            token_info = Some (Bytes.pack token_info_extra);
+            metadata = Some (Bytes.pack token_info_extra);
         } in
         let ticket = Ticket.create_ticket payload amount in
         let sender = Tezos.get_sender () in

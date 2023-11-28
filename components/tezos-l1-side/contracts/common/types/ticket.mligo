@@ -4,7 +4,7 @@
 
 type payload_t = [@layout:comb] {
     token_id : nat;
-    token_info : bytes option;
+    metadata : bytes option;
 }
 
 type t = payload_t ticket
@@ -30,7 +30,7 @@ let create_l2_payload
         (ticketer : address)
         (l2_id : nat)
         : payload_t =
-    let token_info_map = Token.unopt_token_info payload.token_info in
+    let token_info_map = Token.unopt_token_info payload.metadata in
     // TODO: assert that these keys don't already exist
     let l1_token_info = Map.literal [
         ("l1_token_id", Bytes.pack payload.token_id);
@@ -40,7 +40,7 @@ let create_l2_payload
     let token_info_opt = Some (Bytes.pack (token_info_map)) in
     {
         token_id = l2_id;
-        token_info = token_info_opt;
+        metadata = token_info_opt;
     }
 
 let split_ticket

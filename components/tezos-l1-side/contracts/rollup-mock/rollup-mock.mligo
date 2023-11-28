@@ -8,6 +8,18 @@
 #import "../common/utility.mligo" "Utility"
 
 
+let unwrap_rollup_entrypoint
+        (rollup_entry : Entrypoints.rollup_entry)
+        : Entrypoints.deposit =
+    let deposit = match rollup_entry with
+    | M_right _bytes -> failwith(Errors.wrong_rollup_entrypoint)
+    | M_left deposit_or_bytes -> (
+        match deposit_or_bytes with
+        | M_left deposit -> deposit
+        | M_right _bytes -> failwith(Errors.wrong_rollup_entrypoint)
+    ) in deposit
+
+
 module RollupMock = struct
     (*
         This is helper contract used to deposit and release tickets on the
@@ -16,8 +28,8 @@ module RollupMock = struct
 
     type return_t = operation list * Storage.t
 
-    [@entry] let deposit
-            (ticket_with_routing_data : Entrypoints.ticket_with_routing_data)
+    [@entry] let rollup
+            (rollup_entry : Entrypoints.rollup_entry)
             (store : Storage.t)
             : return_t =
         (* This entrypoint used to emulate L1 rollup entrypoint used to
@@ -28,7 +40,8 @@ module RollupMock = struct
             next_message_id;
             metadata;
         } = store in
-        let { payload = ticket; routing_data = _r } = ticket_with_routing_data in
+        let deposit = unwrap_rollup_entrypoint rollup_entry in
+        let { ticket = ticket; routing_info = _r } = deposit in
         let (ticketer, (payload, _amt)), ticket = Tezos.read_ticket ticket in
         let token_id = payload.token_id in
         let ticket_id = { ticketer; token_id } in

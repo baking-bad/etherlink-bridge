@@ -6,7 +6,7 @@ authors = ["ztepler <ztepler@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-pytezos = "^3.10.2"
+pytezos = "^3.10.3"
 python-dotenv = "^1.0.0"
 
 [tool.poetry.dev-dependencies]

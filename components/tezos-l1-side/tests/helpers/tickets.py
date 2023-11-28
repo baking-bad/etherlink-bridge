@@ -124,3 +124,10 @@ def create_ticket(
         'content': content,
         'amount': amount,
     }
+
+
+def make_ticket_payload_bytes(ticket: Ticket) -> str:
+    michelson_type = MichelsonType.match(ticket['content_type'])  # type: ignore
+    value = michelson_type.from_micheline_value(ticket['content'])
+    payload: str = value.forge('legacy_optimized').hex()
+    return payload

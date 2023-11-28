@@ -1,6 +1,7 @@
 from pytezos.client import PyTezosClient
 from pytezos.contract.interface import ContractInterface
 from pytezos.operation.group import OperationGroup
+from pytezos.crypto.encoding import base58_decode
 from os.path import dirname
 from os.path import join
 from pytezos.michelson.parse import michelson_to_micheline
@@ -75,3 +76,9 @@ def pack(object: Any, type_expression: str) -> bytes:
     """ Packs Python object to bytes using given type expression """
 
     return to_michelson_type(object, type_expression).pack()
+
+
+def make_address_bytes(address: str) -> str:
+    """ Converts address string to bytes """
+
+    return base58_decode(address.encode()).hex()

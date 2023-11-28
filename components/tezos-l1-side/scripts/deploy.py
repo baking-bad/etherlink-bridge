@@ -11,9 +11,17 @@ from tests.helpers.contracts import (
     FA2,
     ContractHelper,
 )
-from tests.helpers.utility import pkh, pack
+from tests.helpers.utility import (
+    pkh,
+    pack,
+    make_address_bytes,
+)
 from typing import Type, TypeVar, Any
-from tests.helpers.tickets import create_ticket
+from tests.helpers.tickets import (
+    Ticket,
+    create_ticket,
+    make_ticket_payload_bytes,
+)
 
 
 load_dotenv()
@@ -22,10 +30,45 @@ ALICE_PRIVATE_KEY = os.getenv('ALICE_PRIVATE_KEY') or getpass('Enter Alice priva
 BORIS_PRIVATE_KEY = os.getenv('BORIS_PRIVATE_KEY') or getpass('Enter Boris private key: ')
 
 
+ROLLUP_SR_ADDRESS = 'sr1JDmHhBg8yKzkUWpVqL9n8brCqhxdBTtq4'
+ERC20_WRAPPER_ADDRESS = '6686644C9D285b3EBd5D880bb2650B1EF33699e6'
+ALICE_L2_ADDRESS = '31E0aC684f33D86C10FdC10482cBAC073B750264'
+
+
+CONTRACTS = {
+    'fa2':              (FA2,                  'KT1GZiNJSELE2Ad5JcfT6sN38ABeKHvkPLMx'),
+    'proxy_deposit':    (ProxyRouterDeposit,   'KT1NB4C5m7vnEq47EgN5QexXX6d4RCeHQKwL'),
+    'proxy_ticketer':   (ProxyTicketer,        'KT1X9T9VWMsEHghd6nsVcjFfeFcNHYY2JJ84'),
+    'ticketer':         (Ticketer,             'KT1DeNCweBiRRpgBwQatZmaSqB2nJ65HVhJ6'),
+
+    # Rollup Mock is not deployed by default anymore:
+    # 'rollup_mock':      (RollupMock,           ''),
+}
+
+
+def create_ticket_from_fa2(ticketer: Ticketer, fa2: FA2) -> Ticket:
+    # TODO: this ticket has hardcoded metadata, it would be better to
+    # create it from ticketer and FA2 contract metadata:
+    return create_ticket(
+        ticketer=ticketer.address,
+        token_id=0,
+        token_info={
+            'contract_address': pack(fa2.address, 'address'),
+            'token_id': pack(fa2.token_id, 'nat'),
+            'token_type': pack('FA2', 'string'),
+            'decimals': pack(0, 'nat'),
+            'symbol': pack('TEST', 'string'),
+        },
+    )
+
+
 def deploy_contracts(
         manager: PyTezosClient,
-        balances: dict[str, int]
+        balances: dict[str, int],
+        deploy_rollup_mock: bool = False,
     ) -> dict[str, ContractHelper]:
+
+    contracts: dict[str, ContractHelper] = {}
 
     # Tokens deployment:
     print('Deploying FA2...')
@@ -43,7 +86,12 @@ def deploy_contracts(
 
     proxy_deposit = deploy_contract(ProxyRouterDeposit)
     proxy_ticketer = deploy_contract(ProxyTicketer)
-    rollup_mock = deploy_contract(RollupMock)
+
+    contracts['fa2'] = fa2
+    contracts['proxy_deposit'] = proxy_deposit
+    contracts['proxy_ticketer'] = proxy_ticketer
+    if deploy_rollup_mock:
+        contracts['rollup_mock'] = deploy_contract(RollupMock)
 
     # Deploying Ticketer with external metadata:
     fa2_key = ( "fa2", ( fa2.address, 0 ) )
@@ -60,14 +108,16 @@ def deploy_contracts(
     ).send()
     manager.wait(opg)
     ticketer = Ticketer.create_from_opg(manager, opg)
+    contracts['ticketer'] = ticketer
 
-    return {
-        'fa2': fa2,
-        'proxy_deposit': proxy_deposit,
-        'proxy_ticketer': proxy_ticketer,
-        'rollup_mock': rollup_mock,
-        'ticketer': ticketer,
-    }
+    ticket = create_ticket_from_fa2(ticketer, fa2)
+    ticket_payload = make_ticket_payload_bytes(ticket)
+    ticketer_bytes = make_address_bytes(ticketer.address)
+    print('Data for setup ERC20 Wrapper:')
+    print(f'ticket address bytes: `{ticketer_bytes}`')
+    print(f'ticket payload bytes: `{ticket_payload}`')
+
+    return contracts
 
 
 def load_contracts(
@@ -79,16 +129,6 @@ def load_contracts(
         name: cls.create_from_address(manager, address)
         for name, (cls, address) in contracts.items()
     }
-
-
-# TODO: fill with deployed contracts
-CONTRACTS = {
-    'fa2':              (FA2,                  'KT1997NGB73v2Kvn2StdJg3UmpTDvfk4BwmQ'),
-    'proxy_deposit':    (ProxyRouterDeposit,   'KT1Ko8NVvwTwxGxdjUrfYcbpThTYz3bXUkts'),
-    'proxy_ticketer':   (ProxyTicketer,        'KT1TBo8EsamwiuAqDdb99cyXtDFoDL2PrNr8'),
-    'rollup_mock':      (RollupMock,           'KT1Pc5oYtazVu7CZxgFFmxhKs6iqKv2HH583'),
-    'ticketer':         (Ticketer,             'KT1Bp5joDhfbLnrm3gBmu6jPjt8b3fftUihB'),
-}
 
 
 def run_interactions(
@@ -104,21 +144,37 @@ def run_interactions(
     fa2 = contracts['fa2']
     proxy_deposit = contracts['proxy_deposit']
     proxy_ticketer = contracts['proxy_ticketer']
-    rollup_mock = contracts['rollup_mock']
     ticketer = contracts['ticketer']
+    ticket = create_ticket_from_fa2(ticketer, fa2)
 
-    l1_ticket = create_ticket(
-        ticketer=ticketer.address,
-        token_id=0,
-        token_info={
-            'contract_address': pack(fa2.address, 'address'),
-            'token_id': pack(fa2.token_id, 'nat'),
-            'token_type': pack('FA2', 'string'),
-            'decimals': pack(0, 'nat'),
-            'symbol': pack('TEST', 'string'),
-        },
-    )
+    # 1. In one bulk we allow ticketer to transfer tokens,
+    # deposit tokens to the ticketer, set routing info to the proxy
+    # and transfer ticket to the Rollup (Locker) by sending created ticket
+    # to the proxy contract, which will send it to the Rollup with routing info:
+    wrapper = bytes.fromhex(ERC20_WRAPPER_ADDRESS)
+    receiver = bytes.fromhex(ALICE_L2_ADDRESS)
 
+    opg = alice.bulk(
+        fa2.using(alice).allow(ticketer.address),
+        ticketer.using(alice).deposit(fa2, 100),
+        proxy_deposit.using(alice).set({
+            # router_info is first 20 bytes is wrapper, second is 20b receiver
+            'data': wrapper + receiver,
+            'receiver': ROLLUP_SR_ADDRESS,
+        }),
+        alice.transfer_ticket(
+            ticket_contents = ticket['content'],
+            ticket_ty = ticket['content_type'],
+            ticket_ticketer = ticket['ticketer'],
+            ticket_amount = 5,
+            destination = proxy_deposit.address,
+            entrypoint = 'send',
+        ),
+    ).send()
+    alice.wait(opg)
+
+    # TODO: remove this L2 logic:
+    '''
     l2_ticket = create_ticket(
         ticketer=rollup_mock.address,
         token_id=0,
@@ -132,30 +188,6 @@ def run_interactions(
             'l1_token_id': pack(0, 'nat'),
         },
     )
-
-    # 1. In one bulk we allow ticketer to transfer tokens,
-    # deposit tokens to the ticketer, set routing info to the proxy
-    # and transfer ticket to the Rollup (Locker) by sending created ticket
-    # to the proxy contract, which will send it to the Rollup with routing info:
-    opg = alice.bulk(
-        fa2.using(alice).allow(ticketer.address),
-        ticketer.using(alice).deposit(fa2, 100),
-        proxy_deposit.using(alice).set({
-            'data': {
-                'address': pkh(alice),
-            },
-            'receiver': f'{rollup_mock.address}%l1_deposit',
-        }),
-        alice.transfer_ticket(
-            ticket_contents = l1_ticket['content'],
-            ticket_ty = l1_ticket['content_type'],
-            ticket_ticketer = l1_ticket['ticketer'],
-            ticket_amount = 25,
-            destination = proxy_deposit.address,
-            entrypoint = 'send',
-        ),
-    ).send()
-    alice.wait(opg)
 
     # 2. Transfer some L2 tickets to Boris's address
     opg = alice.transfer_ticket(
@@ -178,23 +210,27 @@ def run_interactions(
     # 4. Rollup releases L1 tickets:
     opg = rollup_mock.execute_outbox_message(0).send()
     boris.wait(opg)
+    '''
 
-    # 5. Boris unpacks L1 tickets to get FA2 tokens:
-    opg = boris.bulk(
-        proxy_ticketer.using(boris).set({
-            'data': pkh(boris),
+    # TODO: move this logic to separate interaction function:
+    '''
+    # 5. Alice unpacks tickets to get FA2 tokens:
+    opg = alice.bulk(
+        proxy_ticketer.using(alice).set({
+            'data': pkh(alice),
             'receiver': f'{ticketer.address}%release',
         }),
-        boris.transfer_ticket(
-            ticket_contents=l1_ticket['content'],
-            ticket_ty=l1_ticket['content_type'],
-            ticket_ticketer=l1_ticket['ticketer'],
+        alice.transfer_ticket(
+            ticket_contents=ticket['content'],
+            ticket_ty=ticket['content_type'],
+            ticket_ticketer=ticket['ticketer'],
             ticket_amount=2,
             destination=proxy_ticketer.address,
             entrypoint='send',
         )
     ).send()
-    boris.wait(opg)
+    alice.wait(opg)
+    '''
 
 
 alice = pytezos.using(shell=RPC_SHELL, key=ALICE_PRIVATE_KEY)

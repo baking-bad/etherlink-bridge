@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import {ERC20Wrapper} from "./ERC20Wrapper.sol";
 import {IWithdrawEvent} from "./IWithdrawEvent.sol";
 import {IDepositEvent} from "./IDepositEvent.sol";
 import {Kernel} from "./Kernel.sol";
@@ -9,7 +8,7 @@ import {Kernel} from "./Kernel.sol";
 /**
  * BridgePrecompile is a special contract which is used to represent
  * the bridge precompile contract logic on L2 side. It is used to
- * emit events and initiate withdrawals from ERC20 tokens.
+ * emit events.
  */
 contract BridgePrecompile is IWithdrawEvent, IDepositEvent {
     // NOTE: outboxMessageId and outboxLevel are parameters of the Kernel,
@@ -28,6 +27,16 @@ contract BridgePrecompile is IWithdrawEvent, IDepositEvent {
         _kernel = kernel;
     }
 
+    /**
+     * Checks if the sender is the kernel address.
+     */
+    function _requireSenderIsKernel() internal view {
+        require(
+            _kernel == msg.sender,
+            "BridgePrecompile: only kernel allowed to deposit and withdraw tokens"
+        );
+    }
+
     function deposit(
         bytes32 depositId,
         address wrapper,
@@ -35,22 +44,20 @@ contract BridgePrecompile is IWithdrawEvent, IDepositEvent {
         uint256 amount,
         uint256 tokenHash
     ) public {
-        require(
-            _kernel == msg.sender,
-            "BridgePrecompile: only kernel allowed to deposit tokens"
-        );
+        _requireSenderIsKernel();
         emit Deposit(depositId, tokenHash, wrapper, receiver, amount);
     }
 
     function withdraw(
+        address wrapper,
         address from,
         bytes memory receiver,
         uint256 amount,
         uint256 tokenHash
     ) public {
+        _requireSenderIsKernel();
         bytes32 withdrawalId =
             keccak256(abi.encodePacked(_outboxMessageId, _outboxLevel));
-        address wrapper = msg.sender;
         emit Withdraw(
             withdrawalId,
             tokenHash,
@@ -62,10 +69,5 @@ contract BridgePrecompile is IWithdrawEvent, IDepositEvent {
             amount
         );
         _outboxMessageId += 1;
-        Kernel kernel = Kernel(_kernel);
-        // NOTE: in the final implementation no real call to Kernel should be
-        //       made, the BridgePrecompile should be allowed to modify the
-        //       ledger directly without calling Kernel
-        kernel.finalizeWithdraw(tokenHash, wrapper, amount);
     }
 }

@@ -12,8 +12,6 @@ contract KernelTest is BaseTest {
         assertEq(kernel.getBalance(ticketer, identifier, alice), 0);
     }
 
-    // TODO: test_ShouldIncreaseTicketBalanceOfReceiverIfWrongTokenAddress
-
     function test_ShouldAddTokenDataIfDepositSucceed() public {
         kernel.inboxDeposit(address(token), alice, 100, ticketer, identifier);
         uint256 tokenHash = hashToken(ticketer, identifier);
@@ -30,22 +28,42 @@ contract KernelTest is BaseTest {
         assertEq(kernel.getBalance(ticketer, identifier, address(token)), 100);
         assertEq(kernel.getBalance(ticketer, identifier, alice), 0);
         vm.prank(alice);
-        token.withdraw(receiver, 40);
+        kernel.withdraw(address(token), receiver, 40, tokenHash);
         assertEq(kernel.getBalance(ticketer, identifier, address(token)), 60);
     }
 
     function test_RevertWhen_WithdrawMoreThanTicketBalance() public {
         kernel.inboxDeposit(address(token), bob, 1, ticketer, identifier);
         assertEq(kernel.getBalance(ticketer, identifier, address(token)), 1);
-        vm.prank(address(bridge));
+        vm.prank(address(alice));
         vm.expectRevert("Kernel: ticket balance is not enough");
-        kernel.finalizeWithdraw(tokenHash, address(token), 2);
+        kernel.withdraw(address(token), receiver, 2, tokenHash);
     }
 
-    function test_RevertWhen_FinalizeWithdrawCalledNotByBridge() public {
-        kernel.inboxDeposit(address(token), bob, 10, ticketer, identifier);
-        vm.prank(bob);
-        vm.expectRevert("Kernel: only bridge allowed to finalize withdraw");
-        kernel.finalizeWithdraw(tokenHash, address(token), 1);
+    function test_WithdrawCallsTokenBurn() public {
+        kernel.inboxDeposit(address(token), alice, 100, ticketer, identifier);
+        assertEq(token.balanceOf(alice), 100);
+        bytes memory expectedData =
+            abi.encodeCall(token.burn, (alice, 50, tokenHash));
+        vm.expectCall(address(token), expectedData);
+        vm.prank(alice);
+        kernel.withdraw(address(token), receiver, 50, tokenHash);
+        assertEq(token.balanceOf(alice), 50);
     }
+
+    function test_InboxDepositCallsTokenMint() public {
+        bytes memory expectedData =
+            abi.encodeCall(token.mint, (alice, 71, tokenHash));
+        vm.expectCall(address(token), expectedData);
+        kernel.inboxDeposit(address(token), alice, 71, ticketer, identifier);
+    }
+
+    // TODO: test_InboxDepositCallsBridgePrecompile ?
+    //       -- NOTE: BridgePrecompile might be merged with kernel
+
+    // TODO: test_WithdrawCallsBridgePrecompile ?
+    //       -- NOTE: BridgePrecompile might be merged with kernel
+
+    // TODO: test_ShouldIncreaseTicketBalanceOfReceiverIfWrongTokenAddress
+    //       -- however this logic is not implemented in kernel
 }

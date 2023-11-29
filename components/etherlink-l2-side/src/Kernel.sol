@@ -9,6 +9,9 @@ function hashTicketOwner(
     bytes memory identifier,
     address owner
 ) pure returns (bytes32) {
+    // TODO: consider replacing encodePacked with encode:
+    //       looks like type collision is impossible here, but
+    //       maybe it is better to use encode? [2]
     return keccak256(abi.encodePacked(ticketer, identifier, owner));
 }
 
@@ -42,6 +45,39 @@ contract Kernel {
         _bridge = bridge;
     }
 
+    /**
+     * Increases `owner`'s tickets balance by `amount`.
+     */
+    function _increaseTicketsBalance(
+        bytes20 ticketer,
+        bytes memory identifier,
+        address owner,
+        uint256 amount
+    ) internal {
+        bytes32 ticketOwner = hashTicketOwner(ticketer, identifier, owner);
+        _tickets[ticketOwner] += amount;
+    }
+
+    /**
+     * Decreases `owner`'s tickets balance by `amount`.
+     */
+    function _decreaseTicketsBalance(
+        bytes20 ticketer,
+        bytes memory identifier,
+        address owner,
+        uint256 amount
+    ) internal {
+        bytes32 ticketOwner = hashTicketOwner(ticketer, identifier, owner);
+        uint256 ticketBalance = _tickets[ticketOwner];
+        if (ticketBalance < amount) {
+            revert("Kernel: ticket balance is not enough");
+        }
+        _tickets[ticketOwner] -= amount;
+    }
+
+    /**
+     * Emulates the deposit operation processed during inbox dispatch in Kernel.
+     */
     function inboxDeposit(
         address wrapper,
         address receiver,
@@ -53,6 +89,8 @@ contract Kernel {
         BridgePrecompile bridge = BridgePrecompile(_bridge);
 
         uint256 tokenHash = hashToken(ticketer, identifier);
+        // TODO: consider passing depositId in params instead of constructing
+        // it here, because depositId might become hashed L1 operation contents
         bytes32 depositId =
             keccak256(abi.encodePacked(_inboxMessageId, _inboxLevel));
 
@@ -63,10 +101,9 @@ contract Kernel {
         //       transaction and if it fails move tickets from wrapper
         //       to receiver?
 
-        bytes32 ticketWrapper = hashTicketOwner(ticketer, identifier, wrapper);
-        _tickets[ticketWrapper] += amount;
+        _increaseTicketsBalance(ticketer, identifier, wrapper, amount);
         bridge.deposit(depositId, wrapper, receiver, amount, tokenHash);
-        token.deposit(receiver, amount, tokenHash);
+        token.mint(receiver, amount, tokenHash);
     }
 
     function getBalance(
@@ -87,23 +124,24 @@ contract Kernel {
         return tokenData;
     }
 
-    function finalizeWithdraw(
-        uint256 tokenHash,
+    function withdraw(
         address wrapper,
-        uint256 amount
+        bytes memory receiver,
+        uint256 amount,
+        uint256 tokenHash
     ) public {
-        require(
-            _bridge == msg.sender,
-            "Kernel: only bridge allowed to finalize withdraw"
-        );
+        // TODO: consider replacing tokenHash with ticketer and identifier?
+        //       - then there will be no need to store TokenData in Kernel (?)
+        //       - would it simplify user experience or not?
+        ERC20Wrapper token = ERC20Wrapper(wrapper);
+        BridgePrecompile bridge = BridgePrecompile(_bridge);
+
+        address from = msg.sender;
         bytes20 ticketer = _tokens[tokenHash].ticketer;
         bytes memory identifier = _tokens[tokenHash].identifier;
-        bytes32 ticketWrapper = hashTicketOwner(ticketer, identifier, wrapper);
-        uint256 ticketBalance = _tickets[ticketWrapper];
-        if (ticketBalance < amount) {
-            revert("Kernel: ticket balance is not enough");
-        }
-        _tickets[ticketWrapper] -= amount;
+        _decreaseTicketsBalance(ticketer, identifier, wrapper, amount);
+        bridge.withdraw(wrapper, from, receiver, amount, tokenHash);
+        token.burn(from, amount, tokenHash);
         // NOTE: here the withdraw outbox message should be sent to L1
     }
 }

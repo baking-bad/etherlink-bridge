@@ -29,7 +29,6 @@ contract BaseTest is Test {
             ticketer,
             identifier,
             address(kernel),
-            address(bridge),
             "Token",
             "TKN",
             18

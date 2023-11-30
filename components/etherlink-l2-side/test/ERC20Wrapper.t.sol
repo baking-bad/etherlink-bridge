@@ -78,4 +78,18 @@ contract ERC20WrapperTest is BaseTest {
         );
         assertEq(anotherToken.decimals(), 6);
     }
+
+    function test_ShouldReturnCorrectTokenHash() public {
+        assertEq(token.getTokenHash(), tokenHash);
+        ERC20Wrapper anotherToken = new ERC20Wrapper(
+            ticketer,
+            identifier,
+            address(kernel),
+            "Another token",
+            "ATKN",
+            6
+        );
+        uint256 anotherTokenHash = hashToken(ticketer, identifier);
+        assertEq(anotherToken.getTokenHash(), anotherTokenHash);
+    }
 }

@@ -102,5 +102,7 @@ contract ERC20Wrapper is ERC20 {
         return _decimals;
     }
 
-    // TODO: consider adding getTokenHash() public view returns (uint256)?
+    function getTokenHash() public view returns (uint256) {
+        return _tokenHash;
+    }
 }

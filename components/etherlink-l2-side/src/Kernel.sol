@@ -25,17 +25,12 @@ function hashTicketOwner(
  * and emiting `Deposit` and `Withdraw` events.
  */
 contract Kernel is IWithdrawEvent, IDepositEvent {
-    address private _bridge;
     uint256 private _inboxLevel;
     uint256 private _inboxMessageId;
     uint256 private _outboxMessageId;
     uint256 private _outboxLevel;
 
     mapping(bytes32 => uint256) private _tickets;
-
-    function setBridge(address bridge) public {
-        _bridge = bridge;
-    }
 
     /**
      * Increases `owner`'s tickets balance by `amount`.

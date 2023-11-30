@@ -17,6 +17,26 @@ function hashTicketOwner(
 }
 
 /**
+ * Calculates depositId from rollupId, inboxLevel and depositIdx.
+ */
+function makeDepositId(uint256 rollupId, uint256 inboxLevel, uint256 depositIdx)
+    pure
+    returns (bytes32)
+{
+    return keccak256(abi.encode(rollupId, inboxLevel, depositIdx));
+}
+
+/**
+ * Calculates withdrawalId from outboxLevel and withdrawalIdx.
+ */
+function makeWithdrawalId(uint256 outboxLevel, uint256 withdrawalIdx)
+    pure
+    returns (bytes32)
+{
+    return keccak256(abi.encode(outboxLevel, withdrawalIdx));
+}
+
+/**
  * The Kernel is mock contract that used to represent the rollup kernel
  * on L2 side, which is resposible for bridging tokens between L1 and L2.
  * Kernel address is the one who should be allowed to mint new tokens in
@@ -25,10 +45,11 @@ function hashTicketOwner(
  * and emiting `Deposit` and `Withdraw` events.
  */
 contract Kernel is IWithdrawEvent, IDepositEvent {
+    uint256 private _rollupId;
     uint256 private _inboxLevel;
-    uint256 private _inboxMessageId;
-    uint256 private _outboxMessageId;
     uint256 private _outboxLevel;
+    uint256 private _depositIdx;
+    uint256 private _withdrawalIdx;
 
     mapping(bytes32 => uint256) private _tickets;
 
@@ -62,6 +83,15 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
         _tickets[ticketOwner] -= amount;
     }
 
+    function getBalance(
+        bytes20 ticketer,
+        bytes memory identifier,
+        address owner
+    ) public view returns (uint256) {
+        bytes32 ticket = hashTicketOwner(ticketer, identifier, owner);
+        return _tickets[ticket];
+    }
+
     /**
      * Emulates the deposit operation processed during inbox dispatch in Kernel.
      */
@@ -75,26 +105,14 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
         ERC20Wrapper token = ERC20Wrapper(wrapper);
 
         uint256 tokenHash = hashToken(ticketer, identifier);
-        // TODO: consider passing depositId in params instead of constructing
-        // it here, because depositId might become hashed L1 operation contents
-        bytes32 depositId =
-            keccak256(abi.encodePacked(_inboxMessageId, _inboxLevel));
-        _inboxMessageId += 1;
+        bytes32 depositId = makeDepositId(_rollupId, _inboxLevel, _depositIdx);
+        _depositIdx += 1;
 
         // NOTE: in the Kernel implementation if token.mint fails, then
         // ticket added to the receiver instead of the wrapper:
         _increaseTicketsBalance(ticketer, identifier, wrapper, amount);
         emit Deposit(depositId, tokenHash, wrapper, receiver, amount);
         token.mint(receiver, amount, tokenHash);
-    }
-
-    function getBalance(
-        bytes20 ticketer,
-        bytes memory identifier,
-        address owner
-    ) public view returns (uint256) {
-        bytes32 ticket = hashTicketOwner(ticketer, identifier, owner);
-        return _tickets[ticket];
     }
 
     function withdraw(
@@ -109,19 +127,18 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
         address from = msg.sender;
         uint256 tokenHash = hashToken(ticketer, identifier);
         _decreaseTicketsBalance(ticketer, identifier, wrapper, amount);
-        bytes32 withdrawalId =
-            keccak256(abi.encodePacked(_outboxMessageId, _outboxLevel));
+        bytes32 withdrawalId = makeWithdrawalId(_outboxLevel, _withdrawalIdx);
         emit Withdraw(
             withdrawalId,
             tokenHash,
             wrapper,
-            _outboxMessageId,
+            _withdrawalIdx,
             _outboxLevel,
             from,
             receiver,
             amount
         );
-        _outboxMessageId += 1;
+        _withdrawalIdx += 1;
         token.burn(from, amount, tokenHash);
         // NOTE: here the withdraw outbox message should be sent to L1
     }

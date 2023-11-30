@@ -5,6 +5,7 @@ import {BaseTest} from "./Base.t.sol";
 import {hashToken} from "../src/ERC20Wrapper.sol";
 import {IWithdrawEvent} from "../src/IWithdrawEvent.sol";
 import {IDepositEvent} from "../src/IDepositEvent.sol";
+import {makeDepositId, makeWithdrawalId} from "../src/Kernel.sol";
 
 contract KernelTest is BaseTest, IWithdrawEvent, IDepositEvent {
     function test_ShouldIncreaseTicketBalanceOfTokenIfDepositSucceed() public {
@@ -55,7 +56,10 @@ contract KernelTest is BaseTest, IWithdrawEvent, IDepositEvent {
         // All topics are indexed, so we check all of them and
         // that data the same (last argument is true):
         vm.expectEmit(true, true, true, true);
-        bytes32 depositId = keccak256(abi.encodePacked(uint256(0), uint256(0)));
+        uint256 rollupId = 0;
+        uint256 inboxLevel = 0;
+        uint256 depositIdx = 0;
+        bytes32 depositId = makeDepositId(rollupId, inboxLevel, depositIdx);
         emit Deposit(depositId, tokenHash, address(token), bob, 100);
         kernel.inboxDeposit(address(token), bob, 100, ticketer, identifier);
     }
@@ -66,15 +70,14 @@ contract KernelTest is BaseTest, IWithdrawEvent, IDepositEvent {
         // All topics are indexed, so we check them all
         // and check that data the same:
         vm.expectEmit(true, true, true, true);
-        uint256 messageId = 0;
+        uint256 withdrawalIdx = 0;
         uint256 outboxLevel = 0;
-        bytes32 withdrawalId =
-            keccak256(abi.encodePacked(messageId, outboxLevel));
+        bytes32 withdrawalId = makeWithdrawalId(outboxLevel, withdrawalIdx);
         emit Withdraw(
             withdrawalId,
             tokenHash,
             address(token),
-            messageId,
+            withdrawalIdx,
             outboxLevel,
             bob,
             receiver,

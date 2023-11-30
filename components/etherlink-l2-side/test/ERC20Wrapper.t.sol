@@ -24,7 +24,7 @@ contract ERC20WrapperTest is BaseTest {
         kernel.inboxDeposit(address(token), bob, 1, ticketer, identifier);
         assertEq(token.totalSupply(), 1);
         vm.prank(bob);
-        kernel.withdraw(address(token), receiver, 1, tokenHash);
+        kernel.withdraw(address(token), receiver, 1, ticketer, identifier);
         assertEq(token.balanceOf(alice), 0);
         assertEq(token.totalSupply(), 0);
     }

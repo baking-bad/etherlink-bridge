@@ -15,11 +15,6 @@ function hashTicketOwner(
     return keccak256(abi.encodePacked(ticketer, identifier, owner));
 }
 
-struct TokenData {
-    bytes20 ticketer;
-    bytes identifier;
-}
-
 /**
  * The Kernel is mock contract that used to represent the rollup kernel
  * on L2 side, which is resposible for bridging tokens between L1 and L2.
@@ -32,14 +27,7 @@ contract Kernel {
     uint256 private _inboxLevel;
     uint256 private _inboxMessageId;
 
-    mapping(uint256 => TokenData) private _tokens;
     mapping(bytes32 => uint256) private _tickets;
-
-    constructor() {
-        // TODO: does this initialization required, or uint256 already
-        //       initializes to the zero value?
-        _inboxLevel = 0;
-    }
 
     function setBridge(address bridge) public {
         _bridge = bridge;
@@ -93,14 +81,10 @@ contract Kernel {
         // it here, because depositId might become hashed L1 operation contents
         bytes32 depositId =
             keccak256(abi.encodePacked(_inboxMessageId, _inboxLevel));
-
         _inboxMessageId += 1;
-        _tokens[tokenHash] = TokenData(ticketer, identifier);
 
-        // TODO: is it possible to make try/catch block with deposit
-        //       transaction and if it fails move tickets from wrapper
-        //       to receiver?
-
+        // NOTE: in the Kernel implementation if token.mint fails, then
+        // ticket added to the receiver instead of the wrapper:
         _increaseTicketsBalance(ticketer, identifier, wrapper, amount);
         bridge.deposit(depositId, wrapper, receiver, amount, tokenHash);
         token.mint(receiver, amount, tokenHash);
@@ -115,30 +99,18 @@ contract Kernel {
         return _tickets[ticket];
     }
 
-    function getTokenData(uint256 tokenHash)
-        public
-        view
-        returns (TokenData memory)
-    {
-        TokenData memory tokenData = _tokens[tokenHash];
-        return tokenData;
-    }
-
     function withdraw(
         address wrapper,
         bytes memory receiver,
         uint256 amount,
-        uint256 tokenHash
+        bytes20 ticketer,
+        bytes memory identifier
     ) public {
-        // TODO: consider replacing tokenHash with ticketer and identifier?
-        //       - then there will be no need to store TokenData in Kernel (?)
-        //       - would it simplify user experience or not?
         ERC20Wrapper token = ERC20Wrapper(wrapper);
         BridgePrecompile bridge = BridgePrecompile(_bridge);
 
         address from = msg.sender;
-        bytes20 ticketer = _tokens[tokenHash].ticketer;
-        bytes memory identifier = _tokens[tokenHash].identifier;
+        uint256 tokenHash = hashToken(ticketer, identifier);
         _decreaseTicketsBalance(ticketer, identifier, wrapper, amount);
         bridge.withdraw(wrapper, from, receiver, amount, tokenHash);
         token.burn(from, amount, tokenHash);

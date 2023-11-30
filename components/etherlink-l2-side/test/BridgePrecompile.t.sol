@@ -35,7 +35,7 @@ contract BridgePrecompileTest is BaseTest, IDepositEvent, IWithdrawEvent {
             receiver,
             100
         );
-        kernel.withdraw(address(token), receiver, 100, tokenHash);
+        kernel.withdraw(address(token), receiver, 100, ticketer, identifier);
     }
 
     function test_RevertWhen_DepositCalledNotFromKernel() public {

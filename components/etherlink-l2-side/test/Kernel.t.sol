@@ -3,8 +3,10 @@ pragma solidity ^0.8.21;
 
 import {BaseTest} from "./Base.t.sol";
 import {hashToken} from "../src/ERC20Wrapper.sol";
+import {IWithdrawEvent} from "../src/IWithdrawEvent.sol";
+import {IDepositEvent} from "../src/IDepositEvent.sol";
 
-contract KernelTest is BaseTest {
+contract KernelTest is BaseTest, IWithdrawEvent, IDepositEvent {
     function test_ShouldIncreaseTicketBalanceOfTokenIfDepositSucceed() public {
         kernel.inboxDeposit(address(token), alice, 100, ticketer, identifier);
         assertEq(kernel.getBalance(ticketer, identifier, address(token)), 100);
@@ -49,11 +51,37 @@ contract KernelTest is BaseTest {
         kernel.inboxDeposit(address(token), alice, 71, ticketer, identifier);
     }
 
-    // TODO: test_InboxDepositCallsBridgePrecompile ?
-    //       -- NOTE: BridgePrecompile might be merged with kernel
+    function test_ShouldEmitDepositEventOnDeposit() public {
+        // All topics are indexed, so we check all of them and
+        // that data the same (last argument is true):
+        vm.expectEmit(true, true, true, true);
+        bytes32 depositId = keccak256(abi.encodePacked(uint256(0), uint256(0)));
+        emit Deposit(depositId, tokenHash, address(token), bob, 100);
+        kernel.inboxDeposit(address(token), bob, 100, ticketer, identifier);
+    }
 
-    // TODO: test_WithdrawCallsBridgePrecompile ?
-    //       -- NOTE: BridgePrecompile might be merged with kernel
+    function test_ShouldEmitWithdrawEventOnWithdraw() public {
+        kernel.inboxDeposit(address(token), bob, 100, ticketer, identifier);
+        vm.prank(bob);
+        // All topics are indexed, so we check them all
+        // and check that data the same:
+        vm.expectEmit(true, true, true, true);
+        uint256 messageId = 0;
+        uint256 outboxLevel = 0;
+        bytes32 withdrawalId =
+            keccak256(abi.encodePacked(messageId, outboxLevel));
+        emit Withdraw(
+            withdrawalId,
+            tokenHash,
+            address(token),
+            messageId,
+            outboxLevel,
+            bob,
+            receiver,
+            100
+        );
+        kernel.withdraw(address(token), receiver, 100, ticketer, identifier);
+    }
 
     // TODO: test_ShouldIncreaseTicketBalanceOfReceiverIfWrongTokenAddress
     //       -- however this logic is not implemented in kernel

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
+import {IWithdrawEvent} from "./IWithdrawEvent.sol";
+import {IDepositEvent} from "./IDepositEvent.sol";
 import {ERC20Wrapper, hashToken} from "./ERC20Wrapper.sol";
-import {BridgePrecompile} from "./BridgePrecompile.sol";
 
 function hashTicketOwner(
     bytes20 ticketer,
@@ -21,11 +22,14 @@ function hashTicketOwner(
  * Kernel address is the one who should be allowed to mint new tokens in
  * ERC20Wrapper contract.
  * The Kernel is responsible for maintainig the ledger of L2 tickets
+ * and emiting `Deposit` and `Withdraw` events.
  */
-contract Kernel {
+contract Kernel is IWithdrawEvent, IDepositEvent {
     address private _bridge;
     uint256 private _inboxLevel;
     uint256 private _inboxMessageId;
+    uint256 private _outboxMessageId;
+    uint256 private _outboxLevel;
 
     mapping(bytes32 => uint256) private _tickets;
 
@@ -74,7 +78,6 @@ contract Kernel {
         bytes memory identifier
     ) public {
         ERC20Wrapper token = ERC20Wrapper(wrapper);
-        BridgePrecompile bridge = BridgePrecompile(_bridge);
 
         uint256 tokenHash = hashToken(ticketer, identifier);
         // TODO: consider passing depositId in params instead of constructing
@@ -86,7 +89,7 @@ contract Kernel {
         // NOTE: in the Kernel implementation if token.mint fails, then
         // ticket added to the receiver instead of the wrapper:
         _increaseTicketsBalance(ticketer, identifier, wrapper, amount);
-        bridge.deposit(depositId, wrapper, receiver, amount, tokenHash);
+        emit Deposit(depositId, tokenHash, wrapper, receiver, amount);
         token.mint(receiver, amount, tokenHash);
     }
 
@@ -107,12 +110,23 @@ contract Kernel {
         bytes memory identifier
     ) public {
         ERC20Wrapper token = ERC20Wrapper(wrapper);
-        BridgePrecompile bridge = BridgePrecompile(_bridge);
 
         address from = msg.sender;
         uint256 tokenHash = hashToken(ticketer, identifier);
         _decreaseTicketsBalance(ticketer, identifier, wrapper, amount);
-        bridge.withdraw(wrapper, from, receiver, amount, tokenHash);
+        bytes32 withdrawalId =
+            keccak256(abi.encodePacked(_outboxMessageId, _outboxLevel));
+        emit Withdraw(
+            withdrawalId,
+            tokenHash,
+            wrapper,
+            _outboxMessageId,
+            _outboxLevel,
+            from,
+            receiver,
+            amount
+        );
+        _outboxMessageId += 1;
         token.burn(from, amount, tokenHash);
         // NOTE: here the withdraw outbox message should be sent to L1
     }

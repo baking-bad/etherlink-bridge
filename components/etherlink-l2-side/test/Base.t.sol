@@ -3,12 +3,10 @@ pragma solidity ^0.8.21;
 
 import {Test} from "forge-std/Test.sol";
 import {ERC20Wrapper, hashToken} from "../src/ERC20Wrapper.sol";
-import {BridgePrecompile} from "../src/BridgePrecompile.sol";
 import {Kernel} from "../src/Kernel.sol";
 
 contract BaseTest is Test {
     ERC20Wrapper public token;
-    BridgePrecompile public bridge;
     Kernel public kernel;
     address public alice = vm.addr(0x1);
     address public bob = vm.addr(0x2);
@@ -23,8 +21,6 @@ contract BaseTest is Test {
         vm.label(alice, "Alice");
         vm.label(bob, "Bob");
         kernel = new Kernel();
-        bridge = new BridgePrecompile(address(kernel));
-        kernel.setBridge(address(bridge));
         token = new ERC20Wrapper(
             ticketer,
             identifier,

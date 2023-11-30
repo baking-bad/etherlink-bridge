@@ -7,9 +7,6 @@ function hashToken(bytes20 ticketer, bytes memory identifier)
     pure
     returns (uint256)
 {
-    // TODO: consider replacing encodePacked with encode:
-    //       looks like type collision is impossible here, but
-    //       maybe it is better to use encode? [1]
     return uint256(keccak256(abi.encodePacked(ticketer, identifier)));
 }
 
@@ -19,8 +16,8 @@ function hashToken(bytes20 ticketer, bytes memory identifier)
  */
 contract ERC20Wrapper is ERC20 {
     uint256 private _tokenHash;
-    // TODO: when we have kernel address fixed at 0x00 in Etherlink L2 side
-    //       we can remove this field from constructor.
+    // TODO: when we have kernel address fixed at some precompile address in
+    //       Etherlink L2 side, we can remove this field from constructor.
     address private _kernel;
     uint8 private _decimals;
 

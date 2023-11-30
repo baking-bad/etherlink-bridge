@@ -10,9 +10,6 @@ function hashTicketOwner(
     bytes memory identifier,
     address owner
 ) pure returns (bytes32) {
-    // TODO: consider replacing encodePacked with encode:
-    //       looks like type collision is impossible here, but
-    //       maybe it is better to use encode? [2]
     return keccak256(abi.encodePacked(ticketer, identifier, owner));
 }
 

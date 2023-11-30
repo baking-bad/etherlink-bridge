@@ -70,9 +70,11 @@ contract KernelTest is BaseTest, IWithdrawEvent, IDepositEvent {
         // All topics are indexed, so we check them all
         // and check that data the same:
         vm.expectEmit(true, true, true, true);
+        uint256 rollupId = 0;
         uint256 withdrawalIdx = 0;
         uint256 outboxLevel = 0;
-        bytes32 withdrawalId = makeWithdrawalId(outboxLevel, withdrawalIdx);
+        bytes32 withdrawalId =
+            makeWithdrawalId(rollupId, outboxLevel, withdrawalIdx);
         emit Withdraw(
             withdrawalId,
             tokenHash,

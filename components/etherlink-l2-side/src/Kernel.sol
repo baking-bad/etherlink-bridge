@@ -20,17 +20,22 @@ function makeDepositId(uint256 rollupId, uint256 inboxLevel, uint256 depositIdx)
     pure
     returns (bytes32)
 {
-    return keccak256(abi.encode(rollupId, inboxLevel, depositIdx));
+    string memory prefix = "deposit";
+    return keccak256(abi.encodePacked(prefix, rollupId, inboxLevel, depositIdx));
 }
 
 /**
- * Calculates withdrawalId from outboxLevel and withdrawalIdx.
+ * Calculates withdrawalId from rollupId, outboxLevel and withdrawalIdx.
  */
-function makeWithdrawalId(uint256 outboxLevel, uint256 withdrawalIdx)
-    pure
-    returns (bytes32)
-{
-    return keccak256(abi.encode(outboxLevel, withdrawalIdx));
+function makeWithdrawalId(
+    uint256 rollupId,
+    uint256 outboxLevel,
+    uint256 withdrawalIdx
+) pure returns (bytes32) {
+    string memory prefix = "withdrawal";
+    return keccak256(
+        abi.encodePacked(prefix, rollupId, outboxLevel, withdrawalIdx)
+    );
 }
 
 /**
@@ -124,7 +129,8 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
         address from = msg.sender;
         uint256 tokenHash = hashToken(ticketer, identifier);
         _decreaseTicketsBalance(ticketer, identifier, wrapper, amount);
-        bytes32 withdrawalId = makeWithdrawalId(_outboxLevel, _withdrawalIdx);
+        bytes32 withdrawalId =
+            makeWithdrawalId(_rollupId, _outboxLevel, _withdrawalIdx);
         emit Withdraw(
             withdrawalId,
             tokenHash,

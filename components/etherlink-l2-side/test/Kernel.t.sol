@@ -5,7 +5,6 @@ import {BaseTest} from "./Base.t.sol";
 import {hashToken} from "../src/ERC20Wrapper.sol";
 import {IWithdrawEvent} from "../src/IWithdrawEvent.sol";
 import {IDepositEvent} from "../src/IDepositEvent.sol";
-import {makeDepositId, makeWithdrawalId} from "../src/Kernel.sol";
 
 contract KernelTest is BaseTest, IWithdrawEvent, IDepositEvent {
     function test_ShouldIncreaseTicketBalanceOfTokenIfDepositSucceed() public {
@@ -53,37 +52,31 @@ contract KernelTest is BaseTest, IWithdrawEvent, IDepositEvent {
     }
 
     function test_ShouldEmitDepositEventOnDeposit() public {
-        // All topics are indexed, so we check all of them and
-        // that data the same (last argument is true):
+        // Checking that emited indexed data is the same in all topics:
         vm.expectEmit(true, true, true, true);
-        uint256 rollupId = 0;
         uint256 inboxLevel = 0;
         uint256 depositIdx = 0;
-        bytes32 depositId = makeDepositId(rollupId, inboxLevel, depositIdx);
-        emit Deposit(depositId, tokenHash, address(token), bob, 100);
+        emit Deposit(
+            tokenHash, address(token), bob, 100, inboxLevel, depositIdx
+        );
         kernel.inboxDeposit(address(token), bob, 100, ticketer, identifier);
     }
 
     function test_ShouldEmitWithdrawEventOnWithdraw() public {
         kernel.inboxDeposit(address(token), bob, 100, ticketer, identifier);
         vm.prank(bob);
-        // All topics are indexed, so we check them all
-        // and check that data the same:
+        // Checking that emited indexed data is the same in all topics:
         vm.expectEmit(true, true, true, true);
-        uint256 rollupId = 0;
         uint256 withdrawalIdx = 0;
         uint256 outboxLevel = 0;
-        bytes32 withdrawalId =
-            makeWithdrawalId(rollupId, outboxLevel, withdrawalIdx);
         emit Withdraw(
-            withdrawalId,
             tokenHash,
-            address(token),
-            withdrawalIdx,
-            outboxLevel,
             bob,
+            address(token),
             receiver,
-            100
+            100,
+            outboxLevel,
+            withdrawalIdx
         );
         kernel.withdraw(address(token), receiver, 100, ticketer, identifier);
     }

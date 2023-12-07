@@ -14,31 +14,6 @@ function hashTicketOwner(
 }
 
 /**
- * Calculates depositId from rollupId, inboxLevel and depositIdx.
- */
-function makeDepositId(uint256 rollupId, uint256 inboxLevel, uint256 depositIdx)
-    pure
-    returns (bytes32)
-{
-    string memory prefix = "deposit";
-    return keccak256(abi.encodePacked(prefix, rollupId, inboxLevel, depositIdx));
-}
-
-/**
- * Calculates withdrawalId from rollupId, outboxLevel and withdrawalIdx.
- */
-function makeWithdrawalId(
-    uint256 rollupId,
-    uint256 outboxLevel,
-    uint256 withdrawalIdx
-) pure returns (bytes32) {
-    string memory prefix = "withdrawal";
-    return keccak256(
-        abi.encodePacked(prefix, rollupId, outboxLevel, withdrawalIdx)
-    );
-}
-
-/**
  * The Kernel is mock contract that used to represent the rollup kernel
  * on L2 side, which is resposible for bridging tokens between L1 and L2.
  * Kernel address is the one who should be allowed to mint new tokens in
@@ -105,15 +80,17 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
         bytes memory identifier
     ) public {
         ERC20Wrapper token = ERC20Wrapper(wrapper);
-
         uint256 tokenHash = hashToken(ticketer, identifier);
-        bytes32 depositId = makeDepositId(_rollupId, _inboxLevel, _depositIdx);
-        _depositIdx += 1;
 
         // NOTE: in the Kernel implementation if token.mint fails, then
         // ticket added to the receiver instead of the wrapper:
         _increaseTicketsBalance(ticketer, identifier, wrapper, amount);
-        emit Deposit(depositId, tokenHash, wrapper, receiver, amount);
+
+        emit Deposit(
+            tokenHash, wrapper, receiver, amount, _inboxLevel, _depositIdx
+        );
+
+        _depositIdx += 1;
         token.mint(receiver, amount, tokenHash);
     }
 
@@ -125,24 +102,22 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
         bytes memory identifier
     ) public {
         ERC20Wrapper token = ERC20Wrapper(wrapper);
-
-        address from = msg.sender;
+        address sender = msg.sender;
         uint256 tokenHash = hashToken(ticketer, identifier);
         _decreaseTicketsBalance(ticketer, identifier, wrapper, amount);
-        bytes32 withdrawalId =
-            makeWithdrawalId(_rollupId, _outboxLevel, _withdrawalIdx);
+
         emit Withdraw(
-            withdrawalId,
             tokenHash,
+            sender,
             wrapper,
-            _withdrawalIdx,
-            _outboxLevel,
-            from,
             receiver,
-            amount
+            amount,
+            _outboxLevel,
+            _withdrawalIdx
         );
+
         _withdrawalIdx += 1;
-        token.burn(from, amount, tokenHash);
+        token.burn(sender, amount, tokenHash);
         // NOTE: here the withdraw outbox message should be sent to L1
     }
 }

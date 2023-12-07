@@ -9,10 +9,11 @@ interface IDepositEvent {
      * @dev Emitted when succesful deposit is made.
      */
     event Deposit(
-        bytes32 indexed depositId,
         uint256 indexed tokenHash,
-        address token,
-        address indexed receiver,
-        uint256 amount
+        address ticketOwner,
+        address receiver,
+        uint256 amount,
+        uint256 inboxLevel,
+        uint256 inboxMsgId
     );
 }

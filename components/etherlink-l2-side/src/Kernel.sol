@@ -3,30 +3,29 @@ pragma solidity >=0.8.21;
 
 import {IWithdrawEvent} from "./IWithdrawEvent.sol";
 import {IDepositEvent} from "./IDepositEvent.sol";
-import {ERC20Wrapper, hashToken} from "./ERC20Wrapper.sol";
+import {ERC20Proxy, hashTicket} from "./ERC20Proxy.sol";
 
-function hashTicketOwner(
-    bytes22 ticketer,
-    bytes memory identifier,
-    address owner
-) pure returns (bytes32) {
-    return keccak256(abi.encodePacked(ticketer, identifier, owner));
+function hashTicketOwner(bytes22 ticketer, bytes memory content, address owner)
+    pure
+    returns (bytes32)
+{
+    return keccak256(abi.encodePacked(ticketer, content, owner));
 }
 
 /**
  * The Kernel is mock contract that used to represent the rollup kernel
  * on L2 side, which is resposible for bridging tokens between L1 and L2.
  * Kernel address is the one who should be allowed to mint new tokens in
- * ERC20Wrapper contract.
+ * ERC20Proxy contract.
  * The Kernel is responsible for maintainig the ledger of L2 tickets
  * and emiting `Deposit` and `Withdraw` events.
  */
 contract Kernel is IWithdrawEvent, IDepositEvent {
     uint256 private _rollupId;
     uint256 private _inboxLevel;
+    uint256 private _inboxMsgId;
     uint256 private _outboxLevel;
-    uint256 private _depositIdx;
-    uint256 private _withdrawalIdx;
+    uint256 private _outboxMsgId;
 
     mapping(bytes32 => uint256) private _tickets;
 
@@ -35,11 +34,11 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
      */
     function _increaseTicketsBalance(
         bytes22 ticketer,
-        bytes memory identifier,
+        bytes memory content,
         address owner,
         uint256 amount
     ) internal {
-        bytes32 ticketOwner = hashTicketOwner(ticketer, identifier, owner);
+        bytes32 ticketOwner = hashTicketOwner(ticketer, content, owner);
         _tickets[ticketOwner] += amount;
     }
 
@@ -48,11 +47,11 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
      */
     function _decreaseTicketsBalance(
         bytes22 ticketer,
-        bytes memory identifier,
+        bytes memory content,
         address owner,
         uint256 amount
     ) internal {
-        bytes32 ticketOwner = hashTicketOwner(ticketer, identifier, owner);
+        bytes32 ticketOwner = hashTicketOwner(ticketer, content, owner);
         uint256 ticketBalance = _tickets[ticketOwner];
         if (ticketBalance < amount) {
             revert("Kernel: ticket balance is not enough");
@@ -60,12 +59,12 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
         _tickets[ticketOwner] -= amount;
     }
 
-    function getBalance(
-        bytes22 ticketer,
-        bytes memory identifier,
-        address owner
-    ) public view returns (uint256) {
-        bytes32 ticket = hashTicketOwner(ticketer, identifier, owner);
+    function getBalance(bytes22 ticketer, bytes memory content, address owner)
+        public
+        view
+        returns (uint256)
+    {
+        bytes32 ticket = hashTicketOwner(ticketer, content, owner);
         return _tickets[ticket];
     }
 
@@ -73,51 +72,56 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
      * Emulates the deposit operation processed during inbox dispatch in Kernel.
      */
     function inboxDeposit(
-        address wrapper,
+        address ticketReceiver,
         address receiver,
         uint256 amount,
         bytes22 ticketer,
         bytes memory identifier
     ) public {
-        ERC20Wrapper token = ERC20Wrapper(wrapper);
-        uint256 tokenHash = hashToken(ticketer, identifier);
+        ERC20Proxy proxyToken = ERC20Proxy(ticketReceiver);
+        uint256 ticketHash = hashTicket(ticketer, identifier);
 
-        // NOTE: in the Kernel implementation if token.mint fails, then
-        // ticket added to the receiver instead of the wrapper:
-        _increaseTicketsBalance(ticketer, identifier, wrapper, amount);
+        // NOTE: in the Kernel implementation if proxyToken.deposit fails, then
+        // ticket added to the receiver instead of the ticketReceiver:
+        _increaseTicketsBalance(ticketer, identifier, ticketReceiver, amount);
 
         emit Deposit(
-            tokenHash, wrapper, receiver, amount, _inboxLevel, _depositIdx
+            ticketHash,
+            ticketReceiver,
+            receiver,
+            amount,
+            _inboxLevel,
+            _inboxMsgId
         );
 
-        _depositIdx += 1;
-        token.mint(receiver, amount, tokenHash);
+        _inboxMsgId += 1;
+        proxyToken.deposit(receiver, amount, ticketHash);
     }
 
     function withdraw(
-        address wrapper,
+        address ticketOwner,
         bytes memory receiver,
         uint256 amount,
         bytes22 ticketer,
-        bytes memory identifier
+        bytes memory content
     ) public {
-        ERC20Wrapper token = ERC20Wrapper(wrapper);
+        ERC20Proxy proxyToken = ERC20Proxy(ticketOwner);
         address sender = msg.sender;
-        uint256 tokenHash = hashToken(ticketer, identifier);
-        _decreaseTicketsBalance(ticketer, identifier, wrapper, amount);
+        uint256 ticketHash = hashTicket(ticketer, content);
+        _decreaseTicketsBalance(ticketer, content, ticketOwner, amount);
 
         emit Withdraw(
-            tokenHash,
+            ticketHash,
             sender,
-            wrapper,
+            ticketOwner,
             receiver,
             amount,
             _outboxLevel,
-            _withdrawalIdx
+            _outboxMsgId
         );
 
-        _withdrawalIdx += 1;
-        token.burn(sender, amount, tokenHash);
+        _outboxMsgId += 1;
+        proxyToken.withdraw(sender, amount, ticketHash);
         // NOTE: here the withdraw outbox message should be sent to L1
     }
 }

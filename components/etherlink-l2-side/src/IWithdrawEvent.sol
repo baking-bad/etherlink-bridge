@@ -9,7 +9,7 @@ interface IWithdrawEvent {
      * @dev Emitted when succesful withdraw is made.
      */
     event Withdraw(
-        uint256 indexed tokenHash,
+        uint256 indexed ticketHash,
         address sender,
         address tiketOwner,
         bytes receiver,

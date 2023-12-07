@@ -6,7 +6,7 @@ import {IDepositEvent} from "./IDepositEvent.sol";
 import {ERC20Wrapper, hashToken} from "./ERC20Wrapper.sol";
 
 function hashTicketOwner(
-    bytes20 ticketer,
+    bytes22 ticketer,
     bytes memory identifier,
     address owner
 ) pure returns (bytes32) {
@@ -59,7 +59,7 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
      * Increases `owner`'s tickets balance by `amount`.
      */
     function _increaseTicketsBalance(
-        bytes20 ticketer,
+        bytes22 ticketer,
         bytes memory identifier,
         address owner,
         uint256 amount
@@ -72,7 +72,7 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
      * Decreases `owner`'s tickets balance by `amount`.
      */
     function _decreaseTicketsBalance(
-        bytes20 ticketer,
+        bytes22 ticketer,
         bytes memory identifier,
         address owner,
         uint256 amount
@@ -86,7 +86,7 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
     }
 
     function getBalance(
-        bytes20 ticketer,
+        bytes22 ticketer,
         bytes memory identifier,
         address owner
     ) public view returns (uint256) {
@@ -101,7 +101,7 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
         address wrapper,
         address receiver,
         uint256 amount,
-        bytes20 ticketer,
+        bytes22 ticketer,
         bytes memory identifier
     ) public {
         ERC20Wrapper token = ERC20Wrapper(wrapper);
@@ -121,7 +121,7 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
         address wrapper,
         bytes memory receiver,
         uint256 amount,
-        bytes20 ticketer,
+        bytes22 ticketer,
         bytes memory identifier
     ) public {
         ERC20Wrapper token = ERC20Wrapper(wrapper);

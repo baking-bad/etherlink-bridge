@@ -3,7 +3,7 @@ pragma solidity >=0.8.21;
 
 import {ERC20} from "openzeppelin-contracts/token/ERC20/ERC20.sol";
 
-function hashToken(bytes20 ticketer, bytes memory identifier)
+function hashToken(bytes22 ticketer, bytes memory identifier)
     pure
     returns (uint256)
 {
@@ -31,7 +31,7 @@ contract ERC20Wrapper is ERC20 {
      * @param decimals_ number of decimals of the token
      */
     constructor(
-        bytes20 ticketer_,
+        bytes22 ticketer_,
         bytes memory identifier_,
         address kernel_,
         string memory name_,

@@ -81,4 +81,5 @@ def pack(object: Any, type_expression: str) -> bytes:
 def make_address_bytes(address: str) -> str:
     """ Converts address string to bytes """
 
-    return base58_decode(address.encode()).hex()
+    # packing address to bytes and taking the last 22 bytes:
+    return pack(address, 'address')[-22:].hex()

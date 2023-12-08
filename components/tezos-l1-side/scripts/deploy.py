@@ -30,16 +30,16 @@ ALICE_PRIVATE_KEY = os.getenv('ALICE_PRIVATE_KEY') or getpass('Enter Alice priva
 BORIS_PRIVATE_KEY = os.getenv('BORIS_PRIVATE_KEY') or getpass('Enter Boris private key: ')
 
 
-ROLLUP_SR_ADDRESS = 'sr1JDmHhBg8yKzkUWpVqL9n8brCqhxdBTtq4'
-ERC20_WRAPPER_ADDRESS = '6686644C9D285b3EBd5D880bb2650B1EF33699e6'
-ALICE_L2_ADDRESS = '31E0aC684f33D86C10FdC10482cBAC073B750264'
+ROLLUP_SR_ADDRESS = 'sr1SkqgA2kLyB5ZqQWU5vdyMoNvWjYqtXGYY'
+ERC20_PROXY_ADDRESS = '39909EB8b35993013F3Be035BA22804E198F0BBb'
+ALICE_L2_ADDRESS = 'bFc6dc08Bd0e8FBa3a25D7A70728E76E627c9A90'
 
 
 CONTRACTS = {
-    'fa2':              (FA2,                  'KT1GZiNJSELE2Ad5JcfT6sN38ABeKHvkPLMx'),
-    'proxy_deposit':    (ProxyRouterDeposit,   'KT1NB4C5m7vnEq47EgN5QexXX6d4RCeHQKwL'),
-    'proxy_ticketer':   (ProxyTicketer,        'KT1X9T9VWMsEHghd6nsVcjFfeFcNHYY2JJ84'),
-    'ticketer':         (Ticketer,             'KT1DeNCweBiRRpgBwQatZmaSqB2nJ65HVhJ6'),
+    'fa2':              (FA2,                  'KT1CoUssNszEUPAwKnxDQVv6nNDf7n4ge8BK'),
+    'proxy_deposit':    (ProxyRouterDeposit,   'KT1JR55jcW9swYumGw8pnQkFVUXZdndqwgQG'),
+    'proxy_ticketer':   (ProxyTicketer,        'KT1Gu89N9b8V2Zs8HyYwhXWkikbe22JyZtAR'),
+    'ticketer':         (Ticketer,             'KT1VdjDtgKMXpHwhVRCvqbsTBDmWLJt8sfUE'),
 
     # Rollup Mock is not deployed by default anymore:
     # 'rollup_mock':      (RollupMock,           ''),
@@ -113,7 +113,7 @@ def deploy_contracts(
     ticket = create_ticket_from_fa2(ticketer, fa2)
     ticket_payload = make_ticket_payload_bytes(ticket)
     ticketer_bytes = make_address_bytes(ticketer.address)
-    print('Data for setup ERC20 Wrapper:')
+    print('Data for setup ERC20 Proxy:')
     print(f'ticket address bytes: `{ticketer_bytes}`')
     print(f'ticket payload bytes: `{ticket_payload}`')
 
@@ -151,22 +151,23 @@ def run_interactions(
     # deposit tokens to the ticketer, set routing info to the proxy
     # and transfer ticket to the Rollup (Locker) by sending created ticket
     # to the proxy contract, which will send it to the Rollup with routing info:
-    wrapper = bytes.fromhex(ERC20_WRAPPER_ADDRESS)
+    ticket_receiver = bytes.fromhex(ERC20_PROXY_ADDRESS)
     receiver = bytes.fromhex(ALICE_L2_ADDRESS)
 
     opg = alice.bulk(
         fa2.using(alice).allow(ticketer.address),
-        ticketer.using(alice).deposit(fa2, 100),
+        ticketer.using(alice).deposit(fa2, 50),
         proxy_deposit.using(alice).set({
-            # router_info is first 20 bytes is wrapper, second is 20b receiver
-            'data': wrapper + receiver,
+            # router_info is first 20 bytes is receiver (the one who get token),
+            # then second 20 bytes is the proxy contract (the one who get ticket)
+            'data': receiver + ticket_receiver,
             'receiver': ROLLUP_SR_ADDRESS,
         }),
         alice.transfer_ticket(
             ticket_contents = ticket['content'],
             ticket_ty = ticket['content_type'],
             ticket_ticketer = ticket['ticketer'],
-            ticket_amount = 5,
+            ticket_amount = 50,
             destination = proxy_deposit.address,
             entrypoint = 'send',
         ),

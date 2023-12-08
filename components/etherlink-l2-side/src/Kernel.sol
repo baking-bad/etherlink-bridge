@@ -109,6 +109,9 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
         address sender = msg.sender;
         uint256 ticketHash = hashTicket(ticketer, content);
         _decreaseTicketsBalance(ticketer, content, ticketOwner, amount);
+        // NOTE: in the actual kernel, receiver type in event is bytes22
+        //       - so to sync with the kernel, `bytes22 receiver` should be
+        //       extracted from the `bytes memory receiver`.
 
         emit Withdraw(
             ticketHash,

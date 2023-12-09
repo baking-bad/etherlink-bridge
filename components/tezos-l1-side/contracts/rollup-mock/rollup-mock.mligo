@@ -8,16 +8,25 @@
 #import "../common/utility.mligo" "Utility"
 
 
-let unwrap_rollup_entrypoint
-        (rollup_entry : Entrypoints.rollup_entry)
-        : Entrypoints.deposit =
-    let deposit = match rollup_entry with
-    | M_right _bytes -> failwith(Errors.wrong_rollup_entrypoint)
-    | M_left deposit_or_bytes -> (
-        match deposit_or_bytes with
-        | M_left deposit -> deposit
-        | M_right _bytes -> failwith(Errors.wrong_rollup_entrypoint)
-    ) in deposit
+let send_ticket_to_router
+        (ticket : Ticket.t)
+        (router : address)
+        (receiver : address)
+        : operation =
+    let payload : Entrypoints.router_withdraw_params = {
+        receiver = receiver;
+        ticket = ticket;
+    } in
+    let entry = Entrypoints.get_router_withdraw router in
+    Tezos.transaction payload 0mutez entry
+
+
+let send_ticket_to_receiver
+        (ticket : Ticket.t)
+        (receiver : address)
+        : operation =
+    let receiver_contract = Ticket.get_ticket_entrypoint receiver in
+    Tezos.transaction ticket 0mutez receiver_contract
 
 
 module RollupMock = struct
@@ -40,7 +49,7 @@ module RollupMock = struct
             next_message_id;
             metadata;
         } = store in
-        let deposit = unwrap_rollup_entrypoint rollup_entry in
+        let deposit = Entrypoints.unwrap_rollup_entrypoint rollup_entry in
         let { ticket = ticket; routing_info = _r } = deposit in
         let (ticketer, (payload, _amt)), ticket = Tezos.read_ticket ticket in
         let token_id = payload.token_id in
@@ -79,9 +88,9 @@ module RollupMock = struct
             Ticket.split_ticket l1_ticket message.amount in
 
         let receiver = RoutingData.get_receiver_l2_to_l1 message.routing_data in
-        let receiver_contract = Ticket.get_ticket_entrypoint receiver in
-        let ticket_transfer_op =
-            Tezos.transaction l1_ticket_send 0mutez receiver_contract in
+        let ticket_transfer_op = match message.router with
+        | Some router -> send_ticket_to_router l1_ticket_send router receiver
+        | None -> send_ticket_to_receiver l1_ticket_send receiver in
         let updated_tickets =
             Big_map.update message.ticket_id (Some l1_ticket_keep) updated_tickets in
 

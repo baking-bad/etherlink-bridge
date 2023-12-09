@@ -12,4 +12,6 @@ type t = {
     ticket_id : TicketId.t;
     amount : nat;
     routing_data : RoutingData.l2_to_l1_t;
+    router : address option;
+    // NOTE: router address dervies from routing_data in actual implementation
 }

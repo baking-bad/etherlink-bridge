@@ -6,6 +6,7 @@ from tests.helpers.utility import (
     to_michelson_type,
     pack,
 )
+from pytezos.michelson.types.base import MichelsonType
 
 
 class Ticket(TypedDict):

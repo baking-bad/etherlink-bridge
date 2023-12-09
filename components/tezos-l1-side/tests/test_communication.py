@@ -26,6 +26,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         proxy_ticketer = self.contracts['proxy_ticketer']
         rollup_mock = self.contracts['rollup_mock']
         ticketer = self.contracts['ticketer']
+        router = self.contracts['router']
 
         # First we check that ticketer has no tickets and no tokens:
         with self.assertRaises(KeyError):
@@ -103,6 +104,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
             },
             'amount': 5,
             'routing_data': pack(pkh(boris), 'address'),
+            'router': router.address,
         }).send()
 
         self.bake_block()

@@ -21,6 +21,7 @@ class Message(TypedDict):
     ticket_id: TicketId
     amount: int
     routing_data: bytes
+    router: str
 
 
 class RollupMock(ContractHelper):

@@ -7,6 +7,7 @@ from tests.helpers.contracts import (
     RollupMock,
     FA2,
     ContractHelper,
+    Router,
 )
 from tests.helpers.utility import pkh, pack
 from typing import Type, TypeVar, TypedDict
@@ -18,6 +19,7 @@ class Contracts(TypedDict):
     rollup_mock: RollupMock
     fa2: FA2
     ticketer: Ticketer
+    router: Router
 
 
 class BaseTestCase(SandboxedNodeTestCase):
@@ -53,6 +55,7 @@ class BaseTestCase(SandboxedNodeTestCase):
         proxy_deposit = deploy_contract(ProxyRouterDeposit)
         proxy_ticketer = deploy_contract(ProxyTicketer)
         rollup_mock = deploy_contract(RollupMock)
+        router = deploy_contract(Router)
 
         # Tokens deployment:
         token_balances = {
@@ -85,4 +88,5 @@ class BaseTestCase(SandboxedNodeTestCase):
             'rollup_mock': rollup_mock,
             'fa2': fa2,
             'ticketer': ticketer,
+            'router': router,
         }

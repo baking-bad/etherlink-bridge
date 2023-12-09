@@ -22,7 +22,7 @@ class Ticketer(ContractHelper):
         'extra_metadata': {},
         'metadata': make_metadata(
             name='Ticketer',
-            description='The Ticketer is a component of the Bridge Protocol Prototype, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
+            description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
         ),
         'token_ids': {},
         'tokens': {},

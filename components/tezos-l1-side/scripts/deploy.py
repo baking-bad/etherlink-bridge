@@ -5,8 +5,8 @@ import os
 from pytezos.client import PyTezosClient
 from tests.helpers.contracts import (
     Ticketer,
-    ProxyRouterDeposit,
-    ProxyTicketer,
+    DepositProxy,
+    ReleaseProxy,
     RollupMock,
     FA2,
     Router,
@@ -38,8 +38,8 @@ ALICE_L2_ADDRESS = 'bFc6dc08Bd0e8FBa3a25D7A70728E76E627c9A90'
 
 CONTRACTS = {
     'fa2':              (FA2,                  'KT1CoUssNszEUPAwKnxDQVv6nNDf7n4ge8BK'),
-    'proxy_deposit':    (ProxyRouterDeposit,   'KT1JR55jcW9swYumGw8pnQkFVUXZdndqwgQG'),
-    'proxy_ticketer':   (ProxyTicketer,        'KT1Gu89N9b8V2Zs8HyYwhXWkikbe22JyZtAR'),
+    'deposit_proxy':    (DepositProxy,         'KT1JR55jcW9swYumGw8pnQkFVUXZdndqwgQG'),
+    'release_proxy':    (ReleaseProxy,         'KT1Gu89N9b8V2Zs8HyYwhXWkikbe22JyZtAR'),
     'ticketer':         (Ticketer,             'KT1VdjDtgKMXpHwhVRCvqbsTBDmWLJt8sfUE'),
     'router':           (Router,               'KT1LX3p9yvBHxhbPeKbhVgTvbovmzT5PxwRj'),
 
@@ -86,13 +86,13 @@ def deploy_contracts(
         manager.wait(opg)
         return cls.create_from_opg(manager, opg)
 
-    proxy_deposit = deploy_contract(ProxyRouterDeposit)
-    proxy_ticketer = deploy_contract(ProxyTicketer)
+    deposit_proxy = deploy_contract(DepositProxy)
+    release_proxy = deploy_contract(ReleaseProxy)
     router = deploy_contract(Router)
 
     contracts['fa2'] = fa2
-    contracts['proxy_deposit'] = proxy_deposit
-    contracts['proxy_ticketer'] = proxy_ticketer
+    contracts['deposit_proxy'] = deposit_proxy
+    contracts['release_proxy'] = release_proxy
     contracts['router'] = router
     if deploy_rollup_mock:
         contracts['rollup_mock'] = deploy_contract(RollupMock)
@@ -146,8 +146,8 @@ def deposit_to_l2(
 
     # TODO: reuse some of this code in tests/test_communication.py
     fa2 = contracts['fa2']
-    proxy_deposit = contracts['proxy_deposit']
-    proxy_ticketer = contracts['proxy_ticketer']
+    deposit_proxy = contracts['deposit_proxy']
+    release_proxy = contracts['release_proxy']
     ticketer = contracts['ticketer']
     ticket = create_ticket_from_fa2(ticketer, fa2)
 
@@ -161,7 +161,7 @@ def deposit_to_l2(
     opg = client.bulk(
         fa2.using(client).allow(ticketer.address),
         ticketer.using(client).deposit(fa2, 50),
-        proxy_deposit.using(client).set({
+        deposit_proxy.using(client).set({
             # router_info is first 20 bytes is receiver (the one who get token),
             # then second 20 bytes is the proxy contract (the one who get ticket)
             'data': receiver + ticket_receiver,
@@ -172,7 +172,7 @@ def deposit_to_l2(
             ticket_ty = ticket['content_type'],
             ticket_ticketer = ticket['ticketer'],
             ticket_amount = 50,
-            destination = proxy_deposit.address,
+            destination = deposit_proxy.address,
             entrypoint = 'send',
         ),
     ).send()
@@ -187,12 +187,12 @@ def unpack_ticket(
     """ This function run ticket unpacking for given client """
 
     fa2 = contracts['fa2']
-    proxy_ticketer = contracts['proxy_ticketer']
+    release_proxy = contracts['release_proxy']
     ticketer = contracts['ticketer']
     ticket = create_ticket_from_fa2(ticketer, fa2)
 
     opg = client.bulk(
-        proxy_ticketer.using(client).set({
+        release_proxy.using(client).set({
             'data': pkh(client),
             'receiver': f'{ticketer.address}%release',
         }),
@@ -201,7 +201,7 @@ def unpack_ticket(
             ticket_ty=ticket['content_type'],
             ticket_ticketer=ticket['ticketer'],
             ticket_amount=amount,
-            destination=proxy_ticketer.address,
+            destination=release_proxy.address,
             entrypoint='send',
         )
     ).send()

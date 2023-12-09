@@ -22,8 +22,8 @@ class TicketerCommunicationTestCase(BaseTestCase):
         boris = self.accs['boris']
         alice = self.accs['alice']
         fa2 = self.contracts['fa2']
-        proxy_deposit = self.contracts['proxy_deposit']
-        proxy_ticketer = self.contracts['proxy_ticketer']
+        deposit_proxy = self.contracts['deposit_proxy']
+        release_proxy = self.contracts['release_proxy']
         rollup_mock = self.contracts['rollup_mock']
         ticketer = self.contracts['ticketer']
         router = self.contracts['router']
@@ -57,7 +57,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         alice.bulk(
             fa2.using(alice).allow(ticketer.address),
             ticketer.using(alice).deposit(fa2, 100),
-            proxy_deposit.using(alice).set({
+            deposit_proxy.using(alice).set({
                 'data': wrapper + receiver,
                 'receiver': f'{rollup_mock.address}%rollup',
             }),
@@ -67,7 +67,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
                 ticket_ty = ticket['content_type'],
                 ticket_ticketer = ticket['ticketer'],
                 ticket_amount = 25,
-                destination = proxy_deposit.address,
+                destination = deposit_proxy.address,
                 entrypoint = 'send',
             ),
         ).send()
@@ -133,7 +133,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
         boris_tokens_before_burn = fa2.get_balance(pkh(boris))
 
         boris.bulk(
-            proxy_ticketer.using(boris).set({
+            release_proxy.using(boris).set({
                 'data': pkh(boris),
                 'receiver': f'{ticketer.address}%release',
             }),
@@ -142,7 +142,7 @@ class TicketerCommunicationTestCase(BaseTestCase):
                 ticket_ty=ticket['content_type'],
                 ticket_ticketer=ticket['ticketer'],
                 ticket_amount=2,
-                destination=proxy_ticketer.address,
+                destination=release_proxy.address,
                 entrypoint='send',
             )
         ).send()

@@ -2,16 +2,16 @@ import json
 
 
 DEFAULT_METADATA = {
-    'version': '0.1.0',
-    'name': 'Bridge Protocol Prototype',
-    'description': 'The Bridge Protocol Prototype consists of contracts designed for communication between Tezos L1 and L2 rollups.',
+    'version': '0.2.0',
+    'name': 'Etherlink Bridge',
+    'description': 'The Etherlink Bridge consists of contracts designed for communication between Tezos and Etherlink rollup.',
     'interfaces': [
         'TZIP-016'
     ],
     'license': {
         'name': 'MIT'
     },
-    'homepage': 'https://github.com/baking-bad/ticketer-proto'
+    'homepage': 'https://github.com/baking-bad/etherlink-bridge'
 }
 
 

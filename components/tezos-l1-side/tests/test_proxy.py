@@ -1,29 +1,29 @@
 from tests.base import BaseTestCase
 from tests.helpers.utility import pkh, pack
 from tests.helpers.tickets import create_ticket
-from tests.helpers.contracts.proxy import TicketerSetParams
+from tests.helpers.contracts.proxy import ReleaseParams
 
 
 class ProxyTestCase(BaseTestCase):
     def test_should_add_context_to_proxy_after_set(self) -> None:
         alice = self.accs['alice']
-        proxy_ticketer = self.contracts['proxy_ticketer']
+        release_proxy = self.contracts['release_proxy']
         ticketer = self.contracts['ticketer']
 
         # Checking that context is empty:
-        init_context = proxy_ticketer.get_context(pkh(alice))
+        init_context = release_proxy.get_context(pkh(alice))
         self.assertEqual(init_context, None)
 
         # Setting context to the proxy:
-        expected_context: TicketerSetParams = {
+        expected_context: ReleaseParams = {
             'data': pkh(alice),
             'receiver': f'{ticketer.address}%release',
         }
-        proxy_ticketer.using(alice).set(expected_context).send()
+        release_proxy.using(alice).set(expected_context).send()
         self.bake_block()
 
         # Checking that context is set:
-        actual_context = proxy_ticketer.get_context(pkh(alice))
+        actual_context = release_proxy.get_context(pkh(alice))
         assert actual_context
         self.assertDictEqual(expected_context, actual_context)
 
@@ -33,7 +33,7 @@ class ProxyTestCase(BaseTestCase):
         alice = self.accs['alice']
         ticketer = self.contracts['ticketer']
         fa2 = self.contracts['fa2']
-        proxy_ticketer = self.contracts['proxy_ticketer']
+        release_proxy = self.contracts['release_proxy']
 
         # Preparing ticket for testing:
         boris.bulk(
@@ -43,7 +43,7 @@ class ProxyTestCase(BaseTestCase):
         self.bake_block()
 
         # Setting context to the proxy to unpack ticket and calling release:
-        expected_context: TicketerSetParams = {
+        expected_context: ReleaseParams = {
             'data': pkh(boris),
             'receiver': f'{ticketer.address}%release',
         }
@@ -59,18 +59,18 @@ class ProxyTestCase(BaseTestCase):
             },
         )
         boris.bulk(
-            proxy_ticketer.using(boris).set(expected_context),
+            release_proxy.using(boris).set(expected_context),
             boris.transfer_ticket(
                 ticket_contents=ticket['content'],
                 ticket_ty=ticket['content_type'],
                 ticket_ticketer=ticket['ticketer'],
                 ticket_amount=42,
-                destination=proxy_ticketer.address,
+                destination=release_proxy.address,
                 entrypoint='send',
             ),
         ).send()
         self.bake_block()
 
         # Checking that context is empty:
-        actual_context = proxy_ticketer.get_context(pkh(alice))
+        actual_context = release_proxy.get_context(pkh(alice))
         self.assertEqual(actual_context, None)

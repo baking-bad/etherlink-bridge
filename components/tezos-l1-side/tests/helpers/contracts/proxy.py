@@ -16,12 +16,12 @@ from os.path import join
 from tests.helpers.metadata import make_metadata
 
 
-class RouterSetParams(TypedDict):
+class DepositParams(TypedDict):
     data: bytes
     receiver: str
 
 
-class TicketerSetParams(TypedDict):
+class ReleaseParams(TypedDict):
     data: str
     receiver: str
 
@@ -46,29 +46,29 @@ class BaseProxy(ContractHelper):
             return None
 
 
-class ProxyRouterDeposit(BaseProxy):
+class DepositProxy(BaseProxy):
     default_storage = {
         'context': {},
         'metadata': make_metadata(
-            name='Proxy for Rollup Mock L1',
-            description='The Proxy for the RollupMock L1 is a component of the Bridge Protocol Prototype, used to enable the transfer of implicit address tickets to the Rollup Mock contract to the %deposit entrypoint on L1 side.',
+            name='Deposit Proxy',
+            description='THe Deposit Proxy is a component of the Etherlink Bridge, used to enable the transfer of implicit address tickets to the Etherlink Rollup contract to the deposit entrypoint on L1 side.',
         ),
     }
-    filename = join(get_build_dir(), 'proxies', 'router.tz')
+    filename = join(get_build_dir(), 'proxies', 'deposit.tz')
 
-    def set(self, params: RouterSetParams) -> ContractCall:
+    def set(self, params: DepositParams) -> ContractCall:
         return self.contract.set(params)
 
 
-class ProxyTicketer(BaseProxy):
+class ReleaseProxy(BaseProxy):
     default_storage = {
         'context': {},
         'metadata': make_metadata(
-            name='Proxy for Ticketer',
-            description='The Proxy for the Ticketer is a component of the Bridge Protocol Prototype, used to enable the transfer of implicit address tickets to the Ticketer contract to the %release entrypoint on L1 side.',
+            name='Release Proxy',
+            description='The Release Proxy is a component of the Bridge Protocol Prototype, used to enable the transfer of implicit address tickets to the Ticketer contract to the %release entrypoint on L1 side.',
         ),
     }
-    filename = join(get_build_dir(), 'proxies', 'ticketer.tz')
+    filename = join(get_build_dir(), 'proxies', 'release.tz')
 
-    def set(self, params: TicketerSetParams) -> ContractCall:
+    def set(self, params: ReleaseParams) -> ContractCall:
         return self.contract.set(params)

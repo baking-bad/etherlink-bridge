@@ -137,14 +137,12 @@ def load_contracts(
     }
 
 
-def run_interactions(
+def deposit_to_l2(
         # TODO: is it possible to replace Any with correct types?
         contracts: dict[str, Any],
-        alice: PyTezosClient,
-        boris: PyTezosClient,
+        client: PyTezosClient,
     ) -> None:
-    """ This function runs interactions with contracts based on
-        the scenario used in tests/test_communication.py """
+    """ This function wraps fa2 token to ticket and deposits it to rollup """
 
     # TODO: reuse some of this code in tests/test_communication.py
     fa2 = contracts['fa2']
@@ -160,16 +158,16 @@ def run_interactions(
     ticket_receiver = bytes.fromhex(ERC20_PROXY_ADDRESS)
     receiver = bytes.fromhex(ALICE_L2_ADDRESS)
 
-    opg = alice.bulk(
-        fa2.using(alice).allow(ticketer.address),
-        ticketer.using(alice).deposit(fa2, 50),
-        proxy_deposit.using(alice).set({
+    opg = client.bulk(
+        fa2.using(client).allow(ticketer.address),
+        ticketer.using(client).deposit(fa2, 50),
+        proxy_deposit.using(client).set({
             # router_info is first 20 bytes is receiver (the one who get token),
             # then second 20 bytes is the proxy contract (the one who get ticket)
             'data': receiver + ticket_receiver,
             'receiver': ROLLUP_SR_ADDRESS,
         }),
-        alice.transfer_ticket(
+        client.transfer_ticket(
             ticket_contents = ticket['content'],
             ticket_ty = ticket['content_type'],
             ticket_ticketer = ticket['ticketer'],
@@ -178,66 +176,36 @@ def run_interactions(
             entrypoint = 'send',
         ),
     ).send()
-    alice.wait(opg)
+    client.wait(opg)
 
-    # TODO: remove this L2 logic:
-    '''
-    l2_ticket = create_ticket(
-        ticketer=rollup_mock.address,
-        token_id=0,
-        token_info={
-            'contract_address': pack(fa2.address, 'address'),
-            'token_id': pack(fa2.token_id, 'nat'),
-            'token_type': pack('FA2', 'string'),
-            'decimals': pack(0, 'nat'),
-            'symbol': pack('TEST', 'string'),
-            'l1_ticketer': pack(ticketer.address, 'address'),
-            'l1_token_id': pack(0, 'nat'),
-        },
-    )
 
-    # 2. Transfer some L2 tickets to Boris's address
-    opg = alice.transfer_ticket(
-        ticket_contents=l2_ticket['content'],
-        ticket_ty=l2_ticket['content_type'],
-        ticket_ticketer=l2_ticket['ticketer'],
-        ticket_amount=10,
-        destination=pkh(boris),
-    ).send()
-    alice.wait(opg)
+def unpack_ticket(
+        contracts: dict[str, Any],
+        client: PyTezosClient,
+        amount: int = 3,
+    ) -> None:
+    """ This function run ticket unpacking for given client """
 
-    # 3. Boris creates outbox message bridging some L2 tokens to L1:
-    opg = rollup_mock.using(boris).create_outbox_message({
-        'ticket_id': 0,
-        'amount': 5,
-        'routing_data': pack(pkh(boris), 'address'),
-    }).send()
-    boris.wait(opg)
+    fa2 = contracts['fa2']
+    proxy_ticketer = contracts['proxy_ticketer']
+    ticketer = contracts['ticketer']
+    ticket = create_ticket_from_fa2(ticketer, fa2)
 
-    # 4. Rollup releases L1 tickets:
-    opg = rollup_mock.execute_outbox_message(0).send()
-    boris.wait(opg)
-    '''
-
-    # TODO: move this logic to separate interaction function:
-    '''
-    # 5. Alice unpacks tickets to get FA2 tokens:
-    opg = alice.bulk(
-        proxy_ticketer.using(alice).set({
-            'data': pkh(alice),
+    opg = client.bulk(
+        proxy_ticketer.using(client).set({
+            'data': pkh(client),
             'receiver': f'{ticketer.address}%release',
         }),
-        alice.transfer_ticket(
+        client.transfer_ticket(
             ticket_contents=ticket['content'],
             ticket_ty=ticket['content_type'],
             ticket_ticketer=ticket['ticketer'],
-            ticket_amount=2,
+            ticket_amount=amount,
             destination=proxy_ticketer.address,
             entrypoint='send',
         )
     ).send()
-    alice.wait(opg)
-    '''
+    client.wait(opg)
 
 
 alice = pytezos.using(shell=RPC_SHELL, key=ALICE_PRIVATE_KEY)
@@ -258,7 +226,8 @@ balances = {
 def main() -> None:
     # contracts = deploy_contracts(alice, balances)
     contracts = load_contracts(alice, CONTRACTS)
-    run_interactions(contracts, alice, boris)
+    # deposit_to_l2(contracts, alice)
+    unpack_ticket(contracts, boris)
 
 if __name__ == '__main__':
     main()

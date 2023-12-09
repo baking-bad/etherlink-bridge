@@ -9,6 +9,7 @@ from tests.helpers.contracts import (
     ProxyTicketer,
     RollupMock,
     FA2,
+    Router,
     ContractHelper,
 )
 from tests.helpers.utility import (
@@ -40,6 +41,7 @@ CONTRACTS = {
     'proxy_deposit':    (ProxyRouterDeposit,   'KT1JR55jcW9swYumGw8pnQkFVUXZdndqwgQG'),
     'proxy_ticketer':   (ProxyTicketer,        'KT1Gu89N9b8V2Zs8HyYwhXWkikbe22JyZtAR'),
     'ticketer':         (Ticketer,             'KT1VdjDtgKMXpHwhVRCvqbsTBDmWLJt8sfUE'),
+    'router':           (Router,               'KT1LX3p9yvBHxhbPeKbhVgTvbovmzT5PxwRj'),
 
     # Rollup Mock is not deployed by default anymore:
     # 'rollup_mock':      (RollupMock,           ''),
@@ -86,10 +88,12 @@ def deploy_contracts(
 
     proxy_deposit = deploy_contract(ProxyRouterDeposit)
     proxy_ticketer = deploy_contract(ProxyTicketer)
+    router = deploy_contract(Router)
 
     contracts['fa2'] = fa2
     contracts['proxy_deposit'] = proxy_deposit
     contracts['proxy_ticketer'] = proxy_ticketer
+    contracts['router'] = router
     if deploy_rollup_mock:
         contracts['rollup_mock'] = deploy_contract(RollupMock)
 
@@ -113,9 +117,11 @@ def deploy_contracts(
     ticket = create_ticket_from_fa2(ticketer, fa2)
     ticket_payload = make_ticket_payload_bytes(ticket)
     ticketer_bytes = make_address_bytes(ticketer.address)
+    router_bytes = make_address_bytes(router.address)
     print('Data for setup ERC20 Proxy:')
     print(f'ticket address bytes: `{ticketer_bytes}`')
     print(f'ticket payload bytes: `{ticket_payload}`')
+    print(f'router address bytes: `{router_bytes}`')
 
     return contracts
 

@@ -90,3 +90,8 @@ class BaseTestCase(SandboxedNodeTestCase):
             'ticketer': ticketer,
             'router': router,
         }
+
+        # Ticketer has no tickets and no tokens:
+        with self.assertRaises(KeyError):
+            fa2.get_balance(ticketer.address)
+        assert len(rollup_mock.get_tickets()) == 0

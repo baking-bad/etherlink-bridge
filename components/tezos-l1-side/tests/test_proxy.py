@@ -38,14 +38,14 @@ class ProxyTestCase(BaseTestCase):
         # Preparing ticket for testing:
         boris.bulk(
             fa2.using(boris).allow(ticketer.address),
-            ticketer.using(boris).deposit(fa2, 42),
+            ticketer.using(boris).deposit({'token': fa2, 'amount': 42}),
         ).send()
         self.bake_block()
 
         # Setting context to the proxy to unpack ticket and calling release:
         expected_context: ReleaseParams = {
             'data': pkh(boris),
-            'receiver': f'{ticketer.address}%release',
+            'receiver': f'{ticketer.address}%withdraw',
         }
         ticket = create_ticket(
             ticketer=ticketer.address,

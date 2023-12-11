@@ -9,9 +9,17 @@ from tests.helpers.utility import (
 from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
 from tests.helpers.contracts.tokens.token import TokenHelper
-from typing import Any
+from typing import (
+    Any,
+    TypedDict,
+)
 from os.path import join
 from tests.helpers.metadata import make_metadata
+
+
+class DepositParams(TypedDict):
+    token: TokenHelper
+    amount: int
 
 
 class Ticketer(ContractHelper):
@@ -51,11 +59,13 @@ class Ticketer(ContractHelper):
         filename = join(get_build_dir(), 'ticketer.tz')
         return cls.originate_from_file(filename, client, storage)
 
-    def deposit(self, token: TokenHelper, amount: int) -> ContractCall:
+    def deposit(self, params: DepositParams) -> ContractCall:
         """ Deposits given amount of given token to the contract """
 
-        params = (token.as_dict(), amount)
-        return self.contract.deposit(params)
+        return self.contract.deposit({
+            'token': params['token'].as_dict(),
+            'amount': params['amount'],
+        })
 
     def get_token_id(self, token: TokenHelper) -> int:
         """ Returns internal ticketer token id for given token

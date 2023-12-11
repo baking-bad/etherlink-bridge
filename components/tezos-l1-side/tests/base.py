@@ -8,6 +8,7 @@ from tests.helpers.contracts import (
     FA2,
     ContractHelper,
     Router,
+    TicketHelper,
 )
 from tests.helpers.utility import pkh, pack
 from typing import Type, TypeVar, TypedDict
@@ -20,6 +21,7 @@ class Contracts(TypedDict):
     fa2: FA2
     ticketer: Ticketer
     router: Router
+    ticket_helper: TicketHelper
 
 
 class BaseTestCase(SandboxedNodeTestCase):
@@ -82,12 +84,27 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.bake_block()
         ticketer = Ticketer.create_from_opg(manager, opg)
 
+        opg = TicketHelper.originate(
+            client=manager,
+            rollup=f'{rollup_mock.address}%rollup',
+            token=fa2,
+            ticketer=ticketer.address,
+            approve_amount=0,
+        ).send()
+        self.bake_block()
+        ticket_helper = TicketHelper.create_from_opg(manager, opg)
+
+        # Ticket Helper gives approval to the Ticketer for the FA2 token:
+        ticket_helper.contract.approve().send()
+        self.bake_block()
+
         self.contracts: Contracts = {
             'deposit_proxy': deposit_proxy,
             'release_proxy': release_proxy,
             'rollup_mock': rollup_mock,
             'fa2': fa2,
             'ticketer': ticketer,
+            'ticket_helper': ticket_helper,
             'router': router,
         }
 

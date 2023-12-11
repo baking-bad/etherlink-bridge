@@ -1,5 +1,6 @@
 #import "../common/errors.mligo" "Errors"
 #import "./storage.mligo" "Storage"
+#import "../common/utility.mligo" "Utility"
 
 
 (*
@@ -30,6 +31,7 @@ let set
         (ctx : data_t Storage.context_t)
         (store : data_t Storage.t)
         : operation list * data_t Storage.t =
+    let () = Utility.assert_no_xtz_deposit () in
     [], {
         store with
         context = Big_map.update (Tezos.get_sender ()) (Some ctx) store.context
@@ -45,6 +47,7 @@ let send
     (* Resend ticket from user with data from the context
         to the receiver from the context *)
 
+    let () = Utility.assert_no_xtz_deposit () in
     let ctx_opt, updated_context =
         Big_map.get_and_update (Tezos.get_sender ()) None store.context in
     let ctx = match ctx_opt with

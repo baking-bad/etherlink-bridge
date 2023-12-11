@@ -10,7 +10,7 @@ type payload_t = [@layout:comb] {
 type t = payload_t ticket
 
 
-let create_ticket
+let create
         (payload : payload_t)
         (amount : nat)
         : t =
@@ -25,6 +25,8 @@ let get_ticket_entrypoint
     | None -> failwith Errors.failed_to_get_ticket_entrypoint
     | Some c -> c
 
+// TODO: consider removing these L2 functions, since they are not used:
+(*
 let create_l2_payload
         (payload : payload_t)
         (ticketer : address)
@@ -42,6 +44,7 @@ let create_l2_payload
         token_id = l2_id;
         metadata = token_info_opt;
     }
+*)
 
 let split_ticket
         (ticket : t)

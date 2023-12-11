@@ -28,6 +28,20 @@ let get_transfer_op
         TokenFa2.get_transfer_op from_ addr txs
     end
 
+let get_approve_ops
+        (token: t)
+        (operator: address)
+        (amount: nat)
+        : operation list =
+    match token with
+    | Fa12 contract_address ->
+        [
+            TokenFa12.get_approve_op contract_address operator 0n;
+            TokenFa12.get_approve_op contract_address operator amount;
+        ]
+    | Fa2 (contract_address, token_id) ->
+        [ TokenFa2.get_approve_op contract_address token_id operator ]
+
 let make_token_info
         (token : t)
         : token_info_t =

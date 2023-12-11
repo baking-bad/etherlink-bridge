@@ -25,3 +25,31 @@ let get_transfer_op
     | Some c ->
         let params = [{ from_ = from_; txs = txs }] in
         Tezos.transaction params 0mutez c
+
+type operator_param_t = [@layout:comb] {
+    owner: address;
+    operator: address;
+    token_id: nat;
+}
+
+type update_operator_param_t = [@layout:comb]
+    | Add_operator of operator_param_t
+    | Remove_operator of operator_param_t
+
+type update_operator_params_t = update_operator_param_t list
+
+let get_approve_op
+        (contract_address: address)
+        (token_id: nat)
+        (spender: address)
+        : operation =
+    let entry_option = Tezos.get_entrypoint_opt "%update_operators" contract_address in
+    let operator_param = {
+        owner = Tezos.get_self_address ();
+        operator = spender;
+        token_id = token_id;
+    } in
+    let params = [Add_operator(operator_param)] in
+    match entry_option with
+    | None -> failwith Errors.invalid_fa2
+    | Some entry -> Tezos.transaction params 0mutez entry

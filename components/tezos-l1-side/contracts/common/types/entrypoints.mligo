@@ -53,4 +53,16 @@ let get_router_withdraw (router : address) : withdraw_params contract =
     | None -> failwith(Errors.router_entrypoint_not_found)
     | Some entry -> entry
 
+
+let get_ticketer_deposit (router : address) : deposit_params contract =
+    match Tezos.get_entrypoint_opt "%deposit" router with
+    | None -> failwith(Errors.router_entrypoint_not_found)
+    | Some entry -> entry
+
+
+let get_rollup_deposit (rollup : address) : rollup_entry contract =
+    match Tezos.get_contract_opt rollup with
+    | None -> failwith Errors.rollup_deposit_not_found
+    | Some entry -> entry
+
 // TODO: move all other entrypoint getters here?

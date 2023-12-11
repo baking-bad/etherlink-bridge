@@ -1,9 +1,9 @@
 #import "./routing-data.mligo" "RoutingData"
 #import "./ticket.mligo" "Ticket"
+#import "../tokens/index.mligo" "Token"
 #import "../errors.mligo" "Errors"
 
 
-// NOTE: this is entrypoint for rollup%deposit
 type deposit = [@layout:comb] {
     routing_info: RoutingData.l1_to_l2_t;
     ticket: Ticket.t;
@@ -16,6 +16,7 @@ type deposit_or_bytes = (
     "b"
 ) michelson_or
 
+// This is deposit interface for the Ehterlink smart rollup:
 type rollup_entry = (
     deposit_or_bytes,
     "",
@@ -34,19 +35,20 @@ let unwrap_rollup_entrypoint
         | M_right _bytes -> failwith(Errors.wrong_rollup_entrypoint)
     ) in deposit
 
-// NOTE: this is entrypoint for ticketer%release
-// TODO: rename to ticketer_release_params?
-type release_params = [@layout:comb] {
-    ticket: Ticket.t;
-    receiver: address;
+// This is deposit interface for the Ticketer contract:
+type deposit_params = [@layout:comb] {
+    token: Token.t;
+    amount: nat;
 }
 
-type router_withdraw_params = [@layout:comb] {
+// This is withdraw interface that used for withdrawal transactions
+// on the Etherlink rollup initiated by executing outbox message:
+type withdraw_params = [@layout:comb] {
     receiver: address;
     ticket: Ticket.t;
 }
 
-let get_router_withdraw (router : address) : router_withdraw_params contract =
+let get_router_withdraw (router : address) : withdraw_params contract =
     match Tezos.get_entrypoint_opt "%withdraw" router with
     | None -> failwith(Errors.router_entrypoint_not_found)
     | Some entry -> entry

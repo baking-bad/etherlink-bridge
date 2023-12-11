@@ -22,12 +22,13 @@ module Ticketer = struct
     type return_t = operation list * Storage.t
 
     [@entry] let deposit
-            (token, amount : Token.t * nat)
+            (params : Entrypoints.deposit_params)
             (store : Storage.t) : return_t =
         // TODO: decide: should we limit Token.contract_address that allowed to be
         //       converted to ticket? (it is easier to start with the most general
         //       case, so the answer is "no" for now)
         let () = Utility.assert_no_xtz_deposit () in
+        let { token; amount } = params in
         let new_store, token_id = Storage.get_or_create_token_id token store in
         let token_info = Token.make_token_info token in
         let token_info_extra : Token.token_info_t =
@@ -47,8 +48,8 @@ module Ticketer = struct
         let ticket_transfer_op = Tezos.transaction ticket 0mutez sender_contract in
         [token_transfer_op; ticket_transfer_op], new_store
 
-    [@entry] let release
-            (params : Entrypoints.release_params)
+    [@entry] let withdraw
+            (params : Entrypoints.withdraw_params)
             (store : Storage.t)
             : return_t =
         let { ticket; receiver } = params in

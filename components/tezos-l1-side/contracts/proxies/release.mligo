@@ -20,7 +20,7 @@ type parameter_t = (ticket_t, data_t) Generic.parameter_t
 
 let make_ctx
         (ticket, data : ticket_t * data_t)
-        : Entrypoints.release_params =
+        : Entrypoints.withdraw_params =
     {
         ticket = ticket;
         receiver = data;

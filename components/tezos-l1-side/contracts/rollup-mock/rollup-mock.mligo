@@ -13,7 +13,7 @@ let send_ticket_to_router
         (router : address)
         (receiver : address)
         : operation =
-    let payload : Entrypoints.router_withdraw_params = {
+    let payload : Entrypoints.withdraw_params = {
         receiver = receiver;
         ticket = ticket;
     } in

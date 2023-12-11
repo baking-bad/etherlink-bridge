@@ -7,7 +7,7 @@
 module Router = struct
 
     (*
-        Router is a contract that processes withdraw transactiom from the
+        Router is a contract that processes withdraw transaction from the
         smart rollup. It accepts a pair of receiver address and ticket and
         sends the ticket to the receiver.
     *)
@@ -20,7 +20,7 @@ module Router = struct
     type return_t = operation list * storage_t
 
     [@entry] let withdraw
-            (params : Entrypoints.router_withdraw_params)
+            (params : Entrypoints.withdraw_params)
             (store: storage_t) : return_t =
         let () = Utility.assert_no_xtz_deposit () in
         let { receiver; ticket } = params in

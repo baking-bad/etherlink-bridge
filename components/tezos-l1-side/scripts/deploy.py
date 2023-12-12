@@ -48,22 +48,6 @@ CONTRACTS = {
 }
 
 
-def create_ticket_from_fa2(ticketer: Ticketer, fa2: FA2) -> Ticket:
-    # TODO: this ticket has hardcoded metadata, it would be better to
-    # create it from ticketer and FA2 contract metadata:
-    return create_ticket(
-        ticketer=ticketer.address,
-        token_id=0,
-        token_info={
-            'contract_address': pack(fa2.address, 'address'),
-            'token_id': pack(fa2.token_id, 'nat'),
-            'token_type': pack('FA2', 'string'),
-            'decimals': pack(0, 'nat'),
-            'symbol': pack('TEST', 'string'),
-        },
-    )
-
-
 def deploy_contracts(
         manager: PyTezosClient,
         balances: dict[str, int],
@@ -114,7 +98,7 @@ def deploy_contracts(
     ticketer = Ticketer.create_from_opg(manager, opg)
     contracts['ticketer'] = ticketer
 
-    ticket = create_ticket_from_fa2(ticketer, fa2)
+    ticket = create_ticket(ticketer, fa2)
     ticket_payload = make_ticket_payload_bytes(ticket)
     ticketer_bytes = make_address_bytes(ticketer.address)
     router_bytes = make_address_bytes(router.address)
@@ -149,7 +133,7 @@ def deposit_to_l2(
     deposit_proxy = contracts['deposit_proxy']
     release_proxy = contracts['release_proxy']
     ticketer = contracts['ticketer']
-    ticket = create_ticket_from_fa2(ticketer, fa2)
+    ticket = create_ticket(ticketer, fa2)
 
     # 1. In one bulk we allow ticketer to transfer tokens,
     # deposit tokens to the ticketer, set routing info to the proxy
@@ -189,7 +173,7 @@ def unpack_ticket(
     fa2 = contracts['fa2']
     release_proxy = contracts['release_proxy']
     ticketer = contracts['ticketer']
-    ticket = create_ticket_from_fa2(ticketer, fa2)
+    ticket = create_ticket(ticketer, fa2)
 
     opg = client.bulk(
         release_proxy.using(client).set({

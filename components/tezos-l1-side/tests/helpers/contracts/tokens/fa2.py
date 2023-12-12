@@ -1,6 +1,7 @@
 from tests.helpers.contracts.tokens.token import (
     TokenHelper,
     FA2AsDictType,
+    FA2AsTupleType,
 )
 from tests.helpers.utility import (
     DEFAULT_ADDRESS,
@@ -68,6 +69,9 @@ class FA2(TokenHelper):
         return {
             'fa2': (self.address, self.token_id)
         }
+
+    def as_tuple(self) -> FA2AsTupleType:
+        return ('fa2', (self.address, self.token_id))
 
     def get_balance(self, address: str) -> int:
         key = (address, self.token_id)

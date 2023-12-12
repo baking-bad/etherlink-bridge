@@ -6,6 +6,7 @@ from tests.helpers.utility import pack
 
 
 FA2AsDictType = dict[str, Union[str, Tuple[str, int]]]
+FA2AsTupleType = Tuple[str, Tuple[str, int]]
 
 
 class TokenHelper(ContractHelper):
@@ -19,6 +20,10 @@ class TokenHelper(ContractHelper):
 
     @abstractmethod
     def as_dict(self) -> FA2AsDictType:
+        pass
+
+    @abstractmethod
+    def as_tuple(self) -> FA2AsTupleType:
         pass
 
     @abstractmethod

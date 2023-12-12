@@ -22,19 +22,7 @@ class RollupCommunicationTestCase(BaseTestCase):
         ticketer = self.contracts['ticketer']
         router = self.contracts['router']
 
-        # TODO: need to create some helper to manage ticket creation / transfers:
-        # TODO: need to allow to create token info from token + ticketer
-        ticket = create_ticket(
-            ticketer=ticketer.address,
-            token_id=0,
-            token_info={
-                'contract_address': pack(fa2.address, 'address'),
-                'token_id': pack(fa2.token_id, 'nat'),
-                'token_type': pack("FA2", 'string'),
-                'decimals': pack(12, 'nat'),
-                'symbol': pack('TEST', 'string'),
-            },
-        )
+        ticket = create_ticket(ticketer, fa2)
 
         # There are two addresses on L2, the first one is ERC20 proxy contract,
         # which would receve L2 tickets and the second is the Alice L2 address,
@@ -147,6 +135,8 @@ class RollupCommunicationTestCase(BaseTestCase):
     //       - Router.test_should_fail_on_withdraw_when_xtz_attached
 
     //       - Helper tests (proxy for ticket transfer)
+    //       - Helper.test_should_allow_to_add_operator_to_fa2_token
+    //       - Helper.test_should_allow_to_approve_and_reapprove_fa12_token
 
     def test_withdraw_router
         # Boris should have now L1 tickets too:
@@ -185,3 +175,60 @@ class RollupCommunicationTestCase(BaseTestCase):
         self.assertEqual(balance, 3)
 
     '''
+
+    # TODO: test_should_be_able_to_unwrap_token_from_tickiter_with_helper
+    #       - this is part of the first integration test which is commented
+    #         above but it needs to use ticket helper instead of proxy
+    # TODO: test_should_be_able_to_get_ticket_from_rollup_with_router
+    #       - this is Ticketer test that probably described above
+    # TODO: test_should_be_able_to_get_tokens_from_rollup_with_ticketer
+    #       - this is part of the first integration test
+    def test_should_be_able_to_deposit_with_ticket_helper(self) -> None:
+        # TODO: consider split it to two tests: deposit and withdraw
+        alice = self.accs['alice']
+        fa2 = self.contracts['fa2']
+        rollup_mock = self.contracts['rollup_mock']
+        ticketer = self.contracts['ticketer']
+        router = self.contracts['router']
+        ticket_helper = self.contracts['ticket_helper']
+
+        ticket = create_ticket(ticketer, fa2)
+
+        # There are two addresses on L2, the first one is ERC20 proxy contract,
+        # which would receve L2 tickets and the second is the Alice L2 address,
+        # which would receive L2 tokens minted by ERC20 proxy contract:
+        token_proxy = bytes.fromhex('0101010101010101010101010101010101010101')
+        alice_l2_address = bytes.fromhex('0202020202020202020202020202020202020202')
+
+        # In order to deposit token to the rollup, in one bulk operation:
+        # - ticketer allowed to transfer tokens from Alice,
+        # - Alice calls deposit tokens to the ticketer,
+        # - Alice set routing info to the proxy
+        #   (as far as implicit address can't send tickets with extra data),
+        # - Alice transfer ticket to the Rollup via proxy contract.
+        routing_data = token_proxy + alice_l2_address
+        alice.bulk(
+            fa2.using(alice).allow(ticket_helper.address),
+            ticket_helper.using(alice).deposit(routing_data, 100),
+        ).send()
+        self.bake_block()
+
+        # Checking deposit operations results:
+        # - Rollup has L1 tickets:
+        balance = get_ticket_balance(
+            self.client,
+            ticket,
+            rollup_mock.address,
+        )
+        self.assertEqual(balance, 100)
+
+        # - Ticketer has FA2 tokens:
+        assert fa2.get_balance(ticketer.address) == 100
+
+        # - Alice has no L1 tickets:
+        balance = get_ticket_balance(
+            self.client,
+            ticket,
+            pkh(alice),
+        )
+        self.assertEqual(balance, 0)

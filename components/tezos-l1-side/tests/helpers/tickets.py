@@ -1,7 +1,11 @@
 from pytezos.client import PyTezosClient
 from pytezos.rpc.query import RpcQuery
 from typing import TypedDict
-from tests.helpers.contracts.tokens.token import TokenHelper
+from tests.helpers.contracts import (
+    TokenHelper,
+    FA2,
+    Ticketer,
+)
 from tests.helpers.utility import (
     to_michelson_type,
     pack,
@@ -77,21 +81,12 @@ def get_ticket_balance(
     return int(result)
 
 
-# TODO: consider moving this function to the Ticketer and RollupMock helpers?
-#       (maybe create some intermediate class that supports this logic)
 def create_ticket(
-        ticketer: str,
-        token_id: int,
-        token_info: dict[str, bytes],
+        ticketer: Ticketer,
+        token: TokenHelper,
         amount: int = 0,
     ) -> Ticket:
-
-    """ Creates ticket that can be created by Ticketer and RollupMock
-        for given ticketer, token_id and amount
-        ticketer: address of the ticketer contract
-        token_id: id of the ticket inside ticketer contract
-        token: L1 token used to create ticket payload
-    """
+    """Creates ticket with given amount and token info"""
 
     content_type = {
         'prim': 'pair',
@@ -103,6 +98,17 @@ def create_ticket(
                 ],
             },
         ],
+    }
+
+    token_id = token.token_id if type(token) is FA2 else 0
+    token_type = 'FA2' if type(token) is FA2 else 'FA1.2'
+    key = token.as_tuple()
+    extra_metadata = ticketer.contract.storage['extra_metadata']()
+    token_info = {
+        'contract_address': pack(token.address, 'address'),
+        'token_id': pack(token_id, 'nat'),
+        'token_type': pack(token_type, 'string'),
+        **extra_metadata[key],
     }
 
     # TODO: consider moving this to some consts file? [2], another in token.py
@@ -120,7 +126,7 @@ def create_ticket(
     ).to_micheline_value()
 
     return {
-        'ticketer': ticketer,
+        'ticketer': ticketer.address,
         'content_type': content_type,
         'content': content,
         'amount': amount,

@@ -47,17 +47,7 @@ class ProxyTestCase(BaseTestCase):
             'data': pkh(boris),
             'receiver': f'{ticketer.address}%withdraw',
         }
-        ticket = create_ticket(
-            ticketer=ticketer.address,
-            token_id=0,
-            token_info={
-                'contract_address': pack(fa2.address, 'address'),
-                'token_id': pack(fa2.token_id, 'nat'),
-                'token_type': pack("FA2", 'string'),
-                'decimals': pack(12, 'nat'),
-                'symbol': pack('TEST', 'string'),
-            },
-        )
+        ticket = create_ticket(ticketer, fa2)
         boris.bulk(
             release_proxy.using(boris).set(expected_context),
             boris.transfer_ticket(

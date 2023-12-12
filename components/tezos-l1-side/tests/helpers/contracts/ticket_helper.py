@@ -1,7 +1,7 @@
 from tests.helpers.utility import DEFAULT_ADDRESS
 from tests.helpers.contracts import (
     ContractHelper,
-    Token,
+    TokenHelper,
 )
 from pytezos.client import PyTezosClient
 from tests.helpers.utility import get_build_dir
@@ -39,7 +39,7 @@ class TicketHelper(ContractHelper):
             cls,
             client: PyTezosClient,
             rollup: str,
-            token: Token,
+            token: TokenHelper,
             ticketer: str,
             approve_amount: int = 0,
         ) -> OperationGroup:

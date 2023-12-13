@@ -1,6 +1,13 @@
 #import "../errors.mligo" "Errors"
 
 type t = address * nat
+// TODO: consider replacing `t` with:
+(*
+type t = [@layout:comb] {
+    address : address;
+    token_id : nat;
+}
+*)
 
 type transfer_txs_item = [@layout:comb] {
     to_: address;

@@ -42,6 +42,11 @@ let get_approve_ops
     | Fa2 (contract_address, token_id) ->
         [ TokenFa2.get_approve_op contract_address token_id operator ]
 
+// NOTE: the following functions is not used in the current ticketer
+// implementation, however they might be useful in the future
+// (for example, for the ticketer factory)
+
+(*
 let make_token_info
         (token : t)
         : token_info_t =
@@ -52,8 +57,8 @@ let make_token_info
     ]
     | Fa2 (addr, token_id) -> Map.literal [
         ("contract_address", Bytes.pack addr);
-        ("token_id", Bytes.pack token_id);
         ("token_type", Bytes.pack "FA2");
+        ("token_id", Bytes.pack token_id);
     ]
 
 let unopt_token_info
@@ -75,3 +80,4 @@ let merge_token_info
         let (key, value) = key_value in
         Map.add key value acc in
     Map.fold fold_info token_info_a token_info_b
+*)

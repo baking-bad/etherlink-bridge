@@ -20,7 +20,6 @@ let set_routing_data
         (routing_data : RoutingData.l1_to_l2_t)
         (store : t)
         : t =
-    let routing_data = Some routing_data in
-    { store with routing_data }
+    { store with routing_data = (Some routing_data) }
 
 let clear_routing_data (store : t) : t = { store with routing_data = None }

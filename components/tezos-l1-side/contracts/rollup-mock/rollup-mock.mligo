@@ -52,7 +52,7 @@ module RollupMock = struct
         let deposit = Entrypoints.unwrap_rollup_entrypoint rollup_entry in
         let { ticket = ticket; routing_info = _r } = deposit in
         let (ticketer, (payload, _amt)), ticket = Tezos.read_ticket ticket in
-        let token_id = payload.token_id in
+        let token_id = payload.0 in
         let ticket_id = { ticketer; token_id } in
 
         // Join tickets if contract already has one with the same payload:

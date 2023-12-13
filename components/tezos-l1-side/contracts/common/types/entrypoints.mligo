@@ -36,10 +36,7 @@ let unwrap_rollup_entrypoint
     ) in deposit
 
 // This is deposit interface for the Ticketer contract:
-type deposit_params = [@layout:comb] {
-    token: Token.t;
-    amount: nat;
-}
+type deposit_params = nat
 
 // This is withdraw interface that used for withdrawal transactions
 // on the Etherlink rollup initiated by executing outbox message:

@@ -17,4 +17,5 @@ let rollup_not_set = "ROLLUP_NOT_SET"
 let rollup_deposit_not_found = "ROLLUP_DEPOSIT_NOT_FOUND"
 let unexpected_sender = "UNEXPECTED_SENDER"
 let routing_data_is_not_set = "ROUTING_DATA_IS_NOT_SET"
+let unexpected_content = "UNEXPECTED_TICKET_PAYLOAD"
 // TODO: make a revision and check if there are any unused errors

@@ -2,19 +2,22 @@
 #import "../tokens/index.mligo" "Token"
 
 
-type payload_t = [@layout:comb] {
+(*
+type content_t = [@layout:comb] {
     token_id : nat;
     metadata : bytes option;
 }
+*)
+type content_t = nat * bytes option
 
-type t = payload_t ticket
+type t = content_t ticket
 
 
 let create
-        (payload : payload_t)
+        (content : content_t)
         (amount : nat)
         : t =
-    match Tezos.create_ticket (payload) amount with
+    match Tezos.create_ticket content amount with
     | None -> failwith Errors.ticket_creation_failed
     | Some t -> t
 

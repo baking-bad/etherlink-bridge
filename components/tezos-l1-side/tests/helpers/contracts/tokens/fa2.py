@@ -83,8 +83,8 @@ class FA2(TokenHelper):
     def make_token_info(self) -> dict[str, bytes]:
         return {
             'contract_address': pack(self.address, 'address'),
-            'token_id': pack(self.token_id, 'nat'),
             'token_type': pack("FA2", 'string'),
+            'token_id': pack(self.token_id, 'nat'),
         }
 
     # TODO: transfer(address_from, address_to, token_id, amount):

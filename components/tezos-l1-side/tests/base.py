@@ -69,18 +69,12 @@ class BaseTestCase(SandboxedNodeTestCase):
         fa2 = FA2.create_from_opg(manager, fa2_opg)
 
         # Deploying Ticketer with external metadata:
-        fa2_key = ( "fa2", ( fa2.address, 0 ) )
         fa2_external_metadata = {
             'decimals': pack(12, 'nat'),
             'symbol': pack('TEST', 'string'),
         }
 
-        opg = Ticketer.originate_with_external_metadata(
-            manager,
-            external_metadata={
-                fa2_key: fa2_external_metadata
-            },
-        ).send()
+        opg = Ticketer.originate(manager, fa2, fa2_external_metadata).send()
         self.bake_block()
         ticketer = Ticketer.create_from_opg(manager, opg)
 

@@ -5,80 +5,95 @@ from tests.helpers.utility import (
     to_michelson_type,
     to_micheline,
     pack,
+    DEFAULT_ADDRESS,
 )
 from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
-from tests.helpers.contracts.tokens.token import TokenHelper
 from typing import (
     Any,
     TypedDict,
 )
 from os.path import join
 from tests.helpers.metadata import make_metadata
+from tests.helpers.contracts.tokens import (
+    TicketContent,
+    TokenHelper,
+    TokenInfo,
+    TokenAsDictType,
+)
+from tests.helpers.tickets import Ticket
 
 
 class DepositParams(TypedDict):
-    token: TokenHelper
     amount: int
 
 
 class Ticketer(ContractHelper):
-    # TODO: consider moving this to some consts file?
-    TICKET_TYPE_EXPRESSION = 'pair (nat %token_id) (option %token_info bytes)'
+    # Ticket content type is fixed to match FA2.1 ticket content type:
+    TICKET_CONTENT_TYPE = '(pair nat (option bytes))'
 
-    default_storage = {
-        'extra_metadata': {},
-        'metadata': make_metadata(
+    @staticmethod
+    def make_storage(
+            token_as_dict: TokenAsDictType,
+            content: TicketContent,
+        ) -> dict[str, Any]:
+        metadata = make_metadata(
             name='Ticketer',
             description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
-        ),
-        'token_ids': {},
-        'tokens': {},
-        'next_token_id': 0,
-    }
+        )
+        return {
+            'content': content,
+            'token': token_as_dict,
+            'metadata': metadata,
+        }
 
+    # TODO: consider removing originate_default from the ContractHelper interface
     @classmethod
     def originate_default(cls, client: PyTezosClient) -> OperationGroup:
         """Deploys Ticketer with empty storage"""
 
         filename = join(get_build_dir(), 'ticketer.tz')
-        return cls.originate_from_file(filename, client, cls.default_storage)
+        token_as_dict: TokenAsDictType = {
+            'fa2': (DEFAULT_ADDRESS, 0),
+        }
+        empty_content: TicketContent = (0, None)
+        storage = cls.make_storage(token_as_dict, empty_content)
+        return cls.originate_from_file(filename, client, storage)
 
     @classmethod
-    def originate_with_external_metadata(
+    def originate(
             cls,
             client: PyTezosClient,
-            # TODO: add type for key as fa2 or fa12 token
-            external_metadata: dict[Any, dict[str, bytes]],
+            token: TokenHelper,
+            extra_token_info: TokenInfo,
+            token_id: int = 0,
         ) -> OperationGroup:
-        """Deploys Ticketer with external metadata"""
+        """Deploys Ticketer with given Token and extra token info"""
 
-        storage = cls.default_storage.copy()
-        storage['extra_metadata'] = external_metadata
-
+        storage = cls.make_storage(
+            token.as_dict(),
+            token.make_content(extra_token_info, token_id),
+        )
         filename = join(get_build_dir(), 'ticketer.tz')
         return cls.originate_from_file(filename, client, storage)
 
     def deposit(self, params: DepositParams) -> ContractCall:
         """ Deposits given amount of given token to the contract """
 
-        return self.contract.deposit({
-            'token': params['token'].as_dict(),
-            'amount': params['amount'],
-        })
+        return self.contract.deposit(params['amount'])
 
-    def get_token_id(self, token: TokenHelper) -> int:
-        """ Returns internal ticketer token id for given token
-            NOTE: if given token is not in storage, returned token id will
-                be equal to next_token_id, which allow to create ticket
-                params before token added to the storage (in bacth call)
-        """
+    def get_ticket(self, amount: int = 0) -> Ticket:
+        """Returns ticket with given content and amount that can be used in
+            `ticket_transfer` call"""
 
-        token_ids = self.contract.storage['token_ids']
-        try:
-            token_id = token_ids[token.as_dict()]()  # type: ignore
-        except KeyError:
-            token_id = self.contract.storage['next_token_id']()
+        content = to_michelson_type(
+            self.contract.storage['content'](),
+            self.TICKET_CONTENT_TYPE,
+        ).to_micheline_value()
 
-        assert type(token_id) is int
-        return token_id
+        return {
+            'ticketer': self.address,
+            'content_type': to_micheline(self.TICKET_CONTENT_TYPE),
+            'content': content,
+            'amount': amount,
+        }

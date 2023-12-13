@@ -40,6 +40,7 @@ class TicketHelper(ContractHelper):
             client: PyTezosClient,
             rollup: str,
             token: TokenHelper,
+            # TODO: maybe it is better to provide ContractHelper instead of addresses
             ticketer: str,
             approve_amount: int = 0,
         ) -> OperationGroup:

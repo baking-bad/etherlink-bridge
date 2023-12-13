@@ -20,7 +20,6 @@ from tests.helpers.utility import (
 from typing import Type, TypeVar, Any
 from tests.helpers.tickets import (
     Ticket,
-    create_ticket,
     make_ticket_payload_bytes,
 )
 
@@ -88,18 +87,12 @@ def deploy_contracts(
         'symbol': pack('TEST', 'string'),
     }
 
-    opg = Ticketer.originate_with_external_metadata(
-        manager,
-        external_metadata={
-            fa2_key: fa2_external_metadata
-        },
-    ).send()
+    opg = Ticketer.originate(manager, fa2, fa2_external_metadata).send()
     manager.wait(opg)
     ticketer = Ticketer.create_from_opg(manager, opg)
     contracts['ticketer'] = ticketer
 
-    ticket = create_ticket(ticketer, fa2)
-    ticket_payload = make_ticket_payload_bytes(ticket)
+    ticket_payload = make_ticket_payload_bytes(ticketer.get_ticket())
     ticketer_bytes = make_address_bytes(ticketer.address)
     router_bytes = make_address_bytes(router.address)
     print('Data for setup ERC20 Proxy:')
@@ -133,7 +126,7 @@ def deposit_to_l2(
     deposit_proxy = contracts['deposit_proxy']
     release_proxy = contracts['release_proxy']
     ticketer = contracts['ticketer']
-    ticket = create_ticket(ticketer, fa2)
+    ticket = ticketer.get_ticket()
 
     # 1. In one bulk we allow ticketer to transfer tokens,
     # deposit tokens to the ticketer, set routing info to the proxy
@@ -173,7 +166,7 @@ def unpack_ticket(
     fa2 = contracts['fa2']
     release_proxy = contracts['release_proxy']
     ticketer = contracts['ticketer']
-    ticket = create_ticket(ticketer, fa2)
+    ticket = ticketer.get_ticket()
 
     opg = client.bulk(
         release_proxy.using(client).set({

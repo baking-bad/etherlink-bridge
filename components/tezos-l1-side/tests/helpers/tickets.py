@@ -1,15 +1,10 @@
 from pytezos.client import PyTezosClient
 from pytezos.rpc.query import RpcQuery
-from typing import TypedDict
-from tests.helpers.contracts import (
-    TokenHelper,
-    FA2,
-    Ticketer,
+from typing import (
+    TypedDict,
+    Optional,
 )
-from tests.helpers.utility import (
-    to_michelson_type,
-    pack,
-)
+
 from pytezos.michelson.types.base import MichelsonType
 
 
@@ -81,59 +76,10 @@ def get_ticket_balance(
     return int(result)
 
 
-def create_ticket(
-        ticketer: Ticketer,
-        token: TokenHelper,
-        amount: int = 0,
-    ) -> Ticket:
-    """Creates ticket with given amount and token info"""
-
-    content_type = {
-        'prim': 'pair',
-        'args': [
-            {'prim': 'nat'},
-            {'prim': 'option',
-                'args': [
-                    {'prim': 'bytes'}
-                ],
-            },
-        ],
-    }
-
-    token_id = token.token_id if type(token) is FA2 else 0
-    token_type = 'FA2' if type(token) is FA2 else 'FA1.2'
-    key = token.as_tuple()
-    extra_metadata = ticketer.contract.storage['extra_metadata']()
-    token_info = {
-        'contract_address': pack(token.address, 'address'),
-        'token_id': pack(token_id, 'nat'),
-        'token_type': pack(token_type, 'string'),
-        **extra_metadata[key],
-    }
-
-    # TODO: consider moving this to some consts file? [2], another in token.py
-    MAP_TOKEN_INFO_TYPE = 'map %token_info string bytes'
-    ticket_contents = {
-        'token_id': token_id,
-        'token_info': pack(token_info, MAP_TOKEN_INFO_TYPE),
-    }
-
-    content = to_michelson_type(
-        ticket_contents,
-        # TODO: this ticket type expression is duplicated, consider
-        #      moving it to some common place (?)
-        'pair (nat %token_id) (option %token_info bytes)',
-    ).to_micheline_value()
-
-    return {
-        'ticketer': ticketer.address,
-        'content_type': content_type,
-        'content': content,
-        'amount': amount,
-    }
-
-
 def make_ticket_payload_bytes(ticket: Ticket) -> str:
+    """This function allows to make ticket payload bytes to be used in
+        L2 Etherlink Bridge contracts"""
+
     michelson_type = MichelsonType.match(ticket['content_type'])
     value = michelson_type.from_micheline_value(ticket['content'])
     payload: str = value.forge('legacy_optimized').hex()

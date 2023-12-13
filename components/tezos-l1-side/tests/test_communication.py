@@ -6,7 +6,6 @@ from tests.helpers.utility import (
 from tests.helpers.tickets import (
     get_all_ticket_balances_by_ticketer,
     get_ticket_balance,
-    create_ticket,
 )
 
 
@@ -22,7 +21,7 @@ class RollupCommunicationTestCase(BaseTestCase):
         ticketer = self.contracts['ticketer']
         router = self.contracts['router']
 
-        ticket = create_ticket(ticketer, fa2)
+        ticket = ticketer.get_ticket()
 
         # There are two addresses on L2, the first one is ERC20 proxy contract,
         # which would receve L2 tickets and the second is the Alice L2 address,
@@ -38,7 +37,7 @@ class RollupCommunicationTestCase(BaseTestCase):
         # - Alice transfer ticket to the Rollup via proxy contract.
         alice.bulk(
             fa2.using(alice).allow(ticketer.address),
-            ticketer.using(alice).deposit({'token': fa2, 'amount': 100}),
+            ticketer.using(alice).deposit({'amount': 100}),
             deposit_proxy.using(alice).set({
                 'data': token_proxy + alice_l2_address,
                 'receiver': f'{rollup_mock.address}%rollup',
@@ -192,7 +191,7 @@ class RollupCommunicationTestCase(BaseTestCase):
         router = self.contracts['router']
         ticket_helper = self.contracts['ticket_helper']
 
-        ticket = create_ticket(ticketer, fa2)
+        ticket = ticketer.get_ticket()
 
         # There are two addresses on L2, the first one is ERC20 proxy contract,
         # which would receve L2 tickets and the second is the Alice L2 address,

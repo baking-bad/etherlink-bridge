@@ -5,8 +5,6 @@ import os
 from pytezos.client import PyTezosClient
 from tests.helpers.contracts import (
     Ticketer,
-    DepositProxy,
-    ReleaseProxy,
     RollupMock,
     FA2,
     Router,
@@ -37,10 +35,9 @@ ALICE_L2_ADDRESS = 'bFc6dc08Bd0e8FBa3a25D7A70728E76E627c9A90'
 
 CONTRACTS = {
     'fa2':              (FA2,                  'KT1CoUssNszEUPAwKnxDQVv6nNDf7n4ge8BK'),
-    'deposit_proxy':    (DepositProxy,         'KT1JR55jcW9swYumGw8pnQkFVUXZdndqwgQG'),
-    'release_proxy':    (ReleaseProxy,         'KT1Gu89N9b8V2Zs8HyYwhXWkikbe22JyZtAR'),
     'ticketer':         (Ticketer,             'KT1VdjDtgKMXpHwhVRCvqbsTBDmWLJt8sfUE'),
     'router':           (Router,               'KT1LX3p9yvBHxhbPeKbhVgTvbovmzT5PxwRj'),
+    # TODO: add ticket_helper contract
 
     # Rollup Mock is not deployed by default anymore:
     # 'rollup_mock':      (RollupMock,           ''),
@@ -62,23 +59,20 @@ def deploy_contracts(
     fa2 = FA2.create_from_opg(manager, fa2_opg)
 
     # Contracts deployment:
-    T = TypeVar('T', bound='ContractHelper')
-    def deploy_contract(cls: Type[T]) -> T:
-        print(f'Deploying {cls.__name__}...')
-        opg = cls.originate_default(manager).send()
-        manager.wait(opg)
-        return cls.create_from_opg(manager, opg)
+    print(f'Deploying Router...')
+    router_opg = Router.originate_default(manager).send()
+    manager.wait(router_opg)
+    router = Router.create_from_opg(manager, router_opg)
 
-    deposit_proxy = deploy_contract(DepositProxy)
-    release_proxy = deploy_contract(ReleaseProxy)
-    router = deploy_contract(Router)
+    # TODO: deploy TicketHelper contract
 
     contracts['fa2'] = fa2
-    contracts['deposit_proxy'] = deposit_proxy
-    contracts['release_proxy'] = release_proxy
     contracts['router'] = router
     if deploy_rollup_mock:
-        contracts['rollup_mock'] = deploy_contract(RollupMock)
+        print(f'Deploying RollupMock...')
+        rm_opg = RollupMock.originate_default(manager).send()
+        manager.wait(rm_opg)
+        contracts['rollup_mock'] = RollupMock.create_from_opg(manager, rm_opg)
 
     # Deploying Ticketer with external metadata:
     fa2_key = ( "fa2", ( fa2.address, 0 ) )

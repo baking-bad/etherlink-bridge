@@ -2,8 +2,6 @@ from pytezos.client import PyTezosClient
 from pytezos.sandbox.node import SandboxedNodeTestCase
 from tests.helpers.contracts import (
     Ticketer,
-    DepositProxy,
-    ReleaseProxy,
     RollupMock,
     FA2,
     ContractHelper,
@@ -15,8 +13,6 @@ from typing import Type, TypeVar, TypedDict
 
 
 class Contracts(TypedDict):
-    deposit_proxy: DepositProxy
-    release_proxy: ReleaseProxy
     rollup_mock: RollupMock
     fa2: FA2
     ticketer: Ticketer
@@ -48,14 +44,6 @@ class BaseTestCase(SandboxedNodeTestCase):
         manager = self.accs['manager']
 
         # Contracts deployment:
-        deposit_proxy_opg = DepositProxy.originate_default(manager).send()
-        self.bake_block()
-        deposit_proxy = DepositProxy.create_from_opg(manager, deposit_proxy_opg)
-
-        release_proxy_opg = ReleaseProxy.originate_default(manager).send()
-        self.bake_block()
-        release_proxy = ReleaseProxy.create_from_opg(manager, release_proxy_opg)
-
         rollup_mock_opg = RollupMock.originate_default(manager).send()
         self.bake_block()
         rollup_mock = RollupMock.create_from_opg(manager, rollup_mock_opg)
@@ -98,8 +86,6 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.bake_block()
 
         self.contracts: Contracts = {
-            'deposit_proxy': deposit_proxy,
-            'release_proxy': release_proxy,
             'rollup_mock': rollup_mock,
             'fa2': fa2,
             'ticketer': ticketer,

@@ -7,8 +7,6 @@ compile:
 	${LIGO_COMPILER} compile contract contracts/ticket-helper/ticket-helper.mligo -m TicketHelper -o build/ticket-helper.tz
 	${LIGO_COMPILER} compile contract contracts/rollup-mock/rollup-mock.mligo -m RollupMock -o build/rollup-mock.tz
 	${LIGO_COMPILER} compile contract contracts/ticketer/ticketer.mligo -m Ticketer -o build/ticketer.tz
-	${LIGO_COMPILER} compile contract contracts/proxies/deposit.mligo -o build/proxies/deposit.tz
-	${LIGO_COMPILER} compile contract contracts/proxies/release.mligo -o build/proxies/release.tz
 	${LIGO_COMPILER} compile contract contracts/router.mligo -m Router -o build/router.tz
 
 install:

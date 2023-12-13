@@ -2,6 +2,7 @@ from tests.helpers.utility import DEFAULT_ADDRESS
 from tests.helpers.contracts import (
     ContractHelper,
     TokenHelper,
+    Ticketer,
 )
 from pytezos.client import PyTezosClient
 from tests.helpers.utility import get_build_dir
@@ -40,8 +41,7 @@ class TicketHelper(ContractHelper):
             client: PyTezosClient,
             rollup: str,
             token: TokenHelper,
-            # TODO: maybe it is better to provide ContractHelper instead of addresses
-            ticketer: str,
+            ticketer: Ticketer,
             approve_amount: int = 0,
         ) -> OperationGroup:
         """Deploys Ticket Helper"""
@@ -49,7 +49,7 @@ class TicketHelper(ContractHelper):
         storage = cls.default_storage.copy()
         storage['rollup'] = rollup
         storage['token'] = token.as_dict()
-        storage['ticketer'] = ticketer
+        storage['ticketer'] = ticketer.address
         storage['approve_amount'] = approve_amount
 
         return cls.originate_from_file(cls.filename, client, storage)

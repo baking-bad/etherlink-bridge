@@ -34,16 +34,18 @@ class Ticketer(ContractHelper):
 
     @staticmethod
     def make_storage(
-            token_as_dict: TokenAsDictType,
-            content: TicketContent,
+            token: TokenHelper,
+            extra_token_info: TokenInfo,
+            token_id: int = 0,
         ) -> dict[str, Any]:
         metadata = make_metadata(
             name='Ticketer',
             description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
         )
+        content = token.make_content(extra_token_info, token_id)
         return {
             'content': content,
-            'token': token_as_dict,
+            'token': token.as_dict(),
             'metadata': metadata,
         }
 
@@ -57,10 +59,7 @@ class Ticketer(ContractHelper):
         ) -> OperationGroup:
         """Deploys Ticketer with given Token and extra token info"""
 
-        storage = cls.make_storage(
-            token.as_dict(),
-            token.make_content(extra_token_info, token_id),
-        )
+        storage = cls.make_storage(token, extra_token_info, token_id)
         filename = join(get_build_dir(), 'ticketer.tz')
         return cls.originate_from_file(filename, client, storage)
 

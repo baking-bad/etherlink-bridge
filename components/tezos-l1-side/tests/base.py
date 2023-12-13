@@ -75,7 +75,7 @@ class BaseTestCase(SandboxedNodeTestCase):
             client=manager,
             rollup=f'{rollup_mock.address}%rollup',
             token=fa2,
-            ticketer=ticketer.address,
+            ticketer=ticketer,
             approve_amount=0,
         ).send()
         self.bake_block()

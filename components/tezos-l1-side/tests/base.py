@@ -48,16 +48,21 @@ class BaseTestCase(SandboxedNodeTestCase):
         manager = self.accs['manager']
 
         # Contracts deployment:
-        T = TypeVar('T', bound='ContractHelper')
-        def deploy_contract(cls: Type[T]) -> T:
-            opg = cls.originate_default(manager).send()
-            self.bake_block()
-            return cls.create_from_opg(manager, opg)
+        deposit_proxy_opg = DepositProxy.originate_default(manager).send()
+        self.bake_block()
+        deposit_proxy = DepositProxy.create_from_opg(manager, deposit_proxy_opg)
 
-        deposit_proxy = deploy_contract(DepositProxy)
-        release_proxy = deploy_contract(ReleaseProxy)
-        rollup_mock = deploy_contract(RollupMock)
-        router = deploy_contract(Router)
+        release_proxy_opg = ReleaseProxy.originate_default(manager).send()
+        self.bake_block()
+        release_proxy = ReleaseProxy.create_from_opg(manager, release_proxy_opg)
+
+        rollup_mock_opg = RollupMock.originate_default(manager).send()
+        self.bake_block()
+        rollup_mock = RollupMock.create_from_opg(manager, rollup_mock_opg)
+
+        router_opg = Router.originate_default(manager).send()
+        self.bake_block()
+        router = Router.create_from_opg(manager, router_opg)
 
         # Tokens deployment:
         token_balances = {

@@ -47,19 +47,6 @@ class Ticketer(ContractHelper):
             'metadata': metadata,
         }
 
-    # TODO: consider removing originate_default from the ContractHelper interface
-    @classmethod
-    def originate_default(cls, client: PyTezosClient) -> OperationGroup:
-        """Deploys Ticketer with empty storage"""
-
-        filename = join(get_build_dir(), 'ticketer.tz')
-        token_as_dict: TokenAsDictType = {
-            'fa2': (DEFAULT_ADDRESS, 0),
-        }
-        empty_content: TicketContent = (0, None)
-        storage = cls.make_storage(token_as_dict, empty_content)
-        return cls.originate_from_file(filename, client, storage)
-
     @classmethod
     def originate(
             cls,

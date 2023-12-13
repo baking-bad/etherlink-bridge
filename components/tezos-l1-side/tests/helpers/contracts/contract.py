@@ -64,13 +64,6 @@ class ContractHelper(ABC):
         )
 
     @classmethod
-    @abstractmethod
-    def originate_default(cls: Type[T], client: PyTezosClient) -> OperationGroup:
-        """ Deploys contract with default storage using given client """
-
-        pass
-
-    @classmethod
     def create_from_address(
         cls: Type[T],
         client: PyTezosClient,

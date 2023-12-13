@@ -34,10 +34,11 @@ class RollupCommunicationTestCase(BaseTestCase):
         # - Alice set routing info to the proxy
         #   (as far as implicit address can't send tickets with extra data),
         # - Alice transfer ticket to the Rollup via proxy contract.
-        routing_data = token_proxy + alice_l2_address
+        routing_info = token_proxy + alice_l2_address
+        rollup = f'{rollup_mock.address}%rollup'
         alice.bulk(
             fa2.using(alice).allow(ticket_helper.address),
-            ticket_helper.using(alice).deposit(routing_data, 100),
+            ticket_helper.using(alice).deposit(rollup, routing_info, 100),
         ).send()
         self.bake_block()
 

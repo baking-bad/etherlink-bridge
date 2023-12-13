@@ -73,7 +73,6 @@ class BaseTestCase(SandboxedNodeTestCase):
 
         opg = TicketHelper.originate(
             client=manager,
-            rollup=f'{rollup_mock.address}%rollup',
             token=fa2,
             ticketer=ticketer,
             approve_amount=0,

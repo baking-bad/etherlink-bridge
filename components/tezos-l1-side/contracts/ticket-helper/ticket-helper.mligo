@@ -9,8 +9,8 @@
 
 
 type deposit_params = [@layout:comb] {
-    // TODO: add here rollup address?
-    routing_data : RoutingData.l1_to_l2_t;
+    rollup : address;
+    routing_info : RoutingData.l1_to_l2_t;
     amount : nat;
 }
 
@@ -33,13 +33,14 @@ module TicketHelper = struct
         let () = Utility.assert_no_xtz_deposit () in
         let token = store.token in
         let ticketer = store.ticketer in
-        let { amount; routing_data } = params in
+        let { amount; routing_info; rollup } = params in
         let entry = Entrypoints.get_ticketer_deposit ticketer in
         let sender = Tezos.get_sender () in
         let self = Tezos.get_self_address () in
         let token_transfer_op = Token.get_transfer_op token amount sender self in
         let start_deposit_op = Tezos.transaction amount 0mutez entry in
-        let updated_store = Storage.set_routing_data routing_data store in
+        let context = { rollup; routing_info } in
+        let updated_store = Storage.set_context context store in
         [token_transfer_op; start_deposit_op], updated_store
 
     [@entry] let approve
@@ -64,9 +65,10 @@ module TicketHelper = struct
 
         let () = Utility.assert_no_xtz_deposit () in
         let () = Utility.assert_sender_is s.ticketer in
-        match s.routing_data with
-        | Some routing_info ->
-            let entry = Entrypoints.get_rollup_deposit s.rollup in
+        match s.context with
+        | Some context ->
+            let { rollup; routing_info } = context in
+            let entry = Entrypoints.get_rollup_deposit rollup in
             let deposit : Entrypoints.deposit = {
                 routing_info = routing_info;
                 ticket = ticket;
@@ -74,7 +76,7 @@ module TicketHelper = struct
             let deposit_or_bytes : Entrypoints.deposit_or_bytes = (M_left deposit) in
             let payload : Entrypoints.rollup_entry = (M_left deposit_or_bytes) in
             let finish_deposit_op = Tezos.transaction payload 0mutez entry in
-            let updated_store = Storage.clear_routing_data s in
+            let updated_store = Storage.clear_context s in
             [finish_deposit_op], updated_store
         | None -> failwith Errors.routing_data_is_not_set
 

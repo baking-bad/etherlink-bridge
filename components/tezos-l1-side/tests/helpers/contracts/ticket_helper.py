@@ -14,13 +14,12 @@ from pytezos.contract.call import ContractCall
 
 class TicketHelper(ContractHelper):
     default_storage = {
-        'rollup': DEFAULT_ADDRESS,
         'token': {
             'fa2': (DEFAULT_ADDRESS, 0)
         },
         'ticketer': DEFAULT_ADDRESS,
         'approve_amount': 0,
-        'routing_data': None,
+        'context': None,
         'metadata': make_metadata(
             name='Ticket Helper',
             description='The Ticket Helper is a helper contract which helps user to communicate with Etherlink Bridge components that requires tickets to be packed into external data structure.',
@@ -39,7 +38,6 @@ class TicketHelper(ContractHelper):
     def originate(
             cls,
             client: PyTezosClient,
-            rollup: str,
             token: TokenHelper,
             ticketer: Ticketer,
             approve_amount: int = 0,
@@ -47,17 +45,17 @@ class TicketHelper(ContractHelper):
         """Deploys Ticket Helper"""
 
         storage = cls.default_storage.copy()
-        storage['rollup'] = rollup
         storage['token'] = token.as_dict()
         storage['ticketer'] = ticketer.address
         storage['approve_amount'] = approve_amount
 
         return cls.originate_from_file(cls.filename, client, storage)
 
-    def deposit(self, routing_data: bytes, amount: int) -> ContractCall:
+    def deposit(self, rollup: str, routing_info: bytes, amount: int) -> ContractCall:
         """Deposits given amount of tokens to the L2 address set in routing data"""
 
         return self.contract.deposit({
-            'routing_data': routing_data,
+            'rollup': rollup,
+            'routing_info': routing_info,
             'amount': amount
         })

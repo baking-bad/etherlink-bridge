@@ -1,4 +1,4 @@
-#import "../common/types/routing-data.mligo" "RoutingData"
+#import "../common/types/routing-info.mligo" "RoutingInfo"
 #import "./ticket-id.mligo" "TicketId"
 
 (*
@@ -12,6 +12,6 @@
 type t = {
     ticket_id : TicketId.t;
     amount : nat;
-    routing_data : RoutingData.l2_to_l1_t;
+    routing_data : RoutingInfo.l2_to_l1_t;
     router : address option;
 }

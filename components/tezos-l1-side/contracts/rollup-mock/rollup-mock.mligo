@@ -1,6 +1,7 @@
-#import "../common/types/routing-data.mligo" "RoutingData"
+#import "../common/types/routing-info.mligo" "RoutingInfo"
 #import "../common/types/ticket.mligo" "Ticket"
-#import "../common/types/entrypoints.mligo" "Entrypoints"
+#import "../common/entrypoints/router-withdraw.mligo" "WithdrawEntry"
+#import "../common/entrypoints/rollup-deposit.mligo" "DepositEntry"
 #import "./storage.mligo" "Storage"
 #import "./message.mligo" "Message"
 
@@ -16,17 +17,13 @@ module RollupMock = struct
             (router : address)
             (receiver : address)
             : operation =
-        let payload : Entrypoints.withdraw_params = {
-            receiver = receiver;
-            ticket = ticket;
-        } in
-        let entry = Entrypoints.get_router_withdraw router in
-        Tezos.transaction payload 0mutez entry
+        let entry = WithdrawEntry.get router in
+        Tezos.transaction { receiver; ticket } 0mutez entry
 
     type return_t = operation list * Storage.t
 
     [@entry] let rollup
-            (rollup_entry : Entrypoints.rollup_entry)
+            (rollup_entry : DepositEntry.t)
             (store : Storage.t)
             : return_t =
         (*
@@ -38,7 +35,7 @@ module RollupMock = struct
         *)
 
         let { tickets; messages; next_message_id; metadata } = store in
-        let deposit = Entrypoints.unwrap_rollup_entrypoint rollup_entry in
+        let deposit = DepositEntry.unwrap rollup_entry in
         let { ticket = ticket; routing_info = _r } = deposit in
         let (ticketer, (payload, _amt)), ticket = Tezos.read_ticket ticket in
         let token_id = payload.0 in
@@ -78,7 +75,7 @@ module RollupMock = struct
         let { ticket_id; router; amount; routing_data } = message in
         let ticket, tickets = Storage.pop_ticket ticket_id tickets in
         let ticket_send, ticket_keep = Ticket.split_ticket ticket amount in
-        let receiver = RoutingData.get_receiver_l2_to_l1 routing_data in
+        let receiver = RoutingInfo.get_receiver_l2_to_l1 routing_data in
         let ticket_transfer_op = match router with
         | Some router -> send_ticket_to_router ticket_send router receiver
         | None -> Ticket.send ticket_send receiver in

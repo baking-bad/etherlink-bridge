@@ -1,6 +1,7 @@
 #import "../common/tokens/index.mligo" "Token"
 #import "../common/types/ticket.mligo" "Ticket"
-#import "../common/types/entrypoints.mligo" "Entrypoints"
+#import "../common/entrypoints/ticketer-deposit.mligo" "DepositEntry"
+#import "../common/entrypoints/router-withdraw.mligo" "WithdrawEntry"
 #import "../common/errors.mligo" "Errors"
 #import "../common/utility.mligo" "Utility"
 #import "./storage.mligo" "Storage"
@@ -30,7 +31,7 @@ module Ticketer = struct
 
 
     [@entry] let deposit
-            (amount : Entrypoints.deposit_params)
+            (amount : DepositEntry.t)
             (store : Storage.t) : return_t =
         (*
             `deposit` entrypoint is used to convert legacy token to a ticket.
@@ -47,7 +48,7 @@ module Ticketer = struct
         [token_transfer_op; ticket_transfer_op], store
 
     [@entry] let withdraw
-            (params : Entrypoints.withdraw_params)
+            (params : WithdrawEntry.t)
             (store : Storage.t)
             : return_t =
         (*

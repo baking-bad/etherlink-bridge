@@ -1,4 +1,4 @@
-#import "./common/types/entrypoints.mligo" "Entrypoints"
+#import "./common/entrypoints/router-withdraw.mligo" "WithdrawEntry"
 #import "./common/types/ticket.mligo" "Ticket"
 #import "./common/errors.mligo" "Errors"
 #import "./common/utility.mligo" "Utility"
@@ -19,7 +19,7 @@ module Router = struct
     type return_t = operation list * storage_t
 
     [@entry] let withdraw
-            (params : Entrypoints.withdraw_params)
+            (params : WithdrawEntry.t)
             (store: storage_t) : return_t =
         (*
             `withdraw` entrypoint is called by the smart rollup contract

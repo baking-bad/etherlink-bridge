@@ -1,6 +1,7 @@
 #import "./storage.mligo" "Storage"
-#import "../common/types/routing-data.mligo" "RoutingData"
-#import "../common/types/entrypoints.mligo" "Entrypoints"
+#import "../common/types/routing-info.mligo" "RoutingInfo"
+#import "../common/entrypoints/rollup-deposit.mligo" "RollupEntry"
+#import "../common/entrypoints/ticketer-deposit.mligo" "TicketerEntry"
 #import "../common/tokens/index.mligo" "Token"
 #import "../common/types/ticket.mligo" "Ticket"
 #import "../common/errors.mligo" "Errors"
@@ -22,7 +23,7 @@ module TicketHelper = struct
 
     type deposit_params = [@layout:comb] {
         rollup : address;
-        routing_info : RoutingData.l1_to_l2_t;
+        routing_info : RoutingInfo.l1_to_l2_t;
         amount : nat;
     }
 
@@ -43,7 +44,7 @@ module TicketHelper = struct
         let () = Utility.assert_no_xtz_deposit () in
         let token = store.token in
         let ticketer = store.ticketer in
-        let entry = Entrypoints.get_ticketer_deposit ticketer in
+        let entry = TicketerEntry.get ticketer in
         let sender = Tezos.get_sender () in
         let self = Tezos.get_self_address () in
         let token_transfer_op = Token.get_transfer_op token amount sender self in
@@ -70,9 +71,9 @@ module TicketHelper = struct
         match s.context with
         | Some context ->
             let { rollup; routing_info } = context in
-            let entry = Entrypoints.get_rollup_deposit rollup in
+            let entry = RollupEntry.get rollup in
             let deposit = { routing_info; ticket } in
-            let payload = Entrypoints.wrap_rollup_entrypoint deposit in
+            let payload = RollupEntry.wrap deposit in
             let finish_deposit_op = Tezos.transaction payload 0mutez entry in
             let updated_store = Storage.clear_context s in
             [finish_deposit_op], updated_store

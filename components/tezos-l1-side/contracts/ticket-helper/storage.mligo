@@ -1,9 +1,9 @@
-#import "../common/types/routing-data.mligo" "RoutingData"
+#import "../common/types/routing-info.mligo" "RoutingInfo"
 #import "../common/tokens/index.mligo" "Token"
 
 
 type context_t = [@layout:comb] {
-    routing_info : RoutingData.l1_to_l2_t;
+    routing_info : RoutingInfo.l1_to_l2_t;
     rollup : address;
 }
 

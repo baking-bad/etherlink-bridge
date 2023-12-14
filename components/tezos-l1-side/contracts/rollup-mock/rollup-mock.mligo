@@ -2,38 +2,34 @@
 #import "../common/types/ticket.mligo" "Ticket"
 #import "../common/types/entrypoints.mligo" "Entrypoints"
 #import "./storage.mligo" "Storage"
-#import "./ticket-id.mligo" "TicketId"
 #import "./message.mligo" "Message"
-#import "../common/errors.mligo" "Errors"
-#import "../common/utility.mligo" "Utility"
-
-
-let send_ticket_to_router
-        (ticket : Ticket.t)
-        (router : address)
-        (receiver : address)
-        : operation =
-    let payload : Entrypoints.withdraw_params = {
-        receiver = receiver;
-        ticket = ticket;
-    } in
-    let entry = Entrypoints.get_router_withdraw router in
-    Tezos.transaction payload 0mutez entry
-
-
-let send_ticket_to_receiver
-        (ticket : Ticket.t)
-        (receiver : address)
-        : operation =
-    let receiver_contract = Ticket.get_ticket_entrypoint receiver in
-    Tezos.transaction ticket 0mutez receiver_contract
 
 
 module RollupMock = struct
     (*
-        This is helper contract used to deposit and release tickets on the
-        L1 side in the similar way Rollup would do.
+        RollupMock is helper contract used to deposit and release tickets on
+        the L1 side in the similar way Rollup would do.
     *)
+
+    let send_ticket_to_router
+            (ticket : Ticket.t)
+            (router : address)
+            (receiver : address)
+            : operation =
+        let payload : Entrypoints.withdraw_params = {
+            receiver = receiver;
+            ticket = ticket;
+        } in
+        let entry = Entrypoints.get_router_withdraw router in
+        Tezos.transaction payload 0mutez entry
+
+
+    let send_ticket_to_receiver
+            (ticket : Ticket.t)
+            (receiver : address)
+            : operation =
+        let receiver_contract = Ticket.get_ticket_entrypoint receiver in
+        Tezos.transaction ticket 0mutez receiver_contract
 
     type return_t = operation list * Storage.t
 
@@ -41,8 +37,11 @@ module RollupMock = struct
             (rollup_entry : Entrypoints.rollup_entry)
             (store : Storage.t)
             : return_t =
-        (* This entrypoint used to emulate L1 rollup entrypoint used to
-            deposit tickets *)
+        (*
+            `rollup` entrypoint emulates L1 rollup full entrypoint.
+            It allows to deposit tickets the same way as L1 rollup would do.
+        *)
+
         let {
             tickets;
             messages;
@@ -66,13 +65,41 @@ module RollupMock = struct
         } in
         [], updated_storage
 
+    [@entry] let create_outbox_message
+            (new_message : Message.t)
+            (store : Storage.t)
+            : return_t =
+        (*
+            `create_outbox_message` allows to emulate L2 actions that changes
+            rollup state and adds new outbox message that can be executed
+        *)
+
+        let {
+            tickets;
+            messages;
+            next_message_id;
+            metadata;
+        } = store in
+
+        let updated_store = {
+            tickets = tickets;
+            messages = Big_map.update next_message_id (Some new_message) messages;
+            next_message_id = next_message_id + 1n;
+            metadata = metadata;
+        } in
+        [], updated_store
 
     [@entry] let execute_outbox_message
             (message_id : nat)
             (store : Storage.t)
             : return_t =
-        (* Releases ticket by message_id, this entrypoint emulates call to L1
-            rollup which processes outbox L1 unlock ticket message *)
+        (*
+            `execute_outbox_message` allows to release tickets the same way
+            as L1 rollup would do when someone triggered L1 outbox message
+            execution. It will call the withdraw router contract with the
+            ticket and receiver address.
+        *)
+
         let {
             tickets;
             messages;
@@ -101,26 +128,4 @@ module RollupMock = struct
             metadata = metadata;
         } in
         [ticket_transfer_op], updated_store
-
-
-    [@entry] let create_outbox_message
-            (new_message : Message.t)
-            (store : Storage.t)
-            : return_t =
-        (* This entrypoint used to emulate L2 actions that changes rollup state
-            and adds new outbox message that can be executed *)
-        let {
-            tickets;
-            messages;
-            next_message_id;
-            metadata;
-        } = store in
-
-        let updated_store = {
-            tickets = tickets;
-            messages = Big_map.update next_message_id (Some new_message) messages;
-            next_message_id = next_message_id + 1n;
-            metadata = metadata;
-        } in
-        [], updated_store
 end

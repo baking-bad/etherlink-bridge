@@ -4,6 +4,9 @@
 #import "../errors.mligo" "Errors"
 
 
+// This is deposit interface for the Ehterlink smart rollup:
+// NOTE: as far as smart rollups currently do not support entrypoints (like
+// smart contracts) therefore we need to construct an argument of full type:
 type deposit = [@layout:comb] {
     routing_info: RoutingData.l1_to_l2_t;
     ticket: Ticket.t;
@@ -16,7 +19,6 @@ type deposit_or_bytes = (
     "b"
 ) michelson_or
 
-// This is deposit interface for the Ehterlink smart rollup:
 type rollup_entry = (
     deposit_or_bytes,
     "",
@@ -34,6 +36,11 @@ let unwrap_rollup_entrypoint
         | M_left deposit -> deposit
         | M_right _bytes -> failwith(Errors.wrong_rollup_entrypoint)
     ) in deposit
+
+let wrap_rollup_entrypoint
+        (deposit : deposit)
+        : rollup_entry =
+    M_left (M_left deposit)
 
 // This is deposit interface for the Ticketer contract:
 type deposit_params = nat

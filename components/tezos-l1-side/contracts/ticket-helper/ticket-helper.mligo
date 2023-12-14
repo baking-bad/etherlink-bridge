@@ -1,4 +1,3 @@
-// TODO: remove redundant imports:
 #import "./storage.mligo" "Storage"
 #import "../common/types/routing-data.mligo" "RoutingData"
 #import "../common/types/entrypoints.mligo" "Entrypoints"
@@ -7,12 +6,6 @@
 #import "../common/errors.mligo" "Errors"
 #import "../common/utility.mligo" "Utility"
 
-
-type deposit_params = [@layout:comb] {
-    rollup : address;
-    routing_info : RoutingData.l1_to_l2_t;
-    amount : nat;
-}
 
 module TicketHelper = struct
     (*
@@ -27,13 +20,29 @@ module TicketHelper = struct
 
     type return_t = operation list * Storage.t
 
+    type deposit_params = [@layout:comb] {
+        rollup : address;
+        routing_info : RoutingData.l1_to_l2_t;
+        amount : nat;
+    }
+
     [@entry] let deposit
             (params : deposit_params)
             (store: Storage.t) : return_t =
+        (*
+            `deposit` entrypoint called when user wants to deposit tokens
+            to the Etherlink Bridge.
+
+            This entrypoint will transfer tokens from the user to the contract
+            and then call `Ticketer.deposit` entrypoint, which will mint ticket
+            and send it back to the TicketHelper contract triggering `default`
+            entrypoint.
+        *)
+
+        let { amount; routing_info; rollup } = params in
         let () = Utility.assert_no_xtz_deposit () in
         let token = store.token in
         let ticketer = store.ticketer in
-        let { amount; routing_info; rollup } = params in
         let entry = Entrypoints.get_ticketer_deposit ticketer in
         let sender = Tezos.get_sender () in
         let self = Tezos.get_self_address () in
@@ -47,15 +56,14 @@ module TicketHelper = struct
     [@entry] let default
             (ticket : Ticket.t)
             (s: Storage.t) : return_t =
-        // NOTE: default entrypoint called when Ticketer minted ticket and
-        //       sends it to the TicketHelper contract.
+        (*
+            `default` entrypoint called when Ticketer minted ticket and
+            sent it to the TicketHelper contract.
 
-        // NOTE: we trust Ticketer and assume that amount and payload are correct
-
-        // NOTE: it is assumed that routing data was set before deposit
-        //       is there any case when this might be a problem?
-        //       as far as only Ticketer can call this entrypoint, looks like
-        //       it is safe to assume that routing data was set before deposit
+            This entrypoint will transfer ticket to the Etherlink Bridge
+            contract and then call its `deposit` entrypoint, which will
+            finish deposit process.
+        *)
 
         let () = Utility.assert_no_xtz_deposit () in
         let () = Utility.assert_sender_is s.ticketer in
@@ -63,12 +71,8 @@ module TicketHelper = struct
         | Some context ->
             let { rollup; routing_info } = context in
             let entry = Entrypoints.get_rollup_deposit rollup in
-            let deposit : Entrypoints.deposit = {
-                routing_info = routing_info;
-                ticket = ticket;
-            } in
-            let deposit_or_bytes : Entrypoints.deposit_or_bytes = (M_left deposit) in
-            let payload : Entrypoints.rollup_entry = (M_left deposit_or_bytes) in
+            let deposit = { routing_info; ticket } in
+            let payload = Entrypoints.wrap_rollup_entrypoint deposit in
             let finish_deposit_op = Tezos.transaction payload 0mutez entry in
             let updated_store = Storage.clear_context s in
             [finish_deposit_op], updated_store

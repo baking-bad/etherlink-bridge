@@ -1,3 +1,6 @@
+// TODO: consider renaming file to RoutingInfo
+
+
 // L1 to L2 routing info is concatenated Etherlink addresses of
 // (ticket_receiver, receiver) each 22 bytes long
 type l1_to_l2_t = bytes

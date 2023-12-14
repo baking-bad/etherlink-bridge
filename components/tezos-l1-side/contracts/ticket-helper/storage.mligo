@@ -10,7 +10,6 @@ type context_t = [@layout:comb] {
 type t = [@layout:comb] {
     token : Token.t;
     ticketer : address;
-    approve_amount : nat;
     context : context_t option;
     metadata : (string, bytes) big_map;
 }

@@ -28,19 +28,16 @@ let get_transfer_op
         TokenFa2.get_transfer_op from_ addr txs
     end
 
-let get_approve_ops
+let get_approve_op
         (token: t)
         (operator: address)
         (amount: nat)
-        : operation list =
+        : operation =
     match token with
     | Fa12 contract_address ->
-        [
-            TokenFa12.get_approve_op contract_address operator 0n;
-            TokenFa12.get_approve_op contract_address operator amount;
-        ]
+        TokenFa12.get_approve_op contract_address operator amount
     | Fa2 (contract_address, token_id) ->
-        [ TokenFa2.get_approve_op contract_address token_id operator ]
+        TokenFa2.get_approve_op contract_address token_id operator
 
 // NOTE: the following functions is not used in the current ticketer
 // implementation, however they might be useful in the future

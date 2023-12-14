@@ -39,16 +39,10 @@ module TicketHelper = struct
         let self = Tezos.get_self_address () in
         let token_transfer_op = Token.get_transfer_op token amount sender self in
         let start_deposit_op = Tezos.transaction amount 0mutez entry in
+        let approve_token_op = Token.get_approve_op token ticketer amount in
         let context = { rollup; routing_info } in
         let updated_store = Storage.set_context context store in
-        [token_transfer_op; start_deposit_op], updated_store
-
-    [@entry] let approve
-            (_unit : unit)
-            (store: Storage.t) : return_t =
-        // TODO: make approves during deposit instead
-        let () = Utility.assert_no_xtz_deposit () in
-        Token.get_approve_ops store.token store.ticketer store.approve_amount, store
+        [token_transfer_op; approve_token_op; start_deposit_op], updated_store
 
     [@entry] let default
             (ticket : Ticket.t)

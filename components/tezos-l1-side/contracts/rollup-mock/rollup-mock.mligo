@@ -23,14 +23,6 @@ module RollupMock = struct
         let entry = Entrypoints.get_router_withdraw router in
         Tezos.transaction payload 0mutez entry
 
-
-    let send_ticket_to_receiver
-            (ticket : Ticket.t)
-            (receiver : address)
-            : operation =
-        let receiver_contract = Ticket.get_ticket_entrypoint receiver in
-        Tezos.transaction ticket 0mutez receiver_contract
-
     type return_t = operation list * Storage.t
 
     [@entry] let rollup
@@ -40,30 +32,20 @@ module RollupMock = struct
         (*
             `rollup` entrypoint emulates L1 rollup full entrypoint.
             It allows to deposit tickets the same way as L1 rollup would do.
+
+            It merges together deposited tickets with the same ticketer
+            and token_id from content.
         *)
 
-        let {
-            tickets;
-            messages;
-            next_message_id;
-            metadata;
-        } = store in
+        let { tickets; messages; next_message_id; metadata } = store in
         let deposit = Entrypoints.unwrap_rollup_entrypoint rollup_entry in
         let { ticket = ticket; routing_info = _r } = deposit in
         let (ticketer, (payload, _amt)), ticket = Tezos.read_ticket ticket in
         let token_id = payload.0 in
         let ticket_id = { ticketer; token_id } in
-
-        // Join tickets if contract already has one with the same payload:
-        let updated_tickets = Storage.merge_tickets ticket_id ticket tickets in
-
-        let updated_storage = {
-            tickets = updated_tickets;
-            messages = messages;
-            next_message_id = next_message_id;
-            metadata = metadata;
-        } in
-        [], updated_storage
+        let tickets = Storage.merge_tickets ticket_id ticket tickets in
+        let upd_store = { tickets; messages; next_message_id; metadata; } in
+        [], upd_store
 
     [@entry] let create_outbox_message
             (new_message : Message.t)
@@ -74,20 +56,11 @@ module RollupMock = struct
             rollup state and adds new outbox message that can be executed
         *)
 
-        let {
-            tickets;
-            messages;
-            next_message_id;
-            metadata;
-        } = store in
-
-        let updated_store = {
-            tickets = tickets;
-            messages = Big_map.update next_message_id (Some new_message) messages;
-            next_message_id = next_message_id + 1n;
-            metadata = metadata;
-        } in
-        [], updated_store
+        let { tickets; messages; next_message_id; metadata } = store in
+        let messages = Big_map.update next_message_id (Some new_message) messages in
+        let next_message_id = next_message_id + 1n in
+        let upd_store = { tickets; messages; next_message_id; metadata } in
+        [], upd_store
 
     [@entry] let execute_outbox_message
             (message_id : nat)
@@ -100,32 +73,16 @@ module RollupMock = struct
             ticket and receiver address.
         *)
 
-        let {
-            tickets;
-            messages;
-            next_message_id;
-            metadata;
-        } = store in
-
-        let message, updated_messages =
-            Storage.pop_message message_id messages in
-        let l1_ticket, updated_tickets =
-            Storage.pop_ticket message.ticket_id tickets in
-        let l1_ticket_send, l1_ticket_keep =
-            Ticket.split_ticket l1_ticket message.amount in
-
-        let receiver = RoutingData.get_receiver_l2_to_l1 message.routing_data in
-        let ticket_transfer_op = match message.router with
-        | Some router -> send_ticket_to_router l1_ticket_send router receiver
-        | None -> send_ticket_to_receiver l1_ticket_send receiver in
-        let updated_tickets =
-            Big_map.update message.ticket_id (Some l1_ticket_keep) updated_tickets in
-
-        let updated_store = {
-            tickets = updated_tickets;
-            messages = updated_messages;
-            next_message_id = next_message_id;
-            metadata = metadata;
-        } in
-        [ticket_transfer_op], updated_store
+        let { tickets; messages; next_message_id; metadata } = store in
+        let message, messages = Storage.pop_message message_id messages in
+        let { ticket_id; router; amount; routing_data } = message in
+        let ticket, tickets = Storage.pop_ticket ticket_id tickets in
+        let ticket_send, ticket_keep = Ticket.split_ticket ticket amount in
+        let receiver = RoutingData.get_receiver_l2_to_l1 routing_data in
+        let ticket_transfer_op = match router with
+        | Some router -> send_ticket_to_router ticket_send router receiver
+        | None -> Ticket.send ticket_send receiver in
+        let tickets = Big_map.update ticket_id (Some ticket_keep) tickets in
+        let upd_store = { tickets; messages; next_message_id; metadata } in
+        [ticket_transfer_op], upd_store
 end

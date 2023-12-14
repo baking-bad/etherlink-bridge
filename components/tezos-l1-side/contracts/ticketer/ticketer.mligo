@@ -39,12 +39,11 @@ module Ticketer = struct
         *)
 
         let () = Utility.assert_no_xtz_deposit () in
-        let ticket = Ticket.create store.content amount in
-        let sender = Tezos.get_sender () in
-        let sender_contract = Ticket.get_ticket_entrypoint sender in
         let self = Tezos.get_self_address () in
+        let sender = Tezos.get_sender () in
+        let ticket = Ticket.create store.content amount in
         let token_transfer_op = Token.get_transfer_op store.token amount sender self in
-        let ticket_transfer_op = Tezos.transaction ticket 0mutez sender_contract in
+        let ticket_transfer_op = Ticket.send ticket sender in
         [token_transfer_op; ticket_transfer_op], store
 
     [@entry] let withdraw

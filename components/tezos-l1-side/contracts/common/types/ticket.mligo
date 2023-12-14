@@ -35,3 +35,10 @@ let split_ticket
         | Some split_tickets -> split_tickets
         | None -> failwith Errors.irreducible_amount in
     ticket_a, ticket_b
+
+let send
+        (ticket : t)
+        (receiver : address)
+        : operation =
+    let receiver_contract = get_ticket_entrypoint receiver in
+    Tezos.transaction ticket 0mutez receiver_contract

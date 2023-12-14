@@ -4,9 +4,12 @@
 #import "../errors.mligo" "Errors"
 
 
-// This is deposit interface for the Ehterlink smart rollup:
-// NOTE: as far as smart rollups currently do not support entrypoints (like
-// smart contracts) therefore we need to construct an argument of full type:
+(*
+    `rollup_entry` is an interface for the Ehterlink smart rollup.
+    As far as smart rollups currently do not support entrypoints (like
+    smart contracts), to access `deposit` entrypoint, it needs to be
+    constructed from the full contract type:
+*)
 type deposit = [@layout:comb] {
     routing_info: RoutingData.l1_to_l2_t;
     ticket: Ticket.t;
@@ -42,11 +45,13 @@ let wrap_rollup_entrypoint
         : rollup_entry =
     M_left (M_left deposit)
 
-// This is deposit interface for the Ticketer contract:
+(* `deposit_params` is deposit interface for the Ticketer contract: *)
 type deposit_params = nat
 
-// This is withdraw interface that used for withdrawal transactions
-// on the Etherlink rollup initiated by executing outbox message:
+(*
+    `withdraw_params` is router interface that used for redirecting
+    tickets during withdrawal from the Etherlink rollup:
+ *)
 type withdraw_params = [@layout:comb] {
     receiver: address;
     ticket: Ticket.t;
@@ -68,5 +73,3 @@ let get_rollup_deposit (rollup : address) : rollup_entry contract =
     match Tezos.get_contract_opt rollup with
     | None -> failwith Errors.rollup_deposit_not_found
     | Some entry -> entry
-
-// TODO: move all other entrypoint getters here?

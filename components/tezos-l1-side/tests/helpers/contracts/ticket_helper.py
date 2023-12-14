@@ -18,7 +18,6 @@ class TicketHelper(ContractHelper):
             'fa2': (DEFAULT_ADDRESS, 0)
         },
         'ticketer': DEFAULT_ADDRESS,
-        'approve_amount': 0,
         'context': None,
         'metadata': make_metadata(
             name='Ticket Helper',
@@ -40,14 +39,12 @@ class TicketHelper(ContractHelper):
             client: PyTezosClient,
             token: TokenHelper,
             ticketer: Ticketer,
-            approve_amount: int = 0,
         ) -> OperationGroup:
         """Deploys Ticket Helper"""
 
         storage = cls.default_storage.copy()
         storage['token'] = token.as_dict()
         storage['ticketer'] = ticketer.address
-        storage['approve_amount'] = approve_amount
 
         return cls.originate_from_file(cls.filename, client, storage)
 

@@ -75,14 +75,9 @@ class BaseTestCase(SandboxedNodeTestCase):
             client=manager,
             token=fa2,
             ticketer=ticketer,
-            approve_amount=0,
         ).send()
         self.bake_block()
         ticket_helper = TicketHelper.create_from_opg(manager, opg)
-
-        # Ticket Helper gives approval to the Ticketer for the FA2 token:
-        ticket_helper.contract.approve().send()
-        self.bake_block()
 
         self.contracts: Contracts = {
             'rollup_mock': rollup_mock,

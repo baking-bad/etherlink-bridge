@@ -34,8 +34,8 @@ class RollupCommunicationTestCase(BaseTestCase):
         routing_info = token_proxy + alice_l2_address
         rollup = f'{rollup_mock.address}%rollup'
         alice.bulk(
-            token.using(alice).allow(helper.address),
-            helper.using(alice).deposit(rollup, routing_info, 100),
+            token.allow(helper.address),
+            helper.deposit(rollup, routing_info, 100),
         ).send()
         self.bake_block()
 
@@ -62,7 +62,7 @@ class RollupCommunicationTestCase(BaseTestCase):
         # Then some interactions on L2 leads to outbox message creation:
         # for example Alice send some L2 tokens to Boris and Boris decided
         # to bridge 5 of them back to L1.
-        rollup_mock.using(boris).create_outbox_message(
+        rollup_mock.create_outbox_message(
             {
                 'ticket_id': {
                     'ticketer': ticket['ticketer'],

@@ -13,6 +13,7 @@ from os.path import join
 from os.path import dirname
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
+from tests.helpers.metadata import make_metadata
 
 
 class FA2(TokenHelper):
@@ -21,7 +22,12 @@ class FA2(TokenHelper):
         'all_tokens': 0,
         'issuer': DEFAULT_ADDRESS,
         'ledger': {},
-        'metadata': {},
+        'metadata': make_metadata(
+            template=dict(
+                name='Test FA2 Token',
+                description='Simple test FA2 token based on fxhash token from mainnet.',
+            ),
+        ),
         'operators': {},
         'paused': False,
         'signer': DEFAULT_ADDRESS,
@@ -35,7 +41,7 @@ class FA2(TokenHelper):
     def originate(
         cls, client: PyTezosClient, balances: dict[str, int], token_id: int = 0
     ) -> OperationGroup:
-        """Deploys FA2 token with empty storage"""
+        """Deploys FA2 token with provided balances in the storage"""
 
         # TODO: move TOKENS_DIR to config / constants.py?
         tokens_dir = join(dirname(__file__), '..', '..', '..', 'tokens')

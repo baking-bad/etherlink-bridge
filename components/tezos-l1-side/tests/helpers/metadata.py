@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 
 DEFAULT_METADATA = {
@@ -16,9 +17,10 @@ def to_hex(string: str) -> str:
     return string.encode().hex()
 
 
-def make_metadata(**kwargs: str) -> dict:
+def make_metadata(template: Optional[dict] = None, **kwargs: str) -> dict:
     """Creates metadata for the contract"""
-    metadata = DEFAULT_METADATA.copy()
+
+    metadata = template or DEFAULT_METADATA.copy()
     metadata.update(kwargs)
     metadata_json = json.dumps(metadata)
 

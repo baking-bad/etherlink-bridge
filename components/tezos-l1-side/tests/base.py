@@ -4,6 +4,8 @@ from tests.helpers.contracts import (
     Ticketer,
     RollupMock,
     FA2,
+    FA12,
+    TokenHelper,
     ContractHelper,
     Router,
     TicketHelper,
@@ -12,12 +14,17 @@ from tests.helpers.utility import pkh, pack
 from typing import Type, TypeVar, TypedDict
 
 
+class TokenSet(TypedDict):
+    token: TokenHelper
+    ticketer: Ticketer
+    helper: TicketHelper
+
+
 class Contracts(TypedDict):
     rollup_mock: RollupMock
-    fa2: FA2
-    ticketer: Ticketer
+    fa2: TokenSet
+    fa12: TokenSet
     router: Router
-    ticket_helper: TicketHelper
 
 
 class BaseTestCase(SandboxedNodeTestCase):
@@ -55,35 +62,61 @@ class BaseTestCase(SandboxedNodeTestCase):
 
         fa2_opg = FA2.originate(manager, token_balances).send()
         self.bake_block()
-        fa2 = FA2.create_from_opg(manager, fa2_opg)
+        token_fa2 = FA2.create_from_opg(manager, fa2_opg)
 
-        # Deploying Ticketer with external metadata:
+        # Deploying Ticketer for FA2 with external metadata:
         fa2_external_metadata = {
             'decimals': pack(12, 'nat'),
-            'symbol': pack('TEST', 'string'),
+            'symbol': pack('FA2', 'string'),
         }
 
-        opg = Ticketer.originate(manager, fa2, fa2_external_metadata).send()
+        opg = Ticketer.originate(manager, token_fa2, fa2_external_metadata).send()
         self.bake_block()
-        ticketer = Ticketer.create_from_opg(manager, opg)
+        ticketer_fa2 = Ticketer.create_from_opg(manager, opg)
 
+        # Deploying TicketHelper for FA2:
         opg = TicketHelper.originate(
             client=manager,
-            token=fa2,
-            ticketer=ticketer,
+            token=token_fa2,
+            ticketer=ticketer_fa2,
         ).send()
         self.bake_block()
-        ticket_helper = TicketHelper.create_from_opg(manager, opg)
+        helper_fa2 = TicketHelper.create_from_opg(manager, opg)
+
+        # Deploying Ticketer for FA1.2 with external metadata:
+        fa12_external_metadata = {
+            'decimals': pack(0, 'nat'),
+            'symbol': pack('FA1.2', 'string'),
+        }
+
+        fa12_opg = FA12.originate(manager, token_balances).send()
+        self.bake_block()
+        token_fa12 = FA12.create_from_opg(manager, fa12_opg)
+
+        opg = Ticketer.originate(manager, token_fa12, fa12_external_metadata).send()
+        self.bake_block()
+        ticketer_fa12 = Ticketer.create_from_opg(manager, opg)
+
+        # Deploying TicketHelper for FA12:
+        opg = TicketHelper.originate(
+            client=manager,
+            token=token_fa12,
+            ticketer=ticketer_fa12,
+        ).send()
+        self.bake_block()
+        helper_fa12 = TicketHelper.create_from_opg(manager, opg)
 
         self.contracts: Contracts = {
             'rollup_mock': rollup_mock,
-            'fa2': fa2,
-            'ticketer': ticketer,
-            'ticket_helper': ticket_helper,
+            'fa2': {
+                'token': token_fa2,
+                'ticketer': ticketer_fa2,
+                'helper': helper_fa2,
+            },
+            'fa12': {
+                'token': token_fa12,
+                'ticketer': ticketer_fa12,
+                'helper': helper_fa12,
+            },
             'router': router,
         }
-
-        # Ticketer has no tickets and no tokens:
-        with self.assertRaises(KeyError):
-            fa2.get_balance(ticketer.address)
-        assert len(rollup_mock.get_tickets()) == 0

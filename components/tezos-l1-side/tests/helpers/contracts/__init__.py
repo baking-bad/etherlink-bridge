@@ -1,6 +1,7 @@
 from tests.helpers.contracts.tokens import (
     TokenHelper,
     FA2,
+    FA12,
 )
 from tests.helpers.contracts.ticketer import Ticketer
 from tests.helpers.contracts.rollup_mock import RollupMock
@@ -14,6 +15,7 @@ __all__ = [
     'Ticketer',
     'RollupMock',
     'FA2',
+    'FA12',
     'Router',
     'TicketHelper',
     'TokenHelper',

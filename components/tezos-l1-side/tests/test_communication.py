@@ -13,11 +13,11 @@ class RollupCommunicationTestCase(BaseTestCase):
     def test_should_be_able_to_deposit_and_withdraw(self) -> None:
         boris = self.accs['boris']
         alice = self.accs['alice']
-        fa2 = self.contracts['fa2']
+        token = self.contracts['fa12']['token']
         rollup_mock = self.contracts['rollup_mock']
-        ticketer = self.contracts['ticketer']
+        ticketer = self.contracts['fa12']['ticketer']
         router = self.contracts['router']
-        ticket_helper = self.contracts['ticket_helper']
+        helper = self.contracts['fa12']['helper']
 
         ticket = ticketer.get_ticket()
 
@@ -28,16 +28,14 @@ class RollupCommunicationTestCase(BaseTestCase):
         alice_l2_address = bytes.fromhex('0202020202020202020202020202020202020202')
 
         # In order to deposit token to the rollup, in one bulk operation:
-        # - ticketer allowed to transfer tokens from Alice,
-        # - Alice calls deposit tokens to the ticketer,
-        # - Alice set routing info to the proxy
-        #   (as far as implicit address can't send tickets with extra data),
-        # - Alice transfer ticket to the Rollup via proxy contract.
+        # - TicketHelper allowed to transfer tokens from Alice,
+        # - Alice locks token on Ticketer and then transfer ticket
+        # to the Rollup via TicketHelper contract.
         routing_info = token_proxy + alice_l2_address
         rollup = f'{rollup_mock.address}%rollup'
         alice.bulk(
-            fa2.using(alice).allow(ticket_helper.address),
-            ticket_helper.using(alice).deposit(rollup, routing_info, 100),
+            token.using(alice).allow(helper.address),
+            helper.using(alice).deposit(rollup, routing_info, 100),
         ).send()
         self.bake_block()
 
@@ -50,8 +48,8 @@ class RollupCommunicationTestCase(BaseTestCase):
         )
         self.assertEqual(balance, 100)
 
-        # - Ticketer has FA2 tokens:
-        assert fa2.get_balance(ticketer.address) == 100
+        # - Ticketer has FA tokens:
+        assert token.get_balance(ticketer.address) == 100
 
         # - Alice has no L1 tickets:
         balance = get_ticket_balance(
@@ -80,7 +78,7 @@ class RollupCommunicationTestCase(BaseTestCase):
         # To withdraw tokens from the rollup, someone should execute outbox
         # message, which would call ticketer contract to burn tickets and
         # transfer tokens to the Boris address:
-        boris_tokens_before_burn = fa2.get_balance(pkh(boris))
+        boris_tokens_before_burn = token.get_balance(pkh(boris))
         rollup_mock.execute_outbox_message(0).send()
         self.bake_block()
 
@@ -93,6 +91,6 @@ class RollupCommunicationTestCase(BaseTestCase):
         )
         self.assertEqual(balance, 95)
 
-        # - Boris should have more FA2 tokens now:
-        boris_tokens_after_burn = fa2.get_balance(pkh(boris))
+        # - Boris should have more FA tokens now:
+        boris_tokens_after_burn = token.get_balance(pkh(boris))
         self.assertEqual(boris_tokens_after_burn, boris_tokens_before_burn + 5)

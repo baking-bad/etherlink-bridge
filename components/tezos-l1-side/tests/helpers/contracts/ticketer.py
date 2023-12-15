@@ -34,10 +34,10 @@ class Ticketer(ContractHelper):
 
     @staticmethod
     def make_storage(
-            token: TokenHelper,
-            extra_token_info: TokenInfo,
-            token_id: int = 0,
-        ) -> dict[str, Any]:
+        token: TokenHelper,
+        extra_token_info: TokenInfo,
+        token_id: int = 0,
+    ) -> dict[str, Any]:
         metadata = make_metadata(
             name='Ticketer',
             description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
@@ -51,12 +51,12 @@ class Ticketer(ContractHelper):
 
     @classmethod
     def originate(
-            cls,
-            client: PyTezosClient,
-            token: TokenHelper,
-            extra_token_info: TokenInfo,
-            token_id: int = 0,
-        ) -> OperationGroup:
+        cls,
+        client: PyTezosClient,
+        token: TokenHelper,
+        extra_token_info: TokenInfo,
+        token_id: int = 0,
+    ) -> OperationGroup:
         """Deploys Ticketer with given Token and extra token info"""
 
         storage = cls.make_storage(token, extra_token_info, token_id)
@@ -64,13 +64,13 @@ class Ticketer(ContractHelper):
         return cls.originate_from_file(filename, client, storage)
 
     def deposit(self, params: DepositParams) -> ContractCall:
-        """ Deposits given amount of given token to the contract """
+        """Deposits given amount of given token to the contract"""
 
         return self.contract.deposit(params['amount'])
 
     def get_ticket(self, amount: int = 0) -> Ticket:
         """Returns ticket with given content and amount that can be used in
-            `ticket_transfer` call"""
+        `ticket_transfer` call"""
 
         content = to_michelson_type(
             self.contract.storage['content'](),

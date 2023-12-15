@@ -17,3 +17,7 @@ mypy:
 
 test:
 	poetry run pytest
+
+format:
+	poetry run black --skip-string-normalization tests scripts
+

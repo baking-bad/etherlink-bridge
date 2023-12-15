@@ -5,13 +5,9 @@ DEFAULT_METADATA = {
     'version': '0.2.0',
     'name': 'Etherlink Bridge',
     'description': 'The Etherlink Bridge consists of contracts designed for communication between Tezos and Etherlink rollup.',
-    'interfaces': [
-        'TZIP-016'
-    ],
-    'license': {
-        'name': 'MIT'
-    },
-    'homepage': 'https://github.com/baking-bad/etherlink-bridge'
+    'interfaces': ['TZIP-016'],
+    'license': {'name': 'MIT'},
+    'homepage': 'https://github.com/baking-bad/etherlink-bridge',
 }
 
 

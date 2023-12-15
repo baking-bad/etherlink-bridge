@@ -21,7 +21,6 @@ class Contracts(TypedDict):
 
 
 class BaseTestCase(SandboxedNodeTestCase):
-
     def activate_accs(self) -> None:
         # TODO: consider adding some Account abstraction with `address` property
         alice = self.client.using(key='bootstrap1')
@@ -38,7 +37,6 @@ class BaseTestCase(SandboxedNodeTestCase):
             'manager': manager,
         }
 
-
     def setUp(self) -> None:
         self.activate_accs()
         manager = self.accs['manager']
@@ -53,9 +51,7 @@ class BaseTestCase(SandboxedNodeTestCase):
         router = Router.create_from_opg(manager, router_opg)
 
         # Tokens deployment:
-        token_balances = {
-            pkh(account): 1000 for account in self.accs.values()
-        }
+        token_balances = {pkh(account): 1000 for account in self.accs.values()}
 
         fa2_opg = FA2.originate(manager, token_balances).send()
         self.bake_block()

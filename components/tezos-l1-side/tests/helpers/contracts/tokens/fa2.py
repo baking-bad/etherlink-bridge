@@ -33,10 +33,7 @@ class FA2(TokenHelper):
 
     @classmethod
     def originate(
-        cls,
-        client: PyTezosClient,
-        balances: dict[str, int],
-        token_id: int = 0
+        cls, client: PyTezosClient, balances: dict[str, int], token_id: int = 0
     ) -> OperationGroup:
         """Deploys FA2 token with empty storage"""
 
@@ -45,8 +42,7 @@ class FA2(TokenHelper):
         filename = join(tokens_dir, 'fa2-fxhash.tz')
         storage = cls.default_storage.copy()
         storage['ledger'] = {
-            (address, token_id): amount
-            for address, amount in balances.items()
+            (address, token_id): amount for address, amount in balances.items()
         }
         storage['token_metadata'] = {token_id: (token_id, {})}
         cls.token_id = token_id
@@ -57,18 +53,20 @@ class FA2(TokenHelper):
         return cls.originate(client, {})
 
     def allow(self, operator: str) -> ContractCall:
-        return self.contract.update_operators([{
-            'add_operator': {
-                'owner': pkh(self.client),
-                'operator': operator,
-                'token_id': self.token_id,
-            }
-        }])
+        return self.contract.update_operators(
+            [
+                {
+                    'add_operator': {
+                        'owner': pkh(self.client),
+                        'operator': operator,
+                        'token_id': self.token_id,
+                    }
+                }
+            ]
+        )
 
     def as_dict(self) -> FA2AsDictType:
-        return {
-            'fa2': (self.address, self.token_id)
-        }
+        return {'fa2': (self.address, self.token_id)}
 
     def as_tuple(self) -> FA2AsTupleType:
         return ('fa2', (self.address, self.token_id))

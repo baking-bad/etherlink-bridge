@@ -25,7 +25,6 @@ class TokenHelper(ContractHelper):
     # Map token info type is the same as token info metadata in FA2:
     MAP_TOKEN_INFO_TYPE = 'map %token_info string bytes'
 
-
     @abstractmethod
     def allow(self, operator: str) -> ContractCall:
         pass
@@ -50,11 +49,10 @@ class TokenHelper(ContractHelper):
         return pack(self.make_token_info(), self.MAP_TOKEN_INFO_TYPE)
 
     def make_content(
-            self,
-            extra_token_info: TokenInfo,
-            token_id: int = 0,
-        ) -> TicketContent:
-
+        self,
+        extra_token_info: TokenInfo,
+        token_id: int = 0,
+    ) -> TicketContent:
         extra_token_info = extra_token_info or {}
         token_info = {
             **self.make_token_info(),

@@ -12,7 +12,7 @@ class Router(ContractHelper):
         'metadata': make_metadata(
             name='Router for Withdrawals',
             description='The Router for Withdrawals is a component of the Etherlink Bridge which processing L2 -> L1 withdrawals.',
-        )
+        ),
     }
 
     filename = join(get_build_dir(), 'router.tz')

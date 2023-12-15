@@ -32,7 +32,7 @@ def get_all_ticket_balances(client: PyTezosClient, address: str) -> list[Ticket]
     query = RpcQuery(
         node=client.shell.node,
         path='/chains/{}/blocks/{}/context/contracts/{}/all_ticket_balances',
-        params=['main', last_block_hash, address]
+        params=['main', last_block_hash, address],
     )
 
     result = query()
@@ -45,12 +45,7 @@ def get_all_ticket_balances_by_ticketer(
     ticketer: str,
 ) -> list[Ticket]:
     tickets = get_all_ticket_balances(client, address)
-    return list(
-        filter(
-            lambda t: t['ticketer'] == ticketer,
-            tickets
-        )
-    )
+    return list(filter(lambda t: t['ticketer'] == ticketer, tickets))
 
 
 def get_ticket_balance(
@@ -62,7 +57,7 @@ def get_ticket_balance(
     query = RpcQuery(
         node=client.shell.node,
         path='/chains/{}/blocks/{}/context/contracts/{}/ticket_balance',
-        params=['main', last_block_hash, address]
+        params=['main', last_block_hash, address],
     )
 
     queried_ticket = {
@@ -78,7 +73,7 @@ def get_ticket_balance(
 
 def make_ticket_payload_bytes(ticket: Ticket) -> str:
     """This function allows to make ticket payload bytes to be used in
-        L2 Etherlink Bridge contracts"""
+    L2 Etherlink Bridge contracts"""
 
     michelson_type = MichelsonType.match(ticket['content_type'])
     value = michelson_type.from_micheline_value(ticket['content'])

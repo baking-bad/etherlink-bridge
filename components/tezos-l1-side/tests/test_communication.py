@@ -64,15 +64,17 @@ class RollupCommunicationTestCase(BaseTestCase):
         # Then some interactions on L2 leads to outbox message creation:
         # for example Alice send some L2 tokens to Boris and Boris decided
         # to bridge 5 of them back to L1.
-        rollup_mock.using(boris).create_outbox_message({
-            'ticket_id': {
-                'ticketer': ticket['ticketer'],
-                'token_id': 0,
-            },
-            'amount': 5,
-            'routing_data': pack(pkh(boris), 'address'),
-            'router': ticketer.address,
-        }).send()
+        rollup_mock.using(boris).create_outbox_message(
+            {
+                'ticket_id': {
+                    'ticketer': ticket['ticketer'],
+                    'token_id': 0,
+                },
+                'amount': 5,
+                'routing_data': pack(pkh(boris), 'address'),
+                'router': ticketer.address,
+            }
+        ).send()
         self.bake_block()
 
         # To withdraw tokens from the rollup, someone should execute outbox
@@ -93,7 +95,4 @@ class RollupCommunicationTestCase(BaseTestCase):
 
         # - Boris should have more FA2 tokens now:
         boris_tokens_after_burn = fa2.get_balance(pkh(boris))
-        self.assertEqual(
-            boris_tokens_after_burn,
-            boris_tokens_before_burn + 5
-        )
+        self.assertEqual(boris_tokens_after_burn, boris_tokens_before_burn + 5)

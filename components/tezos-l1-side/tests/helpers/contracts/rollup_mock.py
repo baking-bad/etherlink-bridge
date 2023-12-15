@@ -31,7 +31,7 @@ class RollupMock(ContractHelper):
         'next_message_id': 0,
         'metadata': make_metadata(
             name='Rollup Mock',
-            description='The Rollup Mock is a component of the Bridge Protocol Prototype, designed to emulate the operations of a real smart rollup on L1 side.'
+            description='The Rollup Mock is a component of the Bridge Protocol Prototype, designed to emulate the operations of a real smart rollup on L1 side.',
         ),
     }
 

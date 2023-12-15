@@ -43,6 +43,12 @@ def get_build_dir() -> str:
     return join(dirname(__file__), '..', '..', 'build')
 
 
+def get_tokens_dir() -> str:
+    """Returns path to the tokens directory"""
+
+    return join(dirname(__file__), '..', 'tokens')
+
+
 def load_contract_from_address(
     client: PyTezosClient, contract_address: str
 ) -> ContractInterface:

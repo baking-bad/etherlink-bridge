@@ -1,9 +1,6 @@
 from pytezos.client import PyTezosClient
 from pytezos.rpc.query import RpcQuery
-from typing import (
-    TypedDict,
-    Optional,
-)
+from typing import TypedDict
 
 from pytezos.michelson.types.base import MichelsonType
 
@@ -24,10 +21,7 @@ def deserialize_ticket(raw_ticket: dict) -> Ticket:
     }
 
 
-# TODO: consider creating Account abstraction that have method get_tickets?
 def get_all_ticket_balances(client: PyTezosClient, address: str) -> list[Ticket]:
-    # TODO: this might be not the best / easiest way to make RPC call,
-    # need to research more to find good way to do this:
     last_block_hash = client.shell.head.hash()
     query = RpcQuery(
         node=client.shell.node,
@@ -66,7 +60,6 @@ def get_ticket_balance(
         'content': ticket['content'],
     }
 
-    # TODO: looks like _post is not the best way to make RPC call
     result = query._post(json=queried_ticket)  # type: ignore
     return int(result)
 

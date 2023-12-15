@@ -8,7 +8,7 @@ from pytezos.client import PyTezosClient
 from tests.helpers.utility import get_build_dir
 from pytezos.operation.group import OperationGroup
 from os.path import join
-from tests.helpers.metadata import make_metadata
+from tests.helpers.metadata import Metadata
 from pytezos.contract.call import ContractCall
 
 
@@ -17,7 +17,7 @@ class TicketHelper(ContractHelper):
         'token': {'fa2': (DEFAULT_ADDRESS, 0)},
         'ticketer': DEFAULT_ADDRESS,
         'context': None,
-        'metadata': make_metadata(
+        'metadata': Metadata.make_default(
             name='Ticket Helper',
             description='The Ticket Helper is a helper contract which helps user to communicate with Etherlink Bridge components that requires tickets to be packed into external data structure.',
         ),

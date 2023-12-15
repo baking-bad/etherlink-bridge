@@ -4,8 +4,6 @@ from tests.helpers.utility import (
     get_build_dir,
     to_michelson_type,
     to_micheline,
-    pack,
-    DEFAULT_ADDRESS,
 )
 from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
@@ -14,12 +12,10 @@ from typing import (
     TypedDict,
 )
 from os.path import join
-from tests.helpers.metadata import make_metadata
+from tests.helpers.metadata import Metadata
 from tests.helpers.contracts.tokens import (
-    TicketContent,
     TokenHelper,
     TokenInfo,
-    TokenAsDictType,
 )
 from tests.helpers.tickets import Ticket
 
@@ -38,7 +34,7 @@ class Ticketer(ContractHelper):
         extra_token_info: TokenInfo,
         token_id: int = 0,
     ) -> dict[str, Any]:
-        metadata = make_metadata(
+        metadata = Metadata.make_default(
             name='Ticketer',
             description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
         )

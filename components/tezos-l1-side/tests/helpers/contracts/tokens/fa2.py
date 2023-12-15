@@ -7,13 +7,14 @@ from tests.helpers.utility import (
     DEFAULT_ADDRESS,
     pkh,
     pack,
+    get_tokens_dir,
 )
 from pytezos.client import PyTezosClient
 from os.path import join
 from os.path import dirname
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
-from tests.helpers.metadata import make_metadata
+from tests.helpers.metadata import Metadata
 
 
 class FA2(TokenHelper):
@@ -22,11 +23,9 @@ class FA2(TokenHelper):
         'all_tokens': 0,
         'issuer': DEFAULT_ADDRESS,
         'ledger': {},
-        'metadata': make_metadata(
-            template=dict(
-                name='Test FA2 Token',
-                description='Simple test FA2 token based on fxhash token from mainnet.',
-            ),
+        'metadata': Metadata.make(
+            name='Test FA2 Token',
+            description='Simple test FA2 token based on fxhash token from mainnet.',
         ),
         'operators': {},
         'paused': False,
@@ -43,9 +42,7 @@ class FA2(TokenHelper):
     ) -> OperationGroup:
         """Deploys FA2 token with provided balances in the storage"""
 
-        # TODO: move TOKENS_DIR to config / constants.py?
-        tokens_dir = join(dirname(__file__), '..', '..', '..', 'tokens')
-        filename = join(tokens_dir, 'fa2-fxhash.tz')
+        filename = join(get_tokens_dir(), 'fa2-fxhash.tz')
         storage = cls.default_storage.copy()
         storage['ledger'] = {
             (address, token_id): amount for address, amount in balances.items()
@@ -80,7 +77,6 @@ class FA2(TokenHelper):
     def get_balance(self, address: str) -> int:
         key = (address, self.token_id)
         balance = self.contract.storage['ledger'][key]()  # type: ignore
-        # TODO: return default 0 balance if no record in ledger?
         assert isinstance(balance, int)
         return balance
 

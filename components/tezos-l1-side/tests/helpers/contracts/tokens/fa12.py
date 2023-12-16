@@ -61,8 +61,15 @@ class FA12(TokenHelper):
     def as_tuple(self) -> FA12AsTupleType:
         return ('fa12', self.address)
 
-    def get_balance(self, address: str) -> int:
-        balance = self.contract.storage['tokens'][address]()
+    def get_balance(self, address: str, allow_key_error: bool = False) -> int:
+        """Returns balance of given address.
+        - allow_key_error: if True, returns 0 if address is not in storage"""
+        try:
+            balance = self.contract.storage['tokens'][address]()
+        except KeyError as error:
+            if not allow_key_error:
+                raise error
+            balance = 0
         assert isinstance(balance, int)
         return balance
 

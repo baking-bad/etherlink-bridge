@@ -1,6 +1,6 @@
 from pytezos.client import PyTezosClient
 from pytezos.rpc.query import RpcQuery
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pytezos.operation.group import OperationGroup
 from pytezos.michelson.types.base import MichelsonType
 from typing import Optional
@@ -59,6 +59,10 @@ class Ticket:
             entrypoint=entrypoint,
         )
         return transfer_op
+
+    def using(self, client: PyTezosClient) -> 'Ticket':
+        """Returns new Ticket with updated client"""
+        return replace(self, client=client)
 
 
 def deserialize_ticket(client: PyTezosClient, raw_ticket: dict) -> Ticket:

@@ -79,3 +79,57 @@ class TicketerTestCase(BaseTestCase):
                 {'prim': 'Some', 'args': [{'bytes': token_info_bytes}]},
             ],
         }
+
+    def test_should_send_fa2_to_receiver_on_withdraw_if_ticket_correct(self) -> None:
+        alice = self.bootstrap_account()
+        token = self.deploy_fa2({pkh(alice): 100})
+        ticketer = self.deploy_ticketer(token)
+        ticket = ticketer.get_ticket()
+        helper = self.deploy_ticket_helper(token, ticketer)
+
+        # Alice deposits 100 FA2 tokens to the Ticketer without using helper contract:
+        alice.bulk(
+            token.allow(pkh(alice), ticketer.address),
+            ticketer.deposit({'amount': 100}),
+        ).send()
+        self.bake_block()
+
+        assert ticket.get_balance(pkh(alice)) == 100
+        assert token.get_balance(ticketer.address) == 100
+        assert token.get_balance(pkh(alice)) == 0
+
+        # Alice uses helper contract to withdraw tickets from her balance:
+        entrypoint = f'{helper.address}%withdraw'
+        ticket.using(alice).transfer(entrypoint, 42).send()
+        self.bake_block()
+
+        assert ticket.get_balance(pkh(alice)) == 100 - 42
+        assert token.get_balance(ticketer.address) == 100 - 42
+        assert token.get_balance(pkh(alice)) == 42
+
+    def test_should_send_fa12_to_receiver_on_withdraw_if_ticket_correct(self) -> None:
+        alice = self.bootstrap_account()
+        token = self.deploy_fa12({pkh(alice): 1})
+        ticketer = self.deploy_ticketer(token)
+        ticket = ticketer.get_ticket()
+        helper = self.deploy_ticket_helper(token, ticketer)
+
+        # Alice deposits 1 FA1.2 token to the Ticketer without using helper contract:
+        alice.bulk(
+            token.allow(pkh(alice), ticketer.address),
+            ticketer.deposit({'amount': 1}),
+        ).send()
+        self.bake_block()
+
+        assert ticket.get_balance(pkh(alice)) == 1
+        assert token.get_balance(ticketer.address) == 1
+        assert token.get_balance(pkh(alice), allow_key_error=True) == 0
+
+        # Alice uses helper contract to withdraw tickets from her balance:
+        entrypoint = f'{helper.address}%withdraw'
+        ticket.using(alice).transfer(entrypoint, 1).send()
+        self.bake_block()
+
+        assert ticket.get_balance(pkh(alice)) == 0
+        assert token.get_balance(ticketer.address, allow_key_error=True) == 0
+        assert token.get_balance(pkh(alice)) == 1

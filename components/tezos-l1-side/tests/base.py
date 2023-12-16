@@ -92,4 +92,5 @@ class BaseTestCase(SandboxedNodeTestCase):
         return TicketHelper.create_from_opg(self.manager, opg)
 
     def setUp(self) -> None:
+        self.accounts = []
         self.manager = self.bootstrap_account()

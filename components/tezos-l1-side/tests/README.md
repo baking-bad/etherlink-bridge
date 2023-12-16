@@ -26,11 +26,7 @@
     - check ticket minted for sender
     - check ticket payload is expected
     - check that tokens locked on ticketer contract
-- [ ] test_should_not_allow_to_deposit_fa2_token_if_it_is_incorrect
-    - this one is probably will result in token approval error (consider removing from list)
-- [ ] test_should_not_allow_to_deposit_fa12_token_if_it_is_incorrect
-    - this one is probably will result in token approval error (consider removing from list)
-- [ ] test_should_send_fa2_to_receiver_on_withdraw_if_ticket_correct
+- [x] test_should_send_fa2_to_receiver_on_withdraw_if_ticket_correct
     - check receiver get token
     - check ticket burned
 - [ ] test_should_send_fa12_to_receiver_on_withdraw_if_ticket_correct

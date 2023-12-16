@@ -8,14 +8,18 @@ from tests.helpers.tickets import get_all_by_ticketer
 
 class RollupCommunicationTestCase(BaseTestCase):
     def test_should_be_able_to_deposit_and_withdraw(self) -> None:
-        boris = self.accs['boris']
-        alice = self.accs['alice']
-        token = self.contracts['fa12']['token']
-        rollup_mock = self.contracts['rollup_mock']
-        ticketer = self.contracts['fa12']['ticketer']
-        router = self.contracts['router']
-        helper = self.contracts['fa12']['helper']
-
+        # Deploying contracts:
+        boris = self.bootstrap_account()
+        alice = self.bootstrap_account()
+        token = self.deploy_fa2(balances={pkh(alice): 1000})
+        rollup_mock = self.deploy_rollup_mock()
+        router = self.deploy_router()
+        extra_metadata = {
+            'decimals': pack(12, 'nat'),
+            'symbol': pack('FA2', 'string'),
+        }
+        ticketer = self.deploy_ticketer(token, extra_metadata)
+        helper = self.deploy_ticket_helper(token, ticketer)
         ticket = ticketer.get_ticket()
 
         # There are two addresses on L2, the first one is ERC20 proxy contract,
@@ -31,7 +35,7 @@ class RollupCommunicationTestCase(BaseTestCase):
         routing_info = token_proxy + alice_l2_address
         rollup = f'{rollup_mock.address}%rollup'
         alice.bulk(
-            token.allow(helper.address),
+            token.allow(pkh(alice), helper.address),
             helper.deposit(rollup, routing_info, 100),
         ).send()
         self.bake_block()
@@ -60,11 +64,9 @@ class RollupCommunicationTestCase(BaseTestCase):
         # To withdraw tokens from the rollup, someone should execute outbox
         # message, which would call ticketer contract to burn tickets and
         # transfer tokens to the Boris address:
-        boris_tokens_before_burn = token.get_balance(pkh(boris))
         rollup_mock.execute_outbox_message(0).send()
         self.bake_block()
 
         # Checking withdraw operations results:
         assert ticket.get_balance(rollup_mock.address) == 95
-        # TODO: it is better to initiate tests with 0 tokens for Boris
-        assert token.get_balance(pkh(boris)) == boris_tokens_before_burn + 5
+        assert token.get_balance(pkh(boris)) == 5

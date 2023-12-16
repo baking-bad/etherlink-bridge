@@ -55,12 +55,12 @@ class FA2(TokenHelper):
     def originate_default(cls, client: PyTezosClient) -> OperationGroup:
         return cls.originate(client, {})
 
-    def allow(self, operator: str) -> ContractCall:
+    def allow(self, owner: str, operator: str) -> ContractCall:
         return self.contract.update_operators(
             [
                 {
                     'add_operator': {
-                        'owner': pkh(self.client),
+                        'owner': owner,
                         'operator': operator,
                         'token_id': self.token_id,
                     }

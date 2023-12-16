@@ -26,7 +26,7 @@ class TokenHelper(ContractHelper):
     MAP_TOKEN_INFO_TYPE = 'map %token_info string bytes'
 
     @abstractmethod
-    def allow(self, operator: str) -> ContractCall:
+    def allow(self, owner: str, operator: str) -> ContractCall:
         pass
 
     @abstractmethod

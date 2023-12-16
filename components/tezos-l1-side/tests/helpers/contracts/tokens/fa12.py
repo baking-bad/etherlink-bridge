@@ -46,7 +46,7 @@ class FA12(TokenHelper):
     def originate_default(cls, client: PyTezosClient) -> OperationGroup:
         return cls.originate(client, {})
 
-    def allow(self, operator: str) -> ContractCall:
+    def allow(self, owner: str, operator: str) -> ContractCall:
         # Allow makes approval for the total supply of the token
         return self.contract.approve(
             {

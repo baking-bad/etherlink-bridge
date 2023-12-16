@@ -42,3 +42,40 @@ class TicketerTestCase(BaseTestCase):
                 {'prim': 'Some', 'args': [{'bytes': token_info_bytes}]},
             ],
         }
+
+    def test_create_ticket_on_deposit_fa2_if_token_expected(self) -> None:
+        alice = self.bootstrap_account()
+        token = self.deploy_fa2({pkh(alice): 100})
+        extra_metadata = {
+            'decimals': pack(12, 'nat'),
+            'symbol': pack('FA2', 'string'),
+        }
+        ticketer = self.deploy_ticketer(token, extra_metadata)
+        ticket = ticketer.get_ticket()
+        token.using(alice).allow(pkh(alice), ticketer.address).send()
+        self.bake_block()
+
+        # Alice deposits 1 token to the Ticketer and creates a ticket:
+        ticketer.using(alice).deposit({'amount': 1}).send()
+        self.bake_block()
+        assert ticket.get_balance(pkh(alice)) == 1
+        assert token.get_balance(ticketer.address) == 1
+
+        # Checking ticket payload:
+        token_info_bytes = pack(
+            {
+                'contract_address': pack(token.address, 'address'),
+                'token_type': pack('FA2', 'string'),
+                'decimals': pack(12, 'nat'),
+                'symbol': pack('FA2', 'string'),
+            },
+            'map %token_info string bytes',
+        )
+
+        expected_payload = {
+            'prim': 'Pair',
+            'args': [
+                {'int': '0'},
+                {'prim': 'Some', 'args': [{'bytes': token_info_bytes}]},
+            ],
+        }

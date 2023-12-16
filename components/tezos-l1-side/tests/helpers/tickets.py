@@ -3,6 +3,7 @@ from pytezos.rpc.query import RpcQuery
 from dataclasses import dataclass
 from pytezos.operation.group import OperationGroup
 from pytezos.michelson.types.base import MichelsonType
+from typing import Optional
 
 
 @dataclass
@@ -40,22 +41,22 @@ class Ticket:
         return payload
 
     def transfer(
-            self,
-            destination: str,
-            amount: int,
-        ) -> OperationGroup:
+        self,
+        destination: str,
+        amount: int,
+    ) -> OperationGroup:
         """Transfers given amount of tickets to given address"""
 
         address_to = destination.split('%')[0]
         entrypoint = ''.join(destination.split('%')[1:])
 
         transfer_op: OperationGroup = self.client.transfer_ticket(
-            ticket_contents = self.content,
-            ticket_ty = self.content_type,
-            ticket_ticketer = self.ticketer,
-            ticket_amount = amount,
-            destination = address_to,
-            entrypoint = entrypoint,
+            ticket_contents=self.content,
+            ticket_ty=self.content_type,
+            ticket_ticketer=self.ticketer,
+            ticket_amount=amount,
+            destination=address_to,
+            entrypoint=entrypoint,
         )
         return transfer_op
 
@@ -70,9 +71,12 @@ def deserialize_ticket(client: PyTezosClient, raw_ticket: dict) -> Ticket:
     )
 
 
-def get_all_tickets(client: PyTezosClient, address: str) -> list[Ticket]:
+def get_all_tickets(
+    client: PyTezosClient, address: Optional[str] = None
+) -> list[Ticket]:
     """Returns all tickets of given address"""
 
+    address = address or client.key.public_key_hash()
     last_block_hash = client.shell.head.hash()
     query = RpcQuery(
         node=client.shell.node,
@@ -92,7 +96,8 @@ def get_all_by_ticketer(
     """Returns all tickets of given address created by given ticketer"""
 
     tickets = get_all_tickets(client, address)
+
     def filter_by_ticketer(ticket: Ticket) -> bool:
         return ticket.ticketer == ticketer
-    return list(filter(filter_by_ticketer, tickets))
 
+    return list(filter(filter_by_ticketer, tickets))

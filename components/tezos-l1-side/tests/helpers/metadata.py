@@ -2,7 +2,6 @@ import json
 from typing import Optional, Any
 
 
-
 def to_hex(string: str) -> str:
     """Converts given string to bytes and then hex"""
     return string.encode().hex()

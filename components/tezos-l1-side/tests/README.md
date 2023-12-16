@@ -18,7 +18,7 @@
     - check boris burns 3 tickets
 
 ## Ticketer tests [(code)](test_ticketer.py):
-- [ ] test_create_ticket_on_deposit_fa12_if_token_expected
+- [x] test_create_ticket_on_deposit_fa12_if_token_expected
     - check ticket minted for sender
     - check ticket payload is expected
     - check that tokens locked on ticketer contract

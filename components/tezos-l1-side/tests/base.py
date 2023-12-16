@@ -71,10 +71,11 @@ class BaseTestCase(SandboxedNodeTestCase):
     def deploy_ticketer(
         self,
         token: TokenHelper,
-        extra_metadata: dict[str, bytes],
+        extra_metadata: Optional[dict[str, bytes]] = None,
     ) -> Ticketer:
         """Deploys Ticketer contract with given token and additional metadata"""
 
+        extra_metadata = extra_metadata or {}
         opg = Ticketer.originate(self.manager, token, extra_metadata).send()
         self.bake_block()
         return Ticketer.create_from_opg(self.manager, opg)

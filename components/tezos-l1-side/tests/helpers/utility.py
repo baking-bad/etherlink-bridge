@@ -14,6 +14,8 @@ DEFAULT_ADDRESS = 'tz1burnburnburnburnburnburnburjAYjjX'
 
 
 def pkh(client: PyTezosClient) -> str:
+    """Returns public key hash of given client"""
+
     return str(client.key.public_key_hash())
 
 

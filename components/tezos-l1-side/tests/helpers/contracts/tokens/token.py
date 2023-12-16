@@ -50,7 +50,7 @@ class TokenHelper(ContractHelper):
 
     def make_content(
         self,
-        extra_token_info: TokenInfo,
+        extra_token_info: Optional[TokenInfo] = None,
         token_id: int = 0,
     ) -> TicketContent:
         extra_token_info = extra_token_info or {}

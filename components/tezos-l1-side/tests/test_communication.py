@@ -3,10 +3,7 @@ from tests.helpers.utility import (
     pkh,
     pack,
 )
-from tests.helpers.tickets import (
-    get_all_ticket_balances_by_ticketer,
-    get_ticket_balance,
-)
+from tests.helpers.tickets import get_all_by_ticketer
 
 
 class RollupCommunicationTestCase(BaseTestCase):
@@ -40,24 +37,9 @@ class RollupCommunicationTestCase(BaseTestCase):
         self.bake_block()
 
         # Checking deposit operations results:
-        # - Rollup has L1 tickets:
-        balance = get_ticket_balance(
-            self.client,
-            ticket,
-            rollup_mock.address,
-        )
-        self.assertEqual(balance, 100)
-
-        # - Ticketer has FA tokens:
+        assert ticket.get_balance(rollup_mock.address) == 100
         assert token.get_balance(ticketer.address) == 100
-
-        # - Alice has no L1 tickets:
-        balance = get_ticket_balance(
-            self.client,
-            ticket,
-            pkh(alice),
-        )
-        self.assertEqual(balance, 0)
+        assert ticket.get_balance(pkh(alice)) == 0
 
         # Then some interactions on L2 leads to outbox message creation:
         # for example Alice send some L2 tokens to Boris and Boris decided
@@ -65,7 +47,7 @@ class RollupCommunicationTestCase(BaseTestCase):
         rollup_mock.create_outbox_message(
             {
                 'ticket_id': {
-                    'ticketer': ticket['ticketer'],
+                    'ticketer': ticket.ticketer,
                     'token_id': 0,
                 },
                 'amount': 5,
@@ -83,14 +65,6 @@ class RollupCommunicationTestCase(BaseTestCase):
         self.bake_block()
 
         # Checking withdraw operations results:
-        # - Rollup should have 95 L1 tickets left:
-        balance = get_ticket_balance(
-            self.client,
-            ticket,
-            rollup_mock.address,
-        )
-        self.assertEqual(balance, 95)
-
-        # - Boris should have more FA tokens now:
-        boris_tokens_after_burn = token.get_balance(pkh(boris))
-        self.assertEqual(boris_tokens_after_burn, boris_tokens_before_burn + 5)
+        assert ticket.get_balance(rollup_mock.address) == 95
+        # TODO: it is better to initiate tests with 0 tokens for Boris
+        assert token.get_balance(pkh(boris)) == boris_tokens_before_burn + 5

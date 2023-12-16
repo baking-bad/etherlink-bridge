@@ -73,9 +73,10 @@ class Ticketer(ContractHelper):
             self.TICKET_CONTENT_TYPE,
         ).to_micheline_value()
 
-        return {
-            'ticketer': self.address,
-            'content_type': to_micheline(self.TICKET_CONTENT_TYPE),
-            'content': content,
-            'amount': amount,
-        }
+        return Ticket(
+            client=self.client,
+            ticketer=self.address,
+            content_type=to_micheline(self.TICKET_CONTENT_TYPE),
+            content=content,
+            amount=amount,
+        )

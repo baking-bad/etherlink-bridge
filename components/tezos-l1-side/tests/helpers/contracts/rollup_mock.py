@@ -2,8 +2,8 @@ from tests.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
 from tests.helpers.utility import get_build_dir
 from tests.helpers.tickets import (
-    get_all_ticket_balances,
     Ticket,
+    get_all_tickets,
 )
 from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
@@ -45,7 +45,7 @@ class RollupMock(ContractHelper):
     def get_tickets(self) -> list[Ticket]:
         """Returns list of tickets in storage"""
 
-        return get_all_ticket_balances(self.client, self.address)
+        return get_all_tickets(self.client, self.address)
 
     def get_message(self, message_id: int = 0) -> dict:
         """Returns message from storage with given id"""

@@ -16,10 +16,7 @@ from tests.helpers.utility import (
     make_address_bytes,
 )
 from typing import Type, TypeVar, Any
-from tests.helpers.tickets import (
-    Ticket,
-    make_ticket_payload_bytes,
-)
+from tests.helpers.tickets import Ticket
 
 
 load_dotenv()
@@ -88,7 +85,7 @@ def deploy_contracts(
     ticketer = Ticketer.create_from_opg(manager, opg)
     contracts['ticketer'] = ticketer
 
-    ticket_payload = make_ticket_payload_bytes(ticketer.get_ticket())
+    ticket_payload = ticketer.get_ticket().make_bytes_payload()
     ticketer_bytes = make_address_bytes(ticketer.address)
     router_bytes = make_address_bytes(router.address)
     print('Data for setup ERC20 Proxy:')

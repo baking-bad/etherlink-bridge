@@ -1,7 +1,8 @@
 #import "./storage.mligo" "Storage"
 #import "../common/types/routing-info.mligo" "RoutingInfo"
 #import "../common/entrypoints/rollup-deposit.mligo" "RollupEntry"
-#import "../common/entrypoints/ticketer-deposit.mligo" "TicketerEntry"
+#import "../common/entrypoints/ticketer-deposit.mligo" "DepositEntry"
+#import "../common/entrypoints/router-withdraw.mligo" "WithdrawEntry"
 #import "../common/tokens/index.mligo" "Token"
 #import "../common/types/ticket.mligo" "Ticket"
 #import "../common/errors.mligo" "Errors"
@@ -44,7 +45,7 @@ module TicketHelper = struct
         let () = Utility.assert_no_xtz_deposit () in
         let token = store.token in
         let ticketer = store.ticketer in
-        let entry = TicketerEntry.get ticketer in
+        let entry = DepositEntry.get ticketer in
         let sender = Tezos.get_sender () in
         let self = Tezos.get_self_address () in
         let token_transfer_op = Token.get_transfer_op token amount sender self in
@@ -79,5 +80,19 @@ module TicketHelper = struct
             [finish_deposit_op], updated_store
         | None -> failwith Errors.routing_data_is_not_set
 
-    // TODO: withdraw entrypoint which allows to withdraw tokens from the ticketer
+    [@entry] let withdraw
+            (ticket : Ticket.t)
+            (s: Storage.t) : return_t =
+        (*
+            `withdraw` entrypoint called when user wants to convert tickets
+            back to tokens for implicit account that not supported to send
+            tickets within additional data structure.
+        *)
+
+        let () = Utility.assert_no_xtz_deposit () in
+        let receiver = Tezos.get_sender () in
+        let entry = WithdrawEntry.get s.ticketer in
+        let withdraw = { receiver; ticket } in
+        let withdraw_op = Tezos.transaction withdraw 0mutez entry in
+        [withdraw_op], s
 end

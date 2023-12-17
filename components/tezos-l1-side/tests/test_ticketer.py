@@ -29,11 +29,9 @@ class TicketerTestCase(BaseTestCase):
             {
                 'contract_address': pack(token.address, 'address'),
                 'token_type': pack("FA1.2", 'string'),
-                'decimals': pack(0, 'nat'),
-                'symbol': pack('', 'string'),
             },
             'map %token_info string bytes',
-        )
+        ).hex()
 
         expected_payload = {
             'prim': 'Pair',
@@ -42,6 +40,7 @@ class TicketerTestCase(BaseTestCase):
                 {'prim': 'Some', 'args': [{'bytes': token_info_bytes}]},
             ],
         }
+        self.assertDictEqual(ticket.content, expected_payload)
 
     def test_create_ticket_on_deposit_fa2_if_token_expected(self) -> None:
         alice = self.bootstrap_account()
@@ -66,11 +65,12 @@ class TicketerTestCase(BaseTestCase):
             {
                 'contract_address': pack(token.address, 'address'),
                 'token_type': pack('FA2', 'string'),
+                'token_id': pack(0, 'nat'),
                 'decimals': pack(12, 'nat'),
                 'symbol': pack('FA2', 'string'),
             },
             'map %token_info string bytes',
-        )
+        ).hex()
 
         expected_payload = {
             'prim': 'Pair',
@@ -79,6 +79,7 @@ class TicketerTestCase(BaseTestCase):
                 {'prim': 'Some', 'args': [{'bytes': token_info_bytes}]},
             ],
         }
+        self.assertDictEqual(ticket.content, expected_payload)
 
     def test_should_send_fa2_to_receiver_on_withdraw_if_ticket_correct(self) -> None:
         alice = self.bootstrap_account()

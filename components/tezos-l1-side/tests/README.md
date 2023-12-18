@@ -29,7 +29,7 @@
 - [x] test_should_send_fa2_to_receiver_on_withdraw_if_ticket_correct
     - check receiver get token
     - check ticket burned
-- [ ] test_should_send_fa12_to_receiver_on_withdraw_if_ticket_correct
+- [x] test_should_send_fa12_to_receiver_on_withdraw_if_ticket_correct
     - check receiver get token
     - check ticket burned
 - [ ] test_should_fail_to_unpack_ticket_minted_by_another_ticketer

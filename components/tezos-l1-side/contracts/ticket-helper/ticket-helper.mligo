@@ -63,8 +63,7 @@ module TicketHelper = struct
             sent it to the TicketHelper contract.
 
             This entrypoint will transfer ticket to the Etherlink Bridge
-            contract and then call its `deposit` entrypoint, which will
-            finish deposit process.
+            contract stored in context during `deposit` entrypoint call.
         *)
 
         let () = Utility.assert_no_xtz_deposit () in
@@ -87,6 +86,12 @@ module TicketHelper = struct
             `withdraw` entrypoint called when user wants to convert tickets
             back to tokens for implicit account that not supported to send
             tickets within additional data structure.
+
+            Any ticket that sent to this entrypoint will be redirected to
+            the Ticketer contract set in the storage, to the standard
+            `withdraw` entrypoint that implements `RouterWithdraw` interface.
+
+            It is the Ticketer responsibility to check that ticket is valid.
         *)
 
         let () = Utility.assert_no_xtz_deposit () in

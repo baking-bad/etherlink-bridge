@@ -14,19 +14,6 @@ from tests.helpers.utility import pkh, pack
 from typing import Type, TypeVar, TypedDict, Optional
 
 
-class TokenSet(TypedDict):
-    token: TokenHelper
-    ticketer: Ticketer
-    helper: TicketHelper
-
-
-class Contracts(TypedDict):
-    rollup_mock: RollupMock
-    fa2: TokenSet
-    fa12: TokenSet
-    router: Router
-
-
 class BaseTestCase(SandboxedNodeTestCase):
     accounts: list = []
 

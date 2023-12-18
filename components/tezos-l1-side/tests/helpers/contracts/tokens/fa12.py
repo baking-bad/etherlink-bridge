@@ -31,7 +31,7 @@ class FA12(TokenHelper):
 
     @classmethod
     def originate(
-        cls, client: PyTezosClient, balances: dict[str, int]
+        cls, client: PyTezosClient, balances: dict[str, int], token_id: int = 0
     ) -> OperationGroup:
         """Deploys FA1.2 token with provided balances in the storage"""
 

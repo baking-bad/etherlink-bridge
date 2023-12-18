@@ -4,6 +4,8 @@ from typing import Union, Tuple
 from pytezos.contract.call import ContractCall
 from tests.helpers.utility import pack
 from typing import Optional
+from pytezos.operation.group import OperationGroup
+from pytezos.client import PyTezosClient
 
 
 TicketContent = Tuple[int, Optional[bytes]]
@@ -24,6 +26,16 @@ TokenInfo = Optional[dict[str, bytes]]
 class TokenHelper(ContractHelper):
     # Map token info type is the same as token info metadata in FA2:
     MAP_TOKEN_INFO_TYPE = 'map %token_info string bytes'
+
+    @classmethod
+    @abstractmethod
+    def originate(
+        cls,
+        client: PyTezosClient,
+        balances: dict[str, int],
+        token_id: int = 0,
+    ) -> OperationGroup:
+        pass
 
     @abstractmethod
     def allow(self, owner: str, operator: str) -> ContractCall:

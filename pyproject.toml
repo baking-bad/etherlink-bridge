@@ -1,13 +1,18 @@
 [tool.poetry]
-name = "ticketer-proto"
+name = "etherlink-bridge"
 version = "0.1.0"
 description = ""
-authors = ["ztepler <ztepler@gmail.com>"]
+authors = ["Stepan Naumov <ztepler@baking-bad.org>"]
+packages = [
+    { include = "tezos/tests" },
+    { include = "scripts" },
+]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
 pytezos = "^3.10.3"
 python-dotenv = "^1.0.0"
+click = "^8.1.7"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.14.0"
@@ -22,3 +27,6 @@ build-backend = "poetry.core.masonry.api"
 [tool.mypy]
 strict = true
 disallow_any_generics = false
+
+[tool.poetry.scripts]
+check_script_runs = "scripts.tezos:check_script_runs"

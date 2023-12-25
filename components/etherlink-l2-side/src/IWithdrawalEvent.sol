@@ -2,17 +2,17 @@
 pragma solidity >=0.8.21;
 
 /**
- * @dev Interface of the contract which can emit Withdraw event.
+ * @dev Interface of the contract which can emit Withdrawal event.
  */
-interface IWithdrawEvent {
+interface IWithdrawalEvent {
     /**
-     * @dev Emitted when succesful withdraw is made.
+     * @dev Emitted when succesful withdrawal is made.
      */
-    event Withdraw(
+    event Withdrawal(
         uint256 indexed ticketHash,
         address sender,
         address tiketOwner,
-        bytes receiver,
+        bytes22 receiver,
         uint256 amount,
         uint256 outboxLevel,
         uint256 outboxMsgId

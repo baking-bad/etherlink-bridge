@@ -3,10 +3,10 @@ pragma solidity ^0.8.21;
 
 import {BaseTest} from "./Base.t.sol";
 import {hashTicket} from "../src/ERC20Proxy.sol";
-import {IWithdrawEvent} from "../src/IWithdrawEvent.sol";
+import {IWithdrawalEvent} from "../src/IWithdrawalEvent.sol";
 import {IDepositEvent} from "../src/IDepositEvent.sol";
 
-contract KernelTest is BaseTest, IWithdrawEvent, IDepositEvent {
+contract KernelTest is BaseTest, IWithdrawalEvent, IDepositEvent {
     function test_ShouldIncreaseTicketBalanceOfTokenIfDepositSucceed() public {
         kernel.inboxDeposit(address(token), alice, 100, ticketer, content);
         assertEq(kernel.getBalance(ticketer, content, address(token)), 100);
@@ -69,11 +69,11 @@ contract KernelTest is BaseTest, IWithdrawEvent, IDepositEvent {
         vm.expectEmit(true, true, true, true);
         uint256 outboxLevel = 0;
         uint256 outboxMsgId = 0;
-        emit Withdraw(
+        emit Withdrawal(
             ticketHash,
             bob,
             address(token),
-            receiver,
+            receiver22,
             100,
             outboxLevel,
             outboxMsgId

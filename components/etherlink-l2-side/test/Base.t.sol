@@ -16,6 +16,7 @@ contract BaseTest is Test {
     bytes public content = abi.encodePacked("forged content");
     bytes public wrongContent = abi.encodePacked("another forged content");
     bytes public receiver = bytes("some receiver % entrypoint");
+    bytes22 public receiver22 = bytes22("some receiver % entryp");
 
     function setUp() public {
         vm.label(alice, "Alice");

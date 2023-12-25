@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.21;
 
-import {IWithdrawEvent} from "./IWithdrawEvent.sol";
+import {IWithdrawalEvent} from "./IWithdrawalEvent.sol";
 import {IDepositEvent} from "./IDepositEvent.sol";
 import {ERC20Proxy, hashTicket} from "./ERC20Proxy.sol";
 
@@ -20,7 +20,7 @@ function hashTicketOwner(bytes22 ticketer, bytes memory content, address owner)
  * The Kernel is responsible for maintainig the ledger of L2 tickets
  * and emiting `Deposit` and `Withdraw` events.
  */
-contract Kernel is IWithdrawEvent, IDepositEvent {
+contract Kernel is IWithdrawalEvent, IDepositEvent {
     uint256 private _rollupId;
     uint256 private _inboxLevel;
     uint256 private _inboxMsgId;
@@ -109,15 +109,15 @@ contract Kernel is IWithdrawEvent, IDepositEvent {
         address sender = msg.sender;
         uint256 ticketHash = hashTicket(ticketer, content);
         _decreaseTicketsBalance(ticketer, content, ticketOwner, amount);
-        // NOTE: in the actual kernel, receiver type in event is bytes22
-        //       - so to sync with the kernel, `bytes22 receiver` should be
-        //       extracted from the `bytes memory receiver`.
 
-        emit Withdraw(
+        require(receiver.length >= 22, "Receiver address is too short");
+        bytes22 receiver22 = bytes22(receiver);
+
+        emit Withdrawal(
             ticketHash,
             sender,
             ticketOwner,
-            receiver,
+            receiver22,
             amount,
             _outboxLevel,
             _outboxMsgId

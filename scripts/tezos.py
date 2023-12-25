@@ -3,7 +3,7 @@ from getpass import getpass
 from dotenv import load_dotenv
 import os
 from pytezos.client import PyTezosClient
-from tests.helpers.contracts import (
+from tezos.tests.helpers.contracts import (
     Ticketer,
     RollupMock,
     Router,
@@ -13,13 +13,14 @@ from tests.helpers.contracts import (
     FA12,
     FA2,
 )
-from tests.helpers.utility import (
+from tezos.tests.helpers.utility import (
     pkh,
     pack,
     make_address_bytes,
 )
 from typing import Type, TypeVar, Any, TypedDict, Union, Optional
-from tests.helpers.tickets import Ticket
+from tezos.tests.helpers.tickets import Ticket
+import click
 
 
 class TokenSet(TypedDict):
@@ -42,14 +43,21 @@ class AddressesType(TypedDict):
     rollup_mock: str
 
 
+def load_or_ask(var_name: str, secret: bool=False) -> str:
+    ask = getpass if secret else input
+    return os.getenv(var_name) or ask(f'Enter {var_name}: ')  # type: ignore
+
+
 load_dotenv()
 RPC_SHELL = os.getenv('RPC_SHELL') or 'https://rpc.tzkt.io/nairobinet/'
-ALICE_PRIVATE_KEY = os.getenv('ALICE_PRIVATE_KEY') or getpass(
+'''
+ALICE_PRIVATE_KEY = os.getenv('L1_ALICE_PRIVATE_KEY') or getpass(
     'Enter Alice private key: '
 )
-BORIS_PRIVATE_KEY = os.getenv('BORIS_PRIVATE_KEY') or getpass(
+BORIS_PRIVATE_KEY = os.getenv('L1_BORIS_PRIVATE_KEY') or getpass(
     'Enter Boris private key: '
 )
+'''
 
 
 ROLLUP_SR_ADDRESS = 'sr1SkqgA2kLyB5ZqQWU5vdyMoNvWjYqtXGYY'
@@ -179,12 +187,13 @@ def unpack_ticket(
 
 
 def deploy_new(manager: PyTezosClient) -> ContractsType:
+    balances = {pkh(manager): 1_000_000}
     fa12_external_metadata = {
         'decimals': pack(0, 'nat'),
         'symbol': pack('FA1.2-TST', 'string'),
     }
     fa12 = deploy_token_ticketer_helper(
-        alice, FA12, balances, fa12_external_metadata
+        manager, FA12, balances, fa12_external_metadata
     )
 
     fa2_external_metadata = {
@@ -192,7 +201,7 @@ def deploy_new(manager: PyTezosClient) -> ContractsType:
         'symbol': pack('FA2-TST', 'string'),
     }
     fa2 = deploy_token_ticketer_helper(
-        alice, FA2, balances, fa2_external_metadata
+        manager, FA2, balances, fa2_external_metadata
     )
 
     return {
@@ -230,26 +239,28 @@ def load_contracts(
 
     return contracts
 
-alice = pytezos.using(shell=RPC_SHELL, key=ALICE_PRIVATE_KEY)
-boris = pytezos.using(shell=RPC_SHELL, key=BORIS_PRIVATE_KEY)
-
-
 # If you use new accounts, you need to reveal them:
 # alice.reveal().send()
 # boris.reveal().send()
 
 
-balances = {
-    pkh(alice): 1_000_000,
-    pkh(boris): 1_000_000,
-}
+@click.command()
+@click.option('--private-key', default=None, help='Private key used for ... TODO:')
+def check_script_runs(private_key: Optional[str]) -> None:
+    # TODO: this is test function to check that everything works fine
+    if not private_key:
+        private_key = load_or_ask('L1_ALICE_PRIVATE_KEY')
+    alice = pytezos.using(shell=RPC_SHELL, key=private_key)
+    print(f'Alice public key hash: {pkh(alice)}')
 
 
 def main() -> None:
-    contracts = deploy_new(alice)
-    contracts = load_contracts(alice, CONTRACT_ADDRESSES)
-    deposit_to_l2(alice, contracts['fa12'], 100)
+    # contracts = deploy_new(alice)
+    # contracts = load_contracts(alice, CONTRACT_ADDRESSES)
+    # deposit_to_l2(alice, contracts['fa12'], 100)
     # unpack_ticket(boris, contracts['fa12'], 10)
+    print('TODO: work in progress')
+    # TODO: remove main function?
 
 
 if __name__ == '__main__':

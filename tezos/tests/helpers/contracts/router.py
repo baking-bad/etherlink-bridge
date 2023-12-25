@@ -1,9 +1,9 @@
-from tests.helpers.contracts.contract import ContractHelper
+from tezos.tests.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
-from tests.helpers.utility import get_build_dir
+from tezos.tests.helpers.utility import get_build_dir
 from pytezos.operation.group import OperationGroup
 from os.path import join
-from tests.helpers.metadata import Metadata
+from tezos.tests.helpers.metadata import Metadata
 
 
 class Router(ContractHelper):

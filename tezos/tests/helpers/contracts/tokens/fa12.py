@@ -1,9 +1,9 @@
-from tests.helpers.contracts.tokens.token import (
+from tezos.tests.helpers.contracts.tokens.token import (
     TokenHelper,
     FA12AsDictType,
     FA12AsTupleType,
 )
-from tests.helpers.utility import (
+from tezos.tests.helpers.utility import (
     DEFAULT_ADDRESS,
     pack,
     get_tokens_dir,
@@ -13,7 +13,7 @@ from os.path import join
 from os.path import dirname
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
-from tests.helpers.metadata import Metadata
+from tezos.tests.helpers.metadata import Metadata
 
 
 class FA12(TokenHelper):

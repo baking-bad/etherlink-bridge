@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from tests.helpers.contracts.contract import ContractHelper
+from tezos.tests.helpers.contracts.contract import ContractHelper
 from typing import Union, Tuple
 from pytezos.contract.call import ContractCall
-from tests.helpers.utility import pack
+from tezos.tests.helpers.utility import pack
 from typing import Optional
 from pytezos.operation.group import OperationGroup
 from pytezos.client import PyTezosClient

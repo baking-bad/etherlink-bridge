@@ -1,9 +1,9 @@
-from tests.base import BaseTestCase
-from tests.helpers.utility import (
+from tezos.tests.base import BaseTestCase
+from tezos.tests.helpers.utility import (
     pkh,
     pack,
 )
-from tests.helpers.tickets import get_all_by_ticketer
+from tezos.tests.helpers.tickets import get_all_by_ticketer
 
 
 class RollupCommunicationTestCase(BaseTestCase):

@@ -1,12 +1,12 @@
-from tests.helpers.contracts.tokens.token import (
+from tezos.tests.helpers.contracts.tokens.token import (
     TicketContent,
     TokenHelper,
     TokenAsDictType,
     TokenAsTupleType,
     TokenInfo,
 )
-from tests.helpers.contracts.tokens.fa2 import FA2
-from tests.helpers.contracts.tokens.fa12 import FA12
+from tezos.tests.helpers.contracts.tokens.fa2 import FA2
+from tezos.tests.helpers.contracts.tokens.fa12 import FA12
 
 
 # Allowing reimporting from this module:

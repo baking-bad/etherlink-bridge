@@ -1,6 +1,6 @@
 from pytezos.client import PyTezosClient
 from pytezos.sandbox.node import SandboxedNodeTestCase
-from tests.helpers.contracts import (
+from tezos.tests.helpers.contracts import (
     Ticketer,
     RollupMock,
     FA2,
@@ -10,7 +10,7 @@ from tests.helpers.contracts import (
     Router,
     TicketHelper,
 )
-from tests.helpers.utility import pkh, pack
+from tezos.tests.helpers.utility import pkh, pack
 from typing import Type, TypeVar, TypedDict, Optional
 
 

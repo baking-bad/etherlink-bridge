@@ -1,6 +1,6 @@
-from tests.helpers.contracts.contract import ContractHelper
+from tezos.tests.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
-from tests.helpers.utility import (
+from tezos.tests.helpers.utility import (
     get_build_dir,
     to_michelson_type,
     to_micheline,
@@ -12,12 +12,12 @@ from typing import (
     TypedDict,
 )
 from os.path import join
-from tests.helpers.metadata import Metadata
-from tests.helpers.contracts.tokens import (
+from tezos.tests.helpers.metadata import Metadata
+from tezos.tests.helpers.contracts.tokens import (
     TokenHelper,
     TokenInfo,
 )
-from tests.helpers.tickets import Ticket
+from tezos.tests.helpers.tickets import Ticket
 
 
 class DepositParams(TypedDict):

@@ -1,14 +1,14 @@
-from tests.helpers.utility import DEFAULT_ADDRESS
-from tests.helpers.contracts import (
+from tezos.tests.helpers.utility import DEFAULT_ADDRESS
+from tezos.tests.helpers.contracts import (
     ContractHelper,
     TokenHelper,
     Ticketer,
 )
 from pytezos.client import PyTezosClient
-from tests.helpers.utility import get_build_dir
+from tezos.tests.helpers.utility import get_build_dir
 from pytezos.operation.group import OperationGroup
 from os.path import join
-from tests.helpers.metadata import Metadata
+from tezos.tests.helpers.metadata import Metadata
 from pytezos.contract.call import ContractCall
 
 

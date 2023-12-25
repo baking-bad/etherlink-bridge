@@ -1,6 +1,6 @@
-from tests.base import BaseTestCase
-from tests.helpers.utility import pkh, pack
-from tests.helpers.tickets import get_all_tickets
+from tezos.tests.base import BaseTestCase
+from tezos.tests.helpers.utility import pkh, pack
+from tezos.tests.helpers.tickets import get_all_tickets
 
 
 class TicketerTestCase(BaseTestCase):

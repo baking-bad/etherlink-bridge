@@ -2,91 +2,82 @@ from pytezos.client import PyTezosClient
 from pytezos.sandbox.node import SandboxedNodeTestCase
 from tests.helpers.contracts import (
     Ticketer,
-    DepositProxy,
-    ReleaseProxy,
     RollupMock,
     FA2,
+    FA12,
+    TokenHelper,
     ContractHelper,
     Router,
+    TicketHelper,
 )
 from tests.helpers.utility import pkh, pack
-from typing import Type, TypeVar, TypedDict
-
-
-class Contracts(TypedDict):
-    deposit_proxy: DepositProxy
-    release_proxy: ReleaseProxy
-    rollup_mock: RollupMock
-    fa2: FA2
-    ticketer: Ticketer
-    router: Router
+from typing import Type, TypeVar, TypedDict, Optional
 
 
 class BaseTestCase(SandboxedNodeTestCase):
+    accounts: list = []
 
-    def activate_accs(self) -> None:
+    def bootstrap_account(self, n: Optional[int] = None) -> PyTezosClient:
+        """Creates bootstrap account with given number"""
+
+        accs_count = n or len(self.accounts)
         # TODO: consider adding some Account abstraction with `address` property
-        alice = self.client.using(key='bootstrap1')
-        alice.reveal()
+        bootstrap: PyTezosClient = self.client.using(key=f'bootstrap{accs_count + 1}')
+        bootstrap.reveal()
+        self.accounts.append(bootstrap)
+        return bootstrap
 
-        boris = self.client.using(key='bootstrap2')
-        boris.reveal()
+    def deploy_fa2(self, balances: dict[str, int]) -> FA2:
+        """Deploys FA2 contract with given balances"""
 
-        manager = self.client.using(key='bootstrap4')
-        manager.reveal()
-        self.accs = {
-            'alice': alice,
-            'boris': boris,
-            'manager': manager,
-        }
+        opg = FA2.originate(self.manager, balances).send()
+        self.bake_block()
+        return FA2.create_from_opg(self.manager, opg)
 
+    def deploy_fa12(self, balances: dict[str, int]) -> FA12:
+        """Deploys FA12 contract with given balances"""
+
+        opg = FA12.originate(self.manager, balances).send()
+        self.bake_block()
+        return FA12.create_from_opg(self.manager, opg)
+
+    def deploy_rollup_mock(self) -> RollupMock:
+        """Deploys RollupMock contract"""
+
+        opg = RollupMock.originate_default(self.manager).send()
+        self.bake_block()
+        return RollupMock.create_from_opg(self.manager, opg)
+
+    def deploy_router(self) -> Router:
+        """Deploys Router contract"""
+
+        opg = Router.originate_default(self.manager).send()
+        self.bake_block()
+        return Router.create_from_opg(self.manager, opg)
+
+    def deploy_ticketer(
+        self,
+        token: TokenHelper,
+        extra_metadata: Optional[dict[str, bytes]] = None,
+    ) -> Ticketer:
+        """Deploys Ticketer contract with given token and additional metadata"""
+
+        extra_metadata = extra_metadata or {}
+        opg = Ticketer.originate(self.manager, token, extra_metadata).send()
+        self.bake_block()
+        return Ticketer.create_from_opg(self.manager, opg)
+
+    def deploy_ticket_helper(
+        self,
+        token: TokenHelper,
+        ticketer: Ticketer,
+    ) -> TicketHelper:
+        """Deploys TicketHelper contract with given token and ticketer"""
+
+        opg = TicketHelper.originate(self.manager, token, ticketer).send()
+        self.bake_block()
+        return TicketHelper.create_from_opg(self.manager, opg)
 
     def setUp(self) -> None:
-        self.activate_accs()
-        manager = self.accs['manager']
-
-        # Contracts deployment:
-        T = TypeVar('T', bound='ContractHelper')
-        def deploy_contract(cls: Type[T]) -> T:
-            opg = cls.originate_default(manager).send()
-            self.bake_block()
-            return cls.create_from_opg(manager, opg)
-
-        deposit_proxy = deploy_contract(DepositProxy)
-        release_proxy = deploy_contract(ReleaseProxy)
-        rollup_mock = deploy_contract(RollupMock)
-        router = deploy_contract(Router)
-
-        # Tokens deployment:
-        token_balances = {
-            pkh(account): 1000 for account in self.accs.values()
-        }
-
-        fa2_opg = FA2.originate(manager, token_balances).send()
-        self.bake_block()
-        fa2 = FA2.create_from_opg(manager, fa2_opg)
-
-        # Deploying Ticketer with external metadata:
-        fa2_key = ( "fa2", ( fa2.address, 0 ) )
-        fa2_external_metadata = {
-            'decimals': pack(12, 'nat'),
-            'symbol': pack('TEST', 'string'),
-        }
-
-        opg = Ticketer.originate_with_external_metadata(
-            manager,
-            external_metadata={
-                fa2_key: fa2_external_metadata
-            },
-        ).send()
-        self.bake_block()
-        ticketer = Ticketer.create_from_opg(manager, opg)
-
-        self.contracts: Contracts = {
-            'deposit_proxy': deposit_proxy,
-            'release_proxy': release_proxy,
-            'rollup_mock': rollup_mock,
-            'fa2': fa2,
-            'ticketer': ticketer,
-            'router': router,
-        }
+        self.accounts = []
+        self.manager = self.bootstrap_account()

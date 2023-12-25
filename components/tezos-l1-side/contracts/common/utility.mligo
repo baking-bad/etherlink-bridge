@@ -12,3 +12,9 @@ let assert_no_xtz_deposit
         : unit =
     if Tezos.get_amount () > 0mutez
     then failwith Errors.xtz_deposit_disallowed else unit
+
+let assert_sender_is
+        (address : address)
+        : unit =
+    if address <> Tezos.get_sender ()
+    then failwith Errors.unexpected_sender else unit

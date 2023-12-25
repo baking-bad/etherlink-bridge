@@ -1,18 +1,5 @@
 import json
-
-
-DEFAULT_METADATA = {
-    'version': '0.2.0',
-    'name': 'Etherlink Bridge',
-    'description': 'The Etherlink Bridge consists of contracts designed for communication between Tezos and Etherlink rollup.',
-    'interfaces': [
-        'TZIP-016'
-    ],
-    'license': {
-        'name': 'MIT'
-    },
-    'homepage': 'https://github.com/baking-bad/etherlink-bridge'
-}
+from typing import Optional, Any
 
 
 def to_hex(string: str) -> str:
@@ -20,13 +7,32 @@ def to_hex(string: str) -> str:
     return string.encode().hex()
 
 
-def make_metadata(**kwargs: str) -> dict:
-    """Creates metadata for the contract"""
-    metadata = DEFAULT_METADATA.copy()
-    metadata.update(kwargs)
-    metadata_json = json.dumps(metadata)
+class Metadata:
+    """Helper to create metadata for the contracts"""
 
-    return {
-        '': to_hex('tezos-storage:contents'),
-        'contents': to_hex(metadata_json),
+    template = {
+        'version': '0.2.0',
+        'name': 'Etherlink Bridge',
+        'description': 'The Etherlink Bridge consists of contracts designed for communication between Tezos and Etherlink rollup.',
+        'interfaces': ['TZIP-016'],
+        'license': {'name': 'MIT'},
+        'homepage': 'https://github.com/baking-bad/etherlink-bridge',
     }
+
+    @staticmethod
+    def make(**kwargs: Any) -> dict:
+        """Creates metadata from provided kwargs dict"""
+
+        metadata_json = json.dumps(kwargs)
+        return {
+            '': to_hex('tezos-storage:contents'),
+            'contents': to_hex(metadata_json),
+        }
+
+    @classmethod
+    def make_default(cls, **kwargs: str) -> dict:
+        """Creates metadata using default metadata as a template"""
+
+        metadata = cls.template.copy()
+        metadata.update(kwargs)
+        return Metadata.make(**metadata)

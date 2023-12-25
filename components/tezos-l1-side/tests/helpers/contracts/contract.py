@@ -13,6 +13,7 @@ from abc import ABC, abstractmethod
 
 T = TypeVar('T', bound='ContractHelper')
 
+
 @dataclass
 class ContractHelper(ABC):
     contract: ContractInterface
@@ -22,13 +23,10 @@ class ContractHelper(ABC):
 
     @classmethod
     def originate_from_file(
-        cls,
-        filename: str,
-        client: PyTezosClient,
-        storage: Any
+        cls, filename: str, client: PyTezosClient, storage: Any
     ) -> OperationGroup:
-        """ Deploys contract from filename with given storage
-            using given client """
+        """Deploys contract from filename with given storage
+        using given client"""
 
         print(f'deploying contract from filename {filename}')
         raw_contract = ContractInterface.from_file(filename)
@@ -41,8 +39,8 @@ class ContractHelper(ABC):
         client: PyTezosClient,
         opg: OperationGroup,
     ) -> T:
-        """ Creates ContractHelper from given operation group
-            with given client """
+        """Creates ContractHelper from given operation group
+        with given client"""
 
         op = find_op_by_hash(client, opg)
         address = get_address_from_op(op)
@@ -55,7 +53,7 @@ class ContractHelper(ABC):
         )
 
     def using(self: T, client: PyTezosClient) -> T:
-        """ Returns new ContractHelper with updated client """
+        """Returns new ContractHelper with updated client"""
 
         return replace(
             self,
@@ -64,19 +62,12 @@ class ContractHelper(ABC):
         )
 
     @classmethod
-    @abstractmethod
-    def originate_default(cls: Type[T], client: PyTezosClient) -> OperationGroup:
-        """ Deploys contract with default storage using given client """
-
-        pass
-
-    @classmethod
     def create_from_address(
         cls: Type[T],
         client: PyTezosClient,
         address: str,
     ) -> T:
-        """ Loads contract from given address using given client """
+        """Loads contract from given address using given client"""
 
         return cls(
             contract=client.contract(address),

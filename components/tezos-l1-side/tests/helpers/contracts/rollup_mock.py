@@ -2,13 +2,13 @@ from tests.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
 from tests.helpers.utility import get_build_dir
 from tests.helpers.tickets import (
-    get_all_ticket_balances,
     Ticket,
+    get_all_tickets,
 )
 from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
 from os.path import join
-from tests.helpers.metadata import make_metadata
+from tests.helpers.metadata import Metadata
 from typing import TypedDict
 
 
@@ -29,9 +29,9 @@ class RollupMock(ContractHelper):
         'tickets': {},
         'messages': {},
         'next_message_id': 0,
-        'metadata': make_metadata(
+        'metadata': Metadata.make_default(
             name='Rollup Mock',
-            description='The Rollup Mock is a component of the Bridge Protocol Prototype, designed to emulate the operations of a real smart rollup on L1 side.'
+            description='The Rollup Mock is a component of the Bridge Protocol Prototype, designed to emulate the operations of a real smart rollup on L1 side.',
         ),
     }
 
@@ -45,7 +45,7 @@ class RollupMock(ContractHelper):
     def get_tickets(self) -> list[Ticket]:
         """Returns list of tickets in storage"""
 
-        return get_all_ticket_balances(self.client, self.address)
+        return get_all_tickets(self.client, self.address)
 
     def get_message(self, message_id: int = 0) -> dict:
         """Returns message from storage with given id"""

@@ -1,9 +1,7 @@
 LIGO_COMPILER = docker run --rm -v "${PWD}":"${PWD}" -w "${PWD}" ligolang/ligo:0.70.1
 
 compile:
-	@if [ ! -d ./build ]; then mkdir ./build ; fi
-	@if [ ! -d ./build/route-lambdas ]; then mkdir ./build/route-lambdas ; fi
-	@if [ ! -d ./build/proxies ]; then mkdir ./build/proxies ; fi
+	@if [ ! -d ./tezos/build ]; then mkdir ./build ; fi
 	${LIGO_COMPILER} compile contract contracts/ticket-helper/ticket-helper.mligo -m TicketHelper -o build/ticket-helper.tz
 	${LIGO_COMPILER} compile contract contracts/rollup-mock/rollup-mock.mligo -m RollupMock -o build/rollup-mock.tz
 	${LIGO_COMPILER} compile contract contracts/ticketer/ticketer.mligo -m Ticketer -o build/ticketer.tz

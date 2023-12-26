@@ -141,12 +141,13 @@ def deposit_to_l2(
     helper = contracts['helper']
     ticket = ticketer.get_ticket()
 
-    ticket_receiver = bytes.fromhex(ERC20_PROXY_ADDRESS)
+    proxy = bytes.fromhex(ERC20_PROXY_ADDRESS)
     receiver = bytes.fromhex(ALICE_L2_ADDRESS)
 
-    routing_info = ticket_receiver + receiver
+    routing_info = receiver + proxy
     opg = client.bulk(
-        token.allow(pkh(client), ticketer.address),
+        # TODO: there is a problem with UnsafeAllowanceChange for FA1.2 token (!)
+        token.allow(pkh(client), helper.address),
         helper.deposit(rollup_address, routing_info, 100),
     ).send()
     client.wait(opg)
@@ -252,3 +253,27 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+
+
+# TODO: sort this out:
+import requests
+
+class Proof(TypedDict):
+    commitment: str
+    proof: str
+
+def get_proof(outbox_num: int) -> Proof:
+    method = f'https://etherlink-rollup-nairobi.dipdup.net/global/block/head/helpers/proofs/outbox/{outbox_num}/messages?index=0'
+    proof: Proof = requests.get(method).json()
+    return proof
+
+proof_fa12 = get_proof(2475504)
+proof_fa2 = get_proof(2475536)
+
+# alice.smart_rollup_execute_outbox_message(CONTRACT_ADDRESSES['rollup'], proof_fa12['commitment'], bytes.fromhex(proof_fa12['proof': f'])).send()
+# alice.smart_rollup_execute_outbox_message(CONTRACT_ADDRESSES['rollup'], proof_fa2['commitment'], bytes.fromhex(proof_fa2['proof': f'])).send()
+
+# TODO: is this function needed?
+def get_messages(level: int) -> Any:
+    method = f'https://etherlink-rollup-nairobi.dipdup.net/global/block/cemented/outbox/{level}/messages'
+    return requests.get(method).json()

@@ -1565,6 +1565,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "types-requests"
+version = "2.31.0.10"
+description = "Typing stubs for requests"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+urllib3 = ">=2"
+
+[[package]]
 name = "typing-extensions"
 version = "4.8.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -1648,7 +1659,7 @@ python-versions = ">=3.6"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<3.12"
-content-hash = "6e5d4710cf6f76e8c4b14bd7ae5ff8c1f2c93aaf2df2a891392e294d0cf086a1"
+content-hash = "f43acd70f51a33774df3f21de7d9784ab1f33795a03be822eb03e604f0b040be"
 
 [metadata.files]
 anyio = []
@@ -1882,6 +1893,7 @@ tornado = []
 tqdm = []
 traitlets = []
 types-python-dateutil = []
+types-requests = []
 typing-extensions = []
 uri-template = []
 urllib3 = []

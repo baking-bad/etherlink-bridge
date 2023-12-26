@@ -19,8 +19,10 @@ from typing import Type, TypeVar, Any, TypedDict, Union, Optional
 from tezos.tests.helpers.tickets import Ticket
 import click
 from scripts.environment import load_or_ask
+from enum import Enum
 
 
+# TODO: remove this types:
 class TokenSet(TypedDict):
     token: TokenHelper
     ticketer: Ticketer
@@ -41,26 +43,40 @@ class AddressesType(TypedDict):
     rollup_mock: str
 
 
-# TODO: move to .env
-ROLLUP_SR_ADDRESS = 'sr1SkqgA2kLyB5ZqQWU5vdyMoNvWjYqtXGYY'
-ERC20_PROXY_ADDRESS = ''
-ALICE_L2_ADDRESS = ''
+def get_client() -> PyTezosClient:
+    """Returns client with private key and rpc url set in environment variables"""
+
+    rpc_url = load_or_ask('L1_RPC_URL')
+    private_key = load_or_ask('L1_PRIVATE_KEY')
+    client: PyTezosClient = pytezos.using(shell=rpc_url, key=private_key)
+    return client
 
 
-CONTRACT_ADDRESSES: AddressesType = {
-    'fa12': {
-        'token': '',
-        'ticketer': '',
-        'helper': '',
-    },
-    'fa2': {
-        'token': '',
-        'ticketer': '',
-        'helper': '',
-    },
-    'router': '',
-    'rollup_mock': '',
-}
+@click.command()
+@click.option('--token-type', default='FA2', help='Token type used for deploy, either FA2 or FA1.2')
+@click.option('--private-key', default=None, help='Use the provided private key')
+@click.option('--rpc-url', default=None, help='Tezos RPC URL')
+@click.option('--total-supply', default=1_000_000, help='Total supply of originated token which will be mint for the manager, default: 1_000_000')
+def deploy_token(
+    token_type: str,
+    private_key: Optional[str],
+    rpc_url: Optional[str],
+    total_supply: int,
+) -> TokenHelper:
+    """Deploys token contract using provided key as a manager"""
+
+    private_key = private_key or load_or_ask('L1_PRIVATE_KEY')
+    rpc_url= rpc_url or load_or_ask('L1_RPC_URL')
+
+    manager = pytezos.using(shell=rpc_url, key=private_key)
+    assert token_type in ['FA2', 'FA1.2']
+    Token = FA12 if token_type == 'FA1.2' else FA2
+    balances = {pkh(manager): total_supply}
+    opg = Token.originate(manager, balances).send()
+
+    manager.wait(opg)
+    token = Token.create_from_opg(manager, opg)
+    return token
 
 
 def deploy_router(manager: PyTezosClient) -> Router:
@@ -130,8 +146,8 @@ def load_token_set(
 def deposit_to_l2(
     client: PyTezosClient,
     contracts: TokenSet,
-    amount: int = 100,
-    rollup_address: str = ROLLUP_SR_ADDRESS,
+    amount: int,
+    rollup_address: str,
 ) -> None:
     """This function wraps token to ticket and deposits it to rollup"""
 
@@ -221,38 +237,6 @@ def load_contracts(
         )
 
     return contracts
-
-# If you use new accounts, you need to reveal them:
-# alice.reveal().send()
-# boris.reveal().send()
-
-
-@click.command()
-@click.option('--private-key', default=None, help='Use the provided private key')
-@click.option('--rpc-url', default=None, help='Tezos RPC URL')
-def check_script_runs(
-    private_key: Optional[str],
-    rpc_url: Optional[str],
-) -> None:
-    # TODO: this is test function to check that everything works fine
-    private_key = private_key or load_or_ask('L1_ALICE_PRIVATE_KEY')
-    rpc_url= rpc_url or load_or_ask('L1_RPC_URL')
-
-    alice = pytezos.using(shell=rpc_url, key=private_key)
-    print(f'Alice public key hash: {pkh(alice)}')
-
-
-def main() -> None:
-    # contracts = deploy_new(alice)
-    # contracts = load_contracts(alice, CONTRACT_ADDRESSES)
-    # deposit_to_l2(alice, contracts['fa12'], 100)
-    # unpack_ticket(boris, contracts['fa12'], 10)
-    print('TODO: work in progress')
-    # TODO: remove main function?
-
-
-if __name__ == '__main__':
-    main()
 
 
 # TODO: sort this out:

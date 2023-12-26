@@ -15,7 +15,7 @@ def check_script_runs(
 ) -> None:
 
     # TODO: this is test function to check that everything works fine
-    private_key = private_key or load_or_ask('L2_ALICE_PRIVATE_KEY')
+    private_key = private_key or load_or_ask('L2_PRIVATE_KEY')
     rpc_url= rpc_url or load_or_ask('L2_RPC_URL')
 
     result  =subprocess.run(
@@ -31,4 +31,4 @@ def check_script_runs(
         text=True,
     )
 
-    print(f'Alice L2 public key: {result.stdout.strip()}')
+    print(f'L2 public key: {result.stdout.strip()}')

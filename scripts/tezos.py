@@ -1,7 +1,4 @@
 from pytezos import pytezos
-from getpass import getpass
-from dotenv import load_dotenv
-import os
 from pytezos.client import PyTezosClient
 from tezos.tests.helpers.contracts import (
     Ticketer,
@@ -21,6 +18,7 @@ from tezos.tests.helpers.utility import (
 from typing import Type, TypeVar, Any, TypedDict, Union, Optional
 from tezos.tests.helpers.tickets import Ticket
 import click
+from scripts.environment import load_or_ask
 
 
 class TokenSet(TypedDict):
@@ -43,23 +41,7 @@ class AddressesType(TypedDict):
     rollup_mock: str
 
 
-def load_or_ask(var_name: str, secret: bool=False) -> str:
-    ask = getpass if secret else input
-    return os.getenv(var_name) or ask(f'Enter {var_name}: ')  # type: ignore
-
-
-load_dotenv()
-RPC_SHELL = os.getenv('RPC_SHELL') or 'https://rpc.tzkt.io/nairobinet/'
-'''
-ALICE_PRIVATE_KEY = os.getenv('L1_ALICE_PRIVATE_KEY') or getpass(
-    'Enter Alice private key: '
-)
-BORIS_PRIVATE_KEY = os.getenv('L1_BORIS_PRIVATE_KEY') or getpass(
-    'Enter Boris private key: '
-)
-'''
-
-
+# TODO: move to .env
 ROLLUP_SR_ADDRESS = 'sr1SkqgA2kLyB5ZqQWU5vdyMoNvWjYqtXGYY'
 ERC20_PROXY_ADDRESS = ''
 ALICE_L2_ADDRESS = ''
@@ -245,12 +227,17 @@ def load_contracts(
 
 
 @click.command()
-@click.option('--private-key', default=None, help='Private key used for ... TODO:')
-def check_script_runs(private_key: Optional[str]) -> None:
+@click.option('--private-key', default=None, help='Use the provided private key')
+@click.option('--rpc-url', default=None, help='Tezos RPC URL')
+def check_script_runs(
+    private_key: Optional[str],
+    rpc_url: Optional[str],
+) -> None:
     # TODO: this is test function to check that everything works fine
-    if not private_key:
-        private_key = load_or_ask('L1_ALICE_PRIVATE_KEY')
-    alice = pytezos.using(shell=RPC_SHELL, key=private_key)
+    private_key = private_key or load_or_ask('L1_ALICE_PRIVATE_KEY')
+    rpc_url= rpc_url or load_or_ask('L1_RPC_URL')
+
+    alice = pytezos.using(shell=rpc_url, key=private_key)
     print(f'Alice public key hash: {pkh(alice)}')
 
 

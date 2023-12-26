@@ -29,4 +29,5 @@ strict = true
 disallow_any_generics = false
 
 [tool.poetry.scripts]
-check_script_runs = "scripts.tezos:check_script_runs"
+check_l1_script_runs = "scripts.tezos:check_script_runs"
+check_l2_script_runs = "scripts.etherlink:check_script_runs"

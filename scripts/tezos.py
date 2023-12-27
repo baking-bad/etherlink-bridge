@@ -61,9 +61,21 @@ def get_token_cls(token_type: str) -> Type[TokenHelper]:
 
 
 @click.command()
-@click.option('--token-type', required=True, help='Token type used for deploy, either `FA2` or `FA1.2`.')
-@click.option('--token-id', default=0, help='Identifier for the token in the contract (only for FA2), default: 0.')
-@click.option('--total-supply', default=1_000_000, help='Total supply of originated token which will be mint for the manager, default: 1_000_000.')
+@click.option(
+    '--token-type',
+    required=True,
+    help='Token type used for deploy, either `FA2` or `FA1.2`.',
+)
+@click.option(
+    '--token-id',
+    default=0,
+    help='Identifier for the token in the contract (only for FA2), default: 0.',
+)
+@click.option(
+    '--total-supply',
+    default=1_000_000,
+    help='Total supply of originated token which will be mint for the manager, default: 1_000_000.',
+)
 @click.option('--private-key', default=None, help='Use the provided private key.')
 @click.option('--rpc-url', default=None, help='Tezos RPC URL.')
 def deploy_token(
@@ -76,7 +88,7 @@ def deploy_token(
     """Deploys token contract using provided key as a manager"""
 
     private_key = private_key or load_or_ask('L1_PRIVATE_KEY')
-    rpc_url= rpc_url or load_or_ask('L1_RPC_URL')
+    rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
     Token = get_token_cls(token_type)
@@ -100,7 +112,7 @@ def get_ticketer_params(
     """Founds ticketer in L1 and returns it params required for L2 ERC20 token deployment"""
 
     private_key = private_key or load_or_ask('L1_PRIVATE_KEY')
-    rpc_url= rpc_url or load_or_ask('L1_RPC_URL')
+    rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
     ticketer_contract = Ticketer.create_from_address(manager, ticketer)
@@ -131,12 +143,28 @@ def make_extra_metadata(
 
 
 @click.command()
-@click.option('--token-address', required=True, help='The address of the token contract.')
+@click.option(
+    '--token-address', required=True, help='The address of the token contract.'
+)
 # TODO: consider auto-determine token type by token entrypoints
-@click.option('--token-type', required=True, help='Token type, either `FA2` or `FA1.2`.')
-@click.option('--token-id', default=0, help='Identifier of the token in the contract (only for FA2), default: 0.')
-@click.option('--decimals', default=None, help='Token decimals added to the ticketer metadata content. If not set, will be not added to the content.')
-@click.option('--symbol', default=None, help='Token symbol added to the ticketer metadata content.')
+@click.option(
+    '--token-type', required=True, help='Token type, either `FA2` or `FA1.2`.'
+)
+@click.option(
+    '--token-id',
+    default=0,
+    help='Identifier of the token in the contract (only for FA2), default: 0.',
+)
+@click.option(
+    '--decimals',
+    default=None,
+    help='Token decimals added to the ticketer metadata content. If not set, will be not added to the content.',
+)
+@click.option(
+    '--symbol',
+    default=None,
+    help='Token symbol added to the ticketer metadata content.',
+)
 @click.option('--private-key', default=None, help='Use the provided private key.')
 @click.option('--rpc-url', default=None, help='Tezos RPC URL.')
 def deploy_ticketer(
@@ -151,7 +179,7 @@ def deploy_ticketer(
     """Deploys `ticketer` contract using provided key as a manager"""
 
     private_key = private_key or load_or_ask('L1_PRIVATE_KEY')
-    rpc_url= rpc_url or load_or_ask('L1_RPC_URL')
+    rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
     # TODO: consider require token_id to be provided if token_type is FA2
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
@@ -162,7 +190,9 @@ def deploy_ticketer(
     manager.wait(opg)
     ticketer = Ticketer.create_from_opg(manager, opg)
 
-    ticketer_params = get_ticketer_params.callback(ticketer.address, private_key, rpc_url)
+    ticketer_params = get_ticketer_params.callback(
+        ticketer.address, private_key, rpc_url
+    )
     return ticketer
 
 
@@ -278,17 +308,13 @@ def deploy_new(manager: PyTezosClient) -> ContractsType:
         'decimals': pack(0, 'nat'),
         'symbol': pack('FA1.2-TST', 'string'),
     }
-    fa12 = deploy_token_ticketer_helper(
-        manager, FA12, balances, fa12_external_metadata
-    )
+    fa12 = deploy_token_ticketer_helper(manager, FA12, balances, fa12_external_metadata)
 
     fa2_external_metadata = {
         'decimals': pack(0, 'nat'),
         'symbol': pack('FA2-TST', 'string'),
     }
-    fa2 = deploy_token_ticketer_helper(
-        manager, FA2, balances, fa2_external_metadata
-    )
+    fa2 = deploy_token_ticketer_helper(manager, FA2, balances, fa2_external_metadata)
 
     return {
         'fa12': fa12,
@@ -302,7 +328,6 @@ def load_contracts(
     manager: PyTezosClient,
     addresses: AddressesType,
 ) -> ContractsType:
-
     contracts: ContractsType = {
         'fa12': load_token_set(manager, FA12, addresses['fa12']),
         'fa2': load_token_set(manager, FA2, addresses['fa2']),
@@ -329,20 +354,24 @@ def load_contracts(
 # TODO: sort this out:
 import requests
 
+
 class Proof(TypedDict):
     commitment: str
     proof: str
+
 
 def get_proof(outbox_num: int) -> Proof:
     method = f'https://etherlink-rollup-nairobi.dipdup.net/global/block/head/helpers/proofs/outbox/{outbox_num}/messages?index=0'
     proof: Proof = requests.get(method).json()
     return proof
 
+
 proof_fa12 = get_proof(2475504)
 proof_fa2 = get_proof(2475536)
 
 # alice.smart_rollup_execute_outbox_message(CONTRACT_ADDRESSES['rollup'], proof_fa12['commitment'], bytes.fromhex(proof_fa12['proof': f'])).send()
 # alice.smart_rollup_execute_outbox_message(CONTRACT_ADDRESSES['rollup'], proof_fa2['commitment'], bytes.fromhex(proof_fa2['proof': f'])).send()
+
 
 # TODO: is this function needed?
 def get_messages(level: int) -> Any:

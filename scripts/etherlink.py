@@ -13,12 +13,11 @@ def check_script_runs(
     private_key: Optional[str],
     rpc_url: Optional[str],
 ) -> None:
-
     # TODO: this is test function to check that everything works fine
     private_key = private_key or load_or_ask('L2_PRIVATE_KEY')
-    rpc_url= rpc_url or load_or_ask('L2_RPC_URL')
+    rpc_url = rpc_url or load_or_ask('L2_RPC_URL')
 
-    result  =subprocess.run(
+    result = subprocess.run(
         [
             'cast',
             'wallet',

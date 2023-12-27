@@ -8,7 +8,7 @@ from tezos.tests.helpers.utility import (
     get_address_from_op,
 )
 from typing import TypeVar, Type, Any
-from abc import ABC, abstractmethod
+from abc import ABC
 
 
 T = TypeVar('T', bound='ContractHelper')
@@ -19,8 +19,8 @@ class ContractHelper(ABC):
     contract: ContractInterface
     client: PyTezosClient
     address: str
-    default_storage: Any = None
 
+    # TODO: consider moving this function to the helpers
     @classmethod
     def originate_from_file(
         cls, filename: str, client: PyTezosClient, storage: Any
@@ -38,6 +38,7 @@ class ContractHelper(ABC):
         cls: Type[T],
         client: PyTezosClient,
         opg: OperationGroup,
+        **init_params: Any,
     ) -> T:
         """Creates ContractHelper from given operation group
         with given client"""
@@ -50,6 +51,7 @@ class ContractHelper(ABC):
             contract=load_contract_from_address(client, address),
             client=client,
             address=address,
+            **init_params,
         )
 
     def using(self: T, client: PyTezosClient) -> T:
@@ -66,6 +68,7 @@ class ContractHelper(ABC):
         cls: Type[T],
         client: PyTezosClient,
         address: str,
+        **init_params: Any,
     ) -> T:
         """Loads contract from given address using given client"""
 
@@ -73,4 +76,5 @@ class ContractHelper(ABC):
             contract=client.contract(address),
             client=client,
             address=address,
+            **init_params,
         )

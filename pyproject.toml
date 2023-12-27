@@ -29,6 +29,11 @@ build-backend = "poetry.core.masonry.api"
 strict = true
 disallow_any_generics = false
 
+[tool.black]
+skip-string-normalization = true
+
 [tool.poetry.scripts]
-l1_deploy_token = "scripts.tezos:deploy_token"
+deploy_token = "scripts.tezos:deploy_token"
+deploy_ticketer = "scripts.tezos:deploy_ticketer"
+get_ticketer_params = "scripts.tezos:get_ticketer_params"
 check_l2_script_runs = "scripts.etherlink:check_script_runs"

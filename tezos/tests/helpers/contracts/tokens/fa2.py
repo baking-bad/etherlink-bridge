@@ -34,7 +34,6 @@ class FA2(TokenHelper):
         'token_metadata': {},
         'treasury_address': DEFAULT_ADDRESS,
     }
-    token_id = 0
 
     @classmethod
     def originate(
@@ -48,7 +47,6 @@ class FA2(TokenHelper):
             (address, token_id): amount for address, amount in balances.items()
         }
         storage['token_metadata'] = {token_id: (token_id, {})}
-        cls.token_id = token_id
         return cls.originate_from_file(filename, client, storage)
 
     @classmethod

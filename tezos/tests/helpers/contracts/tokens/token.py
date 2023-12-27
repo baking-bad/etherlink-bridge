@@ -6,6 +6,7 @@ from tezos.tests.helpers.utility import pack
 from typing import Optional
 from pytezos.operation.group import OperationGroup
 from pytezos.client import PyTezosClient
+from dataclasses import dataclass
 
 
 TicketContent = Tuple[int, Optional[bytes]]
@@ -22,10 +23,13 @@ TokenAsTupleType = Union[FA2AsTupleType, FA12AsTupleType]
 
 TokenInfo = Optional[dict[str, bytes]]
 
+# Map token info type is the same as token info metadata in FA2:
+MAP_TOKEN_INFO_TYPE = 'map %token_info string bytes'
 
+
+@dataclass
 class TokenHelper(ContractHelper):
-    # Map token info type is the same as token info metadata in FA2:
-    MAP_TOKEN_INFO_TYPE = 'map %token_info string bytes'
+    token_id: int = 0
 
     @classmethod
     @abstractmethod
@@ -58,7 +62,7 @@ class TokenHelper(ContractHelper):
         pass
 
     def make_token_info_bytes(self) -> bytes:
-        return pack(self.make_token_info(), self.MAP_TOKEN_INFO_TYPE)
+        return pack(self.make_token_info(), MAP_TOKEN_INFO_TYPE)
 
     def make_content(
         self,
@@ -71,4 +75,4 @@ class TokenHelper(ContractHelper):
             **extra_token_info,
         }
 
-        return (token_id, pack(token_info, self.MAP_TOKEN_INFO_TYPE))
+        return (token_id, pack(token_info, MAP_TOKEN_INFO_TYPE))

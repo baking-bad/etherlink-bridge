@@ -41,3 +41,10 @@ class TicketHelper(ContractHelper):
         return self.contract.deposit(
             {'rollup': rollup, 'routing_info': routing_info, 'amount': amount}
         )
+
+    def get_ticketer(self) -> Ticketer:
+        """Returns ticketer"""
+
+        ticketer_address = self.contract.storage['ticketer']()
+        assert isinstance(ticketer_address, str)
+        return Ticketer.from_address(self.client, ticketer_address)

@@ -202,33 +202,69 @@ def deploy_rollup_mock(manager: PyTezosClient) -> RollupMock:
     return RollupMock.from_opg(manager, rm_opg)
 
 
-# TODO: rework these functions:
-'''
-def deposit_to_l2(
-    client: PyTezosClient,
-    contracts: TokenSet,
+@click.command()
+@click.option(
+    '--ticket-helper-address',
+    required=True,
+    help='The address of the Tezos ticket helper contract.',
+)
+@click.option(
+    '--proxy-address',
+    required=True,
+    help='The address of the ERC20 proxy token contract which should mint token.',
+)
+@click.option(
+    '--amount', required=True, type=int, help='The amount of tokens to be deposited.'
+)
+@click.option(
+    '--receiver-address',
+    default=None,
+    help='The address of the Etherlink receiver contract which should receive token.',
+)
+@click.option(
+    '--rollup-address', default=None, help='The address of the rollup contract.'
+)
+@click.option('--private-key', default=None, help='Use the provided private key.')
+@click.option('--rpc-url', default=None, help='Tezos RPC URL.')
+def deposit(
+    ticket_helper_address: str,
+    proxy_address: str,
     amount: int,
-    rollup_address: str,
+    receiver_address: Optional[str],
+    rollup_address: Optional[str],
+    private_key: Optional[str],
+    rpc_url: Optional[str],
 ) -> None:
-    """This function wraps token to ticket and deposits it to rollup"""
+    """Deposits given amount of given token to the Etherlink Bridge"""
 
-    print(f'Depositing {amount} of {type(contracts["token"])} to {rollup_address}')
-    token = contracts['token']
-    helper = contracts['helper']
+    def prepare_routing_info(proxy_address: str, receiver_address: str) -> bytes:
+        proxy_address = proxy_address.replace('0x', '')
+        receiver_address = receiver_address.replace('0x', '')
+        proxy = bytes.fromhex(proxy_address)
+        receiver = bytes.fromhex(receiver_address)
+        return receiver + proxy
 
-    proxy = bytes.fromhex(ERC20_PROXY_ADDRESS)
-    receiver = bytes.fromhex(ALICE_L2_ADDRESS)
+    private_key = private_key or load_or_ask('L1_PRIVATE_KEY')
+    receiver_address = receiver_address or load_or_ask('L2_PUBLIC_KEY')
+    rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
+    rollup_address = rollup_address or load_or_ask('L1_ROLLUP_ADDRESS')
 
-    routing_info = receiver + proxy
-    opg = client.bulk(
+    manager = pytezos.using(shell=rpc_url, key=private_key)
+    ticket_helper = TicketHelper.from_address(manager, ticket_helper_address)
+    token = ticket_helper.get_ticketer().get_token()
+
+    routing_info = prepare_routing_info(proxy_address, receiver_address)
+    opg = manager.bulk(
         # TODO: there is a problem with UnsafeAllowanceChange for FA1.2 token (!)
-        token.allow(pkh(client), helper.address),
-        helper.deposit(rollup_address, routing_info, 100),
+        token.allow(pkh(manager), ticket_helper.address),
+        ticket_helper.deposit(rollup_address, routing_info, amount),
     ).send()
-    client.wait(opg)
+    manager.wait(opg)
     print(f'Succeed, transaction hash: {opg.hash()}')
 
 
+# TODO: rework these functions:
+'''
 def unpack_ticket(
     client: PyTezosClient,
     contracts: TokenSet,

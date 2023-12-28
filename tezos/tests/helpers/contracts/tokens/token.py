@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from tezos.tests.helpers.contracts.contract import ContractHelper
-from typing import Union, Tuple
 from pytezos.contract.call import ContractCall
 from tezos.tests.helpers.utility import pack
 from typing import Optional
@@ -9,18 +8,7 @@ from pytezos.client import PyTezosClient
 from dataclasses import dataclass
 
 
-TicketContent = Tuple[int, Optional[bytes]]
-
-# TODO: consider moving these types to fa2.py and fa12.py
-FA2AsDictType = dict[str, Tuple[str, int]]
-FA12AsDictType = dict[str, str]
-
-FA2AsTupleType = Tuple[str, Tuple[str, int]]
-FA12AsTupleType = Tuple[str, str]
-
-TokenAsDictType = Union[FA2AsDictType, FA12AsDictType]
-TokenAsTupleType = Union[FA2AsTupleType, FA12AsTupleType]
-
+TicketContent = tuple[int, Optional[bytes]]
 TokenInfo = Optional[dict[str, bytes]]
 
 # Map token info type is the same as token info metadata in FA2:
@@ -46,11 +34,11 @@ class TokenHelper(ContractHelper):
         pass
 
     @abstractmethod
-    def as_dict(self) -> TokenAsDictType:
+    def as_dict(self) -> dict:
         pass
 
     @abstractmethod
-    def as_tuple(self) -> TokenAsTupleType:
+    def as_tuple(self) -> tuple:
         pass
 
     @abstractmethod
@@ -67,7 +55,6 @@ class TokenHelper(ContractHelper):
     def make_content(
         self,
         extra_token_info: Optional[TokenInfo] = None,
-        token_id: int = 0,
     ) -> TicketContent:
         extra_token_info = extra_token_info or {}
         token_info = {
@@ -75,4 +62,20 @@ class TokenHelper(ContractHelper):
             **extra_token_info,
         }
 
-        return (token_id, pack(token_info, MAP_TOKEN_INFO_TYPE))
+        return (self.token_id, pack(token_info, MAP_TOKEN_INFO_TYPE))
+
+    @classmethod
+    def from_dict(cls, client: PyTezosClient, token_dict: dict) -> 'TokenHelper':
+        """Creates TokenHelper from dict with token info"""
+
+        from tezos.tests.helpers.contracts.tokens.fa12 import FA12
+        from tezos.tests.helpers.contracts.tokens.fa2 import FA2
+
+        if 'fa12' in token_dict:
+            return FA12.create_from_address(client, token_dict['fa12'])
+
+        if 'fa2' in token_dict:
+            contract, token_id = token_dict['fa2']
+            return FA2.create_from_address(client, contract, token_id=token_id)
+
+        raise ValueError(f'Unknown token type: {token_dict}')

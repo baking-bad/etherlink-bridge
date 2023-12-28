@@ -1,8 +1,4 @@
-from tezos.tests.helpers.contracts.tokens.token import (
-    TokenHelper,
-    FA2AsDictType,
-    FA2AsTupleType,
-)
+from tezos.tests.helpers.contracts.tokens.token import TokenHelper
 from tezos.tests.helpers.utility import (
     DEFAULT_ADDRESS,
     pkh,
@@ -15,6 +11,10 @@ from os.path import dirname
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
 from tezos.tests.helpers.metadata import Metadata
+
+
+FA2AsDictType = dict[str, tuple[str, int]]
+FA2AsTupleType = tuple[str, tuple[str, int]]
 
 
 class FA2(TokenHelper):

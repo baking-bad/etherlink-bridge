@@ -1,8 +1,6 @@
 from tezos.tests.helpers.contracts.tokens.token import (
     TicketContent,
     TokenHelper,
-    TokenAsDictType,
-    TokenAsTupleType,
     TokenInfo,
 )
 from tezos.tests.helpers.contracts.tokens.fa2 import FA2
@@ -14,8 +12,6 @@ __all__ = [
     'TokenHelper',
     'FA2',
     'FA12',
-    'TokenAsDictType',
-    'TokenAsTupleType',
     'TokenInfo',
     'TicketContent',
 ]

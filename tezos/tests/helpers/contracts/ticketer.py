@@ -24,21 +24,21 @@ class DepositParams(TypedDict):
     amount: int
 
 
-class Ticketer(ContractHelper):
-    # Ticket content type is fixed to match FA2.1 ticket content type:
-    TICKET_CONTENT_TYPE = '(pair nat (option bytes))'
+# Ticket content type is fixed to match FA2.1 ticket content type:
+TICKET_CONTENT_TYPE = '(pair nat (option bytes))'
 
+
+class Ticketer(ContractHelper):
     @staticmethod
     def make_storage(
         token: TokenHelper,
         extra_token_info: TokenInfo,
-        token_id: int = 0,
     ) -> dict[str, Any]:
         metadata = Metadata.make_default(
             name='Ticketer',
             description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
         )
-        content = token.make_content(extra_token_info, token_id)
+        content = token.make_content(extra_token_info)
         return {
             'content': content,
             'token': token.as_dict(),
@@ -51,11 +51,10 @@ class Ticketer(ContractHelper):
         client: PyTezosClient,
         token: TokenHelper,
         extra_token_info: TokenInfo,
-        token_id: int = 0,
     ) -> OperationGroup:
         """Deploys Ticketer with given Token and extra token info"""
 
-        storage = cls.make_storage(token, extra_token_info, token_id)
+        storage = cls.make_storage(token, extra_token_info)
         filename = join(get_build_dir(), 'ticketer.tz')
         return cls.originate_from_file(filename, client, storage)
 
@@ -70,13 +69,20 @@ class Ticketer(ContractHelper):
 
         content = to_michelson_type(
             self.contract.storage['content'](),
-            self.TICKET_CONTENT_TYPE,
+            TICKET_CONTENT_TYPE,
         ).to_micheline_value()
 
         return Ticket(
             client=self.client,
             ticketer=self.address,
-            content_type=to_micheline(self.TICKET_CONTENT_TYPE),
+            content_type=to_micheline(TICKET_CONTENT_TYPE),
             content=content,
             amount=amount,
         )
+
+    def get_token(self) -> TokenHelper:
+        """Returns token helper"""
+
+        token = self.contract.storage['token']()
+        assert isinstance(token, dict)
+        return TokenHelper.from_dict(self.client, token)

@@ -192,8 +192,32 @@ def deploy_ticketer(
 
     ticketer_params = get_ticketer_params.callback(
         ticketer.address, private_key, rpc_url
-    )
+    )  # type: ignore
     return ticketer
+
+
+@click.command()
+@click.option(
+    '--ticketer-address', required=True, help='The address of the ticketer contract.'
+)
+@click.option('--private-key', default=None, help='Use the provided private key.')
+@click.option('--rpc-url', default=None, help='Tezos RPC URL.')
+def deploy_ticket_helper(
+    ticketer_address: str,
+    private_key: Optional[str],
+    rpc_url: Optional[str],
+) -> TicketHelper:
+    """Deploys `ticket_helper` contract for provided ticketer"""
+
+    private_key = private_key or load_or_ask('L1_PRIVATE_KEY')
+    rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
+
+    manager = pytezos.using(shell=rpc_url, key=private_key)
+    ticketer = Ticketer.create_from_address(manager, ticketer_address)
+    opg = TicketHelper.originate(manager, ticketer).send()
+    manager.wait(opg)
+    ticket_helper = TicketHelper.create_from_opg(manager, opg)
+    return ticket_helper
 
 
 def deploy_router(manager: PyTezosClient) -> Router:
@@ -232,7 +256,7 @@ def deploy_token_ticketer_helper(
 
     # Deploying TicketHelper:
     print(f'Deploying TicketHelper...')
-    ticket_helper_opg = TicketHelper.originate(manager, token, ticketer).send()
+    ticket_helper_opg = TicketHelper.originate(manager, ticketer).send()
     manager.wait(ticket_helper_opg)
     ticket_helper = TicketHelper.create_from_opg(manager, ticket_helper_opg)
 

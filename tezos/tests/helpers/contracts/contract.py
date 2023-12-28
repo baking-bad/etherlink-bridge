@@ -45,7 +45,7 @@ class ContractHelper(ABC):
 
         op = find_op_by_hash(client, opg)
         address = get_address_from_op(op)
-        print(f'found contract addres: {address}')
+        print(f'found contract address: {address}')
 
         return cls(
             contract=load_contract_from_address(client, address),

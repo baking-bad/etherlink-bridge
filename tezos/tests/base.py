@@ -74,7 +74,7 @@ class BaseTestCase(SandboxedNodeTestCase):
     ) -> TicketHelper:
         """Deploys TicketHelper contract with given token and ticketer"""
 
-        opg = TicketHelper.originate(self.manager, token, ticketer).send()
+        opg = TicketHelper.originate(self.manager, ticketer).send()
         self.bake_block()
         return TicketHelper.create_from_opg(self.manager, opg)
 

@@ -35,5 +35,6 @@ skip-string-normalization = true
 [tool.poetry.scripts]
 deploy_token = "scripts.tezos:deploy_token"
 deploy_ticketer = "scripts.tezos:deploy_ticketer"
+deploy_ticket_helper = "scripts.tezos:deploy_ticket_helper"
 get_ticketer_params = "scripts.tezos:get_ticketer_params"
 check_l2_script_runs = "scripts.etherlink:check_script_runs"

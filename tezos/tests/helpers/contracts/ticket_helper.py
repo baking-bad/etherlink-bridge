@@ -1,11 +1,13 @@
-from tezos.tests.helpers.utility import DEFAULT_ADDRESS
+from tezos.tests.helpers.utility import (
+    originate_from_file,
+    get_build_dir,
+)
 from tezos.tests.helpers.contracts import (
     ContractHelper,
     TokenHelper,
     Ticketer,
 )
 from pytezos.client import PyTezosClient
-from tezos.tests.helpers.utility import get_build_dir
 from pytezos.operation.group import OperationGroup
 from os.path import join
 from tezos.tests.helpers.metadata import Metadata
@@ -32,7 +34,7 @@ class TicketHelper(ContractHelper):
         }
         filename = join(get_build_dir(), 'ticket-helper.tz')
 
-        return cls.originate_from_file(filename, client, storage)
+        return originate_from_file(filename, client, storage)
 
     def deposit(self, rollup: str, routing_info: bytes, amount: int) -> ContractCall:
         """Deposits given amount of tokens to the L2 address set in routing data"""

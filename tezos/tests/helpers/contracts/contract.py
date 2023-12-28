@@ -20,21 +20,8 @@ class ContractHelper(ABC):
     client: PyTezosClient
     address: str
 
-    # TODO: consider moving this function to the helpers
     @classmethod
-    def originate_from_file(
-        cls, filename: str, client: PyTezosClient, storage: Any
-    ) -> OperationGroup:
-        """Deploys contract from filename with given storage
-        using given client"""
-
-        print(f'deploying contract from filename {filename}')
-        raw_contract = ContractInterface.from_file(filename)
-        contract = raw_contract.using(key=client.key, shell=client.shell)
-        return contract.originate(initial_storage=storage)
-
-    @classmethod
-    def create_from_opg(
+    def from_opg(
         cls: Type[T],
         client: PyTezosClient,
         opg: OperationGroup,
@@ -64,7 +51,7 @@ class ContractHelper(ABC):
         )
 
     @classmethod
-    def create_from_address(
+    def from_address(
         cls: Type[T],
         client: PyTezosClient,
         address: str,

@@ -52,14 +52,6 @@ def get_client() -> PyTezosClient:
     return client
 
 
-# TODO: consider moving this logic to TokenHelper
-def get_token_cls(token_type: str) -> Type[TokenHelper]:
-    """Returns token class by token type"""
-
-    assert token_type in ['FA2', 'FA1.2']
-    return FA12 if token_type == 'FA1.2' else FA2
-
-
 @click.command()
 @click.option(
     '--token-type',
@@ -91,12 +83,11 @@ def deploy_token(
     rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
-    Token = get_token_cls(token_type)
+    Token = TokenHelper.get_cls(token_type)
     balances = {pkh(manager): total_supply}
     opg = Token.originate(manager, balances, token_id).send()
-
     manager.wait(opg)
-    token = Token.create_from_opg(manager, opg)
+    token = Token.from_opg(manager, opg)
     return token
 
 
@@ -115,7 +106,7 @@ def get_ticketer_params(
     rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
-    ticketer_contract = Ticketer.create_from_address(manager, ticketer)
+    ticketer_contract = Ticketer.from_address(manager, ticketer)
     ticket = ticketer_contract.get_ticket()
     address_bytes = make_address_bytes(ticketer_contract.address)
     content_bytes = ticket.make_bytes_payload()
@@ -183,12 +174,12 @@ def deploy_ticketer(
     # TODO: consider require token_id to be provided if token_type is FA2
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
-    Token = get_token_cls(token_type)
-    token = Token.create_from_address(manager, token_address, token_id=token_id)
+    Token = TokenHelper.get_cls(token_type)
+    token = Token.from_address(manager, token_address, token_id=token_id)
     extra_metadata = make_extra_metadata(symbol, decimals)
     opg = Ticketer.originate(manager, token, extra_metadata).send()
     manager.wait(opg)
-    ticketer = Ticketer.create_from_opg(manager, opg)
+    ticketer = Ticketer.from_opg(manager, opg)
 
     ticketer_params = get_ticketer_params.callback(
         ticketer.address, private_key, rpc_url
@@ -213,18 +204,18 @@ def deploy_ticket_helper(
     rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
-    ticketer = Ticketer.create_from_address(manager, ticketer_address)
+    ticketer = Ticketer.from_address(manager, ticketer_address)
     opg = TicketHelper.originate(manager, ticketer).send()
     manager.wait(opg)
-    ticket_helper = TicketHelper.create_from_opg(manager, opg)
+    ticket_helper = TicketHelper.from_opg(manager, opg)
     return ticket_helper
 
 
 def deploy_router(manager: PyTezosClient) -> Router:
     print(f'Deploying Router...')
-    router_opg = Router.originate_default(manager).send()
+    router_opg = Router.originate(manager).send()
     manager.wait(router_opg)
-    router = Router.create_from_opg(manager, router_opg)
+    router = Router.from_opg(manager, router_opg)
     router_bytes = make_address_bytes(router.address)
     print(f'router address bytes: `{router_bytes}`')
     return router
@@ -232,9 +223,9 @@ def deploy_router(manager: PyTezosClient) -> Router:
 
 def deploy_rollup_mock(manager: PyTezosClient) -> RollupMock:
     print(f'Deploying RollupMock...')
-    rm_opg = RollupMock.originate_default(manager).send()
+    rm_opg = RollupMock.originate(manager).send()
     manager.wait(rm_opg)
-    return RollupMock.create_from_opg(manager, rm_opg)
+    return RollupMock.from_opg(manager, rm_opg)
 
 
 def deploy_token_ticketer_helper(
@@ -247,18 +238,18 @@ def deploy_token_ticketer_helper(
     print(f'Deploying token {token_type}...')
     token_opg = token_type.originate(manager, balances).send()
     manager.wait(token_opg)
-    token = token_type.create_from_opg(manager, token_opg)
+    token = token_type.from_opg(manager, token_opg)
 
     # Deploying Ticketer with external metadata:
     ticketer_opg = Ticketer.originate(manager, token, extra_metadata).send()
     manager.wait(ticketer_opg)
-    ticketer = Ticketer.create_from_opg(manager, ticketer_opg)
+    ticketer = Ticketer.from_opg(manager, ticketer_opg)
 
     # Deploying TicketHelper:
     print(f'Deploying TicketHelper...')
     ticket_helper_opg = TicketHelper.originate(manager, ticketer).send()
     manager.wait(ticket_helper_opg)
-    ticket_helper = TicketHelper.create_from_opg(manager, ticket_helper_opg)
+    ticket_helper = TicketHelper.from_opg(manager, ticket_helper_opg)
 
     ticket_payload = ticketer.get_ticket().make_bytes_payload()
     ticketer_bytes = make_address_bytes(ticketer.address)
@@ -278,9 +269,9 @@ def load_token_set(
     addresses: dict[str, str],
 ) -> TokenSet:
     return {
-        'token': token_type.create_from_address(manager, addresses['token']),
-        'ticketer': Ticketer.create_from_address(manager, addresses['ticketer']),
-        'helper': TicketHelper.create_from_address(manager, addresses['helper']),
+        'token': token_type.from_address(manager, addresses['token']),
+        'ticketer': Ticketer.from_address(manager, addresses['ticketer']),
+        'helper': TicketHelper.from_address(manager, addresses['helper']),
     }
 
 
@@ -360,14 +351,14 @@ def load_contracts(
     }
     router_address = addresses['router']
     if router_address:
-        contracts['router'] = Router.create_from_address(
+        contracts['router'] = Router.from_address(
             manager,
             router_address,
         )
 
     rollup_mock_address = addresses['rollup_mock']
     if rollup_mock_address:
-        contracts['rollup_mock'] = RollupMock.create_from_address(
+        contracts['rollup_mock'] = RollupMock.from_address(
             manager,
             rollup_mock_address,
         )

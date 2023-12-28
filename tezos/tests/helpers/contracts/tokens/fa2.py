@@ -4,6 +4,7 @@ from tezos.tests.helpers.utility import (
     pkh,
     pack,
     get_tokens_dir,
+    originate_from_file,
 )
 from pytezos.client import PyTezosClient
 from os.path import join
@@ -47,7 +48,7 @@ class FA2(TokenHelper):
             (address, token_id): amount for address, amount in balances.items()
         }
         storage['token_metadata'] = {token_id: (token_id, {})}
-        return cls.originate_from_file(filename, client, storage)
+        return originate_from_file(filename, client, storage)
 
     @classmethod
     def originate_default(cls, client: PyTezosClient) -> OperationGroup:

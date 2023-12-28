@@ -89,3 +89,15 @@ def make_address_bytes(address: str) -> str:
 
     # packing address to bytes and taking the last 22 bytes:
     return pack(address, 'address')[-22:].hex()
+
+
+def originate_from_file(
+    filename: str, client: PyTezosClient, storage: Any
+) -> OperationGroup:
+    """Deploys contract from filename with given storage
+    using given client and returns OperationGroup"""
+
+    print(f'deploying contract from filename {filename}')
+    raw_contract = ContractInterface.from_file(filename)
+    contract = raw_contract.using(key=client.key, shell=client.shell)
+    return contract.originate(initial_storage=storage)

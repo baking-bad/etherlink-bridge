@@ -32,28 +32,28 @@ class BaseTestCase(SandboxedNodeTestCase):
 
         opg = FA2.originate(self.manager, balances).send()
         self.bake_block()
-        return FA2.create_from_opg(self.manager, opg)
+        return FA2.from_opg(self.manager, opg)
 
     def deploy_fa12(self, balances: dict[str, int]) -> FA12:
         """Deploys FA12 contract with given balances"""
 
         opg = FA12.originate(self.manager, balances).send()
         self.bake_block()
-        return FA12.create_from_opg(self.manager, opg)
+        return FA12.from_opg(self.manager, opg)
 
     def deploy_rollup_mock(self) -> RollupMock:
         """Deploys RollupMock contract"""
 
-        opg = RollupMock.originate_default(self.manager).send()
+        opg = RollupMock.originate(self.manager).send()
         self.bake_block()
-        return RollupMock.create_from_opg(self.manager, opg)
+        return RollupMock.from_opg(self.manager, opg)
 
     def deploy_router(self) -> Router:
         """Deploys Router contract"""
 
-        opg = Router.originate_default(self.manager).send()
+        opg = Router.originate(self.manager).send()
         self.bake_block()
-        return Router.create_from_opg(self.manager, opg)
+        return Router.from_opg(self.manager, opg)
 
     def deploy_ticketer(
         self,
@@ -65,7 +65,7 @@ class BaseTestCase(SandboxedNodeTestCase):
         extra_metadata = extra_metadata or {}
         opg = Ticketer.originate(self.manager, token, extra_metadata).send()
         self.bake_block()
-        return Ticketer.create_from_opg(self.manager, opg)
+        return Ticketer.from_opg(self.manager, opg)
 
     def deploy_ticket_helper(
         self,
@@ -76,7 +76,7 @@ class BaseTestCase(SandboxedNodeTestCase):
 
         opg = TicketHelper.originate(self.manager, ticketer).send()
         self.bake_block()
-        return TicketHelper.create_from_opg(self.manager, opg)
+        return TicketHelper.from_opg(self.manager, opg)
 
     def setUp(self) -> None:
         self.accounts = []

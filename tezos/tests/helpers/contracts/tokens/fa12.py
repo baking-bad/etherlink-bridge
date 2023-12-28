@@ -3,6 +3,7 @@ from tezos.tests.helpers.utility import (
     DEFAULT_ADDRESS,
     pack,
     get_tokens_dir,
+    originate_from_file,
 )
 from pytezos.client import PyTezosClient
 from os.path import join
@@ -40,7 +41,7 @@ class FA12(TokenHelper):
         storage['tokens'] = {address: amount for address, amount in balances.items()}
         storage['token_metadata'] = {0: (0, {})}
         storage['total_supply'] = sum(balances.values())
-        return cls.originate_from_file(filename, client, storage)
+        return originate_from_file(filename, client, storage)
 
     @classmethod
     def originate_default(cls, client: PyTezosClient) -> OperationGroup:

@@ -4,6 +4,7 @@ from tezos.tests.helpers.utility import (
     get_build_dir,
     to_michelson_type,
     to_micheline,
+    originate_from_file,
 )
 from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
@@ -56,7 +57,7 @@ class Ticketer(ContractHelper):
 
         storage = cls.make_storage(token, extra_token_info)
         filename = join(get_build_dir(), 'ticketer.tz')
-        return cls.originate_from_file(filename, client, storage)
+        return originate_from_file(filename, client, storage)
 
     def deposit(self, params: DepositParams) -> ContractCall:
         """Deposits given amount of given token to the contract"""

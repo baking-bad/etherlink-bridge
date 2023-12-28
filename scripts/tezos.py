@@ -6,42 +6,15 @@ from tezos.tests.helpers.contracts import (
     Router,
     TokenHelper,
     TicketHelper,
-    FA12,
-    FA2,
 )
 from tezos.tests.helpers.utility import (
     pkh,
     pack,
     make_address_bytes,
 )
-from typing import (
-    Any,
-    TypedDict,
-    Optional,
-)
+from typing import Optional
 import click
 from scripts.environment import load_or_ask
-
-
-# TODO: remove this types:
-class TokenSet(TypedDict):
-    token: TokenHelper
-    ticketer: Ticketer
-    helper: TicketHelper
-
-
-class ContractsType(TypedDict):
-    fa12: TokenSet
-    fa2: TokenSet
-    router: Optional[Router]
-    rollup_mock: Optional[RollupMock]
-
-
-class AddressesType(TypedDict):
-    fa12: dict[str, str]
-    fa2: dict[str, str]
-    router: str
-    rollup_mock: str
 
 
 def get_client() -> PyTezosClient:
@@ -229,53 +202,8 @@ def deploy_rollup_mock(manager: PyTezosClient) -> RollupMock:
     return RollupMock.from_opg(manager, rm_opg)
 
 
-def deploy_token_ticketer_helper(
-    manager: PyTezosClient,
-    token_type: type[TokenHelper],
-    balances: dict[str, int],
-    extra_metadata: dict[str, bytes],
-) -> TokenSet:
-    # Token deployment:
-    print(f'Deploying token {token_type}...')
-    token_opg = token_type.originate(manager, balances).send()
-    manager.wait(token_opg)
-    token = token_type.from_opg(manager, token_opg)
-
-    # Deploying Ticketer with external metadata:
-    ticketer_opg = Ticketer.originate(manager, token, extra_metadata).send()
-    manager.wait(ticketer_opg)
-    ticketer = Ticketer.from_opg(manager, ticketer_opg)
-
-    # Deploying TicketHelper:
-    print('Deploying TicketHelper...')
-    ticket_helper_opg = TicketHelper.originate(manager, ticketer).send()
-    manager.wait(ticket_helper_opg)
-    ticket_helper = TicketHelper.from_opg(manager, ticket_helper_opg)
-
-    ticket_payload = ticketer.get_ticket().make_bytes_payload()
-    ticketer_bytes = make_address_bytes(ticketer.address)
-    print('Data for setup ERC20 Proxy:')
-    print(f'ticket address bytes: `{ticketer_bytes}`')
-    print(f'ticket payload bytes: `{ticket_payload}`')
-    return {
-        'token': token,
-        'ticketer': ticketer,
-        'helper': ticket_helper,
-    }
-
-
-def load_token_set(
-    manager: PyTezosClient,
-    token_type: type[TokenHelper],
-    addresses: dict[str, str],
-) -> TokenSet:
-    return {
-        'token': token_type.from_address(manager, addresses['token']),
-        'ticketer': Ticketer.from_address(manager, addresses['ticketer']),
-        'helper': TicketHelper.from_address(manager, addresses['helper']),
-    }
-
-
+# TODO: rework these functions:
+'''
 def deposit_to_l2(
     client: PyTezosClient,
     contracts: TokenSet,
@@ -314,80 +242,4 @@ def unpack_ticket(
     entrypoint = f'{helper.address}%withdraw'
     opg = ticket.using(client).transfer(entrypoint, amount).send()
     client.wait(opg)
-
-
-def deploy_new(manager: PyTezosClient) -> ContractsType:
-    balances = {pkh(manager): 1_000_000}
-    fa12_external_metadata = {
-        'decimals': pack(0, 'nat'),
-        'symbol': pack('FA1.2-TST', 'string'),
-    }
-    fa12 = deploy_token_ticketer_helper(manager, FA12, balances, fa12_external_metadata)
-
-    fa2_external_metadata = {
-        'decimals': pack(0, 'nat'),
-        'symbol': pack('FA2-TST', 'string'),
-    }
-    fa2 = deploy_token_ticketer_helper(manager, FA2, balances, fa2_external_metadata)
-
-    return {
-        'fa12': fa12,
-        'fa2': fa2,
-        'router': None,
-        'rollup_mock': None,
-    }
-
-
-def load_contracts(
-    manager: PyTezosClient,
-    addresses: AddressesType,
-) -> ContractsType:
-    contracts: ContractsType = {
-        'fa12': load_token_set(manager, FA12, addresses['fa12']),
-        'fa2': load_token_set(manager, FA2, addresses['fa2']),
-        'router': None,
-        'rollup_mock': None,
-    }
-    router_address = addresses['router']
-    if router_address:
-        contracts['router'] = Router.from_address(
-            manager,
-            router_address,
-        )
-
-    rollup_mock_address = addresses['rollup_mock']
-    if rollup_mock_address:
-        contracts['rollup_mock'] = RollupMock.from_address(
-            manager,
-            rollup_mock_address,
-        )
-
-    return contracts
-
-
-# TODO: sort this out:
-import requests
-
-
-class Proof(TypedDict):
-    commitment: str
-    proof: str
-
-
-def get_proof(outbox_num: int) -> Proof:
-    method = f'https://etherlink-rollup-nairobi.dipdup.net/global/block/head/helpers/proofs/outbox/{outbox_num}/messages?index=0'
-    proof: Proof = requests.get(method).json()
-    return proof
-
-
-proof_fa12 = get_proof(2475504)
-proof_fa2 = get_proof(2475536)
-
-# alice.smart_rollup_execute_outbox_message(CONTRACT_ADDRESSES['rollup'], proof_fa12['commitment'], bytes.fromhex(proof_fa12['proof': f'])).send()
-# alice.smart_rollup_execute_outbox_message(CONTRACT_ADDRESSES['rollup'], proof_fa2['commitment'], bytes.fromhex(proof_fa2['proof': f'])).send()
-
-
-# TODO: is this function needed?
-def get_messages(level: int) -> Any:
-    method = f'https://etherlink-rollup-nairobi.dipdup.net/global/block/cemented/outbox/{level}/messages'
-    return requests.get(method).json()
+'''

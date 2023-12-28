@@ -4,7 +4,6 @@ from tezos.tests.helpers.contracts import (
     Ticketer,
     RollupMock,
     Router,
-    ContractHelper,
     TokenHelper,
     TicketHelper,
     FA12,
@@ -15,11 +14,13 @@ from tezos.tests.helpers.utility import (
     pack,
     make_address_bytes,
 )
-from typing import Type, TypeVar, Any, TypedDict, Union, Optional
-from tezos.tests.helpers.tickets import Ticket
+from typing import (
+    Any,
+    TypedDict,
+    Optional,
+)
 import click
 from scripts.environment import load_or_ask
-from enum import Enum
 
 
 # TODO: remove this types:
@@ -181,7 +182,7 @@ def deploy_ticketer(
     manager.wait(opg)
     ticketer = Ticketer.from_opg(manager, opg)
 
-    ticketer_params = get_ticketer_params.callback(
+    _ticketer_params = get_ticketer_params.callback(
         ticketer.address, private_key, rpc_url
     )  # type: ignore
     return ticketer
@@ -212,7 +213,7 @@ def deploy_ticket_helper(
 
 
 def deploy_router(manager: PyTezosClient) -> Router:
-    print(f'Deploying Router...')
+    print('Deploying Router...')
     router_opg = Router.originate(manager).send()
     manager.wait(router_opg)
     router = Router.from_opg(manager, router_opg)
@@ -222,7 +223,7 @@ def deploy_router(manager: PyTezosClient) -> Router:
 
 
 def deploy_rollup_mock(manager: PyTezosClient) -> RollupMock:
-    print(f'Deploying RollupMock...')
+    print('Deploying RollupMock...')
     rm_opg = RollupMock.originate(manager).send()
     manager.wait(rm_opg)
     return RollupMock.from_opg(manager, rm_opg)
@@ -246,7 +247,7 @@ def deploy_token_ticketer_helper(
     ticketer = Ticketer.from_opg(manager, ticketer_opg)
 
     # Deploying TicketHelper:
-    print(f'Deploying TicketHelper...')
+    print('Deploying TicketHelper...')
     ticket_helper_opg = TicketHelper.originate(manager, ticketer).send()
     manager.wait(ticket_helper_opg)
     ticket_helper = TicketHelper.from_opg(manager, ticket_helper_opg)
@@ -285,9 +286,7 @@ def deposit_to_l2(
 
     print(f'Depositing {amount} of {type(contracts["token"])} to {rollup_address}')
     token = contracts['token']
-    ticketer = contracts['ticketer']
     helper = contracts['helper']
-    ticket = ticketer.get_ticket()
 
     proxy = bytes.fromhex(ERC20_PROXY_ADDRESS)
     receiver = bytes.fromhex(ALICE_L2_ADDRESS)

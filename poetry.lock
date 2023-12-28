@@ -1341,6 +1341,14 @@ optional = false
 python-versions = ">=3.8"
 
 [[package]]
+name = "ruff"
+version = "0.1.9"
+description = "An extremely fast Python linter and code formatter, written in Rust."
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+
+[[package]]
 name = "secp256k1"
 version = "0.14.0"
 description = "FFI bindings to libsecp256k1"
@@ -1659,7 +1667,7 @@ python-versions = ">=3.6"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<3.12"
-content-hash = "f43acd70f51a33774df3f21de7d9784ab1f33795a03be822eb03e604f0b040be"
+content-hash = "37b6199d9e43030fe172bc23762377eb93013910b87aa05c9a2d2e06f4fda563"
 
 [metadata.files]
 anyio = []
@@ -1842,6 +1850,7 @@ requests = []
 rfc3339-validator = []
 rfc3986-validator = []
 rpds-py = []
+ruff = []
 secp256k1 = [
     {file = "secp256k1-0.14.0-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:f666c67dcf1dc69e1448b2ede5e12aaf382b600204a61dbc65e4f82cea444405"},
     {file = "secp256k1-0.14.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:fcabb3c3497a902fb61eec72d1b69bf72747d7bcc2a732d56d9319a1e8322262"},

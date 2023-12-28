@@ -7,7 +7,6 @@ from tezos.tests.helpers.utility import (
 )
 from pytezos.client import PyTezosClient
 from os.path import join
-from os.path import dirname
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
 from tezos.tests.helpers.metadata import Metadata

@@ -4,7 +4,6 @@ from tezos.tests.helpers.utility import (
 )
 from tezos.tests.helpers.contracts import (
     ContractHelper,
-    TokenHelper,
     Ticketer,
 )
 from pytezos.client import PyTezosClient

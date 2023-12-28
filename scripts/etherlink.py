@@ -1,6 +1,4 @@
 import click
-from dotenv import load_dotenv
-from getpass import getpass
 import subprocess
 from typing import Optional
 from scripts.environment import load_or_ask

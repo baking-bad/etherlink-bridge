@@ -3,7 +3,6 @@ from tezos.tests.helpers.utility import (
     pkh,
     pack,
 )
-from tezos.tests.helpers.tickets import get_all_by_ticketer
 
 
 class RollupCommunicationTestCase(BaseTestCase):
@@ -13,7 +12,6 @@ class RollupCommunicationTestCase(BaseTestCase):
         alice = self.bootstrap_account()
         token = self.deploy_fa2(balances={pkh(alice): 1000})
         rollup_mock = self.deploy_rollup_mock()
-        router = self.deploy_router()
         extra_metadata = {
             'decimals': pack(12, 'nat'),
             'symbol': pack('FA2', 'string'),

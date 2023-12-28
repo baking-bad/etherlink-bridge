@@ -54,7 +54,7 @@ class RollupMock(ContractHelper):
         """Returns message from storage with given id"""
 
         message = self.contract.storage['messages'][message_id]()
-        assert type(message) is dict
+        assert isinstance(message, dict)
         return message
 
     def create_outbox_message(self, message: Message) -> ContractCall:

@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Any
+from typing import Any
 
 
 def to_hex(string: str) -> str:

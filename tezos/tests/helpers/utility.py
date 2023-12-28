@@ -1,7 +1,6 @@
 from pytezos.client import PyTezosClient
 from pytezos.contract.interface import ContractInterface
 from pytezos.operation.group import OperationGroup
-from pytezos.crypto.encoding import base58_decode
 from os.path import dirname
 from os.path import join
 from pytezos.michelson.parse import michelson_to_micheline
@@ -35,7 +34,7 @@ def get_address_from_op(op: dict) -> str:
     contracts = op_result['originated_contracts']
     assert len(contracts) == 1, 'multiple origination not supported'
     originated_contract = contracts[0]
-    assert type(originated_contract) is str
+    assert isinstance(originated_contract, str)
     return originated_contract
 
 

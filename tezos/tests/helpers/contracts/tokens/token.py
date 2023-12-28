@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from tezos.tests.helpers.contracts.contract import ContractHelper
 from pytezos.contract.call import ContractCall
 from tezos.tests.helpers.utility import pack

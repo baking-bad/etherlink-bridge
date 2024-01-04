@@ -21,7 +21,7 @@ def get_client() -> PyTezosClient:
     """Returns client with private key and rpc url set in environment variables"""
 
     rpc_url = load_or_ask('L1_RPC_URL')
-    private_key = load_or_ask('L1_PRIVATE_KEY')
+    private_key = load_or_ask('L1_PRIVATE_KEY', is_secret=True)
     client: PyTezosClient = pytezos.using(shell=rpc_url, key=private_key)
     return client
 
@@ -53,7 +53,7 @@ def deploy_token(
 ) -> TokenHelper:
     """Deploys token contract using provided key as a manager"""
 
-    private_key = private_key or load_or_ask('L1_PRIVATE_KEY')
+    private_key = private_key or load_or_ask('L1_PRIVATE_KEY', is_secret=True)
     rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
@@ -76,7 +76,7 @@ def get_ticketer_params(
 ) -> dict[str, str]:
     """Founds ticketer in L1 and returns it params required for L2 ERC20 token deployment"""
 
-    private_key = private_key or load_or_ask('L1_PRIVATE_KEY')
+    private_key = private_key or load_or_ask('L1_PRIVATE_KEY', is_secret=True)
     rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
@@ -143,7 +143,7 @@ def deploy_ticketer(
 ) -> Ticketer:
     """Deploys `ticketer` contract using provided key as a manager"""
 
-    private_key = private_key or load_or_ask('L1_PRIVATE_KEY')
+    private_key = private_key or load_or_ask('L1_PRIVATE_KEY', is_secret=True)
     rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
     # TODO: consider require token_id to be provided if token_type is FA2
 
@@ -174,7 +174,7 @@ def deploy_ticket_helper(
 ) -> TicketHelper:
     """Deploys `ticket_helper` contract for provided ticketer"""
 
-    private_key = private_key or load_or_ask('L1_PRIVATE_KEY')
+    private_key = private_key or load_or_ask('L1_PRIVATE_KEY', is_secret=True)
     rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
@@ -244,7 +244,7 @@ def deposit(
         receiver = bytes.fromhex(receiver_address)
         return receiver + proxy
 
-    private_key = private_key or load_or_ask('L1_PRIVATE_KEY')
+    private_key = private_key or load_or_ask('L1_PRIVATE_KEY', is_secret=True)
     receiver_address = receiver_address or load_or_ask('L2_PUBLIC_KEY')
     rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
     rollup_address = rollup_address or load_or_ask('L1_ROLLUP_ADDRESS')

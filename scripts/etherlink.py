@@ -22,7 +22,9 @@ def fund_account(
 
     public_key = public_key or load_or_ask('L2_PUBLIC_KEY')
     rpc_url = rpc_url or load_or_ask('L2_RPC_URL')
-    sender_private_key = sender_private_key or load_or_ask('L2_MASTER_KEY')
+    sender_private_key = sender_private_key or load_or_ask(
+        'L2_MASTER_KEY', is_secret=True
+    )
 
     result = subprocess.run(
         [
@@ -90,7 +92,7 @@ def deploy_erc20(
 ) -> None:
     """Deploys ERC20 Proxy contract with given parameters"""
 
-    private_key = private_key or load_or_ask('L2_PRIVATE_KEY')
+    private_key = private_key or load_or_ask('L2_PRIVATE_KEY', is_secret=True)
     rpc_url = rpc_url or load_or_ask('L2_RPC_URL')
     kernel_address = kernel_address or load_or_ask('L2_KERNEL_ADDRESS')
 
@@ -173,7 +175,7 @@ def withdraw(
 ) -> None:
     """Withdraws token from L2 to L1"""
 
-    private_key = private_key or load_or_ask('L2_PRIVATE_KEY')
+    private_key = private_key or load_or_ask('L2_PRIVATE_KEY', is_secret=True)
     rpc_url = rpc_url or load_or_ask('L2_RPC_URL')
     withdraw_precompile = withdraw_precompile or load_or_ask(
         'L2_WITHDRAW_PRECOMPILE_ADDRESS'

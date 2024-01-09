@@ -3,12 +3,6 @@ import subprocess
 from typing import Optional
 from scripts.environment import load_or_ask
 from tezos.tests.helpers.utility import make_address_bytes
-import os
-
-
-# The following line required to make `cast` and `forge` commands available
-# in the Google Colab environment:
-os.environ['PATH'] += ":~/.foundry/bin"
 
 
 @click.command()

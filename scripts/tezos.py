@@ -15,6 +15,10 @@ from tezos.tests.helpers.utility import (
 from typing import Optional
 import click
 from scripts.environment import load_or_ask
+from tezos.tests.helpers.proof import (
+    get_proof as get_proof_from_rpc,
+    Proof,
+)
 
 
 def get_client() -> PyTezosClient:
@@ -261,6 +265,23 @@ def deposit(
     ).send()
     manager.wait(opg)
     print(f'Succeed, transaction hash: {opg.hash()}')
+
+
+@click.command()
+@click.option('--level', required=True, type=int, help='The level of the outbox.')
+@click.option('--index', required=True, type=int, help='The index of the message.')
+@click.option('--rpc-url', default=None, help='Etherlink RPC URL.')
+def get_proof(
+    level: int,
+    index: int,
+    rpc_url: Optional[str],
+) -> Proof:
+    """Makes call to the RPC and returns proof info required to execute outbox_message"""
+
+    rpc_url = rpc_url or load_or_ask('L2_RPC_URL')
+    proof = get_proof_from_rpc(rpc_url, level, index)
+    print(f'proof: {proof}')
+    return proof
 
 
 # TODO: rework these functions:

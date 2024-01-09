@@ -196,7 +196,8 @@ def withdraw(
 
     receiver_address = receiver_address or load_or_ask('L1_PUBLIC_KEY_HASH')
     receiver_address_bytes = make_address_bytes(receiver_address)
-    routing_info = receiver_address_bytes + ticketer_address_bytes
+    router_address_bytes = make_address_bytes(router_address)
+    routing_info = receiver_address_bytes + router_address_bytes
 
     result = subprocess.run(
         [

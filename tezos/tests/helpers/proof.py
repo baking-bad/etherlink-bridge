@@ -19,7 +19,13 @@ def get_proof(rpc_url: str, outbox_level: int, index: int) -> Proof:
     return proof
 
 
-# TODO: is this function needed?
-def get_messages(level: int) -> Any:
-    method = f'https://etherlink-rollup-nairobi.dipdup.net/global/block/cemented/outbox/{level}/messages'
-    return requests.get(method).json()
+def get_messages(rollup_rpc_url: str, outbox_level: int) -> Any:
+    # NOTE: ROLLUP_RPC_URL is not the same as L2_RPC_URL
+
+    parts = urlparse(rollup_rpc_url)
+    parts = parts._replace(
+        path=f'global/block/cemented/outbox/{outbox_level}/messages',
+    )
+    url = urlunparse(parts)
+    print(url)
+    return requests.get(url).json()

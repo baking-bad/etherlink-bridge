@@ -6,35 +6,26 @@ This project features an ERC20 Proxy Contract, essential for the functioning of 
 ### Test
 
 ```shell
-$ forge test
+forge test
+```
+
+### Compile
+```shell
+forge build
 ```
 
 ### Interact
-Before running any commands, ensure that the following environment variables are set in your `.env` file:
-- `L2_MANAGER_PUBLIC_KEY`
-- `L2_MANAGER_PRIVATE_KEY`
-- `L2_ALICE_PUBLIC_KEY`
-- `L2_ALICE_PRIVATE_KEY`
-- `L2_BORIS_PUBLIC_KEY`
-- `L2_BORIS_PRIVATE_KEY`
 
 #### Fund and Initialize Accounts
 To fund and initialize accounts, run:
-```shell
-$ make fund_accounts
-```
+TODO: add example with account initialization
 
 #### Deploy Proxy ERC20 Contract
 For deploying the Proxy ERC20 contract, use:
-```shell
-$ make deploy_proxy_erc20
-```
+TODO: add example with ERC20 deploy
 
 #### Execute Withdrawal Procedure
 > NOTE: For successful execution of the withdrawal process, ensure that the ERC20 Proxy is deployed and received a successful deposit from L1.
 
 To execute the withdrawal procedure, run:
-```shell
-$ make play_withdraw
-```
-
+TODO: add example

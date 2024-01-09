@@ -284,6 +284,48 @@ def get_proof(
     return proof
 
 
+'''
+	- [ ] execute_outbox_message
+		- Action: executes outbox message using provided `commitment` and `proof`
+		- Parameters:
+			- `commitment`
+			- `proof`
+			- OPTIONAL: `private_key: str` (`.env`: `L1_PRIVATE_KEY`)
+		- Returns:
+			- `transaction_hash: bytes`
+'''
+
+
+@click.command()
+@click.option(
+    '--commitment', required=True, help='The commitment of the outbox message.'
+)
+@click.option('--proof', required=True, help='The proof of the outbox message.')
+@click.option(
+    '--rollup-address', default=None, help='The address of the rollup contract.'
+)
+@click.option('--private-key', default=None, help='Use the provided private key.')
+@click.option('--rpc-url', default=None, help='Tezos RPC URL.')
+def execute_outbox_message(
+    commitment: str,
+    proof: str,
+    private_key: Optional[str],
+    rpc_url: Optional[str],
+) -> None:
+    """Executes outbox message using provided `commitment` and `proof`"""
+
+    rollup_address = load_or_ask('L1_ROLLUP_ADDRESS')
+    private_key = private_key or load_or_ask('L1_PRIVATE_KEY', is_secret=True)
+    rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
+
+    manager = pytezos.using(shell=rpc_url, key=private_key)
+    opg = manager.smart_rollup_execute_outbox_message(
+        rollup_address, commitment, bytes.fromhex(proof)
+    ).send()
+    manager.wait(opg)
+    print(f'Succeed, transaction hash: {opg.hash()}')
+
+
 # TODO: rework these functions:
 '''
 def unpack_ticket(

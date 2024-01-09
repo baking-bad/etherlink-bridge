@@ -56,7 +56,9 @@ def init_wallets() -> None:
             is_secret=True,
         ),
         Variable('L2_RPC_URL', default='https://etherlink.dipdup.net'),
-        Variable('L2_ROLLUP_RPC_URL', default='https://etherlink-rollup-nairobi.dipdup.net'),
+        Variable(
+            'L2_ROLLUP_RPC_URL', default='https://etherlink-rollup-nairobi.dipdup.net'
+        ),
         Variable(
             'L2_KERNEL_ADDRESS', default='0x0000000000000000000000000000000000000000'
         ),

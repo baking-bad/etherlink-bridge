@@ -274,14 +274,19 @@ def deposit(
 def get_proof(
     level: int,
     index: int,
-    rpc_url: Optional[str],
+    rollup_rpc_url: Optional[str],
 ) -> Proof:
     """Makes call to the RPC and returns proof info required to execute outbox_message"""
 
-    rpc_url = rpc_url or load_or_ask('L2_ROLLUP_RPC_URL')
-    proof = get_proof_from_rpc(rpc_url, level, index)
-    print(f'proof: {proof}')
-    return proof
+    rollup_rpc_url = rollup_rpc_url or load_or_ask('L2_ROLLUP_RPC_URL')
+    proof = get_proof_from_rpc(rollup_rpc_url, level, index)
+    if 'commitment' in proof:
+        print(f'commitment: {proof["commitment"]}')
+        print(f'proof: {proof["proof"]}')
+        return proof
+
+    print('Something went wrong:')
+    print(proof)
 
 
 @click.command()

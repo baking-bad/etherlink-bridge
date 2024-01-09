@@ -56,8 +56,7 @@ poetry run deploy_ticketer --token-address KT1XJ6ZbBE6MPmtYuNcFYo5oPYM4xsemxFwF 
 ```
 TODO: Add a link to the result of this operation in Nairobinet.
 
-During **Ticketer** deployment user will receive **Ticketer** parameters, that will be required for **ERC20Proxy** origination: ticketer **address_bytes** and **content_bytes**.
-During the Ticketer's deployment, user will receive its parameters, including **address_bytes** and **content_bytes**. These are required for the origination of the **ERC20Proxy**.
+During **Ticketer** deployment user will receive **Ticketer** parameters, that will be required for **ERC20Proxy** origination: ticketer **address_bytes** and **content_bytes**. These are required for the origination of the **ERC20Proxy**.
 
 #### Deploying a Ticket Helper
 To enable Tezos wallets to interact with specific tickets, deploy a Ticket Helper using the script below. The example provided uses a ticketer that was previously deployed in Nairobinet:

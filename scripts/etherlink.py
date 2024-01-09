@@ -40,10 +40,17 @@ def fund_account(
             '--legacy',
         ],
         cwd='etherlink',
-        check=True,
+        # NOTE: not checking for return code, because it is very common
+        # to get non-zero exit status
+        # check=True,
         capture_output=True,
         text=True,
     )
+
+    if result.returncode != 0:
+        print(result.stderr)
+        return
+
     print('Successfully funded account:')
     print(result.stdout)
 
@@ -117,10 +124,16 @@ def deploy_erc20(
             '200000',
         ],
         cwd='etherlink',
-        check=True,
+        # NOTE: not checking for return code, because it is very common
+        # to get non-zero exit status
+        # check=True,
         capture_output=True,
         text=True,
     )
+
+    if result.returncode != 0:
+        print(result.stderr)
+        return
 
     print('Successfully deployed ERC20 contract:')
     print(result.stdout)
@@ -205,10 +218,16 @@ def withdraw(
             '300000',
         ],
         cwd='etherlink',
-        check=True,
+        # NOTE: not checking for return code, because it is very common
+        # to get non-zero exit status
+        # check=True,
         capture_output=True,
         text=True,
     )
+
+    if result.returncode != 0:
+        print(result.stderr)
+        return
 
     print('Successfully called withdraw:')
     print(result.stdout)

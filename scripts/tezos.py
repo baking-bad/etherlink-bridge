@@ -270,7 +270,7 @@ def deposit(
 @click.command()
 @click.option('--level', required=True, type=int, help='The level of the outbox.')
 @click.option('--index', required=True, type=int, help='The index of the message.')
-@click.option('--rpc-url', default=None, help='Etherlink RPC URL.')
+@click.option('--rollup-rpc-url', default=None, help='Etherlink Rollup RPC URL.')
 def get_proof(
     level: int,
     index: int,
@@ -278,22 +278,10 @@ def get_proof(
 ) -> Proof:
     """Makes call to the RPC and returns proof info required to execute outbox_message"""
 
-    rpc_url = rpc_url or load_or_ask('L2_RPC_URL')
+    rpc_url = rpc_url or load_or_ask('L2_ROLLUP_RPC_URL')
     proof = get_proof_from_rpc(rpc_url, level, index)
     print(f'proof: {proof}')
     return proof
-
-
-'''
-	- [ ] execute_outbox_message
-		- Action: executes outbox message using provided `commitment` and `proof`
-		- Parameters:
-			- `commitment`
-			- `proof`
-			- OPTIONAL: `private_key: str` (`.env`: `L1_PRIVATE_KEY`)
-		- Returns:
-			- `transaction_hash: bytes`
-'''
 
 
 @click.command()
@@ -309,12 +297,13 @@ def get_proof(
 def execute_outbox_message(
     commitment: str,
     proof: str,
+    rollup_address: Optional[str],
     private_key: Optional[str],
     rpc_url: Optional[str],
 ) -> None:
     """Executes outbox message using provided `commitment` and `proof`"""
 
-    rollup_address = load_or_ask('L1_ROLLUP_ADDRESS')
+    rollup_address = rollup_address or load_or_ask('L1_ROLLUP_ADDRESS')
     private_key = private_key or load_or_ask('L1_PRIVATE_KEY', is_secret=True)
     rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
 

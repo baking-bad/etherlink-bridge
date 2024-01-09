@@ -32,18 +32,14 @@ User may need to fund their Tezos and Etherlink accounts to execute this and sub
 - To fund accounts on the Tezos side, use the Tezos [testnets faucet](https://faucet.nairobinet.teztnets.com/) (TODO: replace the faucet link with Ghostnet upon the bridge's activation in Ghostnet).
 - To fund accounts on the Etherlink side, utilize the native token bridge (TODO: add a link to the native bridge, noting that it is not yet operational for our fork).
 
-### Configuring the Bridge
-Each bridge built on the TZIP-029 standard enables the transfer of tickets to a smart rollup. This process includes providing routing information, which facilitates the receipt of tokens on the L2 side. These tokens are minted by the ERC20 proxy contract.
-
-As of the time this bridge was implemented, there were no ticket-native tokens on the Tezos side. Therefore, to bridge tokens, it is necessary to convert them into tickets using the **Ticketer**. Additionally, since the **transfer_ticket** operation is not yet implemented in wallets, a special **TicketHelper** is used. This helper wraps tokens into tickets and transfers them to the rollup in a single transaction.
-
-To establish a bridge for an arbitrary token, the following steps should be taken:
-- Deploy a **Ticketer** on the Tezos side for the specified **FA1.2** or **FA2** token.
-- Deploy a **TicketHelper** on the Tezos side, targeting the specific token and **Ticketer** pair.
-- Deploy an **ERC20Proxy** on the Etherlink side, configuring it to anticipate tickets from the given **Ticketer** with the specified payload.
+### Bridge Configuration (Listing New Token Pairs)
+The **Ticket Transport Layer**, a key component of the bridge, enables ticket transfers between Tezos and Etherlink. To list a new token pair and establish a bridge, users need to:
+1. If the token is an **FA2** or **FA1.2** standard token that doesn’t natively support tickets, the user must deploy a **Ticketer** contract on the Tezos side. This contract links to the specific Tezos token to convert it into a ticket.
+2. The user then deploys an **ERC20Proxy** on the Etherlink side – a smart contract implementing ERC20. This contract should be configured to expect tickets from the deployed **Ticketer** including ticketer address and ticket content. This setup allows the rollup to mint ERC20 tokens corresponding to the incoming tickets from Tezos.
+3. Additionally, deploy a **TicketHelper** on the Tezos side, targeting the specific token and **Ticketer** pair. This step is necessary as the **transfer_ticket** operation is not currently supported by wallets. The **TicketHelper** facilitates the wrapping of tokens into tickets and their transfer to the rollup in a single transaction.
 
 #### Deploying a Token
-For demonstration purposes, one can deploy a test token that will later be bridged. The bridge has been tested with two types of tokens in the repository:
+For demonstration purposes, users can deploy a test token that will later be bridged. The bridge has been tested with two types of tokens, which are available in the repository:
 - The **FA1.2** **Ctez** token.
 - The **FA2** **fxhash** token.
 
@@ -83,7 +79,7 @@ poetry run get_ticketer_params --ticketer-address KT1MkNDvrW4V6TY2MU8RhHWDVHm5y3
 ```
 
 ### Deposit
-To make a deposit, user need to transfer Tickets to the rollup address with attached Routing Info in the [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#deposit). A script is available to facilitate this process. It requires the Ticket Helper address as **ticket-helper-address**, the Etherlink ERC20Proxy contract as **proxy-address**, and the bridged amount as the **amount** variable. Here's an example:
+To make a deposit, user need to transfer Tickets to the rollup address with attached Routing Info in the [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#deposit): `| receiver | proxy |` 40 bytes payload, both receiver and proxy are standard Ethereum addresses in raw form (H160). A script is available to facilitate this process. It requires the Ticket Helper address as **ticket-helper-address**, the Etherlink ERC20Proxy contract as **proxy-address**, and the bridged amount as the **amount** variable. Here's an example:
 ```console
 poetry run deposit --ticket-helper-address KT1CXMcdSCw3sviupN6hwzzmfcyMYAF58W77 --proxy-address 0x6065534feE55f585C2d43f8e78BcE4C308EE066B --amount 42
 ```
@@ -97,7 +93,7 @@ The withdrawal process involves two key steps:
 2. Completing the withdrawal by executing the outbox message on the Tezos side once the commitment has settled (TODO: Clarify terminology if necessary).
 
 #### Etherlink Withdrawal
-To initiate a withdrawal, user need to call the withdrawal precompile on the Etherlink side. This requires providing the **ERC20Proxy** address along with Routing Info in a [specific format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#withdrawal). A script is available to facilitate the withdrawal process. It requires the ERC20 contract (which will burn tokens) as **proxy-address**, the Tezos router address (which will receive the ticket from the rollup) as **router-address**, and the bridged amount as **amount**. Additionally, the **ticketer-address-bytes** and **ticketer-content-bytes** are required to allow **ERC20Proxy** validate token before burning.
+To initiate a withdrawal, user need to call the withdrawal precompile on the Etherlink side. This requires providing the **ERC20Proxy** address along with Routing Info in a [specific format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#withdrawal), two forged contracts concatenated: `| receiver | proxy |` 44 bytes. Forged contact consists of binary suffix/prefix and body (blake2b hash digest). A script is available to facilitate the withdrawal process. It requires the ERC20 contract (which will burn tokens) as **proxy-address**, the Tezos router address (which will receive the ticket from the rollup) as **router-address**, and the bridged amount as **amount**. Additionally, the **ticketer-address-bytes** and **ticketer-content-bytes** are required to allow **ERC20Proxy** validate token before burning.
 
 NOTE: For automatic unwrapping of Tezos tickets back into tokens, the **Ticketer** address can be provided as the **router-address**.
 

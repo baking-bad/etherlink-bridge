@@ -14,14 +14,15 @@ The implementation adheres to the [TZIP-029](https://gitlab.com/baking-bad/tzip/
 * The [scripts](scripts/) directory features Python scripts for interacting with the bridge. These scripts facilitate contract deployment on both sides of the bridge and enable the deposit and withdrawal of tickets via the bridge.
 
 ## Interact with bridge
-The simplest way to run the notebook is by clicking [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/baking-bad/etherlink-bridge/blob/feat/scripts-and-docs/etherlink_bridge_demo.ipynb) to use Google Colab's cloud environment.
+The simplest way to see how different parts of the bridge communicate with each other is to run the notebook by clicking [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/baking-bad/etherlink-bridge/blob/feat/scripts-and-docs/etherlink_bridge_demo.ipynb) to use Google Colab's cloud environment configured to run scripts from this repository.
+
 TODO: Replace the `feat/scripts-and-docs` branch with `main`.
 
 Alternatively, user can clone this Git repository, follow the [installation guide](#install-dependencies), and set up environment variables with the following configurations:
 - For Tezos: provide the node URL, rollup address, and private key for interacting with the Tezos side. The required variables are `L1_PRIVATE_KEY`, `L1_PUBLIC_KEY_HASH`, `L1_RPC_URL`, and `L1_ROLLUP_ADDRESS`.
-- For Etherlink: provide the node URL, kernel address, withdrawal precompile address, and private key for interacting with the Etherlink side. The required variables are `L2_PRIVATE_KEY`, `L2_PUBLIC_KEY`, `L2_MASTER_KEY`, `L2_RPC_URL`, `L2_KERNEL_ADDRESS`, and `L2_WITHDRAW_PRECOMPILE_ADDRESS`.
+- For Etherlink: provide the node URL, kernel address, withdrawal precompile address, and private key for interacting with the Etherlink side. The required variables are `L2_PRIVATE_KEY`, `L2_PUBLIC_KEY`, `L2_MASTER_KEY`, `L2_RPC_URL`, `L2_ROLLUP_RPC_URL`, `L2_KERNEL_ADDRESS`, and `L2_WITHDRAW_PRECOMPILE_ADDRESS`.
 
-To simplify the environment configuration, a script is provided to generate a `.env` file. This file will be used for interaction with the bridge. The script prompts the user to input the variable values needed.
+To simplify the environment configuration, a script is provided to generate a `.env` file. This file will be used as a source of default variables for interaction with the bridge. The script prompts the user to input the variable values needed.
 
 Run the script using the following command:
 ```shell
@@ -43,14 +44,14 @@ For demonstration purposes, users can deploy a test token that will later be bri
 - The **FA1.2** **Ctez** token.
 - The **FA2** **fxhash** token.
 
-To deploy this token and allocate the total supply to the token's originator, execute the following script. The example below illustrates the deployment for an **FA1.2** token type:
+To deploy this token and allocate the total supply to the token's originator, execute the following script. The example below illustrates the deployment for an **FA2** token type:
 ```shell
 poetry run deploy_token --token-type FA2
 ```
 Here is a link to the resulting operation in the [Nairobinet TzKT](https://nairobinet.tzkt.io/op7QGDUcdujMRSHq4C9MDcKwUus9mA2mrXQ15Vc4nsm1NSDJuMU/928446).
 
 #### Deploying a Ticketer
-To deploy a ticketer for a specific token address and token id, use the following script. The example below uses a **FA1.2** token previously deployed on Nairobinet:
+To deploy a ticketer for a specific token address and token id, use the following script. The example below uses a **FA2** token previously deployed on Nairobinet:
 ```shell
 poetry run deploy_ticketer --token-address KT1EMyCtaNPypSbz3qxuXmNZVfvhqifrf5MR --token-type FA2 --token-id 0
 ```

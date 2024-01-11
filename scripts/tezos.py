@@ -267,6 +267,7 @@ def deposit(
     print(f'Succeed, transaction hash: {opg.hash()}')
 
 
+# TODO: consider moving this code to the Etherlink side?
 @click.command()
 @click.option('--level', required=True, type=int, help='The level of the outbox.')
 @click.option('--index', required=True, type=int, help='The index of the message.')

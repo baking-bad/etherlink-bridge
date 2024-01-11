@@ -1,8 +1,12 @@
 import click
 import subprocess
-from typing import Optional
+from typing import (
+    Optional,
+    Any,
+)
 from scripts.environment import load_or_ask
 from tezos.tests.helpers.utility import make_address_bytes
+import requests
 
 
 @click.command()
@@ -232,3 +236,57 @@ def withdraw(
 
     print('Successfully called withdraw:')
     print(result.stdout)
+
+
+@click.command()
+@click.option(
+    '--tx-hash',
+    required=True,
+    help='The hash of the transaction which called withdraw function.',
+)
+@click.option('--rpc-url', default=None, help='Etherlink RPC URL.')
+def parse_withdrawal_event(tx_hash: str, rpc_url: Optional[str]) -> dict[str, Any]:
+    """Parses the withdrawal event from the transaction receipt"""
+
+    rpc_url = rpc_url or load_or_ask('L2_RPC_URL')
+
+    result = requests.post(
+        rpc_url,
+        json={
+            'jsonrpc': '2.0',
+            'method': 'eth_getTransactionReceipt',
+            'params': [tx_hash],
+            'id': 1,
+        },
+    )
+
+    if result.status_code != 200:
+        print(result.text)
+        return {'error': result.text}
+
+    receipt = result.json()['result']
+
+    if receipt is None:
+        print('Transaction not found')
+        return {'error': 'Transaction not found'}
+
+    logs = receipt['logs']
+
+    if len(logs) == 0:
+        print('No logs found')
+        return {'error': 'No logs found'}
+
+    # Expecting that the first log is Transfer event and
+    # the second log is Withdrawal event:
+    log = logs[1]
+    data = log['data']
+
+    outbox_level = int(data[-128:-64], 16)
+    outbox_index = int(data[-64:], 16)
+
+    print(f'outbox_level: {outbox_level}')
+    print(f'outbox_index: {outbox_index}')
+    return {
+        'outbox_level': outbox_level,
+        'outbox_index': outbox_index,
+    }

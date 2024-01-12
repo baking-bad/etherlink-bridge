@@ -301,3 +301,37 @@ def parse_withdrawal_event(
         'outbox_level': outbox_level,
         'outbox_index': outbox_index,
     }
+
+
+@click.command()
+def build_contracts() -> None:
+    """Compiles contracts"""
+
+    print('Compiling Etherlink side contracts:')
+    result = subprocess.run(
+        ['forge', 'build'],
+        cwd='etherlink',
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    print(result.stdout)
+    print('Done')
+
+
+@click.command()
+def test_contracts() -> None:
+    """Runs tests for contracts"""
+
+    print('Testing Etherlink side contracts:')
+    result = subprocess.run(
+        ['forge', 'test'],
+        cwd='etherlink',
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    print(result.stdout)
+    print('Done')

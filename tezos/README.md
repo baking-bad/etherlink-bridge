@@ -1,1 +1,0 @@
-TODO: add Tezos-side description

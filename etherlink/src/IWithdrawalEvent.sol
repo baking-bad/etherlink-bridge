@@ -11,7 +11,7 @@ interface IWithdrawalEvent {
     event Withdrawal(
         uint256 indexed ticketHash,
         address sender,
-        address tiketOwner,
+        address ticketOwner,
         bytes22 receiver,
         uint256 amount,
         uint256 outboxLevel,

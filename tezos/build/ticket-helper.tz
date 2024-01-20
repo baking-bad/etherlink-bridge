@@ -1,7 +1,7 @@
 { parameter
-    (or (or (ticket %default (pair nat (option bytes)))
-            (pair %deposit (address %rollup) (bytes %routing_info) (nat %amount)))
-        (ticket %withdraw (pair nat (option bytes)))) ;
+    (or (ticket %withdraw (pair nat (option bytes)))
+        (or (ticket %default (pair nat (option bytes)))
+            (pair %deposit (address %rollup) (bytes %routing_info) (nat %amount)))) ;
   storage
     (pair (or %token (address %fa12) (pair %fa2 address nat))
           (address %ticketer)
@@ -21,6 +21,30 @@
          DIG 4 ;
          UNPAIR ;
          IF_LEFT
+           { DIG 4 ;
+             DIG 5 ;
+             DROP 2 ;
+             UNIT ;
+             DIG 3 ;
+             SWAP ;
+             EXEC ;
+             DROP ;
+             SENDER ;
+             DUP 3 ;
+             GET 3 ;
+             CONTRACT %withdraw
+               (pair (address %receiver) (ticket %ticket (pair nat (option bytes)))) ;
+             IF_NONE { DIG 3 ; FAILWITH } { DIG 4 ; DROP } ;
+             PUSH mutez 0 ;
+             DIG 3 ;
+             DIG 3 ;
+             PAIR ;
+             TRANSFER_TOKENS ;
+             SWAP ;
+             NIL operation ;
+             DIG 2 ;
+             CONS ;
+             PAIR }
            { IF_LEFT
                { DIG 3 ;
                  DIG 4 ;
@@ -145,29 +169,5 @@
                  CONS ;
                  DIG 2 ;
                  CONS ;
-                 PAIR } }
-           { DIG 4 ;
-             DIG 5 ;
-             DROP 2 ;
-             UNIT ;
-             DIG 3 ;
-             SWAP ;
-             EXEC ;
-             DROP ;
-             SENDER ;
-             DUP 3 ;
-             GET 3 ;
-             CONTRACT %withdraw
-               (pair (address %receiver) (ticket %ticket (pair nat (option bytes)))) ;
-             IF_NONE { DIG 3 ; FAILWITH } { DIG 4 ; DROP } ;
-             PUSH mutez 0 ;
-             DIG 3 ;
-             DIG 3 ;
-             PAIR ;
-             TRANSFER_TOKENS ;
-             SWAP ;
-             NIL operation ;
-             DIG 2 ;
-             CONS ;
-             PAIR } } }
+                 PAIR } } } }
 

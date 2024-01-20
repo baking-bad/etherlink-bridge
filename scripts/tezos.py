@@ -326,7 +326,7 @@ def execute_outbox_message(
 @click.command()
 @click.option(
     '--ligo-version',
-    default='0.70.1',
+    default='1.2.0',
     help='LIGO compiler version used to compile Tezos side contracts, default: 0.70.1',
 )
 def build_contracts(

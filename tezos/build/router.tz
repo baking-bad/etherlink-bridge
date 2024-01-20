@@ -1,0 +1,26 @@
+{ parameter
+    (or (unit %default)
+        (pair %withdraw (address %receiver) (ticket %ticket (pair nat (option bytes))))) ;
+  storage (pair (unit %unit) (big_map %metadata string bytes)) ;
+  code { PUSH string "XTZ_DEPOSIT_DISALLOWED" ;
+         SWAP ;
+         UNPAIR ;
+         IF_LEFT
+           { DROP 2 ; FAILWITH }
+           { PUSH mutez 0 ;
+             AMOUNT ;
+             COMPARE ;
+             GT ;
+             IF { DIG 2 ; FAILWITH } { DIG 2 ; DROP } ;
+             UNPAIR ;
+             CONTRACT (ticket (pair nat (option bytes))) ;
+             IF_NONE { PUSH string "FAILED_TO_GET_TKT_ENTRYPOINT" ; FAILWITH } {} ;
+             PUSH mutez 0 ;
+             DIG 2 ;
+             TRANSFER_TOKENS ;
+             SWAP ;
+             NIL operation ;
+             DIG 2 ;
+             CONS ;
+             PAIR } } }
+

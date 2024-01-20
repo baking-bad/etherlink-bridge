@@ -1,6 +1,6 @@
 [submodule "components/etherlink-l2-side/lib/forge-std"]
-	path = components/etherlink-l2-side/lib/forge-std
+	path = etherlink/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
 [submodule "components/etherlink-l2-side/lib/openzeppelin-contracts"]
-	path = components/etherlink-l2-side/lib/openzeppelin-contracts
+	path = etherlink/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts

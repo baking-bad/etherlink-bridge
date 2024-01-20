@@ -43,6 +43,7 @@ class Ticketer(ContractHelper):
         return {
             'content': content,
             'token': token.as_dict(),
+            'total_supply': 0,
             'metadata': metadata,
         }
 

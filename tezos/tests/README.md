@@ -37,6 +37,10 @@
     - this one is probably imposible to test, need to send fake ticket
 - [ ] test_should_fail_on_deposit_with_attached_xtz
 - [ ] test_should_fail_on_withdraw_with_attached_xtz
+- [ ] test_should_increase_total_supply
+- [ ] test_should_decrease_total_supply
+- [ ] test_should_return_content_on_view_call
+- [ ] test_should_return_token_on_view_call
 
 ## Utils tests [(code)](test_utils.py):
 - [ ] test_ticket_content_generation_for_empty_metadata

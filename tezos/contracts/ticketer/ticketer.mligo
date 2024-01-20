@@ -45,6 +45,7 @@ module Ticketer = struct
         let ticket = Ticket.create store.content amount in
         let token_transfer_op = Token.get_transfer_op store.token amount sender self in
         let ticket_transfer_op = Ticket.send ticket sender in
+        let store = Storage.increase_total_supply amount store in
         [token_transfer_op; ticket_transfer_op], store
 
     [@entry] let withdraw
@@ -64,5 +65,15 @@ module Ticketer = struct
         let () = assert_content_is_expected content store.content in
         let self = Tezos.get_self_address () in
         let transfer_op = Token.get_transfer_op store.token amount self receiver in
+        let store = Storage.decrease_total_supply amount store in
         [transfer_op], store
 end
+
+[@view] let get_total_supply (store : Storage.t) : nat =
+    store.total_supply
+
+[@view] let get_content (store : Storage.t) : Ticket.content_t =
+    store.content
+
+[@view] let get_token (store : Storage.t) : Token.t =
+    store.token

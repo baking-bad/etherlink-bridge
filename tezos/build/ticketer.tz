@@ -4,7 +4,8 @@
   storage
     (pair (big_map %metadata string bytes)
           (or %token (address %fa12) (pair %fa2 address nat))
-          (pair %content nat (option bytes))) ;
+          (pair %content nat (option bytes))
+          (nat %total_supply)) ;
   code { LAMBDA
            (pair (or address (pair address nat)) nat address address)
            operation
@@ -61,7 +62,7 @@
              EXEC ;
              DROP ;
              DUP 4 ;
-             GET 4 ;
+             GET 5 ;
              SWAP ;
              COMPARE ;
              EQ ;
@@ -69,14 +70,23 @@
              SELF_ADDRESS ;
              DIG 2 ;
              SWAP ;
-             DIG 2 ;
-             DUP 4 ;
+             DUP 3 ;
+             DUP 5 ;
              GET 3 ;
              PAIR 4 ;
-             DIG 2 ;
+             DIG 3 ;
              SWAP ;
              EXEC ;
+             DUP 3 ;
+             GET 6 ;
+             DUP 3 ;
+             COMPARE ;
+             GT ;
+             IF { SWAP ; DROP ; PUSH string "TOTAL_SUPPLY_EXCEEDED" ; FAILWITH }
+                { SWAP ; DUP 3 ; GET 6 ; SUB ; ABS } ;
+             DIG 2 ;
              SWAP ;
+             UPDATE 6 ;
              NIL operation }
            { UNIT ;
              DIG 3 ;
@@ -87,16 +97,16 @@
              SENDER ;
              DUP 3 ;
              DUP 5 ;
-             GET 4 ;
+             GET 5 ;
              TICKET ;
              IF_NONE { PUSH string "TKT_CREATION_FAILED" ; FAILWITH } {} ;
              DIG 2 ;
              DUP 3 ;
-             DIG 4 ;
-             DUP 6 ;
+             DUP 5 ;
+             DUP 7 ;
              GET 3 ;
              PAIR 4 ;
-             DIG 4 ;
+             DIG 5 ;
              SWAP ;
              EXEC ;
              DIG 2 ;
@@ -106,6 +116,12 @@
              DIG 3 ;
              TRANSFER_TOKENS ;
              DIG 2 ;
+             DUP 4 ;
+             GET 6 ;
+             ADD ;
+             DIG 3 ;
+             SWAP ;
+             UPDATE 6 ;
              NIL operation ;
              DIG 2 ;
              CONS } ;

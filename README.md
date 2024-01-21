@@ -10,7 +10,7 @@ On the Etherlink side, the setup includes Solidity contracts, notably the **ERC2
 
 Additionally, the [scripts](scripts/) directory contains Python scripts designed for interacting with the bridge. These scripts facilitate various operations, including contract deployment on both sides of the bridge, as well as deposit and withdrawal functions.
 
-The most straightforward method to engage with the components, execute scripts, and observe the interaction between different parts of the bridge is by running the demo notebook. It is set up to run in Google Colab's cloud environment. You can access it here: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/baking-bad/etherlink-bridge/blob/feat/scripts-and-docs/etherlink_bridge_demo.ipynb).
+The most straightforward method to engage with the components, execute scripts, and observe the interaction between different parts of the bridge is by running the demo notebook. It is set up to run in Google Colab's cloud environment. You can access it here: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/baking-bad/etherlink-bridge/blob/main/etherlink_bridge_demo.ipynb).
 
 Alternatively, users can clone this Git repository, adhere to the [installation guide](#install-dependencies), and set up their environment by executing the following command:
 ```shell
@@ -65,7 +65,7 @@ Here is a link to the resulting operation in the [Nairobinet TzKT](https://nairo
 #### Deploying ERC20Proxy
 To deploy a token contract on the Etherlink side capable of minting tokens upon deposit, the `deploy_erc20` command is used. This script requires the `--ticketer-address-bytes` and `--ticketer-content-bytes`, as well as `--token-name`, `--token-symbol`, and `--decimals` for the proper configuration of the L2 token contract. Below is an example that originates ERC20 contract connected to the ticketer previously deployed on Nairobinet:
 ```shell
-poetry run deploy_erc20 --ticketer-address-bytes 018ea031e382d5be16a357753fb833e609c7d2dd9b00 --ticketer-content-bytes 0707000005090a0000007405020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a00000016013f65105866518de12034c340e2b2f65d80780c580007040100000008746f6b656e5f69640a000000030500000704010000000a746f6b656e5f747970650a00000009050100000003464132 --token-name "FA2 Test Token" --token-symbol "FA2" --decimals 0
+poetry run deploy_erc20 --ticketer-address-bytes 018ea031e382d5be16a357753fb833e609c7d2dd9b00 --ticket-content-bytes 0707000005090a0000007405020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a00000016013f65105866518de12034c340e2b2f65d80780c580007040100000008746f6b656e5f69640a000000030500000704010000000a746f6b656e5f747970650a00000009050100000003464132 --token-name "FA2 Test Token" --token-symbol "FA2" --decimals 0
 ```
 Here is a link to the resulting operation in the [Etherlink Blockscout](http://blockscout.dipdup.net/tx/0x41d7fc136882ef01a4497e9c9edec5b2fe05baa686c3d07199a432c65e181fc1).
 
@@ -95,7 +95,7 @@ NOTE: The **Ticketer** may serve as a **Router** during withdrawals, automatical
 
 Below is an example demonstrating the execution of a script that initiates the withdrawal of 108 tokens previously deposited on Etherlink.
 ```shell
-poetry run withdraw --proxy-address 0x8554cD57C0C3E5Ab9d1782c9063279fA9bFA4680 --amount 108 --ticketer-address-bytes 018ea031e382d5be16a357753fb833e609c7d2dd9b00 --ticketer-content-bytes 0707000005090a0000007405020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a00000016013f65105866518de12034c340e2b2f65d80780c580007040100000008746f6b656e5f69640a000000030500000704010000000a746f6b656e5f747970650a00000009050100000003464132
+poetry run withdraw --proxy-address 0x8554cD57C0C3E5Ab9d1782c9063279fA9bFA4680 --amount 108 --ticketer-address-bytes 018ea031e382d5be16a357753fb833e609c7d2dd9b00 --ticket-content-bytes 0707000005090a0000007405020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a00000016013f65105866518de12034c340e2b2f65d80780c580007040100000008746f6b656e5f69640a000000030500000704010000000a746f6b656e5f747970650a00000009050100000003464132
 ```
 Here is a link to the resulting operation in the [Etherlink Blockscout](http://blockscout.dipdup.net/tx/0xfc7e31241a44d3b23afdb41f5e69ecf4a8e3bc0e9f914039fe51beaa52400ed9).
 

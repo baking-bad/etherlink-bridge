@@ -66,7 +66,7 @@ def fund_account(
     help='The address of the ticketer contract encoded in forged form: `| 0x01 | 20 bytes | 0x00 |`. Use `get_ticketer_params` function to get the correct value for a given ticket address.',
 )
 @click.option(
-    '--ticketer-content-bytes',
+    '--ticket-content-bytes',
     required=True,
     help='The content of the ticket as micheline expression is in its forged form, **legacy optimized mode**. Use `get_ticket_params` function to get the correct value for a given ticket address.',
 )
@@ -93,7 +93,7 @@ def fund_account(
 @click.option('--rpc-url', default=None, help='Etherlink RPC URL.')
 def deploy_erc20(
     ticketer_address_bytes: str,
-    ticketer_content_bytes: str,
+    ticket_content_bytes: str,
     token_name: str,
     token_symbol: str,
     decimals: int,
@@ -119,7 +119,7 @@ def deploy_erc20(
             'src/ERC20Proxy.sol:ERC20Proxy',
             '--constructor-args',
             ticketer_address_bytes,
-            ticketer_content_bytes,
+            ticket_content_bytes,
             kernel_address,
             token_name,
             token_symbol,
@@ -163,7 +163,7 @@ def deploy_erc20(
     help='The address of the ticketer contract encoded in forged form: `| 0x01 | 20 bytes | 0x00 |`. Use `get_ticketer_params` function to get the correct value for a given ticket address.',
 )
 @click.option(
-    '--ticketer-content-bytes',
+    '--ticket-content-bytes',
     required=True,
     help='The content of the ticket as micheline expression is in its forged form, **legacy optimized mode**. Use `get_ticket_params` function to get the correct value for a given ticket address.',
 )
@@ -184,7 +184,7 @@ def withdraw(
     router_address: str,
     amount: int,
     ticketer_address_bytes: str,
-    ticketer_content_bytes: str,
+    ticket_content_bytes: str,
     receiver_address: Optional[str],
     withdraw_precompile: Optional[str],
     private_key: Optional[str],
@@ -213,7 +213,7 @@ def withdraw(
             routing_info,
             str(amount),
             ticketer_address_bytes,
-            ticketer_content_bytes,
+            ticket_content_bytes,
             '--rpc-url',
             rpc_url,
             '--private-key',

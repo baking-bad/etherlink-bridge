@@ -127,5 +127,8 @@
              CONS } ;
          DIG 2 ;
          CONS ;
-         PAIR } }
+         PAIR } ;
+  view "get_total_supply" unit nat { CDR ; GET 6 } ;
+  view "get_content" unit (pair nat (option bytes)) { CDR ; GET 5 } ;
+  view "get_token" unit (or (address %fa12) (pair %fa2 address nat)) { CDR ; GET 3 } }
 

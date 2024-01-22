@@ -67,13 +67,13 @@ module Ticketer = struct
         let transfer_op = Token.get_transfer_op store.token amount self receiver in
         let store = Storage.decrease_total_supply amount store in
         [transfer_op], store
+
+    [@view] let get_total_supply (() : unit) (store : Storage.t) : nat =
+        store.total_supply
+
+    [@view] let get_content (() : unit) (store : Storage.t) : Ticket.content_t =
+        store.content
+
+    [@view] let get_token (() : unit) (store : Storage.t) : Token.t =
+        store.token
 end
-
-[@view] let get_total_supply (store : Storage.t) : nat =
-    store.total_supply
-
-[@view] let get_content (store : Storage.t) : Ticket.content_t =
-    store.content
-
-[@view] let get_token (store : Storage.t) : Token.t =
-    store.token

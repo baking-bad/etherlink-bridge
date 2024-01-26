@@ -1,0 +1,1178 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_kernel",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "kernel",
+      "outputs": [
+        {
+          "internalType": "contract IWithdraw",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "ticketOwner",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "receiver",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes22",
+          "name": "ticketer",
+          "type": "bytes22"
+        },
+        {
+          "internalType": "bytes",
+          "name": "content",
+          "type": "bytes"
+        }
+      ],
+      "name": "withdraw",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x608060405234801561001057600080fd5b5060405161048238038061048283398101604081905261002f91610054565b600080546001600160a01b0319166001600160a01b0392909216919091179055610084565b60006020828403121561006657600080fd5b81516001600160a01b038116811461007d57600080fd5b9392505050565b6103ef806100936000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c806380fc1fe31461003b578063d4aae0c414610050575b600080fd5b61004e610049366004610267565b61007f565b005b600054610063906001600160a01b031681565b6040516001600160a01b03909116815260200160405180910390f35b6000546040516380fc1fe360e01b81526001600160a01b03909116906380fc1fe3906100b7908890889088908890889060040161035e565b600060405180830381600087803b1580156100d157600080fd5b505af11580156100e5573d6000803e3d6000fd5b50506000546040516380fc1fe360e01b81526001600160a01b0390911692506380fc1fe39150610121908890889088908890889060040161035e565b600060405180830381600087803b15801561013b57600080fd5b505af115801561014f573d6000803e3d6000fd5b50506000546040516380fc1fe360e01b81526001600160a01b0390911692506380fc1fe3915061018b908890889088908890889060040161035e565b600060405180830381600087803b1580156101a557600080fd5b505af11580156101b9573d6000803e3d6000fd5b505050505050505050565b634e487b7160e01b600052604160045260246000fd5b600082601f8301126101eb57600080fd5b813567ffffffffffffffff80821115610206576102066101c4565b604051601f8301601f19908116603f0116810190828211818310171561022e5761022e6101c4565b8160405283815286602085880101111561024757600080fd5b836020870160208301376000602085830101528094505050505092915050565b600080600080600060a0868803121561027f57600080fd5b85356001600160a01b038116811461029657600080fd5b9450602086013567ffffffffffffffff808211156102b357600080fd5b6102bf89838a016101da565b9550604088013594506060880135915069ffffffffffffffffffff19821682146102e857600080fd5b909250608087013590808211156102fe57600080fd5b5061030b888289016101da565b9150509295509295909350565b6000815180845260005b8181101561033e57602081850181015186830182015201610322565b506000602082860101526020601f19601f83011685010191505092915050565b6001600160a01b038616815260a06020820181905260009061038290830187610318565b85604084015269ffffffffffffffffffff198516606084015282810360808401526103ad8185610318565b9897505050505050505056fea264697066735822122008985a6e3600ecda98d8386b0a56ff625de23baebf258a4e6d60dae0bb30abad64736f6c63430008150033",
+    "sourceMap": "266:544:22:-:0;;;326:73;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;365:6;:27;;-1:-1:-1;;;;;;365:27:22;-1:-1:-1;;;;;365:27:22;;;;;;;;;;266:544;;14:290:29;84:6;137:2;125:9;116:7;112:23;108:32;105:52;;;153:1;150;143:12;105:52;179:16;;-1:-1:-1;;;;;224:31:29;;214:42;;204:70;;270:1;267;260:12;204:70;293:5;14:290;-1:-1:-1;;;14:290:29:o;:::-;266:544:22;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c806380fc1fe31461003b578063d4aae0c414610050575b600080fd5b61004e610049366004610267565b61007f565b005b600054610063906001600160a01b031681565b6040516001600160a01b03909116815260200160405180910390f35b6000546040516380fc1fe360e01b81526001600160a01b03909116906380fc1fe3906100b7908890889088908890889060040161035e565b600060405180830381600087803b1580156100d157600080fd5b505af11580156100e5573d6000803e3d6000fd5b50506000546040516380fc1fe360e01b81526001600160a01b0390911692506380fc1fe39150610121908890889088908890889060040161035e565b600060405180830381600087803b15801561013b57600080fd5b505af115801561014f573d6000803e3d6000fd5b50506000546040516380fc1fe360e01b81526001600160a01b0390911692506380fc1fe3915061018b908890889088908890889060040161035e565b600060405180830381600087803b1580156101a557600080fd5b505af11580156101b9573d6000803e3d6000fd5b505050505050505050565b634e487b7160e01b600052604160045260246000fd5b600082601f8301126101eb57600080fd5b813567ffffffffffffffff80821115610206576102066101c4565b604051601f8301601f19908116603f0116810190828211818310171561022e5761022e6101c4565b8160405283815286602085880101111561024757600080fd5b836020870160208301376000602085830101528094505050505092915050565b600080600080600060a0868803121561027f57600080fd5b85356001600160a01b038116811461029657600080fd5b9450602086013567ffffffffffffffff808211156102b357600080fd5b6102bf89838a016101da565b9550604088013594506060880135915069ffffffffffffffffffff19821682146102e857600080fd5b909250608087013590808211156102fe57600080fd5b5061030b888289016101da565b9150509295509295909350565b6000815180845260005b8181101561033e57602081850181015186830182015201610322565b506000602082860101526020601f19601f83011685010191505092915050565b6001600160a01b038616815260a06020820181905260009061038290830187610318565b85604084015269ffffffffffffffffffff198516606084015282810360808401526103ad8185610318565b9897505050505050505056fea264697066735822122008985a6e3600ecda98d8386b0a56ff625de23baebf258a4e6d60dae0bb30abad64736f6c63430008150033",
+    "sourceMap": "266:544:22:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;405:403;;;;;;:::i;:::-;;:::i;:::-;;296:23;;;;;-1:-1:-1;;;;;296:23:22;;;;;;-1:-1:-1;;;;;2030:32:29;;;2012:51;;2000:2;1985:18;296:23:22;;;;;;;405:403;586:6;;:65;;-1:-1:-1;;;586:65:22;;-1:-1:-1;;;;;586:6:22;;;;:15;;:65;;602:11;;615:8;;625:6;;633:8;;643:7;;586:65;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;661:6:22;;:65;;-1:-1:-1;;;661:65:22;;-1:-1:-1;;;;;661:6:22;;;;-1:-1:-1;661:15:22;;-1:-1:-1;661:65:22;;677:11;;690:8;;700:6;;708:8;;718:7;;661:65;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;736:6:22;;:65;;-1:-1:-1;;;736:65:22;;-1:-1:-1;;;;;736:6:22;;;;-1:-1:-1;736:15:22;;-1:-1:-1;736:65:22;;752:11;;765:8;;775:6;;783:8;;793:7;;736:65;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;405:403;;;;;:::o;14:127:29:-;75:10;70:3;66:20;63:1;56:31;106:4;103:1;96:15;130:4;127:1;120:15;146:718;188:5;241:3;234:4;226:6;222:17;218:27;208:55;;259:1;256;249:12;208:55;295:6;282:20;321:18;358:2;354;351:10;348:36;;;364:18;;:::i;:::-;439:2;433:9;407:2;493:13;;-1:-1:-1;;489:22:29;;;513:2;485:31;481:40;469:53;;;537:18;;;557:22;;;534:46;531:72;;;583:18;;:::i;:::-;623:10;619:2;612:22;658:2;650:6;643:18;704:3;697:4;692:2;684:6;680:15;676:26;673:35;670:55;;;721:1;718;711:12;670:55;785:2;778:4;770:6;766:17;759:4;751:6;747:17;734:54;832:1;825:4;820:2;812:6;808:15;804:26;797:37;852:6;843:15;;;;;;146:718;;;;:::o;869:973::-;982:6;990;998;1006;1014;1067:3;1055:9;1046:7;1042:23;1038:33;1035:53;;;1084:1;1081;1074:12;1035:53;1110:23;;-1:-1:-1;;;;;1162:31:29;;1152:42;;1142:70;;1208:1;1205;1198:12;1142:70;1231:5;-1:-1:-1;1287:2:29;1272:18;;1259:32;1310:18;1340:14;;;1337:34;;;1367:1;1364;1357:12;1337:34;1390:49;1431:7;1422:6;1411:9;1407:22;1390:49;:::i;:::-;1380:59;-1:-1:-1;1486:2:29;1471:18;;1458:32;;-1:-1:-1;1542:2:29;1527:18;;1514:32;;-1:-1:-1;;;1577:41:29;;1565:54;;1555:82;;1633:1;1630;1623:12;1555:82;1656:7;;-1:-1:-1;1716:3:29;1701:19;;1688:33;;1733:16;;;1730:36;;;1762:1;1759;1752:12;1730:36;;1785:51;1828:7;1817:8;1806:9;1802:24;1785:51;:::i;:::-;1775:61;;;869:973;;;;;;;;:::o;2074:422::-;2115:3;2153:5;2147:12;2180:6;2175:3;2168:19;2205:1;2215:162;2229:6;2226:1;2223:13;2215:162;;;2291:4;2347:13;;;2343:22;;2337:29;2319:11;;;2315:20;;2308:59;2244:12;2215:162;;;2219:3;2422:1;2415:4;2406:6;2401:3;2397:16;2393:27;2386:38;2485:4;2478:2;2474:7;2469:2;2461:6;2457:15;2453:29;2448:3;2444:39;2440:50;2433:57;;;2074:422;;;;:::o;2501:653::-;-1:-1:-1;;;;;2778:32:29;;2760:51;;2798:3;2842:2;2827:18;;2820:31;;;-1:-1:-1;;2874:45:29;;2899:19;;2891:6;2874:45;:::i;:::-;2955:6;2950:2;2939:9;2935:18;2928:34;3014:22;3010:27;3002:6;2998:40;2993:2;2982:9;2978:18;2971:68;3088:9;3080:6;3076:22;3070:3;3059:9;3055:19;3048:51;3116:32;3141:6;3133;3116:32;:::i;:::-;3108:40;2501:653;-1:-1:-1;;;;;;;;2501:653:29:o",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "kernel()": "d4aae0c4",
+    "withdraw(address,bytes,uint256,bytes22,bytes)": "80fc1fe3"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_kernel\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"kernel\",\"outputs\":[{\"internalType\":\"contract IWithdraw\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"ticketOwner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"receiver\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes22\",\"name\":\"ticketer\",\"type\":\"bytes22\"},{\"internalType\":\"bytes\",\"name\":\"content\",\"type\":\"bytes\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/BulkWithdrawal.sol\":\"BulkWithdrawal\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/\",\":openzeppelin/=lib/openzeppelin-contracts/contracts/\"]},\"sources\":{\"src/BulkWithdrawal.sol\":{\"keccak256\":\"0x0ce6c1025adace9361d68b467de3cf945ba9e60f3813acc2921343b94bbdf19d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a126316cecec1c90b1afe59a0558e2ede3084cee1e8ca5d590f5c4f36259c976\",\"dweb:/ipfs/QmPspcwh4VGuC3kczPvLVV661P4oDzEzvt79RT2ZuQodpi\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.21+commit.d9974bed"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "_kernel",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "kernel",
+          "outputs": [
+            {
+              "internalType": "contract IWithdraw",
+              "name": "",
+              "type": "address"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "ticketOwner",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "receiver",
+              "type": "bytes"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes22",
+              "name": "ticketer",
+              "type": "bytes22"
+            },
+            {
+              "internalType": "bytes",
+              "name": "content",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "withdraw"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        "ds-test/=lib/forge-std/lib/ds-test/src/",
+        "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+        "forge-std/=lib/forge-std/src/",
+        "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/",
+        "openzeppelin/=lib/openzeppelin-contracts/contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/BulkWithdrawal.sol": "BulkWithdrawal"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "src/BulkWithdrawal.sol": {
+        "keccak256": "0x0ce6c1025adace9361d68b467de3cf945ba9e60f3813acc2921343b94bbdf19d",
+        "urls": [
+          "bzz-raw://a126316cecec1c90b1afe59a0558e2ede3084cee1e8ca5d590f5c4f36259c976",
+          "dweb:/ipfs/QmPspcwh4VGuC3kczPvLVV661P4oDzEzvt79RT2ZuQodpi"
+        ],
+        "license": "MIT"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/BulkWithdrawal.sol",
+    "id": 44108,
+    "exportedSymbols": {
+      "BulkWithdrawal": [
+        44107
+      ],
+      "IWithdraw": [
+        44047
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "32:779:22",
+    "nodes": [
+      {
+        "id": 44033,
+        "nodeType": "PragmaDirective",
+        "src": "32:25:22",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".21"
+        ]
+      },
+      {
+        "id": 44047,
+        "nodeType": "ContractDefinition",
+        "src": "59:205:22",
+        "nodes": [
+          {
+            "id": 44046,
+            "nodeType": "FunctionDefinition",
+            "src": "85:177:22",
+            "nodes": [],
+            "functionSelector": "80fc1fe3",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "withdraw",
+            "nameLocation": "94:8:22",
+            "parameters": {
+              "id": 44044,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 44035,
+                  "mutability": "mutable",
+                  "name": "ticketOwner",
+                  "nameLocation": "120:11:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 44046,
+                  "src": "112:19:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 44034,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "112:7:22",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 44037,
+                  "mutability": "mutable",
+                  "name": "receiver",
+                  "nameLocation": "156:8:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 44046,
+                  "src": "141:23:22",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 44036,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "141:5:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 44039,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "182:6:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 44046,
+                  "src": "174:14:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 44038,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "174:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 44041,
+                  "mutability": "mutable",
+                  "name": "ticketer",
+                  "nameLocation": "206:8:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 44046,
+                  "src": "198:16:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes22",
+                    "typeString": "bytes22"
+                  },
+                  "typeName": {
+                    "id": 44040,
+                    "name": "bytes22",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "198:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes22",
+                      "typeString": "bytes22"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 44043,
+                  "mutability": "mutable",
+                  "name": "content",
+                  "nameLocation": "239:7:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 44046,
+                  "src": "224:22:22",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 44042,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "224:5:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "102:150:22"
+            },
+            "returnParameters": {
+              "id": 44045,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "261:0:22"
+            },
+            "scope": 44047,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IWithdraw",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          44047
+        ],
+        "name": "IWithdraw",
+        "nameLocation": "69:9:22",
+        "scope": 44108,
+        "usedErrors": [],
+        "usedEvents": []
+      },
+      {
+        "id": 44107,
+        "nodeType": "ContractDefinition",
+        "src": "266:544:22",
+        "nodes": [
+          {
+            "id": 44050,
+            "nodeType": "VariableDeclaration",
+            "src": "296:23:22",
+            "nodes": [],
+            "constant": false,
+            "functionSelector": "d4aae0c4",
+            "mutability": "mutable",
+            "name": "kernel",
+            "nameLocation": "313:6:22",
+            "scope": 44107,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_contract$_IWithdraw_$44047",
+              "typeString": "contract IWithdraw"
+            },
+            "typeName": {
+              "id": 44049,
+              "nodeType": "UserDefinedTypeName",
+              "pathNode": {
+                "id": 44048,
+                "name": "IWithdraw",
+                "nameLocations": [
+                  "296:9:22"
+                ],
+                "nodeType": "IdentifierPath",
+                "referencedDeclaration": 44047,
+                "src": "296:9:22"
+              },
+              "referencedDeclaration": 44047,
+              "src": "296:9:22",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_IWithdraw_$44047",
+                "typeString": "contract IWithdraw"
+              }
+            },
+            "visibility": "public"
+          },
+          {
+            "id": 44062,
+            "nodeType": "FunctionDefinition",
+            "src": "326:73:22",
+            "nodes": [],
+            "body": {
+              "id": 44061,
+              "nodeType": "Block",
+              "src": "355:44:22",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "id": 44059,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "id": 44055,
+                      "name": "kernel",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 44050,
+                      "src": "365:6:22",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_IWithdraw_$44047",
+                        "typeString": "contract IWithdraw"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "arguments": [
+                        {
+                          "id": 44057,
+                          "name": "_kernel",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 44052,
+                          "src": "384:7:22",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        ],
+                        "id": 44056,
+                        "name": "IWithdraw",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44047,
+                        "src": "374:9:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_contract$_IWithdraw_$44047_$",
+                          "typeString": "type(contract IWithdraw)"
+                        }
+                      },
+                      "id": 44058,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "typeConversion",
+                      "lValueRequested": false,
+                      "nameLocations": [],
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "374:18:22",
+                      "tryCall": false,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_IWithdraw_$44047",
+                        "typeString": "contract IWithdraw"
+                      }
+                    },
+                    "src": "365:27:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IWithdraw_$44047",
+                      "typeString": "contract IWithdraw"
+                    }
+                  },
+                  "id": 44060,
+                  "nodeType": "ExpressionStatement",
+                  "src": "365:27:22"
+                }
+              ]
+            },
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [],
+            "name": "",
+            "nameLocation": "-1:-1:-1",
+            "parameters": {
+              "id": 44053,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 44052,
+                  "mutability": "mutable",
+                  "name": "_kernel",
+                  "nameLocation": "346:7:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 44062,
+                  "src": "338:15:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 44051,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "338:7:22",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "337:17:22"
+            },
+            "returnParameters": {
+              "id": 44054,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "355:0:22"
+            },
+            "scope": 44107,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "id": 44106,
+            "nodeType": "FunctionDefinition",
+            "src": "405:403:22",
+            "nodes": [],
+            "body": {
+              "id": 44105,
+              "nodeType": "Block",
+              "src": "576:232:22",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 44078,
+                        "name": "ticketOwner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44064,
+                        "src": "602:11:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "id": 44079,
+                        "name": "receiver",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44066,
+                        "src": "615:8:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        }
+                      },
+                      {
+                        "id": 44080,
+                        "name": "amount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44068,
+                        "src": "625:6:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "id": 44081,
+                        "name": "ticketer",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44070,
+                        "src": "633:8:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes22",
+                          "typeString": "bytes22"
+                        }
+                      },
+                      {
+                        "id": 44082,
+                        "name": "content",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44072,
+                        "src": "643:7:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes22",
+                          "typeString": "bytes22"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        }
+                      ],
+                      "expression": {
+                        "id": 44075,
+                        "name": "kernel",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44050,
+                        "src": "586:6:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IWithdraw_$44047",
+                          "typeString": "contract IWithdraw"
+                        }
+                      },
+                      "id": 44077,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "593:8:22",
+                      "memberName": "withdraw",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 44046,
+                      "src": "586:15:22",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_bytes_memory_ptr_$_t_uint256_$_t_bytes22_$_t_bytes_memory_ptr_$returns$__$",
+                        "typeString": "function (address,bytes memory,uint256,bytes22,bytes memory) external"
+                      }
+                    },
+                    "id": 44083,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "586:65:22",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 44084,
+                  "nodeType": "ExpressionStatement",
+                  "src": "586:65:22"
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 44088,
+                        "name": "ticketOwner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44064,
+                        "src": "677:11:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "id": 44089,
+                        "name": "receiver",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44066,
+                        "src": "690:8:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        }
+                      },
+                      {
+                        "id": 44090,
+                        "name": "amount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44068,
+                        "src": "700:6:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "id": 44091,
+                        "name": "ticketer",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44070,
+                        "src": "708:8:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes22",
+                          "typeString": "bytes22"
+                        }
+                      },
+                      {
+                        "id": 44092,
+                        "name": "content",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44072,
+                        "src": "718:7:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes22",
+                          "typeString": "bytes22"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        }
+                      ],
+                      "expression": {
+                        "id": 44085,
+                        "name": "kernel",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44050,
+                        "src": "661:6:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IWithdraw_$44047",
+                          "typeString": "contract IWithdraw"
+                        }
+                      },
+                      "id": 44087,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "668:8:22",
+                      "memberName": "withdraw",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 44046,
+                      "src": "661:15:22",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_bytes_memory_ptr_$_t_uint256_$_t_bytes22_$_t_bytes_memory_ptr_$returns$__$",
+                        "typeString": "function (address,bytes memory,uint256,bytes22,bytes memory) external"
+                      }
+                    },
+                    "id": 44093,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "661:65:22",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 44094,
+                  "nodeType": "ExpressionStatement",
+                  "src": "661:65:22"
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "id": 44098,
+                        "name": "ticketOwner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44064,
+                        "src": "752:11:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "id": 44099,
+                        "name": "receiver",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44066,
+                        "src": "765:8:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        }
+                      },
+                      {
+                        "id": 44100,
+                        "name": "amount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44068,
+                        "src": "775:6:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "id": 44101,
+                        "name": "ticketer",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44070,
+                        "src": "783:8:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes22",
+                          "typeString": "bytes22"
+                        }
+                      },
+                      {
+                        "id": 44102,
+                        "name": "content",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44072,
+                        "src": "793:7:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes22",
+                          "typeString": "bytes22"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        }
+                      ],
+                      "expression": {
+                        "id": 44095,
+                        "name": "kernel",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44050,
+                        "src": "736:6:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IWithdraw_$44047",
+                          "typeString": "contract IWithdraw"
+                        }
+                      },
+                      "id": 44097,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberLocation": "743:8:22",
+                      "memberName": "withdraw",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 44046,
+                      "src": "736:15:22",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_bytes_memory_ptr_$_t_uint256_$_t_bytes22_$_t_bytes_memory_ptr_$returns$__$",
+                        "typeString": "function (address,bytes memory,uint256,bytes22,bytes memory) external"
+                      }
+                    },
+                    "id": 44103,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "736:65:22",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 44104,
+                  "nodeType": "ExpressionStatement",
+                  "src": "736:65:22"
+                }
+              ]
+            },
+            "functionSelector": "80fc1fe3",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "withdraw",
+            "nameLocation": "414:8:22",
+            "parameters": {
+              "id": 44073,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 44064,
+                  "mutability": "mutable",
+                  "name": "ticketOwner",
+                  "nameLocation": "440:11:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 44106,
+                  "src": "432:19:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 44063,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "432:7:22",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 44066,
+                  "mutability": "mutable",
+                  "name": "receiver",
+                  "nameLocation": "474:8:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 44106,
+                  "src": "461:21:22",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 44065,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "461:5:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 44068,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "500:6:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 44106,
+                  "src": "492:14:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 44067,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "492:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 44070,
+                  "mutability": "mutable",
+                  "name": "ticketer",
+                  "nameLocation": "524:8:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 44106,
+                  "src": "516:16:22",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes22",
+                    "typeString": "bytes22"
+                  },
+                  "typeName": {
+                    "id": 44069,
+                    "name": "bytes22",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "516:7:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes22",
+                      "typeString": "bytes22"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 44072,
+                  "mutability": "mutable",
+                  "name": "content",
+                  "nameLocation": "555:7:22",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 44106,
+                  "src": "542:20:22",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 44071,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "542:5:22",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "422:146:22"
+            },
+            "returnParameters": {
+              "id": 44074,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "576:0:22"
+            },
+            "scope": 44107,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "BulkWithdrawal",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          44107
+        ],
+        "name": "BulkWithdrawal",
+        "nameLocation": "275:14:22",
+        "scope": 44108,
+        "usedErrors": [],
+        "usedEvents": []
+      }
+    ],
+    "license": "MIT"
+  },
+  "id": 22
+}

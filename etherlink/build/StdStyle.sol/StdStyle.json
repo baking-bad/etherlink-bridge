@@ -1,17 +1,17 @@
 {
   "abi": [],
   "bytecode": {
-    "object": "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212202c5f6ce5e0ea9d8366517e3f766ada589f99b1888f4cfffa1a185acff389b89c64736f6c63430008150033",
+    "object": "0x60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212208531a12d0ca500d4533cf4d7cbd3afbfe6cf495d83304faf3476b748a20cd3b064736f6c63430008150033",
     "sourceMap": "100:10361:10:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;100:10361:10;;;;;;;;;;;;;;;;;",
     "linkReferences": {}
   },
   "deployedBytecode": {
-    "object": "0x73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212202c5f6ce5e0ea9d8366517e3f766ada589f99b1888f4cfffa1a185acff389b89c64736f6c63430008150033",
+    "object": "0x73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212208531a12d0ca500d4533cf4d7cbd3afbfe6cf495d83304faf3476b748a20cd3b064736f6c63430008150033",
     "sourceMap": "100:10361:10:-:0;;;;;;;;",
     "linkReferences": {}
   },
   "methodIdentifiers": {},
-  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"lib/forge-std/src/StdStyle.sol\":\"StdStyle\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/\",\":openzeppelin/=lib/openzeppelin-contracts/contracts/\"]},\"sources\":{\"lib/forge-std/src/StdStyle.sol\":{\"keccak256\":\"0x43e2a8a9b9c2574dabe74f11adf6f782df218f463540e3b5b563609fe108597d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://51363ca97404cf4128e1141428949768c31929e75e014b02c85e887fbbb4f1b8\",\"dweb:/ipfs/QmVhtbQc2fU4rRmbcfBtz34mAgG4BAZBsbna1Ca4SkoPsK\"]},\"lib/forge-std/src/Vm.sol\":{\"keccak256\":\"0x597ec6514703c8554e1d3d2952e0abdd6020cc133ec9844250ded37dcbb3a1a9\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://7b5c70198450103012fd6953d9572a43bae324aaa7c7d028a83693ae1f65a4f9\",\"dweb:/ipfs/QmdLfoAdh3fKiDFt7cT4jD5aQDuYJ95vC8VoiaFn5aTBJG\"]}},\"version\":1}",
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"lib/forge-std/src/StdStyle.sol\":\"StdStyle\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/\",\"lib/openzeppelin-contracts:openzeppelin/=lib/openzeppelin-contracts/contracts/\"]},\"sources\":{\"lib/forge-std/src/StdStyle.sol\":{\"keccak256\":\"0x43e2a8a9b9c2574dabe74f11adf6f782df218f463540e3b5b563609fe108597d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://51363ca97404cf4128e1141428949768c31929e75e014b02c85e887fbbb4f1b8\",\"dweb:/ipfs/QmVhtbQc2fU4rRmbcfBtz34mAgG4BAZBsbna1Ca4SkoPsK\"]},\"lib/forge-std/src/Vm.sol\":{\"keccak256\":\"0x597ec6514703c8554e1d3d2952e0abdd6020cc133ec9844250ded37dcbb3a1a9\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://7b5c70198450103012fd6953d9572a43bae324aaa7c7d028a83693ae1f65a4f9\",\"dweb:/ipfs/QmdLfoAdh3fKiDFt7cT4jD5aQDuYJ95vC8VoiaFn5aTBJG\"]}},\"version\":1}",
   "metadata": {
     "compiler": {
       "version": "0.8.21+commit.d9974bed"
@@ -36,7 +36,7 @@
         "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
         "forge-std/=lib/forge-std/src/",
         "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/",
-        "openzeppelin/=lib/openzeppelin-contracts/contracts/"
+        "lib/openzeppelin-contracts:openzeppelin/=lib/openzeppelin-contracts/contracts/"
       ],
       "optimizer": {
         "enabled": true,

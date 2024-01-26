@@ -55,7 +55,7 @@
     "linkReferences": {}
   },
   "methodIdentifiers": {},
-  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"ticketHash\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"ticketOwner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"inboxLevel\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"inboxMsgId\",\"type\":\"uint256\"}],\"name\":\"Deposit\",\"type\":\"event\"}],\"devdoc\":{\"events\":{\"Deposit(uint256,address,address,uint256,uint256,uint256)\":{\"params\":{\"amount\":\"Amount of tokens deposited.\",\"inboxLevel\":\"The level at which the deposit was included in the rollup inbox.\",\"inboxMsgId\":\"Inbox message identifier in the rollup inbox at the given level.\",\"receiver\":\"L2 address receiving the tokens.\",\"ticketHash\":\"Unique identifier for the deposited ticket.\",\"ticketOwner\":\"L2 owner who receiving the ticket.\"}}},\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"events\":{\"Deposit(uint256,address,address,uint256,uint256,uint256)\":{\"notice\":\"Indicates a deposit from L1 to L2.\"}},\"kind\":\"user\",\"methods\":{},\"notice\":\"Interface for emitting Deposit events in an L1 to L2 token bridge.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/IDepositEvent.sol\":\"IDepositEvent\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/\",\":openzeppelin/=lib/openzeppelin-contracts/contracts/\"]},\"sources\":{\"src/IDepositEvent.sol\":{\"keccak256\":\"0x2ee2f29720073433a67601d155e57ecab4d3805a60a99f7505df55fd06e50b43\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://93934f97d78286db35c6d103d24a058f8a6d481eee3ec0324cf9d0d8b1e83b5a\",\"dweb:/ipfs/QmYtDQmUte2EqhFZxEHZeBSw7KVTmBFx6HHNv43R6X2BPS\"]}},\"version\":1}",
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"ticketHash\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"ticketOwner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"inboxLevel\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"inboxMsgId\",\"type\":\"uint256\"}],\"name\":\"Deposit\",\"type\":\"event\"}],\"devdoc\":{\"events\":{\"Deposit(uint256,address,address,uint256,uint256,uint256)\":{\"params\":{\"amount\":\"Amount of tokens deposited.\",\"inboxLevel\":\"The level at which the deposit was included in the rollup inbox.\",\"inboxMsgId\":\"Inbox message identifier in the rollup inbox at the given level.\",\"receiver\":\"L2 address receiving the tokens.\",\"ticketHash\":\"Unique identifier for the deposited ticket.\",\"ticketOwner\":\"L2 owner who receiving the ticket.\"}}},\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"events\":{\"Deposit(uint256,address,address,uint256,uint256,uint256)\":{\"notice\":\"Indicates a deposit from L1 to L2.\"}},\"kind\":\"user\",\"methods\":{},\"notice\":\"Interface for emitting Deposit events in an L1 to L2 token bridge.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/IDepositEvent.sol\":\"IDepositEvent\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/\",\"lib/openzeppelin-contracts:openzeppelin/=lib/openzeppelin-contracts/contracts/\"]},\"sources\":{\"src/IDepositEvent.sol\":{\"keccak256\":\"0x2ee2f29720073433a67601d155e57ecab4d3805a60a99f7505df55fd06e50b43\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://93934f97d78286db35c6d103d24a058f8a6d481eee3ec0324cf9d0d8b1e83b5a\",\"dweb:/ipfs/QmYtDQmUte2EqhFZxEHZeBSw7KVTmBFx6HHNv43R6X2BPS\"]}},\"version\":1}",
   "metadata": {
     "compiler": {
       "version": "0.8.21+commit.d9974bed"
@@ -124,7 +124,7 @@
         "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
         "forge-std/=lib/forge-std/src/",
         "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/",
-        "openzeppelin/=lib/openzeppelin-contracts/contracts/"
+        "lib/openzeppelin-contracts:openzeppelin/=lib/openzeppelin-contracts/contracts/"
       ],
       "optimizer": {
         "enabled": true,
@@ -152,19 +152,19 @@
   },
   "ast": {
     "absolutePath": "src/IDepositEvent.sol",
-    "id": 44215,
+    "id": 44401,
     "exportedSymbols": {
       "IDepositEvent": [
-        44214
+        44400
       ]
     },
     "nodeType": "SourceUnit",
-    "src": "32:818:23",
+    "src": "32:818:26",
     "nodes": [
       {
-        "id": 44197,
+        "id": 44383,
         "nodeType": "PragmaDirective",
-        "src": "32:25:23",
+        "src": "32:25:26",
         "nodes": [],
         "literals": [
           "solidity",
@@ -174,39 +174,39 @@
         ]
       },
       {
-        "id": 44214,
+        "id": 44400,
         "nodeType": "ContractDefinition",
-        "src": "145:704:23",
+        "src": "145:704:26",
         "nodes": [
           {
-            "id": 44213,
+            "id": 44399,
             "nodeType": "EventDefinition",
-            "src": "656:191:23",
+            "src": "656:191:26",
             "nodes": [],
             "anonymous": false,
             "documentation": {
-              "id": 44199,
+              "id": 44385,
               "nodeType": "StructuredDocumentation",
-              "src": "175:476:23",
+              "src": "175:476:26",
               "text": " @notice Indicates a deposit from L1 to L2.\n @param ticketHash Unique identifier for the deposited ticket.\n @param ticketOwner L2 owner who receiving the ticket.\n @param receiver L2 address receiving the tokens.\n @param amount Amount of tokens deposited.\n @param inboxLevel The level at which the deposit was included in the rollup inbox.\n @param inboxMsgId Inbox message identifier in the rollup inbox at the given level."
             },
             "eventSelector": "7ee7a1de9c18ce695c95b8b19fbdf26cce3544e3ca9e08c9f487776783d7599f",
             "name": "Deposit",
-            "nameLocation": "662:7:23",
+            "nameLocation": "662:7:26",
             "parameters": {
-              "id": 44212,
+              "id": 44398,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 44201,
+                  "id": 44387,
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "ticketHash",
-                  "nameLocation": "695:10:23",
+                  "nameLocation": "695:10:26",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44213,
-                  "src": "679:26:23",
+                  "scope": 44399,
+                  "src": "679:26:26",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -214,10 +214,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 44200,
+                    "id": 44386,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "679:7:23",
+                    "src": "679:7:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -227,14 +227,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 44203,
+                  "id": 44389,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "ticketOwner",
-                  "nameLocation": "723:11:23",
+                  "nameLocation": "723:11:26",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44213,
-                  "src": "715:19:23",
+                  "scope": 44399,
+                  "src": "715:19:26",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -242,10 +242,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 44202,
+                    "id": 44388,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "715:7:23",
+                    "src": "715:7:26",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -256,14 +256,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 44205,
+                  "id": 44391,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "receiver",
-                  "nameLocation": "752:8:23",
+                  "nameLocation": "752:8:26",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44213,
-                  "src": "744:16:23",
+                  "scope": 44399,
+                  "src": "744:16:26",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -271,10 +271,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 44204,
+                    "id": 44390,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "744:7:23",
+                    "src": "744:7:26",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -285,14 +285,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 44207,
+                  "id": 44393,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "amount",
-                  "nameLocation": "778:6:23",
+                  "nameLocation": "778:6:26",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44213,
-                  "src": "770:14:23",
+                  "scope": 44399,
+                  "src": "770:14:26",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -300,10 +300,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 44206,
+                    "id": 44392,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "770:7:23",
+                    "src": "770:7:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -313,14 +313,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 44209,
+                  "id": 44395,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "inboxLevel",
-                  "nameLocation": "802:10:23",
+                  "nameLocation": "802:10:26",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44213,
-                  "src": "794:18:23",
+                  "scope": 44399,
+                  "src": "794:18:26",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -328,10 +328,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 44208,
+                    "id": 44394,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "794:7:23",
+                    "src": "794:7:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -341,14 +341,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 44211,
+                  "id": 44397,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "inboxMsgId",
-                  "nameLocation": "830:10:23",
+                  "nameLocation": "830:10:26",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44213,
-                  "src": "822:18:23",
+                  "scope": 44399,
+                  "src": "822:18:26",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -356,10 +356,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 44210,
+                    "id": 44396,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "822:7:23",
+                    "src": "822:7:26",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -368,7 +368,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "669:177:23"
+              "src": "669:177:26"
             }
           }
         ],
@@ -378,25 +378,25 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "documentation": {
-          "id": 44198,
+          "id": 44384,
           "nodeType": "StructuredDocumentation",
-          "src": "59:85:23",
+          "src": "59:85:26",
           "text": " @notice Interface for emitting Deposit events in an L1 to L2 token bridge."
         },
         "fullyImplemented": true,
         "linearizedBaseContracts": [
-          44214
+          44400
         ],
         "name": "IDepositEvent",
-        "nameLocation": "155:13:23",
-        "scope": 44215,
+        "nameLocation": "155:13:26",
+        "scope": 44401,
         "usedErrors": [],
         "usedEvents": [
-          44213
+          44399
         ]
       }
     ],
     "license": "MIT"
   },
-  "id": 23
+  "id": 26
 }

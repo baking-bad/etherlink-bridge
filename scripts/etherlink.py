@@ -220,7 +220,7 @@ def withdraw(
             private_key,
             '--legacy',
             '--gas-limit',
-            '300000',
+            '1000000',
         ],
         cwd='etherlink',
         # NOTE: not checking for return code, because it is very common

@@ -100,7 +100,7 @@ contract Kernel is IWithdrawalEvent, IDepositEvent {
 
     function withdraw(
         address ticketOwner,
-        bytes memory receiver,
+        bytes memory routing_info,
         uint256 amount,
         bytes22 ticketer,
         bytes memory content
@@ -110,8 +110,8 @@ contract Kernel is IWithdrawalEvent, IDepositEvent {
         uint256 ticketHash = hashTicket(ticketer, content);
         _decreaseTicketsBalance(ticketer, content, ticketOwner, amount);
 
-        require(receiver.length >= 22, "Receiver address is too short");
-        bytes22 receiver22 = bytes22(receiver);
+        require(routing_info.length >= 22, "Receiver address is too short");
+        bytes22 receiver22 = bytes22(routing_info);
 
         emit Withdrawal(
             ticketHash,

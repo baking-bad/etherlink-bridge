@@ -12,21 +12,22 @@ interface IWithdraw {
 }
 
 contract BulkWithdrawal {
-    IWithdraw public kernel;
+    address public kernel_address;
 
-    constructor(address _kernel) {
-        kernel = IWithdraw(_kernel);
+    constructor(address _kernel_address) {
+        kernel_address = _kernel_address;
     }
 
     function withdraw(
         address ticketOwner,
-        bytes memory receiver,
+        bytes memory routing_info,
         uint256 amount,
         bytes22 ticketer,
         bytes memory content
     ) public {
-        kernel.withdraw(ticketOwner, receiver, amount, ticketer, content);
-        kernel.withdraw(ticketOwner, receiver, amount, ticketer, content);
-        kernel.withdraw(ticketOwner, receiver, amount, ticketer, content);
+        IWithdraw kernel = IWithdraw(kernel_address);
+        kernel.withdraw(ticketOwner, routing_info, amount, ticketer, content);
+        kernel.withdraw(ticketOwner, routing_info, amount, ticketer, content);
+        kernel.withdraw(ticketOwner, routing_info, amount, ticketer, content);
     }
 }

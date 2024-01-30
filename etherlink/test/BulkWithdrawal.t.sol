@@ -14,6 +14,11 @@ contract BulkWithdrawalTest is BaseTest {
             address(token), address(bulkWithdrawal), 100, ticketer, content
         );
         assertEq(token.totalSupply(), 100);
+
+        bytes memory expectedData = abi.encodeCall(
+            kernel.withdraw, (address(token), receiver, 12, ticketer, content)
+        );
+        vm.expectCall(address(kernel), expectedData);
         vm.prank(bob);
         // bulk withdrawal makes 3 withdrawals in one transaction:
         bulkWithdrawal.withdraw(address(token), receiver, 12, ticketer, content);

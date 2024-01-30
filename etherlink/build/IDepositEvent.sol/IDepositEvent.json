@@ -152,19 +152,19 @@
   },
   "ast": {
     "absolutePath": "src/IDepositEvent.sol",
-    "id": 44214,
+    "id": 44274,
     "exportedSymbols": {
       "IDepositEvent": [
-        44213
+        44273
       ]
     },
     "nodeType": "SourceUnit",
-    "src": "32:391:23",
+    "src": "32:391:24",
     "nodes": [
       {
-        "id": 44196,
+        "id": 44256,
         "nodeType": "PragmaDirective",
-        "src": "32:25:23",
+        "src": "32:25:24",
         "nodes": [],
         "literals": [
           "solidity",
@@ -174,39 +174,39 @@
         ]
       },
       {
-        "id": 44213,
+        "id": 44273,
         "nodeType": "ContractDefinition",
-        "src": "131:291:23",
+        "src": "131:291:24",
         "nodes": [
           {
-            "id": 44212,
+            "id": 44272,
             "nodeType": "EventDefinition",
-            "src": "229:191:23",
+            "src": "229:191:24",
             "nodes": [],
             "anonymous": false,
             "documentation": {
-              "id": 44198,
+              "id": 44258,
               "nodeType": "StructuredDocumentation",
-              "src": "161:63:23",
+              "src": "161:63:24",
               "text": " @dev Emitted when succesful deposit is made."
             },
             "eventSelector": "7ee7a1de9c18ce695c95b8b19fbdf26cce3544e3ca9e08c9f487776783d7599f",
             "name": "Deposit",
-            "nameLocation": "235:7:23",
+            "nameLocation": "235:7:24",
             "parameters": {
-              "id": 44211,
+              "id": 44271,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 44200,
+                  "id": 44260,
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "ticketHash",
-                  "nameLocation": "268:10:23",
+                  "nameLocation": "268:10:24",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44212,
-                  "src": "252:26:23",
+                  "scope": 44272,
+                  "src": "252:26:24",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -214,10 +214,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 44199,
+                    "id": 44259,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "252:7:23",
+                    "src": "252:7:24",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -227,14 +227,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 44202,
+                  "id": 44262,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "ticketOwner",
-                  "nameLocation": "296:11:23",
+                  "nameLocation": "296:11:24",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44212,
-                  "src": "288:19:23",
+                  "scope": 44272,
+                  "src": "288:19:24",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -242,10 +242,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 44201,
+                    "id": 44261,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "288:7:23",
+                    "src": "288:7:24",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -256,14 +256,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 44204,
+                  "id": 44264,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "receiver",
-                  "nameLocation": "325:8:23",
+                  "nameLocation": "325:8:24",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44212,
-                  "src": "317:16:23",
+                  "scope": 44272,
+                  "src": "317:16:24",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -271,10 +271,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 44203,
+                    "id": 44263,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "317:7:23",
+                    "src": "317:7:24",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -285,14 +285,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 44206,
+                  "id": 44266,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "amount",
-                  "nameLocation": "351:6:23",
+                  "nameLocation": "351:6:24",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44212,
-                  "src": "343:14:23",
+                  "scope": 44272,
+                  "src": "343:14:24",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -300,10 +300,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 44205,
+                    "id": 44265,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "343:7:23",
+                    "src": "343:7:24",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -313,14 +313,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 44208,
+                  "id": 44268,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "inboxLevel",
-                  "nameLocation": "375:10:23",
+                  "nameLocation": "375:10:24",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44212,
-                  "src": "367:18:23",
+                  "scope": 44272,
+                  "src": "367:18:24",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -328,10 +328,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 44207,
+                    "id": 44267,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "367:7:23",
+                    "src": "367:7:24",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -341,14 +341,14 @@
                 },
                 {
                   "constant": false,
-                  "id": 44210,
+                  "id": 44270,
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "inboxMsgId",
-                  "nameLocation": "403:10:23",
+                  "nameLocation": "403:10:24",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44212,
-                  "src": "395:18:23",
+                  "scope": 44272,
+                  "src": "395:18:24",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -356,10 +356,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 44209,
+                    "id": 44269,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "395:7:23",
+                    "src": "395:7:24",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -368,7 +368,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "242:177:23"
+              "src": "242:177:24"
             }
           }
         ],
@@ -378,25 +378,25 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "documentation": {
-          "id": 44197,
+          "id": 44257,
           "nodeType": "StructuredDocumentation",
-          "src": "59:71:23",
+          "src": "59:71:24",
           "text": " @dev Interface of the contract which can emit Deposit event."
         },
         "fullyImplemented": true,
         "linearizedBaseContracts": [
-          44213
+          44273
         ],
         "name": "IDepositEvent",
-        "nameLocation": "141:13:23",
-        "scope": 44214,
+        "nameLocation": "141:13:24",
+        "scope": 44274,
         "usedErrors": [],
         "usedEvents": [
-          44212
+          44272
         ]
       }
     ],
     "license": "MIT"
   },
-  "id": 23
+  "id": 24
 }

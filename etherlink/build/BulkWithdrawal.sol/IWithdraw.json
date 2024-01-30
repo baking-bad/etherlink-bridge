@@ -47,7 +47,7 @@
   "methodIdentifiers": {
     "withdraw(address,bytes,uint256,bytes22,bytes)": "80fc1fe3"
   },
-  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"ticketOwner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"receiver\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes22\",\"name\":\"ticketer\",\"type\":\"bytes22\"},{\"internalType\":\"bytes\",\"name\":\"content\",\"type\":\"bytes\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/BulkWithdrawal.sol\":\"IWithdraw\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/\",\":openzeppelin/=lib/openzeppelin-contracts/contracts/\"]},\"sources\":{\"src/BulkWithdrawal.sol\":{\"keccak256\":\"0x0ce6c1025adace9361d68b467de3cf945ba9e60f3813acc2921343b94bbdf19d\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a126316cecec1c90b1afe59a0558e2ede3084cee1e8ca5d590f5c4f36259c976\",\"dweb:/ipfs/QmPspcwh4VGuC3kczPvLVV661P4oDzEzvt79RT2ZuQodpi\"]}},\"version\":1}",
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"ticketOwner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"receiver\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes22\",\"name\":\"ticketer\",\"type\":\"bytes22\"},{\"internalType\":\"bytes\",\"name\":\"content\",\"type\":\"bytes\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/BulkWithdrawal.sol\":\"IWithdraw\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/\",\":openzeppelin/=lib/openzeppelin-contracts/contracts/\"]},\"sources\":{\"src/BulkWithdrawal.sol\":{\"keccak256\":\"0xf808951419f2c1bac9a988528a0fe6eda56aae899192a496f5e6fa81984ef320\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://5d3207446076684f0fd34c5e4504be7ac2a3707ab8f299750e013052ba19daa9\",\"dweb:/ipfs/QmNmUt6VXy1Qo6guvZtRPCshRFm7CtUFg7pfMtuU9NEB9m\"]}},\"version\":1}",
   "metadata": {
     "compiler": {
       "version": "0.8.21+commit.d9974bed"
@@ -121,10 +121,10 @@
     },
     "sources": {
       "src/BulkWithdrawal.sol": {
-        "keccak256": "0x0ce6c1025adace9361d68b467de3cf945ba9e60f3813acc2921343b94bbdf19d",
+        "keccak256": "0xf808951419f2c1bac9a988528a0fe6eda56aae899192a496f5e6fa81984ef320",
         "urls": [
-          "bzz-raw://a126316cecec1c90b1afe59a0558e2ede3084cee1e8ca5d590f5c4f36259c976",
-          "dweb:/ipfs/QmPspcwh4VGuC3kczPvLVV661P4oDzEzvt79RT2ZuQodpi"
+          "bzz-raw://5d3207446076684f0fd34c5e4504be7ac2a3707ab8f299750e013052ba19daa9",
+          "dweb:/ipfs/QmNmUt6VXy1Qo6guvZtRPCshRFm7CtUFg7pfMtuU9NEB9m"
         ],
         "license": "MIT"
       }
@@ -133,17 +133,17 @@
   },
   "ast": {
     "absolutePath": "src/BulkWithdrawal.sol",
-    "id": 44108,
+    "id": 44112,
     "exportedSymbols": {
       "BulkWithdrawal": [
-        44107
+        44111
       ],
       "IWithdraw": [
         44047
       ]
     },
     "nodeType": "SourceUnit",
-    "src": "32:779:22",
+    "src": "32:868:22",
     "nodes": [
       {
         "id": 44033,
@@ -339,144 +339,98 @@
         ],
         "name": "IWithdraw",
         "nameLocation": "69:9:22",
-        "scope": 44108,
+        "scope": 44112,
         "usedErrors": [],
         "usedEvents": []
       },
       {
-        "id": 44107,
+        "id": 44111,
         "nodeType": "ContractDefinition",
-        "src": "266:544:22",
+        "src": "266:633:22",
         "nodes": [
           {
-            "id": 44050,
+            "id": 44049,
             "nodeType": "VariableDeclaration",
-            "src": "296:23:22",
+            "src": "296:29:22",
             "nodes": [],
             "constant": false,
-            "functionSelector": "d4aae0c4",
+            "functionSelector": "d79bed7b",
             "mutability": "mutable",
-            "name": "kernel",
-            "nameLocation": "313:6:22",
-            "scope": 44107,
+            "name": "kernel_address",
+            "nameLocation": "311:14:22",
+            "scope": 44111,
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_IWithdraw_$44047",
-              "typeString": "contract IWithdraw"
+              "typeIdentifier": "t_address",
+              "typeString": "address"
             },
             "typeName": {
-              "id": 44049,
-              "nodeType": "UserDefinedTypeName",
-              "pathNode": {
-                "id": 44048,
-                "name": "IWithdraw",
-                "nameLocations": [
-                  "296:9:22"
-                ],
-                "nodeType": "IdentifierPath",
-                "referencedDeclaration": 44047,
-                "src": "296:9:22"
-              },
-              "referencedDeclaration": 44047,
-              "src": "296:9:22",
+              "id": 44048,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "296:7:22",
+              "stateMutability": "nonpayable",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_IWithdraw_$44047",
-                "typeString": "contract IWithdraw"
+                "typeIdentifier": "t_address",
+                "typeString": "address"
               }
             },
             "visibility": "public"
           },
           {
-            "id": 44062,
+            "id": 44059,
             "nodeType": "FunctionDefinition",
-            "src": "326:73:22",
+            "src": "332:86:22",
             "nodes": [],
             "body": {
-              "id": 44061,
+              "id": 44058,
               "nodeType": "Block",
-              "src": "355:44:22",
+              "src": "369:49:22",
               "nodes": [],
               "statements": [
                 {
                   "expression": {
-                    "id": 44059,
+                    "id": 44056,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
-                      "id": 44055,
-                      "name": "kernel",
+                      "id": 44054,
+                      "name": "kernel_address",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 44050,
-                      "src": "365:6:22",
+                      "referencedDeclaration": 44049,
+                      "src": "379:14:22",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IWithdraw_$44047",
-                        "typeString": "contract IWithdraw"
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
                       }
                     },
                     "nodeType": "Assignment",
                     "operator": "=",
                     "rightHandSide": {
-                      "arguments": [
-                        {
-                          "id": 44057,
-                          "name": "_kernel",
-                          "nodeType": "Identifier",
-                          "overloadedDeclarations": [],
-                          "referencedDeclaration": 44052,
-                          "src": "384:7:22",
-                          "typeDescriptions": {
-                            "typeIdentifier": "t_address",
-                            "typeString": "address"
-                          }
-                        }
-                      ],
-                      "expression": {
-                        "argumentTypes": [
-                          {
-                            "typeIdentifier": "t_address",
-                            "typeString": "address"
-                          }
-                        ],
-                        "id": 44056,
-                        "name": "IWithdraw",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 44047,
-                        "src": "374:9:22",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_type$_t_contract$_IWithdraw_$44047_$",
-                          "typeString": "type(contract IWithdraw)"
-                        }
-                      },
-                      "id": 44058,
-                      "isConstant": false,
-                      "isLValue": false,
-                      "isPure": false,
-                      "kind": "typeConversion",
-                      "lValueRequested": false,
-                      "nameLocations": [],
-                      "names": [],
-                      "nodeType": "FunctionCall",
-                      "src": "374:18:22",
-                      "tryCall": false,
+                      "id": 44055,
+                      "name": "_kernel_address",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 44051,
+                      "src": "396:15:22",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IWithdraw_$44047",
-                        "typeString": "contract IWithdraw"
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
                       }
                     },
-                    "src": "365:27:22",
+                    "src": "379:32:22",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IWithdraw_$44047",
-                      "typeString": "contract IWithdraw"
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
                     }
                   },
-                  "id": 44060,
+                  "id": 44057,
                   "nodeType": "ExpressionStatement",
-                  "src": "365:27:22"
+                  "src": "379:32:22"
                 }
               ]
             },
@@ -486,18 +440,18 @@
             "name": "",
             "nameLocation": "-1:-1:-1",
             "parameters": {
-              "id": 44053,
+              "id": 44052,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 44052,
+                  "id": 44051,
                   "mutability": "mutable",
-                  "name": "_kernel",
-                  "nameLocation": "346:7:22",
+                  "name": "_kernel_address",
+                  "nameLocation": "352:15:22",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44062,
-                  "src": "338:15:22",
+                  "scope": 44059,
+                  "src": "344:23:22",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -505,10 +459,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 44051,
+                    "id": 44050,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "338:7:22",
+                    "src": "344:7:22",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -518,88 +472,184 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "337:17:22"
+              "src": "343:25:22"
             },
             "returnParameters": {
-              "id": 44054,
+              "id": 44053,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "355:0:22"
+              "src": "369:0:22"
             },
-            "scope": 44107,
+            "scope": 44111,
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "public"
           },
           {
-            "id": 44106,
+            "id": 44110,
             "nodeType": "FunctionDefinition",
-            "src": "405:403:22",
+            "src": "424:473:22",
             "nodes": [],
             "body": {
-              "id": 44105,
+              "id": 44109,
               "nodeType": "Block",
-              "src": "576:232:22",
+              "src": "599:298:22",
               "nodes": [],
               "statements": [
                 {
-                  "expression": {
+                  "assignments": [
+                    44074
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 44074,
+                      "mutability": "mutable",
+                      "name": "kernel",
+                      "nameLocation": "619:6:22",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 44109,
+                      "src": "609:16:22",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_IWithdraw_$44047",
+                        "typeString": "contract IWithdraw"
+                      },
+                      "typeName": {
+                        "id": 44073,
+                        "nodeType": "UserDefinedTypeName",
+                        "pathNode": {
+                          "id": 44072,
+                          "name": "IWithdraw",
+                          "nameLocations": [
+                            "609:9:22"
+                          ],
+                          "nodeType": "IdentifierPath",
+                          "referencedDeclaration": 44047,
+                          "src": "609:9:22"
+                        },
+                        "referencedDeclaration": 44047,
+                        "src": "609:9:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IWithdraw_$44047",
+                          "typeString": "contract IWithdraw"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 44078,
+                  "initialValue": {
                     "arguments": [
                       {
-                        "id": 44078,
-                        "name": "ticketOwner",
+                        "id": 44076,
+                        "name": "kernel_address",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44064,
-                        "src": "602:11:22",
+                        "referencedDeclaration": 44049,
+                        "src": "638:14:22",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
                         }
-                      },
-                      {
-                        "id": 44079,
-                        "name": "receiver",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 44066,
-                        "src": "615:8:22",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_bytes_memory_ptr",
-                          "typeString": "bytes memory"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
                         }
-                      },
-                      {
-                        "id": 44080,
-                        "name": "amount",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 44068,
-                        "src": "625:6:22",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      },
-                      {
-                        "id": 44081,
-                        "name": "ticketer",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 44070,
-                        "src": "633:8:22",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_bytes22",
-                          "typeString": "bytes22"
-                        }
-                      },
+                      ],
+                      "id": 44075,
+                      "name": "IWithdraw",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 44047,
+                      "src": "628:9:22",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_type$_t_contract$_IWithdraw_$44047_$",
+                        "typeString": "type(contract IWithdraw)"
+                      }
+                    },
+                    "id": 44077,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "typeConversion",
+                    "lValueRequested": false,
+                    "nameLocations": [],
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "628:25:22",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IWithdraw_$44047",
+                      "typeString": "contract IWithdraw"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "609:44:22"
+                },
+                {
+                  "expression": {
+                    "arguments": [
                       {
                         "id": 44082,
+                        "name": "ticketOwner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44061,
+                        "src": "679:11:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "id": 44083,
+                        "name": "routing_info",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44063,
+                        "src": "692:12:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        }
+                      },
+                      {
+                        "id": 44084,
+                        "name": "amount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44065,
+                        "src": "706:6:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "id": 44085,
+                        "name": "ticketer",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44067,
+                        "src": "714:8:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes22",
+                          "typeString": "bytes22"
+                        }
+                      },
+                      {
+                        "id": 44086,
                         "name": "content",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44072,
-                        "src": "643:7:22",
+                        "referencedDeclaration": 44069,
+                        "src": "724:7:22",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes_memory_ptr",
                           "typeString": "bytes memory"
@@ -630,33 +680,33 @@
                         }
                       ],
                       "expression": {
-                        "id": 44075,
+                        "id": 44079,
                         "name": "kernel",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44050,
-                        "src": "586:6:22",
+                        "referencedDeclaration": 44074,
+                        "src": "663:6:22",
                         "typeDescriptions": {
                           "typeIdentifier": "t_contract$_IWithdraw_$44047",
                           "typeString": "contract IWithdraw"
                         }
                       },
-                      "id": 44077,
+                      "id": 44081,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
-                      "memberLocation": "593:8:22",
+                      "memberLocation": "670:8:22",
                       "memberName": "withdraw",
                       "nodeType": "MemberAccess",
                       "referencedDeclaration": 44046,
-                      "src": "586:15:22",
+                      "src": "663:15:22",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_bytes_memory_ptr_$_t_uint256_$_t_bytes22_$_t_bytes_memory_ptr_$returns$__$",
                         "typeString": "function (address,bytes memory,uint256,bytes22,bytes memory) external"
                       }
                     },
-                    "id": 44083,
+                    "id": 44087,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -665,75 +715,75 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "586:65:22",
+                    "src": "663:69:22",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 44084,
+                  "id": 44088,
                   "nodeType": "ExpressionStatement",
-                  "src": "586:65:22"
+                  "src": "663:69:22"
                 },
                 {
                   "expression": {
                     "arguments": [
-                      {
-                        "id": 44088,
-                        "name": "ticketOwner",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 44064,
-                        "src": "677:11:22",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_address",
-                          "typeString": "address"
-                        }
-                      },
-                      {
-                        "id": 44089,
-                        "name": "receiver",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 44066,
-                        "src": "690:8:22",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_bytes_memory_ptr",
-                          "typeString": "bytes memory"
-                        }
-                      },
-                      {
-                        "id": 44090,
-                        "name": "amount",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 44068,
-                        "src": "700:6:22",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_uint256",
-                          "typeString": "uint256"
-                        }
-                      },
-                      {
-                        "id": 44091,
-                        "name": "ticketer",
-                        "nodeType": "Identifier",
-                        "overloadedDeclarations": [],
-                        "referencedDeclaration": 44070,
-                        "src": "708:8:22",
-                        "typeDescriptions": {
-                          "typeIdentifier": "t_bytes22",
-                          "typeString": "bytes22"
-                        }
-                      },
                       {
                         "id": 44092,
+                        "name": "ticketOwner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44061,
+                        "src": "758:11:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "id": 44093,
+                        "name": "routing_info",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44063,
+                        "src": "771:12:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_memory_ptr",
+                          "typeString": "bytes memory"
+                        }
+                      },
+                      {
+                        "id": 44094,
+                        "name": "amount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44065,
+                        "src": "785:6:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "id": 44095,
+                        "name": "ticketer",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 44067,
+                        "src": "793:8:22",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes22",
+                          "typeString": "bytes22"
+                        }
+                      },
+                      {
+                        "id": 44096,
                         "name": "content",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44072,
-                        "src": "718:7:22",
+                        "referencedDeclaration": 44069,
+                        "src": "803:7:22",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes_memory_ptr",
                           "typeString": "bytes memory"
@@ -764,33 +814,33 @@
                         }
                       ],
                       "expression": {
-                        "id": 44085,
+                        "id": 44089,
                         "name": "kernel",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44050,
-                        "src": "661:6:22",
+                        "referencedDeclaration": 44074,
+                        "src": "742:6:22",
                         "typeDescriptions": {
                           "typeIdentifier": "t_contract$_IWithdraw_$44047",
                           "typeString": "contract IWithdraw"
                         }
                       },
-                      "id": 44087,
+                      "id": 44091,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
-                      "memberLocation": "668:8:22",
+                      "memberLocation": "749:8:22",
                       "memberName": "withdraw",
                       "nodeType": "MemberAccess",
                       "referencedDeclaration": 44046,
-                      "src": "661:15:22",
+                      "src": "742:15:22",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_bytes_memory_ptr_$_t_uint256_$_t_bytes22_$_t_bytes_memory_ptr_$returns$__$",
                         "typeString": "function (address,bytes memory,uint256,bytes22,bytes memory) external"
                       }
                     },
-                    "id": 44093,
+                    "id": 44097,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -799,75 +849,75 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "661:65:22",
+                    "src": "742:69:22",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 44094,
+                  "id": 44098,
                   "nodeType": "ExpressionStatement",
-                  "src": "661:65:22"
+                  "src": "742:69:22"
                 },
                 {
                   "expression": {
                     "arguments": [
                       {
-                        "id": 44098,
+                        "id": 44102,
                         "name": "ticketOwner",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44064,
-                        "src": "752:11:22",
+                        "referencedDeclaration": 44061,
+                        "src": "837:11:22",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
                         }
                       },
                       {
-                        "id": 44099,
-                        "name": "receiver",
+                        "id": 44103,
+                        "name": "routing_info",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44066,
-                        "src": "765:8:22",
+                        "referencedDeclaration": 44063,
+                        "src": "850:12:22",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes_memory_ptr",
                           "typeString": "bytes memory"
                         }
                       },
                       {
-                        "id": 44100,
+                        "id": 44104,
                         "name": "amount",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44068,
-                        "src": "775:6:22",
+                        "referencedDeclaration": 44065,
+                        "src": "864:6:22",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
                         }
                       },
                       {
-                        "id": 44101,
+                        "id": 44105,
                         "name": "ticketer",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44070,
-                        "src": "783:8:22",
+                        "referencedDeclaration": 44067,
+                        "src": "872:8:22",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes22",
                           "typeString": "bytes22"
                         }
                       },
                       {
-                        "id": 44102,
+                        "id": 44106,
                         "name": "content",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44072,
-                        "src": "793:7:22",
+                        "referencedDeclaration": 44069,
+                        "src": "882:7:22",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes_memory_ptr",
                           "typeString": "bytes memory"
@@ -898,33 +948,33 @@
                         }
                       ],
                       "expression": {
-                        "id": 44095,
+                        "id": 44099,
                         "name": "kernel",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 44050,
-                        "src": "736:6:22",
+                        "referencedDeclaration": 44074,
+                        "src": "821:6:22",
                         "typeDescriptions": {
                           "typeIdentifier": "t_contract$_IWithdraw_$44047",
                           "typeString": "contract IWithdraw"
                         }
                       },
-                      "id": 44097,
+                      "id": 44101,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
-                      "memberLocation": "743:8:22",
+                      "memberLocation": "828:8:22",
                       "memberName": "withdraw",
                       "nodeType": "MemberAccess",
                       "referencedDeclaration": 44046,
-                      "src": "736:15:22",
+                      "src": "821:15:22",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_bytes_memory_ptr_$_t_uint256_$_t_bytes22_$_t_bytes_memory_ptr_$returns$__$",
                         "typeString": "function (address,bytes memory,uint256,bytes22,bytes memory) external"
                       }
                     },
-                    "id": 44103,
+                    "id": 44107,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -933,16 +983,16 @@
                     "nameLocations": [],
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "736:65:22",
+                    "src": "821:69:22",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 44104,
+                  "id": 44108,
                   "nodeType": "ExpressionStatement",
-                  "src": "736:65:22"
+                  "src": "821:69:22"
                 }
               ]
             },
@@ -951,20 +1001,20 @@
             "kind": "function",
             "modifiers": [],
             "name": "withdraw",
-            "nameLocation": "414:8:22",
+            "nameLocation": "433:8:22",
             "parameters": {
-              "id": 44073,
+              "id": 44070,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 44064,
+                  "id": 44061,
                   "mutability": "mutable",
                   "name": "ticketOwner",
-                  "nameLocation": "440:11:22",
+                  "nameLocation": "459:11:22",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44106,
-                  "src": "432:19:22",
+                  "scope": 44110,
+                  "src": "451:19:22",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -972,10 +1022,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 44063,
+                    "id": 44060,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "432:7:22",
+                    "src": "451:7:22",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -986,13 +1036,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 44066,
+                  "id": 44063,
                   "mutability": "mutable",
-                  "name": "receiver",
-                  "nameLocation": "474:8:22",
+                  "name": "routing_info",
+                  "nameLocation": "493:12:22",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44106,
-                  "src": "461:21:22",
+                  "scope": 44110,
+                  "src": "480:25:22",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1000,10 +1050,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 44065,
+                    "id": 44062,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "461:5:22",
+                    "src": "480:5:22",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -1013,13 +1063,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 44068,
+                  "id": 44065,
                   "mutability": "mutable",
                   "name": "amount",
-                  "nameLocation": "500:6:22",
+                  "nameLocation": "523:6:22",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44106,
-                  "src": "492:14:22",
+                  "scope": 44110,
+                  "src": "515:14:22",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1027,10 +1077,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 44067,
+                    "id": 44064,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "492:7:22",
+                    "src": "515:7:22",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1040,13 +1090,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 44070,
+                  "id": 44067,
                   "mutability": "mutable",
                   "name": "ticketer",
-                  "nameLocation": "524:8:22",
+                  "nameLocation": "547:8:22",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44106,
-                  "src": "516:16:22",
+                  "scope": 44110,
+                  "src": "539:16:22",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1054,10 +1104,10 @@
                     "typeString": "bytes22"
                   },
                   "typeName": {
-                    "id": 44069,
+                    "id": 44066,
                     "name": "bytes22",
                     "nodeType": "ElementaryTypeName",
-                    "src": "516:7:22",
+                    "src": "539:7:22",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes22",
                       "typeString": "bytes22"
@@ -1067,13 +1117,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 44072,
+                  "id": 44069,
                   "mutability": "mutable",
                   "name": "content",
-                  "nameLocation": "555:7:22",
+                  "nameLocation": "578:7:22",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44106,
-                  "src": "542:20:22",
+                  "scope": 44110,
+                  "src": "565:20:22",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1081,10 +1131,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 44071,
+                    "id": 44068,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "542:5:22",
+                    "src": "565:5:22",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -1093,15 +1143,15 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "422:146:22"
+              "src": "441:150:22"
             },
             "returnParameters": {
-              "id": 44074,
+              "id": 44071,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "576:0:22"
+              "src": "599:0:22"
             },
-            "scope": 44107,
+            "scope": 44111,
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "public"
@@ -1114,11 +1164,11 @@
         "contractKind": "contract",
         "fullyImplemented": true,
         "linearizedBaseContracts": [
-          44107
+          44111
         ],
         "name": "BulkWithdrawal",
         "nameLocation": "275:14:22",
-        "scope": 44108,
+        "scope": 44112,
         "usedErrors": [],
         "usedEvents": []
       }

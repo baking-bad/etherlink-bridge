@@ -17,24 +17,19 @@ class RollupCommunicationTestCase(BaseTestCase):
             'symbol': pack('FA2', 'string'),
         }
         ticketer = self.deploy_ticketer(token, extra_metadata)
-        helper = self.deploy_ticket_helper(token, ticketer)
+        erc_proxy = bytes.fromhex('0101010101010101010101010101010101010101')
+        helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
         ticket = ticketer.get_ticket()
-
-        # There are two addresses on L2, the first one is ERC20 proxy contract,
-        # which would receve L2 tickets and the second is the Alice L2 address,
-        # which would receive L2 tokens minted by ERC20 proxy contract:
-        token_proxy = bytes.fromhex('0101010101010101010101010101010101010101')
         alice_l2_address = bytes.fromhex('0202020202020202020202020202020202020202')
 
         # In order to deposit token to the rollup, in one bulk operation:
         # - TicketHelper allowed to transfer tokens from Alice,
         # - Alice locks token on Ticketer and then transfer ticket
         # to the Rollup via TicketHelper contract.
-        routing_info = token_proxy + alice_l2_address
         rollup = f'{rollup_mock.address}%rollup'
         alice.bulk(
             token.allow(pkh(alice), helper.address),
-            helper.deposit(rollup, routing_info, 100),
+            helper.deposit(rollup, alice_l2_address, 100),
         ).send()
         self.bake_block()
 

@@ -85,7 +85,8 @@ class TicketerTestCase(BaseTestCase):
         token = self.deploy_fa2({pkh(alice): 100})
         ticketer = self.deploy_ticketer(token)
         ticket = ticketer.get_ticket()
-        helper = self.deploy_ticket_helper(token, ticketer)
+        erc_proxy = bytes.fromhex('0101010101010101010101010101010101010101')
+        helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
 
         # Alice deposits 100 FA2 tokens to the Ticketer without using helper contract:
         alice.bulk(
@@ -112,7 +113,8 @@ class TicketerTestCase(BaseTestCase):
         token = self.deploy_fa12({pkh(alice): 1})
         ticketer = self.deploy_ticketer(token)
         ticket = ticketer.get_ticket()
-        helper = self.deploy_ticket_helper(token, ticketer)
+        erc_proxy = bytes.fromhex('0101010101010101010101010101010101010101')
+        helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
 
         # Alice deposits 1 FA1.2 token to the Ticketer without using helper contract:
         alice.bulk(

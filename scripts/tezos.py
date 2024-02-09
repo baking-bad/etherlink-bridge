@@ -171,10 +171,16 @@ def deploy_ticketer(
 @click.option(
     '--ticketer-address', required=True, help='The address of the ticketer contract.'
 )
+@click.option(
+    '--proxy-address',
+    required=True,
+    help='The address of the ERC20Proxy on the Etherlink side in bytes form.',
+)
 @click.option('--private-key', default=None, help='Use the provided private key.')
 @click.option('--rpc-url', default=None, help='Tezos RPC URL.')
 def deploy_ticket_helper(
     ticketer_address: str,
+    proxy_address: str,
     private_key: Optional[str],
     rpc_url: Optional[str],
 ) -> TicketHelper:
@@ -185,7 +191,9 @@ def deploy_ticket_helper(
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
     ticketer = Ticketer.from_address(manager, ticketer_address)
-    opg = TicketHelper.originate(manager, ticketer).send()
+    proxy_address = proxy_address.replace('0x', '')
+    proxy_bytes = bytes.fromhex(proxy_address)
+    opg = TicketHelper.originate(manager, ticketer, proxy_bytes).send()
     manager.wait(opg)
     ticket_helper = TicketHelper.from_opg(manager, opg)
     return ticket_helper
@@ -215,11 +223,6 @@ def deploy_rollup_mock(manager: PyTezosClient) -> RollupMock:
     help='The address of the Tezos ticket helper contract.',
 )
 @click.option(
-    '--proxy-address',
-    required=True,
-    help='The address of the ERC20 proxy token contract which should mint token.',
-)
-@click.option(
     '--amount', required=True, type=int, help='The amount of tokens to be deposited.'
 )
 @click.option(
@@ -234,7 +237,6 @@ def deploy_rollup_mock(manager: PyTezosClient) -> RollupMock:
 @click.option('--rpc-url', default=None, help='Tezos RPC URL.')
 def deposit(
     ticket_helper_address: str,
-    proxy_address: str,
     amount: int,
     receiver_address: Optional[str],
     rollup_address: Optional[str],
@@ -243,27 +245,21 @@ def deposit(
 ) -> None:
     """Deposits given amount of given token to the Etherlink Bridge"""
 
-    def prepare_routing_info(proxy_address: str, receiver_address: str) -> bytes:
-        proxy_address = proxy_address.replace('0x', '')
-        receiver_address = receiver_address.replace('0x', '')
-        proxy = bytes.fromhex(proxy_address)
-        receiver = bytes.fromhex(receiver_address)
-        return receiver + proxy
-
     private_key = private_key or load_or_ask('L1_PRIVATE_KEY', is_secret=True)
     receiver_address = receiver_address or load_or_ask('L2_PUBLIC_KEY')
     rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
     rollup_address = rollup_address or load_or_ask('L1_ROLLUP_ADDRESS')
+    receiver_address = receiver_address.replace('0x', '')
+    receiver_bytes = bytes.fromhex(receiver_address)
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
     ticket_helper = TicketHelper.from_address(manager, ticket_helper_address)
     token = ticket_helper.get_ticketer().get_token()
 
-    routing_info = prepare_routing_info(proxy_address, receiver_address)
     opg = manager.bulk(
         # TODO: there is a problem with UnsafeAllowanceChange for FA1.2 token (!)
         token.allow(pkh(manager), ticket_helper.address),
-        ticket_helper.deposit(rollup_address, routing_info, amount),
+        ticket_helper.deposit(rollup_address, receiver_bytes, amount),
     ).send()
     manager.wait(opg)
     print(f'Succeed, transaction hash: {opg.hash()}')
@@ -326,8 +322,8 @@ def execute_outbox_message(
 @click.command()
 @click.option(
     '--ligo-version',
-    default='1.2.0',
-    help='LIGO compiler version used to compile Tezos side contracts, default: 0.70.1',
+    default='1.3.0',
+    help='LIGO compiler version used to compile Tezos side contracts, default: 1.3.0',
 )
 def build_contracts(
     ligo_version: str,

@@ -3,13 +3,14 @@
 
 
 type context_t = [@layout:comb] {
-    routing_info : RoutingInfo.l1_to_l2_t;
+    receiver : bytes;
     rollup : address;
 }
 
 type t = [@layout:comb] {
     token : Token.t;
     ticketer : address;
+    erc_proxy : bytes;
     context : context_t option;
     metadata : (string, bytes) big_map;
 }

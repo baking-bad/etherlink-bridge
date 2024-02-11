@@ -123,7 +123,7 @@ def deploy_erc20(
             kernel_address,
             token_name,
             token_symbol,
-            '0',
+            decimals,
             '--gas-limit',
             '200000',
         ],

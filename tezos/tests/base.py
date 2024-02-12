@@ -69,10 +69,11 @@ class BaseTestCase(SandboxedNodeTestCase):
         self,
         token: TokenHelper,
         ticketer: Ticketer,
+        erc_proxy: bytes,
     ) -> TicketHelper:
         """Deploys TicketHelper contract with given token and ticketer"""
 
-        opg = TicketHelper.originate(self.manager, ticketer).send()
+        opg = TicketHelper.originate(self.manager, ticketer, erc_proxy).send()
         self.bake_block()
         return TicketHelper.from_opg(self.manager, opg)
 

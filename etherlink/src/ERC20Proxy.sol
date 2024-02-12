@@ -65,8 +65,8 @@ contract ERC20Proxy is ERC20 {
     }
 
     /**
-     * Mints `amount` tokens for `to` address if provided `ticketHash`
-     * is correct.
+     * Mints `value` tokens amount for `account` address if provided
+     * `ticketHash` is correct.
      *
      * Requirements:
      *
@@ -83,8 +83,8 @@ contract ERC20Proxy is ERC20 {
     }
 
     /**
-     * Burns `amount` tokens from the `from` address if provided `ticketHash`.
-     * is correct.
+     * Burns `value` tokens amount from the `account` address if provided
+     * `ticketHash` is correct.
      *
      * Requirements:
      *

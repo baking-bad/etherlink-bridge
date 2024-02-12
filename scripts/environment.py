@@ -40,8 +40,8 @@ def init_wallets() -> None:
         ),
         # TODO: it is possible to get L1_PUBLIC_KEY_HASH from L1_PRIVATE_KEY
         Variable('L1_PUBLIC_KEY_HASH', default='tz1YG6P2GTQKFpd9jeuESam2vg6aA9HHRkKo'),
-        Variable('L1_RPC_URL', default='https://rpc.tzkt.io/nairobinet/'),
-        Variable('L1_ROLLUP_ADDRESS', default='sr1JZsZT5u27MUQXeTh1aHqZBo8NvyxRKnyv'),
+        Variable('L1_RPC_URL', default='https://rpc.tzkt.io/oxfordnet/'),
+        Variable('L1_ROLLUP_ADDRESS', default='sr1T4XVcVtBRzYy52edVTdgup9Kip4Wrmn97'),
         Variable(
             'L2_PRIVATE_KEY',
             default='8636c473b431be57109d4153735315a5cdf36b3841eb2cfa80b75b3dcd2d941a',
@@ -57,7 +57,7 @@ def init_wallets() -> None:
         ),
         Variable('L2_RPC_URL', default='https://etherlink.dipdup.net'),
         Variable(
-            'L2_ROLLUP_RPC_URL', default='https://etherlink-rollup-nairobi.dipdup.net'
+            'L2_ROLLUP_RPC_URL', default='https://etherlink-rollup-oxford.dipdup.net'
         ),
         Variable(
             'L2_KERNEL_ADDRESS', default='0x0000000000000000000000000000000000000000'

@@ -1,11 +1,12 @@
 { parameter
     (or (ticket %withdraw (pair nat (option bytes)))
         (or (ticket %default (pair nat (option bytes)))
-            (pair %deposit (address %rollup) (bytes %routing_info) (nat %amount)))) ;
+            (pair %deposit (address %rollup) (bytes %receiver) (nat %amount)))) ;
   storage
     (pair (or %token (address %fa12) (pair %fa2 address nat))
           (address %ticketer)
-          (option %context (pair (bytes %routing_info) (address %rollup)))
+          (bytes %erc_proxy)
+          (option %context (pair (bytes %receiver) (address %rollup)))
           (big_map %metadata string bytes)) ;
   code { PUSH string "INVALID_FA12" ;
          PUSH string "INVALID_FA2" ;
@@ -62,7 +63,7 @@
                  NEQ ;
                  IF { PUSH string "UNEXPECTED_SENDER" ; FAILWITH } {} ;
                  DUP 2 ;
-                 GET 5 ;
+                 GET 7 ;
                  IF_NONE
                    { DROP 2 ; PUSH string "ROUTING_DATA_IS_NOT_SET" ; FAILWITH }
                    { UNPAIR ;
@@ -72,7 +73,11 @@
                                (bytes %b))
                            (bytes %c)) ;
                      IF_NONE { PUSH string "ROLLUP_DEPOSIT_NOT_FOUND" ; FAILWITH } {} ;
-                     DUG 2 ;
+                     DIG 2 ;
+                     DUP 4 ;
+                     GET 5 ;
+                     DIG 3 ;
+                     CONCAT ;
                      PAIR ;
                      LEFT bytes ;
                      LEFT bytes ;
@@ -82,7 +87,7 @@
                      TRANSFER_TOKENS ;
                      SWAP ;
                      NONE (pair bytes address) ;
-                     UPDATE 5 ;
+                     UPDATE 7 ;
                      NIL operation ;
                      DIG 2 ;
                      CONS ;
@@ -161,7 +166,7 @@
                  DIG 5 ;
                  PAIR ;
                  SOME ;
-                 UPDATE 5 ;
+                 UPDATE 7 ;
                  NIL operation ;
                  DIG 3 ;
                  CONS ;

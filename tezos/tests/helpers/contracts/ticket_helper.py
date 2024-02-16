@@ -19,12 +19,14 @@ class TicketHelper(ContractHelper):
         cls,
         client: PyTezosClient,
         ticketer: Ticketer,
+        erc_proxy: bytes,
     ) -> OperationGroup:
         """Deploys Ticket Helper"""
 
         storage = {
             'token': ticketer.get_token().as_dict(),
             'ticketer': ticketer.address,
+            'erc_proxy': erc_proxy,
             'context': None,
             'metadata': Metadata.make_default(
                 name='Ticket Helper',
@@ -35,11 +37,11 @@ class TicketHelper(ContractHelper):
 
         return originate_from_file(filename, client, storage)
 
-    def deposit(self, rollup: str, routing_info: bytes, amount: int) -> ContractCall:
+    def deposit(self, rollup: str, receiver: bytes, amount: int) -> ContractCall:
         """Deposits given amount of tokens to the L2 address set in routing data"""
 
         return self.contract.deposit(
-            {'rollup': rollup, 'routing_info': routing_info, 'amount': amount}
+            {'rollup': rollup, 'receiver': receiver, 'amount': amount}
         )
 
     def get_ticketer(self) -> Ticketer:

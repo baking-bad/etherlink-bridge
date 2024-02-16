@@ -24,7 +24,7 @@ module TicketHelper = struct
 
     type deposit_params = [@layout:comb] {
         rollup : address;
-        routing_info : RoutingInfo.l1_to_l2_t;
+        receiver : bytes;
         amount : nat;
     }
 
@@ -41,7 +41,7 @@ module TicketHelper = struct
             entrypoint.
         *)
 
-        let { amount; routing_info; rollup } = params in
+        let { amount; receiver; rollup } = params in
         let () = Utility.assert_no_xtz_deposit () in
         let token = store.token in
         let ticketer = store.ticketer in
@@ -51,7 +51,7 @@ module TicketHelper = struct
         let token_transfer_op = Token.get_transfer_op token amount sender self in
         let start_deposit_op = Tezos.transaction amount 0mutez entry in
         let approve_token_op = Token.get_approve_op token ticketer amount in
-        let context = { rollup; routing_info } in
+        let context = { rollup; receiver } in
         let updated_store = Storage.set_context context store in
         [token_transfer_op; approve_token_op; start_deposit_op], updated_store
 
@@ -70,8 +70,10 @@ module TicketHelper = struct
         let () = Utility.assert_sender_is s.ticketer in
         match s.context with
         | Some context ->
-            let { rollup; routing_info } = context in
+            let { rollup; receiver } = context in
             let entry = RollupEntry.get rollup in
+            let routing_info = Bytes.concat receiver s.erc_proxy in
+            (* TODO: assert routing_info length equal to 40 bytes *)
             let deposit = { routing_info; ticket } in
             let payload = RollupEntry.wrap deposit in
             let finish_deposit_op = Tezos.transaction payload 0mutez entry in

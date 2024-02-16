@@ -66,3 +66,5 @@
 - [ ] test_should_fail_on_deposit_with_attached_xtz
 - [ ] test_should_fail_on_withdraw_with_attached_xtz
 - [ ] test_should_fail_when_received_ticket_along_with_xtz
+- [ ] test_should_prepare_correct_routing_info
+- [ ] test_should_fail_if_routing_info_has_inccorrect_size (?)

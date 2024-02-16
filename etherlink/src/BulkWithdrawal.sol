@@ -14,6 +14,8 @@ interface IWithdraw {
 contract BulkWithdrawal {
     address public kernel_address;
 
+    event LogEvent(uint256 num);
+
     constructor(address _kernel_address) {
         kernel_address = _kernel_address;
     }
@@ -26,8 +28,8 @@ contract BulkWithdrawal {
         bytes memory content
     ) public {
         IWithdraw kernel = IWithdraw(kernel_address);
+        emit LogEvent(0);
         kernel.withdraw(ticketOwner, routing_info, amount, ticketer, content);
-        kernel.withdraw(ticketOwner, routing_info, amount, ticketer, content);
-        kernel.withdraw(ticketOwner, routing_info, amount, ticketer, content);
+        emit LogEvent(1);
     }
 }

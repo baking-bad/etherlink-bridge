@@ -22,7 +22,7 @@ contract BulkWithdrawalTest is BaseTest {
         vm.prank(bob);
         // bulk withdrawal makes 3 withdrawals in one transaction:
         bulkWithdrawal.withdraw(address(token), receiver, 12, ticketer, content);
-        assertEq(token.balanceOf(address(bulkWithdrawal)), 100 - 12 * 3);
-        assertEq(token.totalSupply(), 100 - 12 * 3);
+        assertEq(token.balanceOf(address(bulkWithdrawal)), 100 - 12 * 1);
+        assertEq(token.totalSupply(), 100 - 12 * 1);
     }
 }

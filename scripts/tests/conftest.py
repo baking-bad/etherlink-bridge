@@ -63,7 +63,7 @@ def fa2_token() -> Token:
 
 
 @pytest.fixture(
-    params=[token_collection.values()]
+    params=[token for name, token in token_collection.items()]
 )
 def token(request: SubRequest) -> Token:
     yield request.param

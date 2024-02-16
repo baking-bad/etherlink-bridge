@@ -55,6 +55,15 @@ class FA12(TokenHelper):
             }
         )
 
+    def disallow(self, owner: str, operator: str) -> ContractCall:
+        # Revoke allowance
+        return self.contract.approve(
+            {
+                'spender': operator,
+                'value': 0,
+            }
+        )
+
     def as_dict(self) -> FA12AsDictType:
         return {'fa12': self.address}
 

@@ -27,27 +27,31 @@ class TokenHelper(ContractHelper):
         balances: dict[str, int],
         token_id: int = 0,
     ) -> OperationGroup:
-        pass
+        ...
 
     @abstractmethod
     def allow(self, owner: str, operator: str) -> ContractCall:
-        pass
+        ...
+
+    @abstractmethod
+    def disallow(self, owner: str, operator: str) -> ContractCall:
+        ...
 
     @abstractmethod
     def as_dict(self) -> dict:
-        pass
+        ...
 
     @abstractmethod
     def as_tuple(self) -> tuple:
-        pass
+        ...
 
     @abstractmethod
     def get_balance(self, address: str) -> int:
-        pass
+        ...
 
     @abstractmethod
     def make_token_info(self) -> dict[str, bytes]:
-        pass
+        ...
 
     def make_token_info_bytes(self) -> bytes:
         return pack(self.make_token_info(), MAP_TOKEN_INFO_TYPE)

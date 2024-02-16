@@ -257,7 +257,7 @@ def deposit(
     token = ticket_helper.get_ticketer().get_token()
 
     opg = manager.bulk(
-        # TODO: there is a problem with UnsafeAllowanceChange for FA1.2 token (!)
+        token.disallow(pkh(manager), ticket_helper.address),
         token.allow(pkh(manager), ticket_helper.address),
         ticket_helper.deposit(rollup_address, receiver_bytes, amount),
     ).send()

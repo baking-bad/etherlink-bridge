@@ -1,16 +1,15 @@
-from tezos.tests.helpers.contracts.tokens.token import TokenHelper
-from tezos.tests.helpers.utility import (
-    DEFAULT_ADDRESS,
-    pack,
-    get_tokens_dir,
-    originate_from_file,
-)
-from pytezos.client import PyTezosClient
 from os.path import join
+
+from pytezos.client import PyTezosClient
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
-from tezos.tests.helpers.metadata import Metadata
 
+from tezos.tests.helpers.contracts.tokens.token import TokenHelper
+from tezos.tests.helpers.metadata import Metadata
+from tezos.tests.helpers.utility import DEFAULT_ADDRESS
+from tezos.tests.helpers.utility import get_tokens_dir
+from tezos.tests.helpers.utility import originate_from_file
+from tezos.tests.helpers.utility import pack
 
 FA2AsDictType = dict[str, tuple[str, int]]
 FA2AsTupleType = tuple[str, tuple[str, int]]
@@ -57,6 +56,19 @@ class FA2(TokenHelper):
             [
                 {
                     'add_operator': {
+                        'owner': owner,
+                        'operator': operator,
+                        'token_id': self.token_id,
+                    }
+                }
+            ]
+        )
+
+    def disallow(self, owner: str, operator: str) -> ContractCall:
+        return self.contract.update_operators(
+            [
+                {
+                    'remove_operator': {
                         'owner': owner,
                         'operator': operator,
                         'token_id': self.token_id,

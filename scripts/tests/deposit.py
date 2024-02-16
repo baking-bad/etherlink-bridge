@@ -7,11 +7,14 @@ import pytest
 from gql import Client
 from gql import gql
 from graphql import DocumentNode
+from pytezos import pytezos
 
 from scripts.tezos import deposit
 from scripts.tests.conftest import Bridge
 from scripts.tests.conftest import Token
 from scripts.tests.conftest import Wallet
+from tezos.tests.helpers.contracts import TicketHelper
+from tezos.tests.helpers.utility import pkh
 
 
 class TestDeposit:
@@ -65,19 +68,97 @@ class TestDeposit:
         query_params = {'operation_hash': operation_hash}
 
         async for session in indexer:
+            indexed_operations = []
             for _ in range(20):
-                result = await session.execute(bridge_deposit_query, variable_values=query_params)
-                if len(result['bridge_deposit']) == 1:
+                response = await session.execute(bridge_deposit_query, variable_values=query_params)
+                indexed_operations = response['bridge_deposit']
+                if len(indexed_operations):
                     break
                 await asyncio.sleep(3)
 
-            assert len(result['bridge_deposit']) == 1
-            assert result['bridge_deposit'][0]['l1_transaction']['l1_account'] == wallet.l1_public_key_hash
-            assert result['bridge_deposit'][0]['l1_transaction']['l2_account'] == wallet.l2_public_key[2:].lower()
-            assert result['bridge_deposit'][0]['l2_transaction']['l2_account'] == wallet.l2_public_key[2:].lower()
-            assert result['bridge_deposit'][0]['l1_transaction']['ticket_hash'] == str(token.ticket_hash)
-            assert result['bridge_deposit'][0]['l2_transaction']['ticket_hash'] == str(token.ticket_hash)
-            assert result['bridge_deposit'][0]['l1_transaction']['amount'] == str(amount)
-            assert result['bridge_deposit'][0]['l2_transaction']['amount'] == str(amount)
-            assert result['bridge_deposit'][0]['l1_transaction']['ticket']['token_id'] == token.l1_asset_id
-            assert result['bridge_deposit'][0]['l2_transaction']['l2_token']['id'] == token.l2_token_address
+            assert indexed_operations == [{
+                'l1_transaction': {
+                    'operation_hash': operation_hash,
+                    'l1_account': wallet.l1_public_key_hash,
+                    'l2_account': wallet.l2_public_key[2:].lower(),
+                    'ticket_hash': str(token.ticket_hash),
+                    'amount': str(amount),
+                    'ticket': {
+                        'token_id': token.l1_asset_id
+                    }
+                },
+                'l2_transaction': {
+                    'l2_account': wallet.l2_public_key[2:].lower(),
+                    'ticket_hash': str(token.ticket_hash),
+                    'amount': str(amount),
+                    'l2_token': {'id': token.l2_token_address}
+                }
+            }]
+
+
+    @pytest.mark.asyncio
+    async def test_batch_token_deposit(
+        self,
+        bridge: Bridge,
+        wallet: Wallet,
+        token: Token,
+        indexer: AsyncGenerator[Client, Any],
+        bridge_deposit_query: gql,
+    ):
+        batch_count = randint(3, 5)
+        amount = randint(3, 20)
+
+        manager = pytezos.using(shell=bridge.l1_rpc_url, key=wallet.l1_private_key)
+        ticket_helper = TicketHelper.from_address(manager, token.l1_ticket_helper_address)
+        token_helper = ticket_helper.get_ticketer().get_token()
+
+        operations_group = (
+            token_helper.disallow(pkh(manager), ticket_helper.address),
+            token_helper.allow(pkh(manager), ticket_helper.address),
+            ticket_helper.deposit(
+                rollup=bridge.l1_smart_rollup_address,
+                receiver=bytes.fromhex(wallet.l2_public_key.replace('0x', '')),
+                amount=amount,
+            ),
+        )*batch_count
+
+        opg = manager.bulk(* operations_group).send()
+        manager.wait(opg)
+        operation_hash = opg.hash()
+
+        assert operation_hash[0] == 'o'
+        assert len(operation_hash) == 51
+
+        query_params = {'operation_hash': operation_hash}
+
+        async for session in indexer:
+            indexed_operations = []
+            for _ in range(20):
+                response = await session.execute(bridge_deposit_query, variable_values=query_params)
+                indexed_operations = response['bridge_deposit']
+                if len(indexed_operations):
+                    break
+                await asyncio.sleep(3)
+
+            assert len(indexed_operations) == batch_count
+            for _ in range(batch_count):
+                assert indexed_operations[_] == {
+                    'l1_transaction': {
+                        'operation_hash': operation_hash,
+                        'l1_account': wallet.l1_public_key_hash,
+                        'l2_account': wallet.l2_public_key[2:].lower(),
+                        'ticket_hash': str(token.ticket_hash),
+                        'amount': str(amount),
+                        'ticket': {
+                            'token_id': token.l1_asset_id
+                        }
+                    },
+                    'l2_transaction': {
+                        'l2_account': wallet.l2_public_key[2:].lower(),
+                        'ticket_hash': str(token.ticket_hash),
+                        'amount': str(amount),
+                        'l2_token': {'id': token.l2_token_address}
+                    }
+                }
+
+            # Check matched operations order

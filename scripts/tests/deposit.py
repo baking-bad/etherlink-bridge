@@ -117,7 +117,7 @@ class TestDeposit:
     async def test_single_token_deposit(self, bridge: Bridge, wallet: Wallet, token: Token, indexer, query: DocumentNode, capfd):
         amount = randint(3, 20)
 
-        deposit.callback(
+        operation_hash = deposit.callback(
             ticket_helper_address=token.l1_ticket_helper_address,
             amount=amount,
             receiver_address=wallet.l2_public_key,

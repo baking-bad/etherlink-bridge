@@ -242,7 +242,7 @@ def deposit(
     rollup_address: Optional[str],
     private_key: Optional[str],
     rpc_url: Optional[str],
-) -> None:
+) -> str:
     """Deposits given amount of given token to the Etherlink Bridge"""
 
     private_key = private_key or load_or_ask('L1_PRIVATE_KEY', is_secret=True)
@@ -262,8 +262,9 @@ def deposit(
         ticket_helper.deposit(rollup_address, receiver_bytes, amount),
     ).send()
     manager.wait(opg)
-    print(f'Succeed, transaction hash: {opg.hash()}')
-
+    operation_hash = opg.hash()
+    print(f'Succeed, transaction hash: {operation_hash}')
+    return operation_hash
 
 # TODO: consider moving this code to the Etherlink side?
 @click.command()

@@ -48,7 +48,7 @@ token_collection: dict[str, Token] = {
         l1_ticket_helper_address='KT1DNtHLr9T9zksZjZvQwgtx5XJwrW9wzETB',
         l2_token_address='cb5d40c6b1bdf5cd51b3801351b0a68d101a561b',
         ticket_hash=56913057262569210987124064945996187916231781764461777232724305614325812366043,
-    )
+    ),
 }
 
 
@@ -62,9 +62,7 @@ def fa2_token() -> Token:
     return token_collection['FA2']
 
 
-@pytest.fixture(
-    params=[token for name, token in token_collection.items()]
-)
+@pytest.fixture(params=[token for name, token in token_collection.items()])
 def token(request: SubRequest) -> Token:
     yield request.param
 
@@ -95,7 +93,9 @@ def wallet() -> Wallet:
 
 @pytest.fixture(scope='session', autouse=True)
 async def indexer() -> AsyncGenerator[Client, Any]:
-    transport = AIOHTTPTransport(url='https://etherlink-bridge-indexer.dipdup.net/v1/graphql')
+    transport = AIOHTTPTransport(
+        url='https://etherlink-bridge-indexer.dipdup.net/v1/graphql'
+    )
     async with Client(
         transport=transport,
         fetch_schema_from_transport=True,

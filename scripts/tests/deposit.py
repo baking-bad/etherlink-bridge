@@ -1,16 +1,17 @@
 import asyncio
 from random import randint
+from typing import Any
+from typing import AsyncGenerator
 
 import pytest
+from gql import Client
 from gql import gql
 from graphql import DocumentNode
 
 from scripts.tezos import deposit
-from scripts.etherlink import withdraw
 from scripts.tests.conftest import Bridge
 from scripts.tests.conftest import Token
 from scripts.tests.conftest import Wallet
-from scripts.tezos import get_ticketer_params
 
 
 class TestDeposit:
@@ -39,7 +40,14 @@ class TestDeposit:
         )
 
     @pytest.mark.asyncio
-    async def test_single_token_deposit(self, bridge: Bridge, wallet: Wallet, token: Token, indexer, bridge_deposit_query):
+    async def test_single_token_deposit(
+        self,
+        bridge: Bridge,
+        wallet: Wallet,
+        token: Token,
+        indexer: AsyncGenerator[Client, Any],
+        bridge_deposit_query: gql,
+    ):
         amount = randint(3, 20)
 
         operation_hash = deposit.callback(
@@ -54,9 +62,7 @@ class TestDeposit:
         assert operation_hash[0] == 'o'
         assert len(operation_hash) == 51
 
-        query_params = {
-            'operation_hash': operation_hash
-        }
+        query_params = {'operation_hash': operation_hash}
 
         async for session in indexer:
             for _ in range(20):

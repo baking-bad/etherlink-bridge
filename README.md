@@ -55,13 +55,6 @@ Here is a link to the resulting operation in the [Oxfordnet TzKT](https://oxford
 
 During the deployment of the Ticketer, users will obtain its parameters, which include **address_bytes** and **content_bytes**. These parameters are essential for the origination of the **ERC20Proxy**.
 
-#### Deploying a Ticket Helper
-To facilitate the interaction of Tezos wallets with specific tickets, users need to deploy a Ticket Helper. This is accomplished using the `deploy_ticket_helper` command, which requires the `--ticketer-address` parameter. The Ticketer's storage will be parsed to retrieve information about the token. Below is an example that illustrates deploying a ticket helper for the ticketer previously deployed on Oxfordnet:
-```shell
-poetry run deploy_ticket_helper --ticketer-address KT1MauRYJiXxD7a8iZkhpdnc4jHu7iGGXDbs
-```
-Here is a link to the resulting operation in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/opZqJve5nKFcNHuZ3YofhVspYnSNzPLo6WsWhor2Zg4nENUVDmM/928448).
-
 #### Deploying ERC20Proxy
 To deploy a token contract on the Etherlink side capable of minting tokens upon deposit, the `deploy_erc20` command is used. This script requires the `--ticketer-address-bytes` and `--ticketer-content-bytes`, as well as `--token-name`, `--token-symbol`, and `--decimals` for the proper configuration of the L2 token contract. Below is an example that originates ERC20 contract connected to the ticketer previously deployed on Oxfordnet:
 ```shell
@@ -74,10 +67,17 @@ NOTE: To retrieve the **ticketer-address-bytes** and **content-bytes** from an a
 poetry run get_ticketer_params --ticketer KT1MauRYJiXxD7a8iZkhpdnc4jHu7iGGXDbs
 ```
 
-### Deposit
-To initiate a deposit, users need to transfer Tickets to the rollup address, appending Routing Info in the [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#deposit): a 40 bytes payload comprising `| receiver | proxy |`, where both receiver and proxy are standard Ethereum addresses in raw form (H160). The `deposit` command simplifies this process. It requires the Ticket Helper address (`--ticket-helper-address`), the Etherlink ERC20Proxy contract address (`--proxy-address`), and the bridged amount (`--amount`). Below is an example of how to execute this:
+#### Deploying a Ticket Helper
+Finally, to allow the interaction of Tezos wallets with tickets, users need to deploy a Ticket Helper. During origination, Ticket Helper linked to the Token, Tikiter and ERC20Proxy. To originate Ticket Helper user should run the `deploy_ticket_helper` command, which requires the `--ticketer-address` and `--proxy-address` parameters to be provided. The Ticketer's storage will be parsed to retrieve information about the token. Below is an example that illustrates deploying a ticket helper for the ticketer previously deployed on Nairobinet:
 ```shell
-poetry run deposit --ticket-helper-address KT1DNtHLr9T9zksZjZvQwgtx5XJwrW9wzETB --proxy-address 0xcb5d40c6b1bdf5cd51b3801351b0a68d101a561b --amount 32
+poetry run deploy_ticket_helper --ticketer-address KT1PmYUomF3HDxsGWYQUCbLi2X8WvT7ZHv8o --proxy-address 0xe448b46E3c9167961ae4bD498E8dFb78Ae97da8a
+```
+Here is a link to the resulting operation in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/opZqJve5nKFcNHuZ3YofhVspYnSNzPLo6WsWhor2Zg4nENUVDmM/928448).
+
+### Deposit
+To initiate a deposit, users need to transfer Tickets to the rollup address, appending Routing Info in the [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#deposit): a 40 bytes payload comprising `| receiver | proxy |`, where both receiver and proxy are standard Ethereum addresses in raw form (H160). The Ticket Helper contract simplifies this process. To initiate a deposit using Ticket Helper users need to provide the Ticket Helper address (`--ticket-helper-address`) and a bridged amount (`--amount`) to initiate a deposit. Below is an example of how to execute this command:
+```shell
+poetry run deposit --ticket-helper-address KT1UksiFErZWVndLyxJBYnMR69egCvpFKGVu --amount 77
 ```
 Here is a link to the resulting operation in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/opRNngtr5dwYG6nJuXRAWXLPmE8Y17RgadwBQEtZfu3tfT9sxVv/928449) and [Etherlink Blockscout](http://blockscout.dipdup.net/tx/0xa34a41d8d5ca8e3019cb457c2a5b7f978ebf7193a72790fb6085b13ed2da1f66).
 

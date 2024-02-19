@@ -89,6 +89,11 @@ def fund_account(
     default=None,
     help='The address of the Etherlink kernel which will be managing token.',
 )
+@click.option(
+    '--sol-contract-name',
+    default='ERC20Proxy',
+    help='The name of the solidity contract used to be deployed. ERC20Proxy is the default value.',
+)
 @click.option('--private-key', default=None, help='Use the provided private key.')
 @click.option('--rpc-url', default=None, help='Etherlink RPC URL.')
 def deploy_erc20(
@@ -100,6 +105,7 @@ def deploy_erc20(
     kernel_address: Optional[str],
     private_key: Optional[str],
     rpc_url: Optional[str],
+    sol_contract_name: str,
 ) -> None:
     """Deploys ERC20 Proxy contract with given parameters"""
 
@@ -116,7 +122,7 @@ def deploy_erc20(
             rpc_url,
             '--private-key',
             private_key,
-            'src/ERC20Proxy.sol:ERC20Proxy',
+            f'src/{sol_contract_name}.sol:{sol_contract_name}',
             '--constructor-args',
             ticketer_address_bytes,
             ticket_content_bytes,

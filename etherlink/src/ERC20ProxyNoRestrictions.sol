@@ -20,6 +20,8 @@ contract ERC20ProxyNoRestrictions is ERC20 {
     address private _kernel;
     uint8 private _decimals;
 
+    event LogEvent(string operation, address account, uint256 value);
+
     /**
      * Params ticketer_, content_ and kernel_ not used in this version
      * of the contract.
@@ -49,7 +51,8 @@ contract ERC20ProxyNoRestrictions is ERC20 {
      * No restrictions.
      */
     function deposit(address account, uint256 value, uint256) public {
-        _mint(account, value);
+        // _mint(account, value);
+        emit LogEvent("mint", account, value);
     }
 
     /**
@@ -57,7 +60,8 @@ contract ERC20ProxyNoRestrictions is ERC20 {
      * No restrictions.
      */
     function withdraw(address account, uint256 value, uint256) public {
-        _burn(account, value);
+        // _burn(account, value);
+        emit LogEvent("burn", account, value);
     }
 
     function decimals() public view override returns (uint8) {

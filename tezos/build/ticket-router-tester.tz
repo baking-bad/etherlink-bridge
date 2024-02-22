@@ -1,0 +1,46 @@
+{ parameter
+    (or (pair %withdraw (address %receiver) (ticket %ticket (pair nat (option bytes))))
+        (or (ticket %deposit (pair nat (option bytes)))
+            (pair %set
+               (address %rollup)
+               (bytes %routing_info)
+               (big_map %metadata string bytes)))) ;
+  storage
+    (pair (address %rollup) (bytes %routing_info) (big_map %metadata string bytes)) ;
+  code { UNPAIR ;
+         IF_LEFT
+           { UNPAIR ;
+             DIG 2 ;
+             NIL operation ;
+             DIG 2 ;
+             CONTRACT (ticket (pair nat (option bytes))) ;
+             IF_NONE { PUSH string "FAILED_TO_GET_TKT_ENTRYPOINT" ; FAILWITH } {} ;
+             PUSH mutez 0 ;
+             DIG 4 ;
+             TRANSFER_TOKENS ;
+             CONS }
+           { IF_LEFT
+               { DUP 2 ;
+                 UNPAIR 3 ;
+                 DIG 2 ;
+                 DROP ;
+                 DIG 3 ;
+                 NIL operation ;
+                 DIG 4 ;
+                 DIG 4 ;
+                 PAIR ;
+                 LEFT bytes ;
+                 LEFT bytes ;
+                 DIG 3 ;
+                 CONTRACT
+                   (or (or (pair %deposit (bytes %routing_info) (ticket %ticket (pair nat (option bytes))))
+                           (bytes %b))
+                       (bytes %c)) ;
+                 IF_NONE { PUSH string "ROLLUP_DEPOSIT_NOT_FOUND" ; FAILWITH } {} ;
+                 PUSH mutez 0 ;
+                 DIG 2 ;
+                 TRANSFER_TOKENS ;
+                 CONS }
+               { SWAP ; DROP ; NIL operation } } ;
+         PAIR } }
+

@@ -372,6 +372,11 @@ def build_contracts(
 
     print('Compiling Tezos side contracts:')
     compile_contract(
+        'contracts/ticket-router-tester/ticket-router-tester.mligo',
+        'TicketRouterTester',
+        'build/ticket-router-tester.tz',
+    )
+    compile_contract(
         'contracts/ticket-helper/ticket-helper.mligo',
         'TicketHelper',
         'build/ticket-helper.tz',

@@ -1,6 +1,6 @@
-# Test cases list:
+# Sandbox test cases list:
 
-## Integration test [(code)](test_communication.py)
+## Sandbox integration test [(code)](test_communication.py)
 - [x] test_should_be_able_to_deposit_and_withdraw
     - check alice converts 100 tokens to tickets and deposits it to rollup
     - check rollup has 100 tickets
@@ -41,17 +41,13 @@
 - [ ] test_should_decrease_total_supply
 - [ ] test_should_return_content_on_view_call
 - [ ] test_should_return_token_on_view_call
+- [ ] test_should_not_allow_to_mint_new_ticket_if_total_supply_exceeds_max
 
 ## Utils tests [(code)](test_utils.py):
 - [ ] test_ticket_content_generation_for_empty_metadata
 - [ ] test_ticket_content_generation_for_fa2_without_extra_metadata
 - [ ] test_ticket_content_generation_for_fa12_without_extra_metadata
 - [ ] test_ticket_content_generation_with_extra_metadata_added
-
-## Router tests [(code)](test_router.py):
-- [ ] test_should_redirect_ticket_on_withdraw_from_rollup
-    - or if there will be ticketer mock for TicketHelper testing then from this mock
-- [ ] test_should_fail_on_withdraw_when_xtz_attached
 
 ## TicketHelper tests [(code)](test_ticket_helper.py):
 - [ ] test_deposit_succeed_for_correct_fa2_token_and_ticketer

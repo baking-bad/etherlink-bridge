@@ -391,11 +391,6 @@ def build_contracts(
         'Ticketer',
         'build/ticketer.tz',
     )
-    compile_contract(
-        'contracts/router.mligo',
-        'Router',
-        'build/router.tz',
-    )
     print('Done')
 
 

@@ -17,10 +17,8 @@ let get (router : address) : t contract =
     | Some entry -> entry
 
 let make
-        (ticket : Ticket.t)
-        (receiver : address)
+        (router : address)
+        (params : t)
         : operation =
-    let (ticketer, (_payload, _amt)), ticket = Tezos.read_ticket ticket in
-    let entry = get ticketer in
-    let withdraw = { receiver; ticket } in
-    Tezos.transaction withdraw 0mutez entry
+    let entry = get router in
+    Tezos.transaction params 0mutez entry

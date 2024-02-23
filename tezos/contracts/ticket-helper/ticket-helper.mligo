@@ -78,7 +78,7 @@ module TicketHelper = struct
             [finish_deposit_op], updated_store
         | None -> failwith Errors.routing_data_is_not_set
 
-    [@entry] let withdraw
+    [@entry] let unwrap
             (ticket : Ticket.t)
             (s: Storage.t) : return_t =
         (*

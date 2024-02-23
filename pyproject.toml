@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "etherlink-bridge"
-version = "0.3.0"
+version = "0.4.0"
 description = "This repository presents an implementation of a bridge between Tezos and Etherlink which implements TZIP-029."
 authors = ["Stepan Naumov <ztepler@baking-bad.org>"]
 packages = [

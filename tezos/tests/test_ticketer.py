@@ -99,8 +99,8 @@ class TicketerTestCase(BaseTestCase):
         assert token.get_balance(ticketer.address) == 100
         assert token.get_balance(pkh(alice)) == 0
 
-        # Alice uses helper contract to withdraw tickets from her balance:
-        entrypoint = f'{helper.address}%withdraw'
+        # Alice uses helper contract to unwrap tickets back to tokens:
+        entrypoint = f'{helper.address}%unwrap'
         ticket.using(alice).transfer(entrypoint, 42).send()
         self.bake_block()
 
@@ -127,8 +127,8 @@ class TicketerTestCase(BaseTestCase):
         assert token.get_balance(ticketer.address) == 1
         assert token.get_balance(pkh(alice), allow_key_error=True) == 0
 
-        # Alice uses helper contract to withdraw tickets from her balance:
-        entrypoint = f'{helper.address}%withdraw'
+        # Alice uses helper contract to unwrap tickets back to tokens:
+        entrypoint = f'{helper.address}%unwrap'
         ticket.using(alice).transfer(entrypoint, 1).send()
         self.bake_block()
 

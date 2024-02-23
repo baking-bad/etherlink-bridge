@@ -10,15 +10,15 @@ class RollupCommunicationTestCase(BaseTestCase):
         # Deploying contracts:
         boris = self.bootstrap_account()
         alice = self.bootstrap_account()
-        token = self.deploy_fa2(balances={pkh(alice): 1000})
-        rollup_mock = self.deploy_rollup_mock()
+
         extra_metadata = {
             'decimals': pack(12, 'nat'),
             'symbol': pack('FA2', 'string'),
         }
-        ticketer = self.deploy_ticketer(token, extra_metadata)
-        erc_proxy = bytes.fromhex('0101010101010101010101010101010101010101')
-        helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
+        balances = {pkh(alice): 1000}
+        token, ticketer, erc_proxy, helper = self.setup_fa2(balances, extra_metadata)
+        rollup_mock = self.deploy_rollup_mock()
+
         ticket = ticketer.get_ticket()
         alice_l2_address = bytes.fromhex('0202020202020202020202020202020202020202')
 

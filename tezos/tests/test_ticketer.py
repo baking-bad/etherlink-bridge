@@ -82,11 +82,9 @@ class TicketerTestCase(BaseTestCase):
 
     def test_should_send_fa2_to_receiver_on_withdraw_if_ticket_correct(self) -> None:
         alice = self.bootstrap_account()
-        token = self.deploy_fa2({pkh(alice): 100})
-        ticketer = self.deploy_ticketer(token)
+        balances = {pkh(alice): 100}
+        token, ticketer, erc_proxy, helper = self.setup_fa2(balances)
         ticket = ticketer.get_ticket()
-        erc_proxy = bytes.fromhex('0101010101010101010101010101010101010101')
-        helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
 
         # Alice deposits 100 FA2 tokens to the Ticketer without using helper contract:
         alice.bulk(
@@ -110,11 +108,9 @@ class TicketerTestCase(BaseTestCase):
 
     def test_should_send_fa12_to_receiver_on_withdraw_if_ticket_correct(self) -> None:
         alice = self.bootstrap_account()
-        token = self.deploy_fa12({pkh(alice): 1})
-        ticketer = self.deploy_ticketer(token)
+        balances = {pkh(alice): 1}
+        token, ticketer, erc_proxy, helper = self.setup_fa12(balances)
         ticket = ticketer.get_ticket()
-        erc_proxy = bytes.fromhex('0101010101010101010101010101010101010101')
-        helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
 
         # Alice deposits 1 FA1.2 token to the Ticketer without using helper contract:
         alice.bulk(

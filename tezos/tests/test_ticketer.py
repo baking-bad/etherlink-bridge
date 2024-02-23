@@ -1,4 +1,5 @@
 from tezos.tests.base import BaseTestCase
+from pytezos.rpc.errors import MichelsonError
 from tezos.tests.helpers.utility import pkh, pack
 
 
@@ -83,7 +84,7 @@ class TicketerTestCase(BaseTestCase):
     def test_should_send_fa2_to_receiver_on_withdraw_if_ticket_correct(self) -> None:
         alice = self.bootstrap_account()
         balances = {pkh(alice): 100}
-        token, ticketer, erc_proxy, helper = self.setup_fa2(balances)
+        token, ticketer, _, helper = self.setup_fa2(balances)
         ticket = ticketer.get_ticket()
 
         # Alice deposits 100 FA2 tokens to the Ticketer without using helper contract:
@@ -109,7 +110,7 @@ class TicketerTestCase(BaseTestCase):
     def test_should_send_fa12_to_receiver_on_withdraw_if_ticket_correct(self) -> None:
         alice = self.bootstrap_account()
         balances = {pkh(alice): 1}
-        token, ticketer, erc_proxy, helper = self.setup_fa12(balances)
+        token, ticketer, _, helper = self.setup_fa12(balances)
         ticket = ticketer.get_ticket()
 
         # Alice deposits 1 FA1.2 token to the Ticketer without using helper contract:
@@ -131,3 +132,28 @@ class TicketerTestCase(BaseTestCase):
         assert ticket.get_balance(pkh(alice)) == 0
         assert token.get_balance(ticketer.address, allow_key_error=True) == 0
         assert token.get_balance(pkh(alice)) == 1
+
+    def test_should_not_allow_to_mint_new_ticket_if_total_supply_exceeds_max(self) -> None:
+        alice = self.bootstrap_account()
+        balances = {pkh(alice): 2**256}
+        token, ticketer, _, helper = self.setup_fa2(balances)
+        ticket = ticketer.get_ticket()
+        token.using(alice).allow(pkh(alice), ticketer.address).send()
+        self.bake_block()
+
+        # Alice not able to deposit 2**256 tokens to the Ticketer:
+        with self.assertRaises(MichelsonError) as err:
+            ticketer.using(alice).deposit({'amount': 2**256}).send()
+        assert 'TOTAL_SUPPLY_EXCEED_MAX' in str(err.exception)
+
+        # But Alice able to deposit 2**256-1 tokens to the Ticketer:
+        ticketer.using(alice).deposit({'amount': 2**256-1}).send()
+        self.bake_block()
+
+        assert ticket.get_balance(pkh(alice)) == 2**256-1
+        assert token.get_balance(ticketer.address) == 2**256-1
+
+        # Alice tries to deposit 1 more token and it fails:
+        with self.assertRaises(MichelsonError) as err:
+            ticketer.using(alice).deposit({'amount': 1}).send()
+        assert 'TOTAL_SUPPLY_EXCEED_MAX' in str(err.exception)

@@ -41,7 +41,9 @@
 - [ ] test_should_decrease_total_supply
 - [ ] test_should_return_content_on_view_call
 - [ ] test_should_return_token_on_view_call
-- [ ] test_should_not_allow_to_mint_new_ticket_if_total_supply_exceeds_max
+- [x] test_should_not_allow_to_mint_new_ticket_if_total_supply_exceeds_max
+- [-] test_should_not_allow_to_burn_ticket_if_total_supply_goes_negative
+    - this one is impossible to test because it requires minting new tickets without updating `total_supply`
 
 ## Utils tests [(code)](test_utils.py):
 - [ ] test_ticket_content_generation_for_empty_metadata

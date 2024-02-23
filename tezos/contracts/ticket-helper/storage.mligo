@@ -1,4 +1,3 @@
-#import "../common/types/routing-info.mligo" "RoutingInfo"
 #import "../common/tokens/index.mligo" "Token"
 
 

@@ -1,5 +1,4 @@
 #import "../errors.mligo" "Errors"
-#import "../tokens/index.mligo" "Token"
 
 
 type content_t = nat * bytes option

@@ -1,5 +1,4 @@
 #import "./storage.mligo" "Storage"
-#import "../common/types/routing-info.mligo" "RoutingInfo"
 #import "../common/entrypoints/rollup-deposit.mligo" "RollupDepositEntry"
 #import "../common/entrypoints/ticketer-deposit.mligo" "TicketerDepositEntry"
 #import "../common/entrypoints/router-withdraw.mligo" "RouterWithdrawEntry"

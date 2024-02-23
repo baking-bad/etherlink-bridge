@@ -16,13 +16,9 @@ let get_transfer_op
         : operation =
     match Tezos.get_entrypoint_opt "%transfer" addr with
     | None -> failwith Errors.invalid_fa12
-    | Some c ->
-        let params = {
-            from_ = from_;
-            to_ = to_;
-            value = value
-        } in
-        Tezos.transaction params 0mutez c
+    | Some contract ->
+        let params = { from_; to_; value } in
+        Tezos.transaction params 0mutez contract
 
 type approve_params = [@layout:comb] {
     spender: address;

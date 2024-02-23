@@ -1,13 +1,6 @@
 #import "../errors.mligo" "Errors"
 
 type t = address * nat
-// TODO: consider replacing `t` with:
-(*
-type t = [@layout:comb] {
-    address : address;
-    token_id : nat;
-}
-*)
 
 type transfer_txs_item = [@layout:comb] {
     to_: address;
@@ -30,7 +23,7 @@ let get_transfer_op
     match Tezos.get_entrypoint_opt "%transfer" addr with
     | None -> failwith Errors.invalid_fa2
     | Some c ->
-        let params = [{ from_ = from_; txs = txs }] in
+        let params = [{ from_; txs }] in
         Tezos.transaction params 0mutez c
 
 type operator_param_t = [@layout:comb] {
@@ -50,11 +43,12 @@ let get_approve_op
         (token_id: nat)
         (spender: address)
         : operation =
-    let entry_option = Tezos.get_entrypoint_opt "%update_operators" contract_address in
+    let entry_option =
+        Tezos.get_entrypoint_opt "%update_operators" contract_address in
     let operator_param = {
         owner = Tezos.get_self_address ();
         operator = spender;
-        token_id = token_id;
+        token_id;
     } in
     let params = [Add_operator(operator_param)] in
     match entry_option with

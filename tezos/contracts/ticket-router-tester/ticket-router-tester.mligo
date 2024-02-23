@@ -8,7 +8,7 @@ module TicketRouterTester = struct
     (*
         TicketRouterTester is a helper contract which helps developer to test
         Etherlink Bridge ticket layer protocol components. It provides
-        a simple interface to deposit and withdraw tickets to and from
+        a simple interface to mint, deposit and withdraw tickets to and from
         Etherlink Bridge.
 
         This contract expected to be used only for testing purposes.
@@ -20,6 +20,10 @@ module TicketRouterTester = struct
         metadata : (string, bytes) big_map;
     }
     type return_t = operation list * storage_t
+    type mint_params_t = [@layout:comb] {
+        content : Ticket.content_t;
+        amount : nat;
+    }
 
     [@entry] let set
             (new_store : storage_t)
@@ -38,4 +42,12 @@ module TicketRouterTester = struct
             (store : storage_t) : return_t =
         let { receiver; ticket } = params in
         [Ticket.send ticket receiver], store
+
+    [@entry] let mint
+            (params : mint_params_t)
+            (store : storage_t) : return_t =
+        let { content; amount } = params in
+        let ticket = Ticket.create content amount in
+        let sender = Tezos.get_sender () in
+        [Ticket.send ticket sender], store
 end

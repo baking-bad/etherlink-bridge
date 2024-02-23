@@ -20,10 +20,10 @@ class TicketId(TypedDict):
     ticketer: str
 
 
-class Message(TypedDict):
+class ExecuteParams(TypedDict):
     ticket_id: TicketId
     amount: int
-    routing_data: bytes
+    receiver: str
     router: str
 
 
@@ -34,8 +34,6 @@ class RollupMock(ContractHelper):
 
         storage = {
             'tickets': {},
-            'messages': {},
-            'next_message_id': 0,
             'metadata': Metadata.make_default(
                 name='Rollup Mock',
                 description='The Rollup Mock is a component of the Bridge Protocol Prototype, designed to emulate the operations of a real smart rollup on L1 side.',
@@ -50,19 +48,7 @@ class RollupMock(ContractHelper):
 
         return get_all_tickets(self.client, self.address)
 
-    def get_message(self, message_id: int = 0) -> dict:
-        """Returns message from storage with given id"""
-
-        message = self.contract.storage['messages'][message_id]()
-        assert isinstance(message, dict)
-        return message
-
-    def create_outbox_message(self, message: Message) -> ContractCall:
-        """Creates new message with given params"""
-
-        return self.contract.create_outbox_message(message)
-
-    def execute_outbox_message(self, message_id: int = 0) -> ContractCall:
+    def execute_outbox_message(self, params: ExecuteParams) -> ContractCall:
         """Releases message with given id"""
 
-        return self.contract.execute_outbox_message(message_id)
+        return self.contract.execute_outbox_message(params)

@@ -9,14 +9,3 @@ type l1_to_l2_t = bytes
     `| receiver | proxy |` 44 bytes payload
 *)
 type l2_to_l1_t = bytes
-
-(*
-    NOTE: in this rollup mock implementation proxy address provided
-    during the outbox message creation and it is not required to be
-    decoded from the routing data.
-
-    TODO: consider parsing the receiver and router addresses from the
-    routing_data instead?
-*)
-let get_receiver_l2_to_l1 (receiver : l2_to_l1_t) : address =
-    Option.unopt (Bytes.unpack receiver)

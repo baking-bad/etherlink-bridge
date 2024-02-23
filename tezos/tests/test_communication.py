@@ -41,23 +41,21 @@ class RollupCommunicationTestCase(BaseTestCase):
         # Then some interactions on L2 leads to outbox message creation:
         # for example Alice send some L2 tokens to Boris and Boris decided
         # to bridge 5 of them back to L1.
-        rollup_mock.create_outbox_message(
+
+        # To withdraw tokens from the rollup, someone should execute outbox
+        # message, which would call ticketer contract to burn tickets and
+        # transfer tokens to the Boris address:
+        rollup_mock.execute_outbox_message(
             {
                 'ticket_id': {
                     'ticketer': ticket.ticketer,
                     'token_id': 0,
                 },
                 'amount': 5,
-                'routing_data': pack(pkh(boris), 'address'),
+                'receiver': pkh(boris),
                 'router': ticketer.address,
             }
         ).send()
-        self.bake_block()
-
-        # To withdraw tokens from the rollup, someone should execute outbox
-        # message, which would call ticketer contract to burn tickets and
-        # transfer tokens to the Boris address:
-        rollup_mock.execute_outbox_message(0).send()
         self.bake_block()
 
         # Checking withdraw operations results:

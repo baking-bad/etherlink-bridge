@@ -13,13 +13,13 @@ class TicketerTestCase(BaseTestCase):
         self.bake_block()
 
         # Alice deposits 42 tokens to the Ticketer and creates a ticket:
-        ticketer.using(alice).deposit({'amount': 42}).send()
+        ticketer.using(alice).deposit(42).send()
         self.bake_block()
         assert ticket.get_balance(pkh(alice)) == 42
         assert token.get_balance(ticketer.address) == 42
 
         # Alice deposit 1 more token to the Ticketer and ticket stacked:
-        ticketer.using(alice).deposit({'amount': 1}).send()
+        ticketer.using(alice).deposit(1).send()
         self.bake_block()
         assert ticket.get_balance(pkh(alice)) == 43
         assert token.get_balance(ticketer.address) == 43
@@ -55,7 +55,7 @@ class TicketerTestCase(BaseTestCase):
         self.bake_block()
 
         # Alice deposits 1 token to the Ticketer and creates a ticket:
-        ticketer.using(alice).deposit({'amount': 1}).send()
+        ticketer.using(alice).deposit(1).send()
         self.bake_block()
         assert ticket.get_balance(pkh(alice)) == 1
         assert token.get_balance(ticketer.address) == 1
@@ -90,7 +90,7 @@ class TicketerTestCase(BaseTestCase):
         # Alice deposits 100 FA2 tokens to the Ticketer without using helper contract:
         alice.bulk(
             token.allow(pkh(alice), ticketer.address),
-            ticketer.deposit({'amount': 100}),
+            ticketer.deposit(100),
         ).send()
         self.bake_block()
 
@@ -116,7 +116,7 @@ class TicketerTestCase(BaseTestCase):
         # Alice deposits 1 FA1.2 token to the Ticketer without using helper contract:
         alice.bulk(
             token.allow(pkh(alice), ticketer.address),
-            ticketer.deposit({'amount': 1}),
+            ticketer.deposit(1),
         ).send()
         self.bake_block()
 
@@ -145,11 +145,11 @@ class TicketerTestCase(BaseTestCase):
 
         # Alice not able to deposit 2**256 tokens to the Ticketer:
         with self.assertRaises(MichelsonError) as err:
-            ticketer.using(alice).deposit({'amount': 2**256}).send()
+            ticketer.using(alice).deposit(2**256).send()
         assert 'TOTAL_SUPPLY_EXCEED_MAX' in str(err.exception)
 
         # But Alice able to deposit 2**256-1 tokens to the Ticketer:
-        ticketer.using(alice).deposit({'amount': 2**256 - 1}).send()
+        ticketer.using(alice).deposit(2**256 - 1).send()
         self.bake_block()
 
         assert ticket.get_balance(pkh(alice)) == 2**256 - 1
@@ -157,5 +157,5 @@ class TicketerTestCase(BaseTestCase):
 
         # Alice tries to deposit 1 more token and it fails:
         with self.assertRaises(MichelsonError) as err:
-            ticketer.using(alice).deposit({'amount': 1}).send()
+            ticketer.using(alice).deposit(1).send()
         assert 'TOTAL_SUPPLY_EXCEED_MAX' in str(err.exception)

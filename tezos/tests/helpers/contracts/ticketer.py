@@ -8,10 +8,7 @@ from tezos.tests.helpers.utility import (
 )
 from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
-from typing import (
-    Any,
-    TypedDict,
-)
+from typing import Any
 from os.path import join
 from tezos.tests.helpers.metadata import Metadata
 from tezos.tests.helpers.contracts.tokens import (
@@ -19,10 +16,6 @@ from tezos.tests.helpers.contracts.tokens import (
     TokenInfo,
 )
 from tezos.tests.helpers.tickets import Ticket
-
-
-class DepositParams(TypedDict):
-    amount: int
 
 
 # Ticket content type is fixed to match FA2.1 ticket content type:
@@ -60,10 +53,10 @@ class Ticketer(ContractHelper):
         filename = join(get_build_dir(), 'ticketer.tz')
         return originate_from_file(filename, client, storage)
 
-    def deposit(self, params: DepositParams) -> ContractCall:
+    def deposit(self, amount: int) -> ContractCall:
         """Deposits given amount of given token to the contract"""
 
-        return self.contract.deposit(params['amount'])
+        return self.contract.deposit(amount)
 
     def get_ticket(self, amount: int = 0) -> Ticket:
         """Returns ticket with given content and amount that can be used in

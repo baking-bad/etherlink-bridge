@@ -27,6 +27,13 @@ module TicketHelper = struct
         amount : nat;
     }
 
+    let assert_routing_info_len_is_equal_to_40n
+            (routing_info : bytes) : unit =
+        let length = Bytes.length routing_info in
+        if length <> 40n then
+            failwith Errors.wrong_routing_info_length
+
+
     [@entry] let deposit
             (params : deposit_params)
             (store: Storage.t) : return_t =
@@ -70,7 +77,7 @@ module TicketHelper = struct
         | Some context ->
             let { rollup; receiver } = context in
             let routing_info = Bytes.concat receiver s.erc_proxy in
-            (* TODO: assert routing_info length equal to 40 bytes *)
+            let () = assert_routing_info_len_is_equal_to_40n routing_info in
             let deposit = { routing_info; ticket } in
             let finish_deposit_op = RollupDepositEntry.make rollup deposit in
             let updated_store = Storage.clear_context s in

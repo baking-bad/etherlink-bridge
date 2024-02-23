@@ -67,11 +67,18 @@
                  IF_NONE
                    { DROP 2 ; PUSH string "ROUTING_DATA_IS_NOT_SET" ; FAILWITH }
                    { UNPAIR ;
-                     DIG 2 ;
                      DUP 4 ;
                      GET 5 ;
-                     DIG 2 ;
+                     SWAP ;
                      CONCAT ;
+                     PUSH nat 40 ;
+                     DUP 2 ;
+                     SIZE ;
+                     COMPARE ;
+                     NEQ ;
+                     IF { PUSH string "WRONG_ROUTING_INFO_LENGTH" ; FAILWITH } {} ;
+                     DIG 2 ;
+                     SWAP ;
                      PAIR ;
                      LEFT bytes ;
                      LEFT bytes ;

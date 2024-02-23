@@ -8,7 +8,7 @@ from tezos.tests.helpers.contracts import (
     FA2,
     FA12,
     TokenHelper,
-    Router,
+    TicketRouterTester,
     TicketHelper,
 )
 from typing import Optional
@@ -48,12 +48,12 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.bake_block()
         return RollupMock.from_opg(self.manager, opg)
 
-    def deploy_router(self) -> Router:
-        """Deploys Router contract"""
+    def deploy_ticket_router_tester(self) -> TicketRouterTester:
+        """Deploys TicketRouterTester contract"""
 
-        opg = Router.originate(self.manager).send()
+        opg = TicketRouterTester.originate(self.manager).send()
         self.bake_block()
-        return Router.from_opg(self.manager, opg)
+        return TicketRouterTester.from_opg(self.manager, opg)
 
     def deploy_ticketer(
         self,

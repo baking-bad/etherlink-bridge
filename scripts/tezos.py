@@ -3,7 +3,7 @@ from pytezos.client import PyTezosClient
 from tezos.tests.helpers.contracts import (
     Ticketer,
     RollupMock,
-    Router,
+    TicketRouterTester,
     TokenHelper,
     TicketHelper,
 )
@@ -199,14 +199,11 @@ def deploy_ticket_helper(
     return ticket_helper
 
 
-def deploy_router(manager: PyTezosClient) -> Router:
-    print('Deploying Router...')
-    router_opg = Router.originate(manager).send()
+def deploy_router(manager: PyTezosClient) -> TicketRouterTester:
+    print('Deploying TicketRouterTester...')
+    router_opg = TicketRouterTester.originate(manager).send()
     manager.wait(router_opg)
-    router = Router.from_opg(manager, router_opg)
-    router_bytes = make_address_bytes(router.address)
-    print(f'router address bytes: `{router_bytes}`')
-    return router
+    return TicketRouterTester.from_opg(manager, router_opg)
 
 
 def deploy_rollup_mock(manager: PyTezosClient) -> RollupMock:

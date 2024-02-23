@@ -5,7 +5,7 @@ from tezos.tests.helpers.contracts.tokens import (
 )
 from tezos.tests.helpers.contracts.ticketer import Ticketer
 from tezos.tests.helpers.contracts.rollup_mock import RollupMock
-from tezos.tests.helpers.contracts.router import Router
+from tezos.tests.helpers.contracts.ticket_router_tester import TicketRouterTester
 from tezos.tests.helpers.contracts.contract import ContractHelper
 from tezos.tests.helpers.contracts.ticket_helper import TicketHelper
 
@@ -16,7 +16,7 @@ __all__ = [
     'RollupMock',
     'FA2',
     'FA12',
-    'Router',
+    'TicketRouterTester',
     'TicketHelper',
     'TokenHelper',
     'ContractHelper',

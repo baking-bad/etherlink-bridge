@@ -133,7 +133,9 @@ class TicketerTestCase(BaseTestCase):
         assert token.get_balance(ticketer.address, allow_key_error=True) == 0
         assert token.get_balance(pkh(alice)) == 1
 
-    def test_should_not_allow_to_mint_new_ticket_if_total_supply_exceeds_max(self) -> None:
+    def test_should_not_allow_to_mint_new_ticket_if_total_supply_exceeds_max(
+        self,
+    ) -> None:
         alice = self.bootstrap_account()
         balances = {pkh(alice): 2**256}
         token, ticketer, _, helper = self.setup_fa2(balances)
@@ -147,11 +149,11 @@ class TicketerTestCase(BaseTestCase):
         assert 'TOTAL_SUPPLY_EXCEED_MAX' in str(err.exception)
 
         # But Alice able to deposit 2**256-1 tokens to the Ticketer:
-        ticketer.using(alice).deposit({'amount': 2**256-1}).send()
+        ticketer.using(alice).deposit({'amount': 2**256 - 1}).send()
         self.bake_block()
 
-        assert ticket.get_balance(pkh(alice)) == 2**256-1
-        assert token.get_balance(ticketer.address) == 2**256-1
+        assert ticket.get_balance(pkh(alice)) == 2**256 - 1
+        assert token.get_balance(ticketer.address) == 2**256 - 1
 
         # Alice tries to deposit 1 more token and it fails:
         with self.assertRaises(MichelsonError) as err:

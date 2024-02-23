@@ -1,6 +1,7 @@
 from tezos.tests.base import BaseTestCase
 from pytezos.rpc.errors import MichelsonError
 from tezos.tests.helpers.utility import pkh, pack
+from dataclasses import replace
 
 
 class TicketerTestCase(BaseTestCase):
@@ -159,3 +160,33 @@ class TicketerTestCase(BaseTestCase):
         with self.assertRaises(MichelsonError) as err:
             ticketer.using(alice).deposit(1).send()
         assert 'TOTAL_SUPPLY_EXCEED_MAX' in str(err.exception)
+
+    def test_should_fail_to_unpack_ticket_minted_by_another_ticketer(self) -> None:
+        alice = self.bootstrap_account()
+        boris = self.bootstrap_account()
+
+        balances = {pkh(alice): 100}
+        token, ticketer, _, helper = self.setup_fa2(balances)
+        ticket = ticketer.get_ticket()
+
+        # Alice locks 100 tokens on the Ticketer and creates a ticket:
+        alice.bulk(
+            token.allow(pkh(alice), ticketer.address),
+            ticketer.deposit(100),
+        ).send()
+        self.bake_block()
+
+        # Making sure that ticketer has 100 FA2 tokens:
+        assert token.get_balance(ticketer.address) == 100
+
+        # Minting fake ticket with the same content for Boris:
+        tester = self.deploy_ticket_router_tester()
+        tester.using(boris).mint(ticket.content, 100).send()
+        fake_ticket = replace(ticket, ticketer=tester.address)
+        self.bake_block()
+
+        # Boris fails to unwrap tokens using fake tickets:
+        with self.assertRaises(MichelsonError) as err:
+            destination = f'{helper.address}%unwrap'
+            fake_ticket.using(boris).transfer(destination, 100).send()
+        assert 'UNAUTHORIZED_TKTR' in str(err.exception)

@@ -32,7 +32,7 @@
 - [x] test_should_send_fa12_to_receiver_on_withdraw_if_ticket_correct
     - check receiver get token
     - check ticket burned
-- [ ] test_should_fail_to_unpack_ticket_minted_by_another_ticketer
+- [x] test_should_fail_to_unpack_ticket_minted_by_another_ticketer
 - [ ] test_should_fail_to_unpack_ticket_with_incorrect_content
     - this one is probably imposible to test, need to send fake ticket
 - [ ] test_should_fail_on_deposit_with_attached_xtz

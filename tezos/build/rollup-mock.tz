@@ -55,10 +55,15 @@
              SPLIT_TICKET ;
              IF_NONE { PUSH string "TKT_IRREDUCIBLE_AMOUNT" ; FAILWITH } {} ;
              UNPAIR ;
-             DIG 4 ;
+             DUG 2 ;
+             SOME ;
+             DIG 3 ;
+             UPDATE ;
+             SWAP ;
+             DIG 2 ;
              UNPACK address ;
              IF_NONE { PUSH string "option is None" ; FAILWITH } {} ;
-             DIG 5 ;
+             DIG 3 ;
              IF_NONE
                { CONTRACT (ticket (pair nat (option bytes))) ;
                  IF_NONE { PUSH string "FAILED_TO_GET_TKT_ENTRYPOINT" ; FAILWITH } {} ;
@@ -73,14 +78,7 @@
                  DIG 3 ;
                  PAIR ;
                  TRANSFER_TOKENS } ;
-             DIG 6 ;
-             DIG 6 ;
-             DIG 6 ;
-             DIG 5 ;
-             DIG 5 ;
-             SOME ;
-             DIG 6 ;
-             UPDATE ;
+             DUG 4 ;
              PAIR 4 ;
              NIL operation ;
              DIG 2 ;
@@ -111,8 +109,10 @@
                  UNPAIR ;
                  SWAP ;
                  CAR ;
-                 CAR ;
+                 DIG 2 ;
                  SWAP ;
+                 CAR ;
+                 DIG 2 ;
                  PAIR ;
                  DIG 2 ;
                  NONE (ticket (pair nat (option bytes))) ;

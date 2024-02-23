@@ -21,7 +21,7 @@ let get_ticket_entrypoint
     | None -> failwith Errors.failed_to_get_ticket_entrypoint
     | Some c -> c
 
-let split_ticket
+let split
         (ticket : t)
         (split_amount : nat)
         : t * t =
@@ -30,11 +30,9 @@ let split_ticket
     let keep_amount =
         if amount >= split_amount then abs(amount - split_amount)
         else failwith Errors.insufficient_amount in
-    let ticket_a, ticket_b =
-        match Tezos.split_ticket ticket (split_amount, keep_amount) with
-        | Some split_tickets -> split_tickets
-        | None -> failwith Errors.irreducible_amount in
-    ticket_a, ticket_b
+    match Tezos.split_ticket ticket (split_amount, keep_amount) with
+    | Some split_tickets -> split_tickets
+    | None -> failwith Errors.irreducible_amount
 
 let send
         (ticket : t)

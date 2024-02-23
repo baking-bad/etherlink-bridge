@@ -4,6 +4,7 @@
 #import "../common/entrypoints/rollup-deposit.mligo" "DepositEntry"
 #import "./storage.mligo" "Storage"
 #import "./message.mligo" "Message"
+#import "./tickets.mligo" "Tickets"
 
 
 module RollupMock = struct
@@ -11,14 +12,6 @@ module RollupMock = struct
         RollupMock is helper contract used to deposit and release tickets on
         the L1 side in the similar way Rollup would do.
     *)
-
-    let send_ticket_to_router
-            (ticket : Ticket.t)
-            (router : address)
-            (receiver : address)
-            : operation =
-        let entry = WithdrawEntry.get router in
-        Tezos.transaction { receiver; ticket } 0mutez entry
 
     type return_t = operation list * Storage.t
 
@@ -36,11 +29,8 @@ module RollupMock = struct
 
         let { tickets; messages; next_message_id; metadata } = store in
         let deposit = DepositEntry.unwrap rollup_entry in
-        let { ticket = ticket; routing_info = _r } = deposit in
-        let (ticketer, (payload, _amt)), ticket = Tezos.read_ticket ticket in
-        let token_id = payload.0 in
-        let ticket_id = { ticketer; token_id } in
-        let tickets = Storage.merge_tickets ticket_id ticket tickets in
+        let { ticket; routing_info = _r } = deposit in
+        let tickets = Tickets.save ticket tickets in
         let upd_store = { tickets; messages; next_message_id; metadata; } in
         [], upd_store
 
@@ -59,6 +49,7 @@ module RollupMock = struct
         let upd_store = { tickets; messages; next_message_id; metadata } in
         [], upd_store
 
+    // TODO: consider merging with `create_outbox_message`
     [@entry] let execute_outbox_message
             (message_id : nat)
             (store : Storage.t)
@@ -73,13 +64,11 @@ module RollupMock = struct
         let { tickets; messages; next_message_id; metadata } = store in
         let message, messages = Storage.pop_message message_id messages in
         let { ticket_id; router; amount; routing_data } = message in
-        let ticket, tickets = Storage.pop_ticket ticket_id tickets in
-        let ticket_send, ticket_keep = Ticket.split_ticket ticket amount in
+        let ticket, tickets = Tickets.get ticket_id amount tickets in
         let receiver = RoutingInfo.get_receiver_l2_to_l1 routing_data in
         let ticket_transfer_op = match router with
-        | Some router -> send_ticket_to_router ticket_send router receiver
-        | None -> Ticket.send ticket_send receiver in
-        let tickets = Big_map.update ticket_id (Some ticket_keep) tickets in
+        | Some router -> WithdrawEntry.make router { ticket; receiver }
+        | None -> Ticket.send ticket receiver in
         let upd_store = { tickets; messages; next_message_id; metadata } in
         [ticket_transfer_op], upd_store
 end

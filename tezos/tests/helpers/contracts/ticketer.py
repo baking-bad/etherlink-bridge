@@ -2,8 +2,6 @@ from tezos.tests.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
 from tezos.tests.helpers.utility import (
     get_build_dir,
-    to_michelson_type,
-    to_micheline,
     originate_from_file,
 )
 from pytezos.operation.group import OperationGroup
@@ -16,10 +14,6 @@ from tezos.tests.helpers.contracts.tokens import (
     TokenInfo,
 )
 from tezos.tests.helpers.tickets import Ticket
-
-
-# Ticket content type is fixed to match FA2.1 ticket content type:
-TICKET_CONTENT_TYPE = '(pair nat (option bytes))'
 
 
 class Ticketer(ContractHelper):
@@ -62,17 +56,10 @@ class Ticketer(ContractHelper):
         """Returns ticket with given content and amount that can be used in
         `ticket_transfer` call"""
 
-        content = to_michelson_type(
-            self.contract.storage['content'](),
-            TICKET_CONTENT_TYPE,
-        ).to_micheline_value()
-
-        return Ticket(
+        return Ticket.create(
             client=self.client,
             ticketer=self.address,
-            content_type=to_micheline(TICKET_CONTENT_TYPE),
-            content=content,
-            amount=amount,
+            content_object=self.contract.storage['content'](),
         )
 
     def get_token(self) -> TokenHelper:

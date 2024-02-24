@@ -4,6 +4,14 @@ from dataclasses import dataclass, replace
 from pytezos.operation.group import OperationGroup
 from pytezos.michelson.types.base import MichelsonType
 from typing import Optional
+from tezos.tests.helpers.utility import (
+    to_michelson_type,
+    to_micheline,
+)
+
+
+# Ticket content type is fixed to match FA2.1 ticket content type:
+TICKET_CONTENT_TYPE = '(pair nat (option bytes))'
 
 
 @dataclass
@@ -13,6 +21,32 @@ class Ticket:
     content_type: dict
     content: dict
     amount: int
+
+    @classmethod
+    def create(
+        cls,
+        client: PyTezosClient,
+        ticketer: str,
+        content_object: dict,
+        content_type_michelson: str = TICKET_CONTENT_TYPE,
+        amount: int = 0,
+    ) -> 'Ticket':
+        """Special helper to create a ticket with given content provided
+        as a python object and content type provided as a michelson type
+        """
+
+        content = to_michelson_type(
+            content_object,
+            content_type_michelson,
+        ).to_micheline_value()
+
+        return cls(
+            client=client,
+            ticketer=ticketer,
+            content_type=to_micheline(content_type_michelson),
+            content=content,
+            amount=amount,
+        )
 
     def get_balance(self, address: str) -> int:
         last_block_hash = self.client.shell.head.hash()

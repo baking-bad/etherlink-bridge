@@ -33,8 +33,7 @@
     - check receiver get token
     - check ticket burned
 - [x] test_should_fail_to_unpack_ticket_minted_by_another_ticketer
-- [ ] test_should_fail_to_unpack_ticket_with_incorrect_content
-    - this one is probably imposible to test, need to send fake ticket
+- [x] test_should_fail_to_unpack_ticket_with_incorrect_content
 - [ ] test_should_fail_on_deposit_with_attached_xtz
 - [ ] test_should_fail_on_withdraw_with_attached_xtz
 - [ ] test_should_increase_total_supply

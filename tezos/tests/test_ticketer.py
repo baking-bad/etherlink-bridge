@@ -2,6 +2,7 @@ from tezos.tests.base import BaseTestCase
 from pytezos.rpc.errors import MichelsonError
 from tezos.tests.helpers.utility import pkh, pack
 from dataclasses import replace
+from tezos.tests.helpers.tickets import Ticket
 
 
 class TicketerTestCase(BaseTestCase):
@@ -190,3 +191,28 @@ class TicketerTestCase(BaseTestCase):
             destination = f'{helper.address}%unwrap'
             fake_ticket.using(boris).transfer(destination, 100).send()
         assert 'UNAUTHORIZED_TKTR' in str(err.exception)
+
+    def test_should_fail_to_unpack_ticket_with_incorrect_content(self) -> None:
+        alice = self.bootstrap_account()
+        balances = {pkh(alice): 1}
+        token, ticketer, _, helper = self.setup_fa2(balances)
+
+        tester = self.deploy_ticket_router_tester()
+        empty_content = (0, None)
+        ticket = Ticket.create(
+            client=alice,
+            ticketer=tester.address,
+            content_object=empty_content,
+        )
+        tester.using(alice).mint(ticket.content, 1).send()
+        self.bake_block()
+
+        # Alice fails to unwrap tokens using ticket with wrong content:
+        with self.assertRaises(MichelsonError) as err:
+            destination = f'{helper.address}%unwrap'
+            ticket.using(alice).transfer(destination, 1).send()
+
+        # NOTE: it is important to check for the error message here
+        # because along with wrong content, the ticketer address is also wrong.
+        # Also the content check is done before the ticketer address check.
+        assert 'UNEXPECTED_TICKET_PAYLOAD' in str(err.exception)

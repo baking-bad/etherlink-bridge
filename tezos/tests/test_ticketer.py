@@ -216,3 +216,13 @@ class TicketerTestCase(BaseTestCase):
         # because along with wrong content, the ticketer address is also wrong.
         # Also the content check is done before the ticketer address check.
         assert 'UNEXPECTED_TICKET_PAYLOAD' in str(err.exception)
+
+    def test_should_fail_on_deposit_with_attached_xtz(self) -> None:
+        alice = self.bootstrap_account()
+        balances = {pkh(alice): 1}
+        token, ticketer, _, helper = self.setup_fa2(balances)
+
+        # Alice fails to deposit 1 token to the Ticketer with attached 1 mutez:
+        with self.assertRaises(MichelsonError) as err:
+            ticketer.using(alice).deposit(1).with_amount(1).send()
+        assert 'XTZ_DEPOSIT_DISALLOWED' in str(err.exception)

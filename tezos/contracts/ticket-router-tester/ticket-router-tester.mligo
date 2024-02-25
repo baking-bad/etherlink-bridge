@@ -6,48 +6,95 @@
 
 module TicketRouterTester = struct
     (*
-        TicketRouterTester is a helper contract which helps developer to test
+        TicketRouterTester is a helper contract that helps developers test
         Etherlink Bridge ticket layer protocol components. It provides
         a simple interface to mint, deposit and withdraw tickets to and from
         Etherlink Bridge.
 
-        This contract expected to be used only for testing purposes.
+        There is the `set` entrypoint which allows to configure how tickets
+        will be handled after `mint`, `default` and `withdraw` calls. Three
+        options are available:
+        - `default` which allows to redirect/mint ticket to the
+            implicit address
+        - `routerWithdraw` which allows to redirect/mint ticket to the ticketer
+            `withdraw` entrypoint
+        - `rollupDeposit` which allows to redirect/mint ticket to the
+            rollup `deposit` entrypoint
+
+        Also, two entrypoints allow TicketRouterTester to receive tickets
+        from other contracts:
+        - `default` accepts tickets in the same way implicit address would do
+        - `withdraw` accepts tickets and redirects in the same way
+           ticketer would do
+
+        Finally, there is a `mint` entrypoint allowing to mint tickets and
+        then redirect them to the configured entrypoint.
+
+        This contract is expected to be used only for testing purposes.
     *)
 
+    type entrypoint_t =
+        | Default of unit
+        | RouterWithdraw of address
+        | RollupDeposit of RoutingInfo.l1_to_l2_t
+
+    type internal_call_t = [@layout:comb] {
+        target : address;
+        entrypoint : entrypoint_t;
+        xtz_amount : tez;
+    }
+
     type storage_t = [@layout:comb] {
-        rollup : address;
-        routing_info : RoutingInfo.l1_to_l2_t;
+        internal_call : internal_call_t;
         metadata : (string, bytes) big_map;
     }
-    type return_t = operation list * storage_t
+
     type mint_params_t = [@layout:comb] {
         content : Ticket.content_t;
         amount : nat;
     }
 
-    [@entry] let set
-            (new_store : storage_t)
-            (_store : storage_t) : return_t =
-        [], new_store
+    type return_t = operation list * storage_t
 
-    [@entry] let deposit
+    [@entry] let set
+            (internal_call : internal_call_t)
+            (store : storage_t) : return_t =
+        [], { store with internal_call }
+
+    let make_operation
+            (ticket : Ticket.t)
+            (store : storage_t) : operation =
+        let { target; entrypoint; xtz_amount } = store.internal_call in
+        match entrypoint with
+        | Default () ->
+            let entry = Ticket.get_ticket_entrypoint target in
+            Tezos.transaction ticket xtz_amount entry
+        | RouterWithdraw (receiver) ->
+            let withdraw = { receiver; ticket } in
+            let entry = RouterWithdrawEntry.get target in
+            Tezos.transaction withdraw xtz_amount entry
+        | RollupDeposit (routing_info) ->
+            let deposit = { routing_info; ticket } in
+            let deposit_wrap = RollupDepositEntry.wrap deposit in
+            let entry = RollupDepositEntry.get target in
+            Tezos.transaction deposit_wrap xtz_amount entry
+
+    [@entry] let default
             (ticket : Ticket.t)
             (store : storage_t) : return_t =
-        let { rollup; routing_info; metadata = _ } = store in
-        let deposit = { routing_info; ticket } in
-        [RollupDepositEntry.make rollup deposit], store
+        [make_operation ticket store], store
 
     [@entry] let withdraw
             (params : RouterWithdrawEntry.t)
             (store : storage_t) : return_t =
-        let { receiver; ticket } = params in
-        [Ticket.send ticket receiver], store
+        // NOTE: the receiver from params is dropped and used
+        // the one from the store.internal_call
+        [make_operation params.ticket store], store
 
     [@entry] let mint
             (params : mint_params_t)
             (store : storage_t) : return_t =
         let { content; amount } = params in
         let ticket = Ticket.create content amount in
-        let sender = Tezos.get_sender () in
-        [Ticket.send ticket sender], store
+        [make_operation ticket store], store
 end

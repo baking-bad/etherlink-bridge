@@ -22,6 +22,16 @@ class Ticket:
     content: dict
     amount: int
 
+    @staticmethod
+    def make_content_micheline(
+        content_object: dict,
+        content_type_michelson: str = TICKET_CONTENT_TYPE,
+    ) -> dict:
+        return to_michelson_type(
+            content_object,
+            content_type_michelson,
+        ).to_micheline_value()
+
     @classmethod
     def create(
         cls,
@@ -35,16 +45,14 @@ class Ticket:
         as a python object and content type provided as a michelson type
         """
 
-        content = to_michelson_type(
-            content_object,
-            content_type_michelson,
-        ).to_micheline_value()
-
         return cls(
             client=client,
             ticketer=ticketer,
             content_type=to_micheline(content_type_michelson),
-            content=content,
+            content=cls.make_content_micheline(
+                content_object,
+                content_type_michelson
+            ),
             amount=amount,
         )
 

@@ -180,16 +180,16 @@ class TicketerTestCase(BaseTestCase):
         # Making sure that ticketer has 100 FA2 tokens:
         assert token.get_balance(ticketer.address) == 100
 
-        # Minting fake ticket with the same content for Boris:
         tester = self.deploy_ticket_router_tester()
-        tester.using(boris).mint(ticket.content, 100).send()
-        fake_ticket = replace(ticket, ticketer=tester.address)
-        self.bake_block()
-
-        # Boris fails to unwrap tokens using fake tickets:
+        # Minting fake ticket and sending it to the ticketer fails:
         with self.assertRaises(MichelsonError) as err:
-            destination = f'{helper.address}%unwrap'
-            fake_ticket.using(boris).transfer(destination, 100).send()
+            boris.bulk(
+                tester.set(
+                    target=ticketer.address,
+                    entrypoint={'routerWithdraw': pkh(boris)}
+                ),
+                tester.mint(ticket.content, 100),
+            ).send()
         assert 'UNAUTHORIZED_TKTR' in str(err.exception)
 
     def test_should_fail_to_unpack_ticket_with_incorrect_content(self) -> None:
@@ -198,19 +198,18 @@ class TicketerTestCase(BaseTestCase):
         token, ticketer, _, helper = self.setup_fa2(balances)
 
         tester = self.deploy_ticket_router_tester()
-        empty_content = (0, None)
-        ticket = Ticket.create(
-            client=alice,
-            ticketer=tester.address,
-            content_object=empty_content,
-        )
-        tester.using(alice).mint(ticket.content, 1).send()
-        self.bake_block()
+        empty_content = Ticket.make_content_micheline((0, None))
 
-        # Alice fails to unwrap tokens using ticket with wrong content:
+        # Minting fake ticket and sending it to the ticketer with
+        # incorrect content fails:
         with self.assertRaises(MichelsonError) as err:
-            destination = f'{helper.address}%unwrap'
-            ticket.using(alice).transfer(destination, 1).send()
+            alice.bulk(
+                tester.set(
+                    target=ticketer.address,
+                    entrypoint={'routerWithdraw': pkh(alice)}
+                ),
+                tester.mint(empty_content, 1),
+            ).send()
 
         # NOTE: it is important to check for the error message here
         # because along with wrong content, the ticketer address is also wrong.

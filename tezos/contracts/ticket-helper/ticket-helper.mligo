@@ -88,7 +88,7 @@ module TicketHelper = struct
             (ticket : Ticket.t)
             (s: Storage.t) : return_t =
         (*
-            `withdraw` entrypoint called when user wants to convert tickets
+            `unwrap` entrypoint called when user wants to convert tickets
             back to tokens for implicit account that not supported to send
             tickets within additional data structure.
 

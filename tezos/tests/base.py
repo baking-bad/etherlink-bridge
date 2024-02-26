@@ -12,6 +12,7 @@ from tezos.tests.helpers.contracts import (
     TicketHelper,
 )
 from typing import Optional
+from tezos.tests.helpers.utility import pkh
 
 
 class BaseTestCase(SandboxedNodeTestCase):
@@ -108,6 +109,29 @@ class BaseTestCase(SandboxedNodeTestCase):
         erc_proxy = bytes.fromhex('fa12fa12fa12fa12fa12fa12fa12fa12fa12fa12')
         helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
         return (token, ticketer, erc_proxy, helper)
+
+    def default_setup(
+            self,
+            token_type: str = 'FA2',
+            balances: dict[str, int] = None,
+            extra_metadata: Optional[dict[str, bytes]] = None,
+        ) -> tuple[PyTezosClient, TokenHelper, Ticketer, TicketRouterTester]:
+
+        alice = self.bootstrap_account()
+        balances = balances or {pkh(alice): 1000}
+
+        if token_type == 'FA2':
+            token = self.deploy_fa2(balances)
+        elif token_type == 'FA12':
+            token = self.deploy_fa12(balances)
+        else:
+            raise ValueError(f'Unknown token type: {token_type}')
+
+        ticketer = self.deploy_ticketer(token)
+        tester = self.deploy_ticket_router_tester()
+        token.using(alice).allow(pkh(alice), ticketer.address).send()
+        self.bake_block()
+        return alice, token, ticketer, tester
 
     def find_call_result(self, opg: OperationGroup) -> ContractCallResult:
         """Returns result of the last call in the given operation group"""

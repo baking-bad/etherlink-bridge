@@ -225,3 +225,39 @@ class TicketerTestCase(BaseTestCase):
         with self.assertRaises(MichelsonError) as err:
             ticketer.using(alice).deposit(1).with_amount(1).send()
         assert 'XTZ_DEPOSIT_DISALLOWED' in str(err.exception)
+
+    def test_should_fail_on_withdraw_with_attached_xtz(self) -> None:
+        alice = self.bootstrap_account()
+        balances = {pkh(alice): 1}
+        token, ticketer, _, helper = self.setup_fa2(balances)
+
+        # Alice deposits 1 token to the Ticketer:
+        alice.bulk(
+            token.allow(pkh(alice), ticketer.address),
+            ticketer.deposit(1),
+        ).send()
+        self.bake_block()
+
+        tester = self.deploy_ticket_router_tester()
+        ticket = ticketer.get_ticket()
+
+        # Alice fails to withdraw 1 token from the Ticketer with attached 1 mutez:
+        with self.assertRaises(MichelsonError) as err:
+            alice.bulk(
+                tester.set(
+                    target=ticketer.address,
+                    entrypoint={'routerWithdraw': pkh(alice)},
+                    xtz_amount=1,
+                ).with_amount(1),
+                ticket.transfer(f'{tester.address}%default', 1),
+            ).send()
+        assert 'XTZ_DEPOSIT_DISALLOWED' in str(err.exception)
+
+        # Alice succeeds to withdraw token in the same setup without xtz attached:
+        alice.bulk(
+            tester.set(
+                target=ticketer.address,
+                entrypoint={'routerWithdraw': pkh(alice)},
+            ),
+            ticket.transfer(f'{tester.address}%default', 1),
+        ).send()

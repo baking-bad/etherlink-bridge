@@ -1,6 +1,7 @@
 #import "../common/types/routing-info.mligo" "RoutingInfo"
 #import "../common/entrypoints/rollup-deposit.mligo" "RollupDepositEntry"
 #import "../common/entrypoints/router-withdraw.mligo" "RouterWithdrawEntry"
+#import "../common/entrypoints/ticketer-deposit.mligo" "TicketerDepositEntry"
 #import "../common/types/ticket.mligo" "Ticket"
 
 
@@ -21,14 +22,15 @@ module TicketRouterTester = struct
         - `rollupDeposit` which allows to redirect/mint ticket to the
             rollup `deposit` entrypoint
 
-        Also, two entrypoints allow TicketRouterTester to receive tickets
-        from other contracts:
-        - `default` accepts tickets in the same way implicit address would do
-        - `withdraw` accepts tickets and redirects in the same way
-           ticketer would do
+        Also, there are:
+        - two entrypoints allow to receive tickets from other contracts:
+            - `default` handles tickets in the same way implicit address would do
+            - `withdraw` handles tickets in the same way Ticketer would do
+        - `mint` entry allows to mint new tickets during `intrernal_call`.
 
-        Finally, there is a `mint` entrypoint allowing to mint tickets and
-        then redirect them to the configured entrypoint.
+        Finally, there is a `deposit` entrypoint which allows to use
+        TicketRouterTester as a Ticketer mock contract. The call to this
+        entrypoint does not have any effect.
 
         This contract is expected to be used only for testing purposes.
     *)
@@ -97,4 +99,11 @@ module TicketRouterTester = struct
         let { content; amount } = params in
         let ticket = Ticket.create content amount in
         [make_operation ticket store], store
+
+    [@entry] let deposit
+            (_params : TicketerDepositEntry.t)
+            (store : storage_t) : return_t =
+        // NOTE: the _params are not used and the call to the `deposit`
+        // entrypoint does not have any effect
+        [], store
 end

@@ -13,6 +13,7 @@ let create
     | None -> failwith Errors.ticket_creation_failed
     | Some t -> t
 
+// TODO: consider renaming to get, the same as in entrypoints modules
 let get_ticket_entrypoint
         (address : address)
         : t contract =

@@ -59,7 +59,7 @@
     - probably will require some mock ticketer (?)
 - [ ] test_can_receive_ticket_when_context_set
 - [ ] test_should_not_accept_ticket_when_context_empty
-- [ ] test_should_not_accept_ticket_from_wrong_ticketer
+- [ ] test_should_not_accept_ticket_from_wrong_sender
 - [ ] test_should_fail_on_deposit_with_attached_xtz
 - [ ] test_should_fail_on_unwrap_with_attached_xtz
 - [ ] test_should_fail_when_received_ticket_along_with_xtz

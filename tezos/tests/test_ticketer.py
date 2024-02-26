@@ -263,12 +263,7 @@ class TicketerTestCase(BaseTestCase):
         ).send()
 
     def test_should_increase_total_supply(self) -> None:
-        alice = self.bootstrap_account()
-        balances = {pkh(alice): 123}
-        token = self.deploy_fa12(balances)
-        ticketer = self.deploy_ticketer(token)
-        token.using(alice).allow(pkh(alice), ticketer.address).send()
-        self.bake_block()
+        alice, token, ticketer, tester = self.default_setup('FA12')
 
         # Alice deposits 10 tokens to the Ticketer:
         ticketer.using(alice).deposit(10).send()
@@ -279,3 +274,23 @@ class TicketerTestCase(BaseTestCase):
         ticketer.using(alice).deposit(100).send()
         self.bake_block()
         assert ticketer.get_total_supply() == 110
+
+    def test_should_decrease_total_supply(self) -> None:
+        alice, token, ticketer, tester = self.default_setup('FA2')
+        ticket = ticketer.get_ticket()
+
+        # Alice deposits 100 tokens to the Ticketer:
+        ticketer.using(alice).deposit(100).send()
+        self.bake_block()
+        assert ticketer.get_total_supply() == 100
+
+        # Alice withdraws 10 tokens from the Ticketer:
+        alice.bulk(
+            tester.set(
+                target=ticketer.address,
+                entrypoint={'routerWithdraw': pkh(alice)},
+            ),
+            ticket.transfer(f'{tester.address}%default', 10),
+        ).send()
+        self.bake_block()
+        assert ticketer.get_total_supply() == 100 - 10

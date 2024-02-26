@@ -1,7 +1,6 @@
 from tezos.tests.base import BaseTestCase
 from pytezos.rpc.errors import MichelsonError
 from tezos.tests.helpers.utility import pkh, pack
-from dataclasses import replace
 from tezos.tests.helpers.tickets import Ticket
 
 
@@ -229,7 +228,8 @@ class TicketerTestCase(BaseTestCase):
     def test_should_fail_on_withdraw_with_attached_xtz(self) -> None:
         alice = self.bootstrap_account()
         balances = {pkh(alice): 1}
-        token, ticketer, _, helper = self.setup_fa2(balances)
+        token = self.deploy_fa12(balances)
+        ticketer = self.deploy_ticketer(token)
 
         # Alice deposits 1 token to the Ticketer:
         alice.bulk(
@@ -261,3 +261,21 @@ class TicketerTestCase(BaseTestCase):
             ),
             ticket.transfer(f'{tester.address}%default', 1),
         ).send()
+
+    def test_should_increase_total_supply(self) -> None:
+        alice = self.bootstrap_account()
+        balances = {pkh(alice): 123}
+        token = self.deploy_fa12(balances)
+        ticketer = self.deploy_ticketer(token)
+        token.using(alice).allow(pkh(alice), ticketer.address).send()
+        self.bake_block()
+
+        # Alice deposits 10 tokens to the Ticketer:
+        ticketer.using(alice).deposit(10).send()
+        self.bake_block()
+        assert ticketer.get_total_supply() == 10
+
+        # Alice deposits 100 more tokens to the Ticketer:
+        ticketer.using(alice).deposit(100).send()
+        self.bake_block()
+        assert ticketer.get_total_supply() == 110

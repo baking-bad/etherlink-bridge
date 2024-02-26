@@ -68,3 +68,8 @@ class Ticketer(ContractHelper):
         token = self.contract.storage['token']()
         assert isinstance(token, dict)
         return TokenHelper.from_dict(self.client, token)
+
+    def get_total_supply(self) -> int:
+        """Returns total supply of tickets"""
+
+        return self.contract.get_total_supply().run_view()

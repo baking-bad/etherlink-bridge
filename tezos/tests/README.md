@@ -36,7 +36,7 @@
 - [x] test_should_fail_to_unpack_ticket_with_incorrect_content
 - [x] test_should_fail_on_deposit_with_attached_xtz
 - [x] test_should_fail_on_withdraw_with_attached_xtz
-- [ ] test_should_increase_total_supply
+- [x] test_should_increase_total_supply
 - [ ] test_should_decrease_total_supply
 - [ ] test_should_return_content_on_view_call
 - [ ] test_should_return_token_on_view_call

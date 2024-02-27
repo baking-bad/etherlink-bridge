@@ -1,7 +1,10 @@
 from tezos.tests.helpers.utility import to_michelson_type
 from pytezos.michelson.types.base import MichelsonType
 from dataclasses import dataclass
-from typing import Optional
+from typing import (
+    Optional,
+    Any,
+)
 
 
 @dataclass
@@ -11,7 +14,7 @@ class TicketContent:
     michelson_type = '(pair nat (option bytes))'
 
     @classmethod
-    def from_micheline(cls, content) -> 'TicketContent':
+    def from_micheline(cls, content: dict[str, Any]) -> 'TicketContent':
         """Converts ticket content to the tuple form"""
         token_id = int(content['args'][0]['int'])
         token_info = None
@@ -22,8 +25,8 @@ class TicketContent:
             )
         return cls(token_id=token_id, token_info=token_info)
 
-    def to_micheline(self) -> dict:
-        return to_michelson_type(
+    def to_micheline(self) -> dict[str, Any]:
+        return to_michelson_type(  # type: ignore
             (self.token_id, self.token_info),
             self.michelson_type,
         ).to_micheline_value()

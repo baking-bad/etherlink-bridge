@@ -12,7 +12,7 @@ from tezos.tests.helpers.ticket_content import TicketContent
 
 
 def get_ticket_balance(
-    client,
+    client: PyTezosClient,
     owner: Addressable,
     ticketer: str,
     content: TicketContent,

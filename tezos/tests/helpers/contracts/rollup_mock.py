@@ -4,7 +4,7 @@ from tezos.tests.helpers.utility import (
     get_build_dir,
     originate_from_file,
 )
-from tezos.tests.helpers.tickets import (
+from tezos.tests.helpers.ticket import (
     Ticket,
     get_all_tickets,
 )

@@ -13,10 +13,8 @@ from tezos.tests.helpers.contracts.tokens import (
     TokenHelper,
     TokenInfo,
 )
-from tezos.tests.helpers.tickets import (
-    Ticket,
-    TicketContent,
-)
+from tezos.tests.helpers.ticket import Ticket
+from tezos.tests.helpers.ticket_content import TicketContent
 from tezos.tests.helpers.addressable import Addressable
 
 

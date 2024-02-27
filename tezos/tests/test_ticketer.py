@@ -1,7 +1,7 @@
 from tezos.tests.base import BaseTestCase
 from pytezos.rpc.errors import MichelsonError
 from tezos.tests.helpers.utility import pack
-from tezos.tests.helpers.tickets import TicketContent
+from tezos.tests.helpers.ticket_content import TicketContent
 
 
 class TicketerTestCase(BaseTestCase):

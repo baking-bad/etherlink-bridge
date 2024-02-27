@@ -14,7 +14,6 @@ from scripts.tests.conftest import Bridge
 from scripts.tests.conftest import Token
 from scripts.tests.conftest import Wallet
 from tezos.tests.helpers.contracts import TicketHelper
-from tezos.tests.helpers.utility import pkh
 
 
 class TestDeposit:
@@ -113,8 +112,8 @@ class TestDeposit:
         token_helper = ticket_helper.get_ticketer().get_token()
 
         operations_group = (
-            token_helper.disallow(pkh(manager), ticket_helper.address),
-            token_helper.allow(pkh(manager), ticket_helper.address),
+            token_helper.disallow(manager, ticket_helper),
+            token_helper.allow(manager, ticket_helper),
             ticket_helper.deposit(
                 rollup=bridge.l1_smart_rollup_address,
                 receiver=bytes.fromhex(wallet.l2_public_key.replace('0x', '')),

@@ -8,7 +8,6 @@ from tezos.tests.helpers.contracts import (
     TicketHelper,
 )
 from tezos.tests.helpers.utility import (
-    pkh,
     pack,
     make_address_bytes,
 )
@@ -64,7 +63,7 @@ def deploy_token(
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
     Token = TokenHelper.get_cls(token_type)
-    balances = {pkh(manager): total_supply}
+    balances = {manager: total_supply}
     opg = Token.originate(manager, balances, token_id).send()
     manager.wait(opg)
     token = Token.from_opg(manager, opg)
@@ -254,8 +253,8 @@ def deposit(
     token = ticket_helper.get_ticketer().get_token()
 
     opg = manager.bulk(
-        token.disallow(pkh(manager), ticket_helper.address),
-        token.allow(pkh(manager), ticket_helper.address),
+        token.disallow(manager, ticket_helper),
+        token.allow(manager, ticket_helper),
         ticket_helper.deposit(rollup_address, receiver_bytes, amount),
     ).send()
     manager.wait(opg)

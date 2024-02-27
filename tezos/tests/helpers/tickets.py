@@ -8,6 +8,10 @@ from tezos.tests.helpers.utility import (
     to_michelson_type,
     to_micheline,
 )
+from tezos.tests.helpers.addressable import (
+    Addressable,
+    get_address,
+)
 
 
 # Ticket content type is fixed to match FA2.1 ticket content type:
@@ -24,7 +28,7 @@ class Ticket:
 
     @staticmethod
     def make_content_micheline(
-        content_object: dict,
+        content_object: tuple,
         content_type_michelson: str = TICKET_CONTENT_TYPE,
     ) -> dict:
         return to_michelson_type(
@@ -37,7 +41,7 @@ class Ticket:
         cls,
         client: PyTezosClient,
         ticketer: str,
-        content_object: dict,
+        content_object: tuple,
         content_type_michelson: str = TICKET_CONTENT_TYPE,
         amount: int = 0,
     ) -> 'Ticket':
@@ -56,7 +60,8 @@ class Ticket:
             amount=amount,
         )
 
-    def get_balance(self, address: str) -> int:
+    def get_balance(self, client_or_contract: Addressable) -> int:
+        address = get_address(client_or_contract)
         last_block_hash = self.client.shell.head.hash()
         query = RpcQuery(
             node=self.client.shell.node,

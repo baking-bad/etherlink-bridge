@@ -1,29 +1,29 @@
 from tezos.tests.base import BaseTestCase
 from pytezos.rpc.errors import MichelsonError
-from tezos.tests.helpers.utility import pkh, pack
+from tezos.tests.helpers.utility import pack
 from tezos.tests.helpers.tickets import Ticket
 
 
 class TicketerTestCase(BaseTestCase):
     def test_create_ticket_on_deposit_fa12_if_token_expected(self) -> None:
         alice = self.bootstrap_account()
-        token = self.deploy_fa12({pkh(alice): 100})
+        token = self.deploy_fa12({alice: 100})
         ticketer = self.deploy_ticketer(token)
         ticket = ticketer.get_ticket()
-        token.using(alice).allow(pkh(alice), ticketer.address).send()
+        token.using(alice).allow(alice, ticketer).send()
         self.bake_block()
 
         # Alice deposits 42 tokens to the Ticketer and creates a ticket:
         ticketer.using(alice).deposit(42).send()
         self.bake_block()
-        assert ticket.get_balance(pkh(alice)) == 42
-        assert token.get_balance(ticketer.address) == 42
+        assert ticket.get_balance(alice) == 42
+        assert token.get_balance(ticketer) == 42
 
         # Alice deposit 1 more token to the Ticketer and ticket stacked:
         ticketer.using(alice).deposit(1).send()
         self.bake_block()
-        assert ticket.get_balance(pkh(alice)) == 43
-        assert token.get_balance(ticketer.address) == 43
+        assert ticket.get_balance(alice) == 43
+        assert token.get_balance(ticketer) == 43
 
         # Checking ticket payload:
         token_info_bytes = pack(
@@ -45,21 +45,21 @@ class TicketerTestCase(BaseTestCase):
 
     def test_create_ticket_on_deposit_fa2_if_token_expected(self) -> None:
         alice = self.bootstrap_account()
-        token = self.deploy_fa2({pkh(alice): 100})
+        token = self.deploy_fa2({alice: 100})
         extra_metadata = {
             'decimals': pack(12, 'nat'),
             'symbol': pack('FA2', 'string'),
         }
         ticketer = self.deploy_ticketer(token, extra_metadata)
         ticket = ticketer.get_ticket()
-        token.using(alice).allow(pkh(alice), ticketer.address).send()
+        token.using(alice).allow(alice, ticketer).send()
         self.bake_block()
 
         # Alice deposits 1 token to the Ticketer and creates a ticket:
         ticketer.using(alice).deposit(1).send()
         self.bake_block()
-        assert ticket.get_balance(pkh(alice)) == 1
-        assert token.get_balance(ticketer.address) == 1
+        assert ticket.get_balance(alice) == 1
+        assert token.get_balance(ticketer) == 1
 
         # Checking ticket payload:
         token_info_bytes = pack(
@@ -84,64 +84,61 @@ class TicketerTestCase(BaseTestCase):
 
     def test_should_send_fa2_to_receiver_on_withdraw_if_ticket_correct(self) -> None:
         alice = self.bootstrap_account()
-        balances = {pkh(alice): 100}
-        token, ticketer, _, helper = self.setup_fa2(balances)
+        token, ticketer, _, helper = self.setup_fa2({alice: 100})
         ticket = ticketer.get_ticket()
 
         # Alice deposits 100 FA2 tokens to the Ticketer without using helper contract:
         alice.bulk(
-            token.allow(pkh(alice), ticketer.address),
+            token.allow(alice, ticketer),
             ticketer.deposit(100),
         ).send()
         self.bake_block()
 
-        assert ticket.get_balance(pkh(alice)) == 100
-        assert token.get_balance(ticketer.address) == 100
-        assert token.get_balance(pkh(alice)) == 0
+        assert ticket.get_balance(alice) == 100
+        assert token.get_balance(ticketer) == 100
+        assert token.get_balance(alice) == 0
 
         # Alice uses helper contract to unwrap tickets back to tokens:
         entrypoint = f'{helper.address}%unwrap'
         ticket.using(alice).transfer(entrypoint, 42).send()
         self.bake_block()
 
-        assert ticket.get_balance(pkh(alice)) == 100 - 42
-        assert token.get_balance(ticketer.address) == 100 - 42
-        assert token.get_balance(pkh(alice)) == 42
+        assert ticket.get_balance(alice) == 100 - 42
+        assert token.get_balance(ticketer) == 100 - 42
+        assert token.get_balance(alice) == 42
 
     def test_should_send_fa12_to_receiver_on_withdraw_if_ticket_correct(self) -> None:
         alice = self.bootstrap_account()
-        balances = {pkh(alice): 1}
-        token, ticketer, _, helper = self.setup_fa12(balances)
+        token, ticketer, _, helper = self.setup_fa12({alice: 1})
         ticket = ticketer.get_ticket()
 
         # Alice deposits 1 FA1.2 token to the Ticketer without using helper contract:
         alice.bulk(
-            token.allow(pkh(alice), ticketer.address),
+            token.allow(alice, ticketer),
             ticketer.deposit(1),
         ).send()
         self.bake_block()
 
-        assert ticket.get_balance(pkh(alice)) == 1
-        assert token.get_balance(ticketer.address) == 1
-        assert token.get_balance(pkh(alice), allow_key_error=True) == 0
+        assert ticket.get_balance(alice) == 1
+        assert token.get_balance(ticketer) == 1
+        assert token.get_balance(alice, allow_key_error=True) == 0
 
         # Alice uses helper contract to unwrap tickets back to tokens:
         entrypoint = f'{helper.address}%unwrap'
         ticket.using(alice).transfer(entrypoint, 1).send()
         self.bake_block()
 
-        assert ticket.get_balance(pkh(alice)) == 0
-        assert token.get_balance(ticketer.address, allow_key_error=True) == 0
-        assert token.get_balance(pkh(alice)) == 1
+        assert ticket.get_balance(alice) == 0
+        assert token.get_balance(ticketer, allow_key_error=True) == 0
+        assert token.get_balance(alice) == 1
 
     def test_should_not_allow_to_mint_new_ticket_if_total_supply_exceeds_max(
         self,
     ) -> None:
         alice = self.bootstrap_account()
-        balances = {pkh(alice): 2**256}
-        token, ticketer, _, helper = self.setup_fa2(balances)
+        token, ticketer, _, helper = self.setup_fa2({alice: 2**256})
         ticket = ticketer.get_ticket()
-        token.using(alice).allow(pkh(alice), ticketer.address).send()
+        token.using(alice).allow(alice, ticketer).send()
         self.bake_block()
 
         # Alice not able to deposit 2**256 tokens to the Ticketer:
@@ -153,8 +150,8 @@ class TicketerTestCase(BaseTestCase):
         ticketer.using(alice).deposit(2**256 - 1).send()
         self.bake_block()
 
-        assert ticket.get_balance(pkh(alice)) == 2**256 - 1
-        assert token.get_balance(ticketer.address) == 2**256 - 1
+        assert ticket.get_balance(alice) == 2**256 - 1
+        assert token.get_balance(ticketer) == 2**256 - 1
 
         # Alice tries to deposit 1 more token and it fails:
         with self.assertRaises(MichelsonError) as err:
@@ -164,28 +161,26 @@ class TicketerTestCase(BaseTestCase):
     def test_should_fail_to_unpack_ticket_minted_by_another_ticketer(self) -> None:
         alice = self.bootstrap_account()
         boris = self.bootstrap_account()
-
-        balances = {pkh(alice): 100}
-        token, ticketer, _, helper = self.setup_fa2(balances)
+        token, ticketer, _, helper = self.setup_fa2({alice: 100})
         ticket = ticketer.get_ticket()
 
         # Alice locks 100 tokens on the Ticketer and creates a ticket:
         alice.bulk(
-            token.allow(pkh(alice), ticketer.address),
+            token.allow(alice, ticketer),
             ticketer.deposit(100),
         ).send()
         self.bake_block()
 
         # Making sure that ticketer has 100 FA2 tokens:
-        assert token.get_balance(ticketer.address) == 100
+        assert token.get_balance(ticketer) == 100
 
         tester = self.deploy_ticket_router_tester()
         # Minting fake ticket and sending it to the ticketer fails:
         with self.assertRaises(MichelsonError) as err:
             boris.bulk(
-                tester.set(
-                    target=ticketer.address,
-                    entrypoint={'routerWithdraw': pkh(boris)}
+                tester.set_router_withdraw(
+                    target=ticketer,
+                    receiver=boris,
                 ),
                 tester.mint(ticket.content, 100),
             ).send()
@@ -193,8 +188,7 @@ class TicketerTestCase(BaseTestCase):
 
     def test_should_fail_to_unpack_ticket_with_incorrect_content(self) -> None:
         alice = self.bootstrap_account()
-        balances = {pkh(alice): 1}
-        token, ticketer, _, helper = self.setup_fa2(balances)
+        token, ticketer, _, helper = self.setup_fa2({alice: 1})
 
         tester = self.deploy_ticket_router_tester()
         empty_content = Ticket.make_content_micheline((0, None))
@@ -203,9 +197,9 @@ class TicketerTestCase(BaseTestCase):
         # incorrect content fails:
         with self.assertRaises(MichelsonError) as err:
             alice.bulk(
-                tester.set(
-                    target=ticketer.address,
-                    entrypoint={'routerWithdraw': pkh(alice)}
+                tester.set_router_withdraw(
+                    target=ticketer,
+                    receiver=alice,
                 ),
                 tester.mint(empty_content, 1),
             ).send()
@@ -217,8 +211,7 @@ class TicketerTestCase(BaseTestCase):
 
     def test_should_fail_on_deposit_with_attached_xtz(self) -> None:
         alice = self.bootstrap_account()
-        balances = {pkh(alice): 1}
-        token, ticketer, _, helper = self.setup_fa2(balances)
+        token, ticketer, _, helper = self.setup_fa2({alice: 1})
 
         # Alice fails to deposit 1 token to the Ticketer with attached 1 mutez:
         with self.assertRaises(MichelsonError) as err:
@@ -227,13 +220,12 @@ class TicketerTestCase(BaseTestCase):
 
     def test_should_fail_on_withdraw_with_attached_xtz(self) -> None:
         alice = self.bootstrap_account()
-        balances = {pkh(alice): 1}
-        token = self.deploy_fa12(balances)
+        token = self.deploy_fa12({alice: 1})
         ticketer = self.deploy_ticketer(token)
 
         # Alice deposits 1 token to the Ticketer:
         alice.bulk(
-            token.allow(pkh(alice), ticketer.address),
+            token.allow(alice, ticketer),
             ticketer.deposit(1),
         ).send()
         self.bake_block()
@@ -244,9 +236,9 @@ class TicketerTestCase(BaseTestCase):
         # Alice fails to withdraw 1 token from the Ticketer with attached 1 mutez:
         with self.assertRaises(MichelsonError) as err:
             alice.bulk(
-                tester.set(
-                    target=ticketer.address,
-                    entrypoint={'routerWithdraw': pkh(alice)},
+                tester.set_router_withdraw(
+                    target=ticketer,
+                    receiver=alice,
                     xtz_amount=1,
                 ).with_amount(1),
                 ticket.transfer(f'{tester.address}%default', 1),
@@ -255,9 +247,9 @@ class TicketerTestCase(BaseTestCase):
 
         # Alice succeeds to withdraw token in the same setup without xtz attached:
         alice.bulk(
-            tester.set(
-                target=ticketer.address,
-                entrypoint={'routerWithdraw': pkh(alice)},
+            tester.set_router_withdraw(
+                target=ticketer,
+                receiver=alice,
             ),
             ticket.transfer(f'{tester.address}%default', 1),
         ).send()
@@ -286,9 +278,9 @@ class TicketerTestCase(BaseTestCase):
 
         # Alice withdraws 10 tokens from the Ticketer:
         alice.bulk(
-            tester.set(
-                target=ticketer.address,
-                entrypoint={'routerWithdraw': pkh(alice)},
+            tester.set_router_withdraw(
+                target=ticketer,
+                receiver=alice,
             ),
             ticket.transfer(f'{tester.address}%default', 10),
         ).send()

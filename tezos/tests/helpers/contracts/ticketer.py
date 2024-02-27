@@ -72,4 +72,4 @@ class Ticketer(ContractHelper):
     def get_total_supply(self) -> int:
         """Returns total supply of tickets"""
 
-        return self.contract.get_total_supply().run_view()
+        return self.contract.get_total_supply().run_view()  # type: ignore

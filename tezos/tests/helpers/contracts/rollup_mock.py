@@ -13,6 +13,10 @@ from pytezos.contract.call import ContractCall
 from os.path import join
 from tezos.tests.helpers.metadata import Metadata
 from typing import TypedDict
+from tezos.tests.helpers.addressable import (
+    Addressable,
+    get_address,
+)
 
 
 class TicketId(TypedDict):
@@ -23,8 +27,8 @@ class TicketId(TypedDict):
 class ExecuteParams(TypedDict):
     ticket_id: TicketId
     amount: int
-    receiver: str
-    router: str
+    receiver: Addressable
+    router: Addressable
 
 
 class RollupMock(ContractHelper):
@@ -51,4 +55,9 @@ class RollupMock(ContractHelper):
     def execute_outbox_message(self, params: ExecuteParams) -> ContractCall:
         """Releases message with given id"""
 
-        return self.contract.execute_outbox_message(params)
+        return self.contract.execute_outbox_message({
+            'ticket_id': params['ticket_id'],
+            'amount': params['amount'],
+            'receiver': get_address(params['receiver']),
+            'router': get_address(params['router']),
+        })

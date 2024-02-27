@@ -1,8 +1,5 @@
 from tezos.tests.base import BaseTestCase
-from tezos.tests.helpers.utility import (
-    pkh,
-    pack,
-)
+from tezos.tests.helpers.utility import pack
 
 
 class RollupCommunicationTestCase(BaseTestCase):
@@ -11,12 +8,15 @@ class RollupCommunicationTestCase(BaseTestCase):
         boris = self.bootstrap_account()
         alice = self.bootstrap_account()
 
-        extra_metadata = {
-            'decimals': pack(12, 'nat'),
-            'symbol': pack('FA2', 'string'),
-        }
-        balances = {pkh(alice): 1000}
-        token, ticketer, erc_proxy, helper = self.setup_fa2(balances, extra_metadata)
+        token, ticketer, erc_proxy, helper = self.setup_fa2(
+            balances={
+                alice: 1000
+            },
+            extra_metadata={
+                'decimals': pack(12, 'nat'),
+                'symbol': pack('FA2', 'string'),
+            },
+        )
         rollup_mock = self.deploy_rollup_mock()
 
         ticket = ticketer.get_ticket()
@@ -28,15 +28,15 @@ class RollupCommunicationTestCase(BaseTestCase):
         # to the Rollup via TicketHelper contract.
         rollup = f'{rollup_mock.address}%rollup'
         alice.bulk(
-            token.allow(pkh(alice), helper.address),
+            token.allow(alice, helper),
             helper.deposit(rollup, alice_l2_address, 100),
         ).send()
         self.bake_block()
 
         # Checking deposit operations results:
-        assert ticket.get_balance(rollup_mock.address) == 100
-        assert token.get_balance(ticketer.address) == 100
-        assert ticket.get_balance(pkh(alice)) == 0
+        assert ticket.get_balance(rollup_mock) == 100
+        assert token.get_balance(ticketer) == 100
+        assert ticket.get_balance(alice) == 0
 
         # Then some interactions on L2 leads to outbox message creation:
         # for example Alice send some L2 tokens to Boris and Boris decided
@@ -52,12 +52,12 @@ class RollupCommunicationTestCase(BaseTestCase):
                     'token_id': 0,
                 },
                 'amount': 5,
-                'receiver': pkh(boris),
-                'router': ticketer.address,
+                'receiver': boris,
+                'router': ticketer,
             }
         ).send()
         self.bake_block()
 
         # Checking withdraw operations results:
-        assert ticket.get_balance(rollup_mock.address) == 95
-        assert token.get_balance(pkh(boris)) == 5
+        assert ticket.get_balance(rollup_mock) == 95
+        assert token.get_balance(boris) == 5

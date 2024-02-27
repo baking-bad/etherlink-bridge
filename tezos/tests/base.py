@@ -2,6 +2,7 @@ from pytezos.client import PyTezosClient
 from pytezos.operation.group import OperationGroup
 from pytezos.sandbox.node import SandboxedNodeTestCase
 from pytezos.contract.result import ContractCallResult
+from pytezos.operation.result import OperationResult
 from tezos.tests.helpers.contracts import (
     Ticketer,
     RollupMock,
@@ -12,7 +13,7 @@ from tezos.tests.helpers.contracts import (
     TicketHelper,
 )
 from typing import Optional
-from tezos.tests.helpers.utility import pkh
+from tezos.tests.helpers.addressable import Addressable
 
 
 class BaseTestCase(SandboxedNodeTestCase):
@@ -28,14 +29,14 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.accounts.append(bootstrap)
         return bootstrap
 
-    def deploy_fa2(self, balances: dict[str, int]) -> FA2:
+    def deploy_fa2(self, balances: dict[Addressable, int]) -> FA2:
         """Deploys FA2 contract with given balances"""
 
         opg = FA2.originate(self.manager, balances).send()
         self.bake_block()
         return FA2.from_opg(self.manager, opg)
 
-    def deploy_fa12(self, balances: dict[str, int]) -> FA12:
+    def deploy_fa12(self, balances: dict[Addressable, int]) -> FA12:
         """Deploys FA12 contract with given balances"""
 
         opg = FA12.originate(self.manager, balances).send()
@@ -86,7 +87,7 @@ class BaseTestCase(SandboxedNodeTestCase):
 
     def setup_fa2(
         self,
-        balances: dict[str, int],
+        balances: dict[Addressable, int],
         extra_metadata: Optional[dict[str, bytes]] = None,
     ) -> tuple[FA2, Ticketer, bytes, TicketHelper]:
         """Returns FA2 setup with token, ticketer, erc_proxy and helper"""
@@ -99,7 +100,7 @@ class BaseTestCase(SandboxedNodeTestCase):
 
     def setup_fa12(
         self,
-        balances: dict[str, int],
+        balances: dict[Addressable, int],
         extra_metadata: Optional[dict[str, bytes]] = None,
     ) -> tuple[FA12, Ticketer, bytes, TicketHelper]:
         """Returns FA1.2 setup with token, ticketer, erc_proxy and helper"""
@@ -113,15 +114,15 @@ class BaseTestCase(SandboxedNodeTestCase):
     def default_setup(
             self,
             token_type: str = 'FA2',
-            balances: dict[str, int] = None,
+            balances: Optional[dict[Addressable, int]] = None,
             extra_metadata: Optional[dict[str, bytes]] = None,
         ) -> tuple[PyTezosClient, TokenHelper, Ticketer, TicketRouterTester]:
 
         alice = self.bootstrap_account()
-        balances = balances or {pkh(alice): 1000}
+        balances = balances or {alice: 1000}
 
         if token_type == 'FA2':
-            token = self.deploy_fa2(balances)
+            token: TokenHelper = self.deploy_fa2(balances)
         elif token_type == 'FA12':
             token = self.deploy_fa12(balances)
         else:
@@ -129,11 +130,11 @@ class BaseTestCase(SandboxedNodeTestCase):
 
         ticketer = self.deploy_ticketer(token)
         tester = self.deploy_ticket_router_tester()
-        token.using(alice).allow(pkh(alice), ticketer.address).send()
+        token.using(alice).allow(alice, ticketer).send()
         self.bake_block()
         return alice, token, ticketer, tester
 
-    def find_call_result(self, opg: OperationGroup) -> ContractCallResult:
+    def find_call_result(self, opg: OperationGroup) -> OperationResult:
         """Returns result of the last call in the given operation group"""
 
         blocks = self.manager.shell.blocks['head':]  # type: ignore

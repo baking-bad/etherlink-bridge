@@ -1,5 +1,4 @@
 from tezos.tests.base import BaseTestCase
-from tezos.tests.helpers.utility import pkh
 from pytezos.rpc.errors import MichelsonError
 from typing import Any
 
@@ -30,10 +29,9 @@ def select_routing_info(operation: dict[str, Any]) -> bytes:
 class TicketHelperTestCase(BaseTestCase):
     def test_should_prepare_correct_routing_info(self) -> None:
         alice = self.bootstrap_account()
-        balances = {pkh(alice): 1000}
-        token, ticketer, erc_proxy, helper = self.setup_fa2(balances)
+        token, ticketer, erc_proxy, helper = self.setup_fa2({alice: 1000})
         rollup_mock = self.deploy_rollup_mock()
-        token.using(alice).allow(pkh(alice), helper.address).send()
+        token.using(alice).allow(alice, helper).send()
         self.bake_block()
 
         rollup = f'{rollup_mock.address}%rollup'
@@ -42,18 +40,17 @@ class TicketHelperTestCase(BaseTestCase):
         self.bake_block()
 
         result = self.find_call_result(opg)
-        assert len(result.operations) == 4
+        assert len(result.operations) == 4  # type: ignore
 
-        rollup_call = result.operations[3]
+        rollup_call = result.operations[3]  # type: ignore
         assert rollup_call['destination'] == rollup_mock.address
         assert select_routing_info(rollup_call) == l2_address + erc_proxy
 
     def test_should_fail_if_routing_info_has_inccorrect_size(self) -> None:
         alice = self.bootstrap_account()
-        balances = {pkh(alice): 33}
-        token, ticketer, erc_proxy, helper = self.setup_fa2(balances)
+        token, ticketer, erc_proxy, helper = self.setup_fa2({alice: 33})
         rollup_mock = self.deploy_rollup_mock()
-        token.using(alice).allow(pkh(alice), helper.address).send()
+        token.using(alice).allow(alice, helper).send()
         self.bake_block()
 
         rollup = f'{rollup_mock.address}%rollup'

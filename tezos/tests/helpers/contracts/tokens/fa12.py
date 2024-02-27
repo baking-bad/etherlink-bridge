@@ -10,6 +10,10 @@ from os.path import join
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
 from tezos.tests.helpers.metadata import Metadata
+from tezos.tests.helpers.addressable import (
+    Addressable,
+    get_address,
+)
 
 
 FA12AsDictType = dict[str, str]
@@ -31,13 +35,16 @@ class FA12(TokenHelper):
 
     @classmethod
     def originate(
-        cls, client: PyTezosClient, balances: dict[str, int], token_id: int = 0
+        cls, client: PyTezosClient, balances: dict[Addressable, int], token_id: int = 0
     ) -> OperationGroup:
         """Deploys FA1.2 token with provided balances in the storage"""
 
         filename = join(get_tokens_dir(), 'fa12-Ctez.tz')
         storage = cls.default_storage.copy()
-        storage['tokens'] = {address: amount for address, amount in balances.items()}
+        storage['tokens'] = {
+            get_address(addressable): amount for addressable, amount
+            in balances.items()
+        }
         storage['token_metadata'] = {0: (0, {})}
         storage['total_supply'] = sum(balances.values())
         return originate_from_file(filename, client, storage)
@@ -46,20 +53,20 @@ class FA12(TokenHelper):
     def originate_default(cls, client: PyTezosClient) -> OperationGroup:
         return cls.originate(client, {})
 
-    def allow(self, owner: str, operator: str) -> ContractCall:
+    def allow(self, owner: Addressable, operator: Addressable) -> ContractCall:
         # Allow makes approval for the total supply of the token
         return self.contract.approve(
             {
-                'spender': operator,
+                'spender': get_address(operator),
                 'value': self.contract.storage['total_supply'](),
             }
         )
 
-    def disallow(self, owner: str, operator: str) -> ContractCall:
+    def disallow(self, owner: Addressable, operator: Addressable) -> ContractCall:
         # Revoke allowance
         return self.contract.approve(
             {
-                'spender': operator,
+                'spender': get_address(operator),
                 'value': 0,
             }
         )
@@ -70,9 +77,14 @@ class FA12(TokenHelper):
     def as_tuple(self) -> FA12AsTupleType:
         return ('fa12', self.address)
 
-    def get_balance(self, address: str, allow_key_error: bool = False) -> int:
+    def get_balance(
+        self,
+        client_or_contract: Addressable,
+        allow_key_error: bool = False
+    ) -> int:
         """Returns balance of given address.
         - allow_key_error: if True, returns 0 if address is not in storage"""
+        address = get_address(client_or_contract)
         try:
             balance = self.contract.storage['tokens'][address]()
         except KeyError as error:

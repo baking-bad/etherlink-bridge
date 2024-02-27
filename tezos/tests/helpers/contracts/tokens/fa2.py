@@ -10,6 +10,10 @@ from tezos.tests.helpers.utility import DEFAULT_ADDRESS
 from tezos.tests.helpers.utility import get_tokens_dir
 from tezos.tests.helpers.utility import originate_from_file
 from tezos.tests.helpers.utility import pack
+from tezos.tests.helpers.addressable import (
+    Addressable,
+    get_address,
+)
 
 FA2AsDictType = dict[str, tuple[str, int]]
 FA2AsTupleType = tuple[str, tuple[str, int]]
@@ -35,14 +39,15 @@ class FA2(TokenHelper):
 
     @classmethod
     def originate(
-        cls, client: PyTezosClient, balances: dict[str, int], token_id: int = 0
+        cls, client: PyTezosClient, balances: dict[Addressable, int], token_id: int = 0
     ) -> OperationGroup:
         """Deploys FA2 token with provided balances in the storage"""
 
         filename = join(get_tokens_dir(), 'fa2-fxhash.tz')
         storage = cls.default_storage.copy()
         storage['ledger'] = {
-            (address, token_id): amount for address, amount in balances.items()
+            (get_address(addressable), token_id): amount
+            for addressable, amount in balances.items()
         }
         storage['token_metadata'] = {token_id: (token_id, {})}
         return originate_from_file(filename, client, storage)
@@ -51,26 +56,26 @@ class FA2(TokenHelper):
     def originate_default(cls, client: PyTezosClient) -> OperationGroup:
         return cls.originate(client, {})
 
-    def allow(self, owner: str, operator: str) -> ContractCall:
+    def allow(self, owner: Addressable, operator: Addressable) -> ContractCall:
         return self.contract.update_operators(
             [
                 {
                     'add_operator': {
-                        'owner': owner,
-                        'operator': operator,
+                        'owner': get_address(owner),
+                        'operator': get_address(operator),
                         'token_id': self.token_id,
                     }
                 }
             ]
         )
 
-    def disallow(self, owner: str, operator: str) -> ContractCall:
+    def disallow(self, owner: Addressable, operator: Addressable) -> ContractCall:
         return self.contract.update_operators(
             [
                 {
                     'remove_operator': {
-                        'owner': owner,
-                        'operator': operator,
+                        'owner': get_address(owner),
+                        'operator': get_address(operator),
                         'token_id': self.token_id,
                     }
                 }
@@ -83,7 +88,8 @@ class FA2(TokenHelper):
     def as_tuple(self) -> FA2AsTupleType:
         return ('fa2', (self.address, self.token_id))
 
-    def get_balance(self, address: str) -> int:
+    def get_balance(self, client_or_contract: Addressable) -> int:
+        address = get_address(client_or_contract)
         key = (address, self.token_id)
         balance = self.contract.storage['ledger'][key]()  # type: ignore
         assert isinstance(balance, int)

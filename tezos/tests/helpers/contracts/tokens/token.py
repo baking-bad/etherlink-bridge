@@ -6,6 +6,7 @@ from typing import Optional, Type
 from pytezos.operation.group import OperationGroup
 from pytezos.client import PyTezosClient
 from dataclasses import dataclass
+from tezos.tests.helpers.addressable import Addressable
 
 
 TicketContent = tuple[int, Optional[bytes]]
@@ -24,17 +25,17 @@ class TokenHelper(ContractHelper):
     def originate(
         cls,
         client: PyTezosClient,
-        balances: dict[str, int],
+        balances: dict[Addressable, int],
         token_id: int = 0,
     ) -> OperationGroup:
         ...
 
     @abstractmethod
-    def allow(self, owner: str, operator: str) -> ContractCall:
+    def allow(self, owner: Addressable, operator: Addressable) -> ContractCall:
         ...
 
     @abstractmethod
-    def disallow(self, owner: str, operator: str) -> ContractCall:
+    def disallow(self, owner: Addressable, operator: Addressable) -> ContractCall:
         ...
 
     @abstractmethod
@@ -46,7 +47,7 @@ class TokenHelper(ContractHelper):
         ...
 
     @abstractmethod
-    def get_balance(self, address: str) -> int:
+    def get_balance(self, client_or_contract: Addressable) -> int:
         ...
 
     @abstractmethod

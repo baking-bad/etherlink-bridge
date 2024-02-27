@@ -1,10 +1,7 @@
 from tezos.tests.base import BaseTestCase
 from pytezos.rpc.errors import MichelsonError
 from tezos.tests.helpers.utility import pack
-from tezos.tests.helpers.tickets import (
-    Ticket,
-    TicketContent,
-)
+from tezos.tests.helpers.tickets import TicketContent
 
 
 class TicketerTestCase(BaseTestCase):
@@ -45,7 +42,7 @@ class TicketerTestCase(BaseTestCase):
                 {'prim': 'Some', 'args': [{'bytes': token_info_bytes}]},
             ],
         }
-        self.assertDictEqual(ticket.content, expected_payload)
+        self.assertDictEqual(ticket.content.to_micheline(), expected_payload)
 
     def test_create_ticket_on_deposit_fa2_if_token_expected(self) -> None:
         alice = self.bootstrap_account()
@@ -85,7 +82,7 @@ class TicketerTestCase(BaseTestCase):
                 {'prim': 'Some', 'args': [{'bytes': token_info_bytes}]},
             ],
         }
-        self.assertDictEqual(ticket.content, expected_payload)
+        self.assertDictEqual(ticket.content.to_micheline(), expected_payload)
 
     def test_should_send_fa2_to_receiver_on_withdraw_if_ticket_correct(self) -> None:
         alice = self.bootstrap_account()
@@ -195,8 +192,9 @@ class TicketerTestCase(BaseTestCase):
         token, ticketer, _, helper = self.setup_fa2({alice: 1})
 
         tester = self.deploy_ticket_router_tester()
-        empty_content = Ticket.make_content_micheline(
-            TicketContent(token_id=0, token_info=None)
+        empty_content = TicketContent(
+            token_id=0,
+            token_info=None,
         )
 
         # Minting fake ticket and sending it to the ticketer with

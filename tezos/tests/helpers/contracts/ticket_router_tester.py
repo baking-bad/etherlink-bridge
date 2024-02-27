@@ -9,11 +9,11 @@ from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
 from os.path import join
 from tezos.tests.helpers.metadata import Metadata
-from typing import Optional
 from tezos.tests.helpers.addressable import (
     Addressable,
     get_address,
 )
+from tezos.tests.helpers.ticket_content import TicketContent
 
 
 class TicketRouterTester(ContractHelper):
@@ -37,22 +37,11 @@ class TicketRouterTester(ContractHelper):
 
         return originate_from_file(filename, client, storage)
 
-    def mint(self, micheline_content: dict, amount: int) -> ContractCall:
+    def mint(self, content: TicketContent, amount: int) -> ContractCall:
         """Mints given amount of tickets with given content"""
 
-        def micheline_content_to_tuple(content) -> tuple[int, Optional[bytes]]:
-            """Converts ticket content to the tuple form"""
-            token_id = int(content['args'][0]['int'])
-            token_info = None
-            has_token_info = content['args'][1]['prim'] == 'Some'
-            if has_token_info:
-                token_info = bytes.fromhex(
-                    content['args'][1]['args'][0]['bytes']
-                )
-            return (token_id, token_info)
-
         return self.contract.mint(
-            content=micheline_content_to_tuple(micheline_content),
+            content=content.to_tuple(),
             amount=amount,
         )
 

@@ -88,7 +88,7 @@ def get_ticketer_params(
     ticketer_contract = Ticketer.from_address(manager, ticketer)
     ticket = ticketer_contract.read_ticket(manager)
     address_bytes = make_address_bytes(ticketer_contract.address)
-    content_bytes = ticket.make_bytes_payload()
+    content_bytes = ticket.content.to_bytes_hex()
     print(f'address_bytes: {address_bytes}')
     print(f'content_bytes: {content_bytes}')
     return {

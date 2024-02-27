@@ -2,34 +2,20 @@ from pytezos.client import PyTezosClient
 from pytezos.rpc.query import RpcQuery
 from dataclasses import dataclass, replace
 from pytezos.operation.group import OperationGroup
-from pytezos.michelson.types.base import MichelsonType
 from typing import Optional
-from tezos.tests.helpers.utility import (
-    to_michelson_type,
-    to_micheline,
-)
+from tezos.tests.helpers.utility import to_micheline
 from tezos.tests.helpers.addressable import (
     Addressable,
     get_address,
 )
-
-
-# Ticket content type is fixed to match FA2.1 ticket content type:
-TICKET_CONTENT_TYPE = '(pair nat (option bytes))'
-
-
-@dataclass
-class TicketContent:
-    token_id: int
-    token_info: Optional[dict]
+from tezos.tests.helpers.ticket_content import TicketContent
 
 
 def get_ticket_balance(
     client,
     owner: Addressable,
     ticketer: str,
-    content_type: dict,
-    content: dict,
+    content: TicketContent,
 ) -> int:
 
     owner_address = get_address(owner)
@@ -42,8 +28,8 @@ def get_ticket_balance(
 
     queried_ticket = {
         'ticketer': ticketer,
-        'content_type': content_type,
-        'content': content,
+        'content_type': to_micheline(content.michelson_type),
+        'content': content.to_micheline(),
     }
 
     result = query._post(json=queried_ticket)  # type: ignore
@@ -54,16 +40,8 @@ def get_ticket_balance(
 class Ticket:
     owner: Addressable
     ticketer: str
-    content_type: dict
-    content: dict
+    content: TicketContent
     amount: int
-
-    @staticmethod
-    def make_content_micheline(content_object: TicketContent) -> dict:
-        return to_michelson_type(
-            (content_object.token_id, content_object.token_info),
-            TICKET_CONTENT_TYPE,
-        ).to_micheline_value()
 
     @classmethod
     def create(
@@ -77,28 +55,12 @@ class Ticket:
         from provided TicketContent object and given owner and ticketer
         addresses. Requires a client to get ticket balance"""
 
-        content_type = to_micheline(TICKET_CONTENT_TYPE)
-        content_micheline = cls.make_content_micheline(content)
-        amount = get_ticket_balance(
-            client, owner, ticketer, content_type, content_micheline
-        )
-
         return cls(
             owner=owner,
             ticketer=ticketer,
-            content_type=content_type,
-            content=content_micheline,
-            amount=amount
+            content=content,
+            amount=get_ticket_balance(client, owner, ticketer, content)
         )
-
-    def make_bytes_payload(self) -> str:
-        """This function allows to make ticket payload bytes to be used in
-        L2 Etherlink Bridge contracts"""
-
-        michelson_type = MichelsonType.match(self.content_type)
-        value = michelson_type.from_micheline_value(self.content)
-        payload: str = value.forge('legacy_optimized').hex()
-        return payload
 
     def split(self, amount: int) -> tuple['Ticket', 'Ticket']:
         """Splits the ticket into two tickets with given amounts"""
@@ -125,8 +87,8 @@ class Ticket:
             raise ValueError('Transfer ticket owner should be a client')
 
         transfer_op: OperationGroup = client.transfer_ticket(
-            ticket_contents=self.content,
-            ticket_ty=self.content_type,
+            ticket_contents=self.content.to_micheline(),
+            ticket_ty=to_micheline(self.content.michelson_type),
             ticket_ticketer=self.ticketer,
             ticket_amount=self.amount,
             destination=get_address(destination),
@@ -136,11 +98,15 @@ class Ticket:
 
 
 def deserialize_ticket(owner: Addressable, raw_ticket: dict) -> Ticket:
+    expected_content_type = to_micheline(TicketContent.michelson_type)
+    if expected_content_type != raw_ticket['content_type']:
+        raise ValueError('Ticket content type does not match the given type')
+    content = TicketContent.from_micheline(raw_ticket['content'])
+
     return Ticket(
         owner=owner,
         ticketer=raw_ticket['ticketer'],
-        content_type=raw_ticket['content_type'],
-        content=raw_ticket['content'],
+        content=content,
         amount=int(raw_ticket['amount']),
     )
 

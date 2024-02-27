@@ -388,21 +388,3 @@ def build_contracts(
         'build/ticketer.tz',
     )
     print('Done')
-
-
-# TODO: rework these functions:
-'''
-def unpack_ticket(
-    client: PyTezosClient,
-    contracts: TokenSet,
-    amount: int = 3,
-) -> None:
-    """This function run ticket unpacking for given client"""
-
-    helper = contracts['helper']
-    ticketer = contracts['ticketer']
-    ticket = ticketer.get_ticket()
-    entrypoint = f'{helper.address}%withdraw'
-    opg = ticket.using(client).transfer(entrypoint, amount).send()
-    client.wait(opg)
-'''

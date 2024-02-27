@@ -23,7 +23,6 @@ class BaseTestCase(SandboxedNodeTestCase):
         """Creates bootstrap account with given number"""
 
         accs_count = n or len(self.accounts)
-        # TODO: consider adding some Account abstraction with `address` property
         bootstrap: PyTezosClient = self.client.using(key=f'bootstrap{accs_count + 1}')
         bootstrap.reveal()
         self.accounts.append(bootstrap)

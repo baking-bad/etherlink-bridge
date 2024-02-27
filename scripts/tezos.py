@@ -86,7 +86,7 @@ def get_ticketer_params(
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
     ticketer_contract = Ticketer.from_address(manager, ticketer)
-    ticket = ticketer_contract.get_ticket()
+    ticket = ticketer_contract.read_ticket(manager)
     address_bytes = make_address_bytes(ticketer_contract.address)
     content_bytes = ticket.make_bytes_payload()
     print(f'address_bytes: {address_bytes}')

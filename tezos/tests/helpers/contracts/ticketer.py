@@ -13,7 +13,11 @@ from tezos.tests.helpers.contracts.tokens import (
     TokenHelper,
     TokenInfo,
 )
-from tezos.tests.helpers.tickets import Ticket
+from tezos.tests.helpers.tickets import (
+    Ticket,
+    TicketContent,
+)
+from tezos.tests.helpers.addressable import Addressable
 
 
 class Ticketer(ContractHelper):
@@ -52,14 +56,27 @@ class Ticketer(ContractHelper):
 
         return self.contract.deposit(amount)
 
-    def get_ticket(self, amount: int = 0) -> Ticket:
-        """Returns ticket with given content and amount that can be used in
-        `ticket_transfer` call"""
+    def read_content(self) -> TicketContent:
+        """Returns content of the ticketer"""
+
+        raw_content = self.contract.storage['content']()
+        return TicketContent(
+            token_id=raw_content[0],
+            token_info=raw_content[1],
+        )
+
+    def read_ticket(
+        self,
+        owner: Addressable,
+    ) -> Ticket:
+        """Returns ticket with Ticketer's content that can be used in
+        `ticket_transfer` call. Amount is set to the client's balance."""
 
         return Ticket.create(
             client=self.client,
+            owner=owner,
             ticketer=self.address,
-            content_object=self.contract.storage['content'](),
+            content=self.read_content(),
         )
 
     def get_token(self) -> TokenHelper:

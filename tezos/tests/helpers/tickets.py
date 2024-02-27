@@ -19,64 +19,77 @@ TICKET_CONTENT_TYPE = '(pair nat (option bytes))'
 
 
 @dataclass
+class TicketContent:
+    token_id: int
+    token_info: Optional[dict]
+
+
+def get_ticket_balance(
+    client,
+    owner: Addressable,
+    ticketer: str,
+    content_type: dict,
+    content: dict,
+) -> int:
+
+    owner_address = get_address(owner)
+    last_block_hash = client.shell.head.hash()
+    query = RpcQuery(
+        node=client.shell.node,
+        path='/chains/{}/blocks/{}/context/contracts/{}/ticket_balance',
+        params=['main', last_block_hash, owner_address],
+    )
+
+    queried_ticket = {
+        'ticketer': ticketer,
+        'content_type': content_type,
+        'content': content,
+    }
+
+    result = query._post(json=queried_ticket)  # type: ignore
+    return int(result)
+
+
+@dataclass
 class Ticket:
-    client: PyTezosClient
+    owner: Addressable
     ticketer: str
     content_type: dict
     content: dict
     amount: int
 
     @staticmethod
-    def make_content_micheline(
-        content_object: tuple,
-        content_type_michelson: str = TICKET_CONTENT_TYPE,
-    ) -> dict:
+    def make_content_micheline(content_object: TicketContent) -> dict:
         return to_michelson_type(
-            content_object,
-            content_type_michelson,
+            (content_object.token_id, content_object.token_info),
+            TICKET_CONTENT_TYPE,
         ).to_micheline_value()
 
     @classmethod
     def create(
         cls,
         client: PyTezosClient,
+        owner: Addressable,
         ticketer: str,
-        content_object: tuple,
-        content_type_michelson: str = TICKET_CONTENT_TYPE,
-        amount: int = 0,
+        content: TicketContent,
     ) -> 'Ticket':
-        """Special helper to create a ticket with given content provided
-        as a python object and content type provided as a michelson type
-        """
+        """Special helper to create a ticket with TZIP-29 ticket content type
+        from provided TicketContent object and given owner and ticketer
+        addresses. Requires a client to get ticket balance"""
+
+        content_type = to_micheline(TICKET_CONTENT_TYPE)
+        content_micheline = cls.make_content_micheline(content)
+        amount = get_ticket_balance(
+            client, owner, ticketer, content_type, content_micheline
+        )
 
         return cls(
-            client=client,
+            owner=owner,
             ticketer=ticketer,
-            content_type=to_micheline(content_type_michelson),
-            content=cls.make_content_micheline(
-                content_object,
-                content_type_michelson
-            ),
-            amount=amount,
+            content_type=content_type,
+            content=content_micheline,
+            amount=amount
         )
-
-    def get_balance(self, client_or_contract: Addressable) -> int:
-        address = get_address(client_or_contract)
-        last_block_hash = self.client.shell.head.hash()
-        query = RpcQuery(
-            node=self.client.shell.node,
-            path='/chains/{}/blocks/{}/context/contracts/{}/ticket_balance',
-            params=['main', last_block_hash, address],
-        )
-
-        queried_ticket = {
-            'ticketer': self.ticketer,
-            'content_type': self.content_type,
-            'content': self.content,
-        }
-
-        result = query._post(json=queried_ticket)  # type: ignore
-        return int(result)
 
     def make_bytes_payload(self) -> str:
         """This function allows to make ticket payload bytes to be used in
@@ -87,34 +100,44 @@ class Ticket:
         payload: str = value.forge('legacy_optimized').hex()
         return payload
 
+    def split(self, amount: int) -> tuple['Ticket', 'Ticket']:
+        """Splits the ticket into two tickets with given amounts"""
+
+        if amount > self.amount:
+            raise ValueError('Amount to split is greater than ticket amount')
+
+        ticket1 = replace(self, amount=amount)
+        ticket2 = replace(self, amount=self.amount - amount)
+        return ticket1, ticket2
+
     def transfer(
         self,
-        destination: str,
-        amount: int,
+        destination: Addressable,
+        entrypoint: Optional[str] = None,
     ) -> OperationGroup:
-        """Transfers given amount of tickets to given address"""
+        """Transfers given amount of tickets to given address.
+        If amount is not provided, then it will transfer all tickets."""
 
-        address_to = destination.split('%')[0]
-        entrypoint = ''.join(destination.split('%')[1:])
+        entrypoint = entrypoint or 'default'
+        if isinstance(self.owner, PyTezosClient):
+            client = self.owner
+        else:
+            raise ValueError('Transfer ticket owner should be a client')
 
-        transfer_op: OperationGroup = self.client.transfer_ticket(
+        transfer_op: OperationGroup = client.transfer_ticket(
             ticket_contents=self.content,
             ticket_ty=self.content_type,
             ticket_ticketer=self.ticketer,
-            ticket_amount=amount,
-            destination=address_to,
+            ticket_amount=self.amount,
+            destination=get_address(destination),
             entrypoint=entrypoint,
         )
         return transfer_op
 
-    def using(self, client: PyTezosClient) -> 'Ticket':
-        """Returns new Ticket with updated client"""
-        return replace(self, client=client)
 
-
-def deserialize_ticket(client: PyTezosClient, raw_ticket: dict) -> Ticket:
+def deserialize_ticket(owner: Addressable, raw_ticket: dict) -> Ticket:
     return Ticket(
-        client=client,
+        owner=owner,
         ticketer=raw_ticket['ticketer'],
         content_type=raw_ticket['content_type'],
         content=raw_ticket['content'],

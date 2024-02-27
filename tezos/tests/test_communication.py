@@ -19,7 +19,6 @@ class RollupCommunicationTestCase(BaseTestCase):
         )
         rollup_mock = self.deploy_rollup_mock()
 
-        ticket = ticketer.get_ticket()
         alice_l2_address = bytes.fromhex('0202020202020202020202020202020202020202')
 
         # In order to deposit token to the rollup, in one bulk operation:
@@ -34,9 +33,9 @@ class RollupCommunicationTestCase(BaseTestCase):
         self.bake_block()
 
         # Checking deposit operations results:
-        assert ticket.get_balance(rollup_mock) == 100
+        assert ticketer.read_ticket(alice).amount == 0
+        assert ticketer.read_ticket(rollup_mock).amount == 100
         assert token.get_balance(ticketer) == 100
-        assert ticket.get_balance(alice) == 0
 
         # Then some interactions on L2 leads to outbox message creation:
         # for example Alice send some L2 tokens to Boris and Boris decided
@@ -48,7 +47,7 @@ class RollupCommunicationTestCase(BaseTestCase):
         rollup_mock.execute_outbox_message(
             {
                 'ticket_id': {
-                    'ticketer': ticket.ticketer,
+                    'ticketer': ticketer,
                     'token_id': 0,
                 },
                 'amount': 5,
@@ -59,5 +58,5 @@ class RollupCommunicationTestCase(BaseTestCase):
         self.bake_block()
 
         # Checking withdraw operations results:
-        assert ticket.get_balance(rollup_mock) == 95
+        assert ticketer.read_ticket(rollup_mock).amount == 95
         assert token.get_balance(boris) == 5

@@ -12,16 +12,20 @@ from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
 from os.path import join
 from tezos.tests.helpers.metadata import Metadata
-from typing import TypedDict
+from typing import (
+    TypedDict,
+    Any,
+)
 from tezos.tests.helpers.addressable import (
     Addressable,
     get_address,
 )
+from tezos.tests.helpers.contracts.ticketer import Ticketer
 
 
 class TicketId(TypedDict):
     token_id: int
-    ticketer: str
+    ticketer: Ticketer
 
 
 class ExecuteParams(TypedDict):
@@ -30,6 +34,20 @@ class ExecuteParams(TypedDict):
     receiver: Addressable
     router: Addressable
 
+
+def serialize_ticket_id(ticket_id: TicketId) -> dict[str, Any]:
+    return {
+        'token_id': ticket_id['token_id'],
+        'ticketer': ticket_id['ticketer'].address,
+    }
+
+def serialize_execute_params(params: ExecuteParams) -> dict[str, Any]:
+    return {
+        'ticket_id': serialize_ticket_id(params['ticket_id']),
+        'amount': params['amount'],
+        'receiver': get_address(params['receiver']),
+        'router': get_address(params['router']),
+    }
 
 class RollupMock(ContractHelper):
     @classmethod
@@ -55,9 +73,6 @@ class RollupMock(ContractHelper):
     def execute_outbox_message(self, params: ExecuteParams) -> ContractCall:
         """Releases message with given id"""
 
-        return self.contract.execute_outbox_message({
-            'ticket_id': params['ticket_id'],
-            'amount': params['amount'],
-            'receiver': get_address(params['receiver']),
-            'router': get_address(params['router']),
-        })
+        return self.contract.execute_outbox_message(
+            serialize_execute_params(params)
+        )

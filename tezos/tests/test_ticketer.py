@@ -308,3 +308,58 @@ class TicketerTestCase(BaseTestCase):
         ticket = ticketer.read_ticket(alice)
         assert ticket.amount == 1
         assert token.get_balance(ticketer) == 1
+
+    def test_should_return_content_on_view_call_for_fa12(self) -> None:
+        alice = self.bootstrap_account()
+        token = self.deploy_fa12({alice: 100})
+        extra_metadata = {
+            'decimals': pack(16, 'nat'),
+            'symbol': pack('tBTC', 'string'),
+        }
+        ticketer = self.deploy_ticketer(token, extra_metadata)
+
+        token_info_bytes = pack(
+            {
+                'contract_address': pack(token.address, 'address'),
+                'token_type': pack("FA1.2", 'string'),
+                'decimals': pack(16, 'nat'),
+                'symbol': pack('tBTC', 'string'),
+            },
+            'map %token_info string bytes',
+        )
+        expected_content = (0, token_info_bytes)
+
+        actual_content = ticketer.get_content_view()
+        assert actual_content == expected_content
+
+    def test_should_return_content_on_view_call_for_fa2(self) -> None:
+        alice = self.bootstrap_account()
+        token = self.deploy_fa2({alice: 1}, token_id=42)
+        extra_metadata = {
+            'some_strange_metadata': pack({
+                'list_of_strings': pack(['one', 'two'], 'list string'),
+            }, 'map string bytes'),
+            'symbol': pack('NFT', 'string'),
+        }
+        ticketer = self.deploy_ticketer(token, extra_metadata)
+
+        token_info_bytes = pack(
+            {
+                'contract_address': pack(token.address, 'address'),
+                'token_type': pack("FA2", 'string'),
+                'token_id': pack(42, 'nat'),
+                'some_strange_metadata': pack({
+                    'list_of_strings': pack(['one', 'two'], 'list string'),
+                }, 'map string bytes'),
+                'symbol': pack('NFT', 'string'),
+            },
+            'map %token_info string bytes',
+        )
+
+        # NOTE: token_id for Ticketer content might be different from the
+        # token_id of the wrapped token. It depends on Ticketer
+        # implementation and on how it is configured during deployment.
+        expected_content = (0, token_info_bytes)
+
+        actual_content = ticketer.get_content_view()
+        assert actual_content == expected_content

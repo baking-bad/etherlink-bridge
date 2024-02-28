@@ -39,8 +39,8 @@
 - [x] test_should_increase_total_supply
 - [x] test_should_decrease_total_supply
 - [x] test_create_ticket_on_deposit_fa2_with_non_zero_id
-- [ ] test_should_return_content_on_view_call_for_fa12
-- [ ] test_should_return_content_on_view_call_for_fa2
+- [x] test_should_return_content_on_view_call_for_fa12
+- [x] test_should_return_content_on_view_call_for_fa2
 - [ ] test_should_return_token_on_view_call
 - [x] test_should_not_allow_to_mint_new_ticket_if_total_supply_exceeds_max
 - [-] test_should_not_allow_to_burn_ticket_if_total_supply_goes_negative

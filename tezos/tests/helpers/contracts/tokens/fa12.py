@@ -80,16 +80,16 @@ class FA12(TokenHelper):
     def get_balance(
         self,
         client_or_contract: Addressable,
-        allow_key_error: bool = False
     ) -> int:
         """Returns balance of given address.
-        - allow_key_error: if True, returns 0 if address is not in storage"""
+        NOTE: this is the implementation only works with Ctez token.
+        TODO: consider make special implementations for different FA1.2 tokens.
+        """
+
         address = get_address(client_or_contract)
         try:
             balance = self.contract.storage['tokens'][address]()
-        except KeyError as error:
-            if not allow_key_error:
-                raise error
+        except KeyError:
             balance = 0
         assert isinstance(balance, int)
         return balance

@@ -28,8 +28,9 @@ def select_routing_info(operation: dict[str, Any]) -> bytes:
 
 class TicketHelperTestCase(BaseTestCase):
     def test_should_prepare_correct_routing_info(self) -> None:
-        alice = self.bootstrap_account()
-        token, ticketer, erc_proxy, helper = self.setup_fa2({alice: 1000})
+        alice, token, ticketer, _ = self.default_setup('FA2')
+        erc_proxy = bytes.fromhex('fa02fa02fa02fa02fa02fa02fa02fa02fa02fa02')
+        helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
         rollup_mock = self.deploy_rollup_mock()
         token.using(alice).allow(alice, helper).send()
         self.bake_block()
@@ -47,8 +48,9 @@ class TicketHelperTestCase(BaseTestCase):
         assert select_routing_info(rollup_call) == l2_address + erc_proxy
 
     def test_should_fail_if_routing_info_has_inccorrect_size(self) -> None:
-        alice = self.bootstrap_account()
-        token, ticketer, erc_proxy, helper = self.setup_fa2({alice: 33})
+        alice, token, ticketer, _ = self.default_setup('FA2')
+        erc_proxy = bytes.fromhex('fa02fa02fa02fa02fa02fa02fa02fa02fa02fa02')
+        helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
         rollup_mock = self.deploy_rollup_mock()
         token.using(alice).allow(alice, helper).send()
         self.bake_block()

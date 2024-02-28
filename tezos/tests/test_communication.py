@@ -4,21 +4,20 @@ from tezos.tests.helpers.utility import pack
 
 class RollupCommunicationTestCase(BaseTestCase):
     def test_should_be_able_to_deposit_and_withdraw(self) -> None:
-        # Deploying contracts:
         boris = self.bootstrap_account()
         alice = self.bootstrap_account()
 
-        token, ticketer, erc_proxy, helper = self.setup_fa2(
-            balances={
-                alice: 1000
-            },
+        alice, token, ticketer, _ = self.default_setup(
+            token_type='FA2',
+            balance=1000,
             extra_metadata={
                 'decimals': pack(12, 'nat'),
                 'symbol': pack('FA2', 'string'),
             },
         )
+        erc_proxy = bytes.fromhex('fa02fa02fa02fa02fa02fa02fa02fa02fa02fa02')
+        helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
         rollup_mock = self.deploy_rollup_mock()
-
         alice_l2_address = bytes.fromhex('0202020202020202020202020202020202020202')
 
         # In order to deposit token to the rollup, in one bulk operation:

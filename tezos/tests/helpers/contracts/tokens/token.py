@@ -57,7 +57,7 @@ class TokenHelper(ContractHelper):
     def make_token_info_bytes(
         self,
         extra_token_info: Optional[TokenInfo] = None,
-    ) -> TicketContent:
+    ) -> bytes:
         extra_token_info = extra_token_info or {}
         token_info = {
             **self.make_token_info(),

@@ -93,12 +93,12 @@ class Ticketer(ContractHelper):
 
         return self.contract.get_total_supply().run_view()  # type: ignore
 
-    def get_content_view(self) -> TicketContent:
+    def get_content_view(self) -> tuple[int, bytes]:
         """Returns content of the ticketer"""
 
-        return self.contract.get_content().run_view()
+        return self.contract.get_content().run_view()  # type: ignore
 
     def get_token_view(self) -> dict[str, Any]:
         """Returns token info"""
 
-        return self.contract.get_token().run_view()
+        return self.contract.get_token().run_view()  # type: ignore

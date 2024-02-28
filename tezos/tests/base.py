@@ -76,7 +76,7 @@ class BaseTestCase(SandboxedNodeTestCase):
         self,
         token: TokenHelper,
         ticketer: Ticketer,
-        erc_proxy: bytes,
+        erc_proxy: bytes = bytes.fromhex('00' * 20),
     ) -> TicketHelper:
         """Deploys TicketHelper contract with given token and ticketer"""
 
@@ -117,21 +117,24 @@ class BaseTestCase(SandboxedNodeTestCase):
     def default_setup(
             self,
             token_type: str = 'FA2',
-            balances: Optional[dict[Addressable, int]] = None,
+            balance: int = 1000,
             extra_metadata: Optional[dict[str, bytes]] = None,
+            token_id: int = 0,
         ) -> tuple[PyTezosClient, TokenHelper, Ticketer, TicketRouterTester]:
 
         alice = self.bootstrap_account()
-        balances = balances or {alice: 1000}
 
         if token_type == 'FA2':
-            token: TokenHelper = self.deploy_fa2(balances)
-        elif token_type == 'FA12':
-            token = self.deploy_fa12(balances)
+            token: TokenHelper = self.deploy_fa2(
+                balances={alice: balance},
+                token_id=token_id,
+            )
+        elif token_type == 'FA1.2':
+            token = self.deploy_fa12(balances={alice: balance})
         else:
             raise ValueError(f'Unknown token type: {token_type}')
 
-        ticketer = self.deploy_ticketer(token)
+        ticketer = self.deploy_ticketer(token, extra_metadata)
         tester = self.deploy_ticket_router_tester()
         token.using(alice).allow(alice, ticketer).send()
         self.bake_block()

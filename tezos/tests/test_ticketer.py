@@ -363,3 +363,27 @@ class TicketerTestCase(BaseTestCase):
 
         actual_content = ticketer.get_content_view()
         assert actual_content == expected_content
+
+    def test_should_return_token_on_view_call_for_fa12(self) -> None:
+        alice = self.bootstrap_account()
+        token = self.deploy_fa12({alice: 100})
+        ticketer = self.deploy_ticketer(token)
+
+        expected_token = {
+            'fa12': token.address
+        }
+        actual_token = ticketer.get_token_view()
+
+        assert actual_token == expected_token
+
+    def test_should_return_token_on_view_call_for_fa2(self) -> None:
+        alice = self.bootstrap_account()
+        token = self.deploy_fa2({alice: 1}, token_id=777)
+        ticketer = self.deploy_ticketer(token)
+
+        expected_token = {
+            'fa2': (token.address, 777)
+        }
+        actual_token = ticketer.get_token_view()
+
+        assert actual_token == expected_token

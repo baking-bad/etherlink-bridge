@@ -54,10 +54,7 @@ class TokenHelper(ContractHelper):
     def make_token_info(self) -> dict[str, bytes]:
         ...
 
-    def make_token_info_bytes(self) -> bytes:
-        return pack(self.make_token_info(), MAP_TOKEN_INFO_TYPE)
-
-    def make_content(
+    def make_token_info_bytes(
         self,
         extra_token_info: Optional[TokenInfo] = None,
     ) -> TicketContent:
@@ -67,7 +64,7 @@ class TokenHelper(ContractHelper):
             **extra_token_info,
         }
 
-        return (self.token_id, pack(token_info, MAP_TOKEN_INFO_TYPE))
+        return pack(token_info, MAP_TOKEN_INFO_TYPE)
 
     @classmethod
     def from_dict(cls, client: PyTezosClient, token_dict: dict) -> 'TokenHelper':

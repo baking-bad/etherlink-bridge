@@ -265,12 +265,12 @@ class TicketerTestCase(BaseTestCase):
         # Alice deposits 10 tokens to the Ticketer:
         ticketer.using(alice).deposit(10).send()
         self.bake_block()
-        assert ticketer.get_total_supply() == 10
+        assert ticketer.get_total_supply_view() == 10
 
         # Alice deposits 100 more tokens to the Ticketer:
         ticketer.using(alice).deposit(100).send()
         self.bake_block()
-        assert ticketer.get_total_supply() == 110
+        assert ticketer.get_total_supply_view() == 110
 
     def test_should_decrease_total_supply(self) -> None:
         alice, token, ticketer, tester = self.default_setup('FA2')
@@ -278,11 +278,11 @@ class TicketerTestCase(BaseTestCase):
         # Alice deposits 100 tokens to the Ticketer:
         ticketer.using(alice).deposit(100).send()
         self.bake_block()
-        assert ticketer.get_total_supply() == 100
+        assert ticketer.get_total_supply_view() == 100
 
         # Alice withdraws 10 tokens from the Ticketer:
         ticket = ticketer.read_ticket(alice)
-        spent_ticket, kept_ticket = ticket.split(10)
+        spent_ticket, _ = ticket.split(10)
         alice.bulk(
             tester.set_router_withdraw(
                 target=ticketer,
@@ -291,4 +291,20 @@ class TicketerTestCase(BaseTestCase):
             spent_ticket.transfer(tester),
         ).send()
         self.bake_block()
-        assert ticketer.get_total_supply() == 100 - 10
+        assert ticketer.get_total_supply_view() == 100 - 10
+
+    def test_create_ticket_on_deposit_fa2_with_non_zero_id(self) -> None:
+        alice = self.bootstrap_account()
+        token = self.deploy_fa2({alice: 100}, token_id=42)
+        ticketer = self.deploy_ticketer(token)
+        token.using(alice).allow(alice, ticketer).send()
+        self.bake_block()
+
+        # Alice successfully deposits 1 token to the Ticketer:
+        ticketer.using(alice).deposit(1).send()
+        self.bake_block()
+
+        # Alice has one ticket with 1 token:
+        ticket = ticketer.read_ticket(alice)
+        assert ticket.amount == 1
+        assert token.get_balance(ticketer) == 1

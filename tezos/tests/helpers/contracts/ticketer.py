@@ -23,12 +23,16 @@ class Ticketer(ContractHelper):
     def make_storage(
         token: TokenHelper,
         extra_token_info: TokenInfo,
+        content_token_id: int = 0,
     ) -> dict[str, Any]:
         metadata = Metadata.make_default(
             name='Ticketer',
             description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
         )
-        content = token.make_content(extra_token_info)
+        content = (
+            content_token_id,
+            token.make_token_info_bytes(extra_token_info)
+        )
         return {
             'content': content,
             'token': token.as_dict(),
@@ -84,7 +88,17 @@ class Ticketer(ContractHelper):
         assert isinstance(token, dict)
         return TokenHelper.from_dict(self.client, token)
 
-    def get_total_supply(self) -> int:
+    def get_total_supply_view(self) -> int:
         """Returns total supply of tickets"""
 
         return self.contract.get_total_supply().run_view()  # type: ignore
+
+    def get_content_view(self) -> TicketContent:
+        """Returns content of the ticketer"""
+
+        return self.contract.get_content().run_view()
+
+    def get_token_view(self) -> dict[str, Any]:
+        """Returns token info"""
+
+        return self.contract.get_token().run_view()

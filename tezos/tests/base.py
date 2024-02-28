@@ -28,12 +28,16 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.accounts.append(bootstrap)
         return bootstrap
 
-    def deploy_fa2(self, balances: dict[Addressable, int]) -> FA2:
+    def deploy_fa2(
+        self,
+        balances: dict[Addressable, int],
+        token_id: int = 0
+    ) -> FA2:
         """Deploys FA2 contract with given balances"""
 
-        opg = FA2.originate(self.manager, balances).send()
+        opg = FA2.originate(self.manager, balances, token_id).send()
         self.bake_block()
-        return FA2.from_opg(self.manager, opg)
+        return FA2.from_opg(self.manager, opg, token_id=token_id)
 
     def deploy_fa12(self, balances: dict[Addressable, int]) -> FA12:
         """Deploys FA12 contract with given balances"""

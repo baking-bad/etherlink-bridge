@@ -6,6 +6,7 @@ from typing import Optional, Type
 from pytezos.operation.group import OperationGroup
 from pytezos.client import PyTezosClient
 from dataclasses import dataclass
+from tezos.tests.helpers.addressable import Addressable
 
 
 TicketContent = tuple[int, Optional[bytes]]
@@ -24,45 +25,39 @@ class TokenHelper(ContractHelper):
     def originate(
         cls,
         client: PyTezosClient,
-        balances: dict[str, int],
+        balances: dict[Addressable, int],
         token_id: int = 0,
-    ) -> OperationGroup:
-        pass
+    ) -> OperationGroup: ...
 
     @abstractmethod
-    def allow(self, owner: str, operator: str) -> ContractCall:
-        pass
+    def allow(self, owner: Addressable, operator: Addressable) -> ContractCall: ...
 
     @abstractmethod
-    def as_dict(self) -> dict:
-        pass
+    def disallow(self, owner: Addressable, operator: Addressable) -> ContractCall: ...
 
     @abstractmethod
-    def as_tuple(self) -> tuple:
-        pass
+    def as_dict(self) -> dict: ...
 
     @abstractmethod
-    def get_balance(self, address: str) -> int:
-        pass
+    def as_tuple(self) -> tuple: ...
 
     @abstractmethod
-    def make_token_info(self) -> dict[str, bytes]:
-        pass
+    def get_balance(self, client_or_contract: Addressable) -> int: ...
 
-    def make_token_info_bytes(self) -> bytes:
-        return pack(self.make_token_info(), MAP_TOKEN_INFO_TYPE)
+    @abstractmethod
+    def make_token_info(self) -> dict[str, bytes]: ...
 
-    def make_content(
+    def make_token_info_bytes(
         self,
         extra_token_info: Optional[TokenInfo] = None,
-    ) -> TicketContent:
+    ) -> bytes:
         extra_token_info = extra_token_info or {}
         token_info = {
             **self.make_token_info(),
             **extra_token_info,
         }
 
-        return (self.token_id, pack(token_info, MAP_TOKEN_INFO_TYPE))
+        return pack(token_info, MAP_TOKEN_INFO_TYPE)
 
     @classmethod
     def from_dict(cls, client: PyTezosClient, token_dict: dict) -> 'TokenHelper':

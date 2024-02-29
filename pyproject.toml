@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "etherlink-bridge"
-version = "0.3.0"
+version = "0.4.0"
 description = "This repository presents an implementation of a bridge between Tezos and Etherlink which implements TZIP-029."
 authors = ["Stepan Naumov <ztepler@baking-bad.org>"]
 packages = [
@@ -10,17 +10,21 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-pytezos = "^3.10.3"
+pytezos = "^3.11.2"
 python-dotenv = "^1.0.0"
 click = "^8.1.7"
 
-[tool.poetry.dev-dependencies]
-ipython = "^8.14.0"
-mypy = "^1.4.1"
-pytest = "^7.4.0"
-black = "^23.12.0"
-types-requests = "^2.31.0"
-ruff = "^0.1.9"
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.21.0"
+mypy = "^1.8.0"
+pytest = "^8.0.0"
+black = "^24.2.0"
+types-requests = "^2.31.0.20240125"
+ruff = "^0.2.1"
+gql = "^3.5.0"
+pydantic = "^2.6.1"
+pytest-asyncio = "^0.23.5"
+aiohttp = "^3.9.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

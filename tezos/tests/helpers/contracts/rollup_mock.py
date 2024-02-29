@@ -4,7 +4,7 @@ from tezos.tests.helpers.utility import (
     get_build_dir,
     originate_from_file,
 )
-from tezos.tests.helpers.tickets import (
+from tezos.tests.helpers.ticket import (
     Ticket,
     get_all_tickets,
 )
@@ -12,19 +12,43 @@ from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
 from os.path import join
 from tezos.tests.helpers.metadata import Metadata
-from typing import TypedDict
+from typing import (
+    TypedDict,
+    Any,
+)
+from tezos.tests.helpers.addressable import (
+    Addressable,
+    get_address,
+)
+from tezos.tests.helpers.contracts.ticketer import Ticketer
 
 
 class TicketId(TypedDict):
     token_id: int
-    ticketer: str
+    ticketer: Ticketer
 
 
-class Message(TypedDict):
+class ExecuteParams(TypedDict):
     ticket_id: TicketId
     amount: int
-    routing_data: bytes
-    router: str
+    receiver: Addressable
+    router: Addressable
+
+
+def serialize_ticket_id(ticket_id: TicketId) -> dict[str, Any]:
+    return {
+        'token_id': ticket_id['token_id'],
+        'ticketer': ticket_id['ticketer'].address,
+    }
+
+
+def serialize_execute_params(params: ExecuteParams) -> dict[str, Any]:
+    return {
+        'ticket_id': serialize_ticket_id(params['ticket_id']),
+        'amount': params['amount'],
+        'receiver': get_address(params['receiver']),
+        'router': get_address(params['router']),
+    }
 
 
 class RollupMock(ContractHelper):
@@ -34,8 +58,6 @@ class RollupMock(ContractHelper):
 
         storage = {
             'tickets': {},
-            'messages': {},
-            'next_message_id': 0,
             'metadata': Metadata.make_default(
                 name='Rollup Mock',
                 description='The Rollup Mock is a component of the Bridge Protocol Prototype, designed to emulate the operations of a real smart rollup on L1 side.',
@@ -50,19 +72,7 @@ class RollupMock(ContractHelper):
 
         return get_all_tickets(self.client, self.address)
 
-    def get_message(self, message_id: int = 0) -> dict:
-        """Returns message from storage with given id"""
-
-        message = self.contract.storage['messages'][message_id]()
-        assert isinstance(message, dict)
-        return message
-
-    def create_outbox_message(self, message: Message) -> ContractCall:
-        """Creates new message with given params"""
-
-        return self.contract.create_outbox_message(message)
-
-    def execute_outbox_message(self, message_id: int = 0) -> ContractCall:
+    def execute_outbox_message(self, params: ExecuteParams) -> ContractCall:
         """Releases message with given id"""
 
-        return self.contract.execute_outbox_message(message_id)
+        return self.contract.execute_outbox_message(serialize_execute_params(params))

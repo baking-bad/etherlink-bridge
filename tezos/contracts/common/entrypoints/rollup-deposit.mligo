@@ -48,3 +48,11 @@ let get (rollup : address) : t contract =
     match Tezos.get_contract_opt rollup with
     | None -> failwith Errors.rollup_deposit_not_found
     | Some entry -> entry
+
+let make
+        (rollup : address)
+        (deposit : deposit_t)
+        : operation =
+    let payload = wrap deposit in
+    let entry = get rollup in
+    Tezos.transaction payload 0mutez entry

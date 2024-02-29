@@ -1,7 +1,7 @@
 #import "../common/tokens/index.mligo" "Token"
 #import "../common/types/ticket.mligo" "Ticket"
-#import "../common/entrypoints/ticketer-deposit.mligo" "DepositEntry"
-#import "../common/entrypoints/router-withdraw.mligo" "WithdrawEntry"
+#import "../common/entrypoints/ticketer-deposit.mligo" "TicketerDepositEntry"
+#import "../common/entrypoints/router-withdraw.mligo" "RouterWithdrawEntry"
 #import "../common/errors.mligo" "Errors"
 #import "../common/utility.mligo" "Utility"
 #import "./storage.mligo" "Storage"
@@ -31,7 +31,7 @@ module Ticketer = struct
 
 
     [@entry] let deposit
-            (amount : DepositEntry.t)
+            (amount : TicketerDepositEntry.t)
             (store : Storage.t) : return_t =
         (*
             `deposit` entrypoint is used to convert legacy token to a ticket.
@@ -49,7 +49,7 @@ module Ticketer = struct
         [token_transfer_op; ticket_transfer_op], store
 
     [@entry] let withdraw
-            (params : WithdrawEntry.t)
+            (params : RouterWithdrawEntry.t)
             (store : Storage.t)
             : return_t =
         (*
@@ -60,9 +60,9 @@ module Ticketer = struct
 
         let { ticket; receiver } = params in
         let (ticketer, (content, amount)), _ = Tezos.read_ticket ticket in
+        let () = assert_content_is_expected content store.content in
         let () = Utility.assert_address_is_self ticketer in
         let () = Utility.assert_no_xtz_deposit () in
-        let () = assert_content_is_expected content store.content in
         let self = Tezos.get_self_address () in
         let transfer_op = Token.get_transfer_op store.token amount self receiver in
         let store = Storage.decrease_total_supply amount store in

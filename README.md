@@ -19,7 +19,7 @@ poetry run init_wallets
 This script prompts users to input their Tezos and Etherlink private and public keys. It also offers options to configure nodes for L1 and L2 communication. Default values are available, and testnet keys are included.
 
 Users might need to fund their Tezos and Etherlink accounts to execute scripts that interact with the L1 and L2 sides.
-- For funding accounts on the Tezos side, the Tezos [testnets faucet](https://faucet.nairobinet.teztnets.com/) can be used (TODO: Replace the faucet link with Ghostnet upon the bridge's activation in Ghostnet).
+- For funding accounts on the Tezos side, the Tezos [testnets faucet](https://faucet.oxfordnet.teztnets.com/) can be used (TODO: Replace the faucet link with Ghostnet upon the bridge's activation in Ghostnet).
 - To fund accounts on the Etherlink side, the native token bridge should be utilized (TODO: Insert a link to the native bridge when it becomes operational for our fork).
 
 ### Bridge Configuration (Listing New Token Pairs)
@@ -44,26 +44,19 @@ To deploy a token and allocate the total supply to the token's originator, the `
 ```shell
 poetry run deploy_token --token-type FA2
 ```
-Here is a link to the resulting operation in the [Nairobinet TzKT](https://nairobinet.tzkt.io/op7QGDUcdujMRSHq4C9MDcKwUus9mA2mrXQ15Vc4nsm1NSDJuMU/928446).
+Here is a link to the resulting operation in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/op7QGDUcdujMRSHq4C9MDcKwUus9mA2mrXQ15Vc4nsm1NSDJuMU/928446).
 
 #### Deploying a Ticketer
-The `deploy_ticketer` command is used to deploy a ticketer for a specific token. It requires the `--token-address`, `--token-type`, and `--token-id` parameters to be provided. Below is an example that demonstrates how to deploy a ticketer for the **FA2** token previously deployed on Nairobinet:
+The `deploy_ticketer` command is used to deploy a ticketer for a specific token. It requires the `--token-address`, `--token-type`, and `--token-id` parameters to be provided. Below is an example that demonstrates how to deploy a ticketer for the **FA2** token previously deployed on Oxfordnet:
 ```shell
 poetry run deploy_ticketer --token-address KT1EMyCtaNPypSbz3qxuXmNZVfvhqifrf5MR --token-type FA2 --token-id 0
 ```
-Here is a link to the resulting operation in the [Nairobinet TzKT](https://nairobinet.tzkt.io/ooVWNtZnUk2ZPiEaNh4daMQuyPQpdDV83x2BNxGZAT9BkSMwnd5/928447).
+Here is a link to the resulting operation in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/ooVWNtZnUk2ZPiEaNh4daMQuyPQpdDV83x2BNxGZAT9BkSMwnd5/928447).
 
 During the deployment of the Ticketer, users will obtain its parameters, which include **address_bytes** and **content_bytes**. These parameters are essential for the origination of the **ERC20Proxy**.
 
-#### Deploying a Ticket Helper
-To facilitate the interaction of Tezos wallets with specific tickets, users need to deploy a Ticket Helper. This is accomplished using the `deploy_ticket_helper` command, which requires the `--ticketer-address` parameter. The Ticketer's storage will be parsed to retrieve information about the token. Below is an example that illustrates deploying a ticket helper for the ticketer previously deployed on Nairobinet:
-```shell
-poetry run deploy_ticket_helper --ticketer-address KT1MauRYJiXxD7a8iZkhpdnc4jHu7iGGXDbs
-```
-Here is a link to the resulting operation in the [Nairobinet TzKT](https://nairobinet.tzkt.io/opZqJve5nKFcNHuZ3YofhVspYnSNzPLo6WsWhor2Zg4nENUVDmM/928448).
-
 #### Deploying ERC20Proxy
-To deploy a token contract on the Etherlink side capable of minting tokens upon deposit, the `deploy_erc20` command is used. This script requires the `--ticketer-address-bytes` and `--ticketer-content-bytes`, as well as `--token-name`, `--token-symbol`, and `--decimals` for the proper configuration of the L2 token contract. Below is an example that originates ERC20 contract connected to the ticketer previously deployed on Nairobinet:
+To deploy a token contract on the Etherlink side capable of minting tokens upon deposit, the `deploy_erc20` command is used. This script requires the `--ticketer-address-bytes` and `--ticketer-content-bytes`, as well as `--token-name`, `--token-symbol`, and `--decimals` for the proper configuration of the L2 token contract. Below is an example that originates ERC20 contract connected to the ticketer previously deployed on Oxfordnet:
 ```shell
 poetry run deploy_erc20 --ticketer-address-bytes 018ea031e382d5be16a357753fb833e609c7d2dd9b00 --ticket-content-bytes 0707000005090a0000007405020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a00000016013f65105866518de12034c340e2b2f65d80780c580007040100000008746f6b656e5f69640a000000030500000704010000000a746f6b656e5f747970650a00000009050100000003464132 --token-name "FA2 Test Token" --token-symbol "FA2" --decimals 0
 ```
@@ -74,12 +67,19 @@ NOTE: To retrieve the **ticketer-address-bytes** and **content-bytes** from an a
 poetry run get_ticketer_params --ticketer KT1MauRYJiXxD7a8iZkhpdnc4jHu7iGGXDbs
 ```
 
-### Deposit
-To initiate a deposit, users need to transfer Tickets to the rollup address, appending Routing Info in the [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#deposit): a 40 bytes payload comprising `| receiver | proxy |`, where both receiver and proxy are standard Ethereum addresses in raw form (H160). The `deposit` command simplifies this process. It requires the Ticket Helper address (`--ticket-helper-address`), the Etherlink ERC20Proxy contract address (`--proxy-address`), and the bridged amount (`--amount`). Below is an example of how to execute this:
+#### Deploying a Ticket Helper
+Finally, to allow the interaction of Tezos wallets with tickets, users need to deploy a Ticket Helper. During origination, Ticket Helper linked to the Token, Tikiter and ERC20Proxy. To originate Ticket Helper user should run the `deploy_ticket_helper` command, which requires the `--ticketer-address` and `--proxy-address` parameters to be provided. The Ticketer's storage will be parsed to retrieve information about the token. Below is an example that illustrates deploying a ticket helper for the ticketer previously deployed on Nairobinet:
 ```shell
-poetry run deposit --ticket-helper-address KT18nod2GU8PzYcrkspXz7dFkGisThZpgdLW --proxy-address 0x8554cD57C0C3E5Ab9d1782c9063279fA9bFA4680 --amount 777
+poetry run deploy_ticket_helper --ticketer-address KT1PmYUomF3HDxsGWYQUCbLi2X8WvT7ZHv8o --proxy-address 0xe448b46E3c9167961ae4bD498E8dFb78Ae97da8a
 ```
-Here is a link to the resulting operation in the [Nairobinet TzKT](https://nairobinet.tzkt.io/opRNngtr5dwYG6nJuXRAWXLPmE8Y17RgadwBQEtZfu3tfT9sxVv/928449) and [Etherlink Blockscout](http://blockscout.dipdup.net/tx/0xa34a41d8d5ca8e3019cb457c2a5b7f978ebf7193a72790fb6085b13ed2da1f66).
+Here is a link to the resulting operation in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/opZqJve5nKFcNHuZ3YofhVspYnSNzPLo6WsWhor2Zg4nENUVDmM/928448).
+
+### Deposit
+To initiate a deposit, users need to transfer Tickets to the rollup address, appending Routing Info in the [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#deposit): a 40 bytes payload comprising `| receiver | proxy |`, where both receiver and proxy are standard Ethereum addresses in raw form (H160). The Ticket Helper contract simplifies this process. To initiate a deposit using Ticket Helper users need to provide the Ticket Helper address (`--ticket-helper-address`) and a bridged amount (`--amount`) to initiate a deposit. Below is an example of how to execute this command:
+```shell
+poetry run deposit --ticket-helper-address KT1UksiFErZWVndLyxJBYnMR69egCvpFKGVu --amount 77
+```
+Here is a link to the resulting operation in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/opRNngtr5dwYG6nJuXRAWXLPmE8Y17RgadwBQEtZfu3tfT9sxVv/928449) and [Etherlink Blockscout](http://blockscout.dipdup.net/tx/0xa34a41d8d5ca8e3019cb457c2a5b7f978ebf7193a72790fb6085b13ed2da1f66).
 
 NOTE: This script executes two operations in a batch. The first operation grants approval to the **Ticket Helper** for the token, and the second operation invokes the **deposit** entrypoint of the **Ticket Helper**.
 
@@ -123,7 +123,7 @@ Since the outbox message has settled on the L1 side, users can execute it by ini
 ```shell
 poetry run execute_outbox_message --commitment src12xZPCATqCQ2yEwTsdjpUrZB3j5N4QEG2yE9ooKRkdebUoNnaVc --proof 03000246e559d1e67da67d8a58ba6336b2d0d590d907575b62bcb6f74b72a173fa1c4346e559d1e67da67d8a58ba6336b2d0d590d907575b62bcb6f74b72a173fa1c430005820764757261626c65d0e7d0dd265b0311f278277c7074a59f1e0ccd0eea95480712a8d16f2af2a5fd4803746167c00800000004536f6d650003c0eddd502da06bf12e3f51c320a2ae3e57ea25f85715bb937694c028196f5d4b40820576616c7565810370766d8107627566666572738205696e707574820468656164c00100066c656e677468c00100066f75747075740004820132810a6c6173745f6c6576656cc004002922470133810f76616c69646974795f706572696f64c00400013b0082013181086f7574626f786573010c0801061ec0b2503e758887e4c8867c03d8ee9fed3affd91be8d51b5c009fdc05dcf006c5220102ff01019500c30056c0284323d54769eace77824173c277fd6b0afc488e0c8793892d4ff56e6182445b0031c0641f1aec15551f28800a5b143a5138c20c32a6a79567e76121a03a34d7518c700019000d0009000700040004c092fc55432b8d1bb592f64e30bf689ca79cd662da42f5fa158742a5beefbe3108820732363933373233820468656164c00100066c656e677468c0010007323639353333350003810468656164c001008208636f6e74656e7473810130c0e9000000e500000000e007070a0000001600008a7390072a389159c73687165cd7910e8a39160607070a00000016018ea031e382d5be16a357753fb833e609c7d2dd9b0007070707000005090a0000007405020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a00000016013f65105866518de12034c340e2b2f65d80780c580007040100000008746f6b656e5f69640a000000030500000704010000000a746f6b656e5f747970650a0000000905010000000346413200ac01018ea031e382d5be16a357753fb833e609c7d2dd9b00000000087769746864726177066c656e677468c00101e0c0fbeb6f8dbed945498bb241f2aa59b61fa41ce8f4183e87a0fb207bad530de545c0928d01251fe92a323735aad221c34a984287441f9928653781aae2ba3e1ed20ec01c04d9bbd31a532e2b64f2cea68d299bc3588607b6f3301b337a382751891ff4c0edb46d89cd791d0ba42b375b963b2d3519d61f7e6b9ad7acad6836ded1b00aa9c0aec97545fa52e4fd6d81eb6616fa7c32d86ab299b2842f8f47094e69f409ebc8c0f233f9b7aaf566f55bf84c6a0d0aaa4466f24838bc9fdf8feff9cb589906a07bc0031742da1992a697d7ad87911a3c08b7ece1bd4ee8f2ff458f2ddcc75ec2e2b5c02bd0fc4984cea88f93335810d338afcea380f16c6273a48ec617f755730319e20134810d6d6573736167655f6c696d6974c002a401047761736dd07a5feea7b7245822330d8f990fd24bf317c760800acf697a8e9289b16b05222b46e559d1e67da67d8a58ba6336b2d0d590d907575b62bcb6f74b72a173fa1c43002920a70000000000e007070a0000001600008a7390072a389159c73687165cd7910e8a39160607070a00000016018ea031e382d5be16a357753fb833e609c7d2dd9b0007070707000005090a0000007405020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a00000016013f65105866518de12034c340e2b2f65d80780c580007040100000008746f6b656e5f69640a000000030500000704010000000a746f6b656e5f747970650a0000000905010000000346413200ac01018ea031e382d5be16a357753fb833e609c7d2dd9b00000000087769746864726177
 ```
-Here is a link to the resulting operation in the [Nairobinet TzKT](https://nairobinet.tzkt.io/ongZVuFZmLaGNfF7zgMvufEE8APxAwoq7pbRv5GuJXdnqXgJZKh/928451).
+Here is a link to the resulting operation in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/ongZVuFZmLaGNfF7zgMvufEE8APxAwoq7pbRv5GuJXdnqXgJZKh/928451).
 
 ## Compilation and Running Tests
 ### Install Dependencies

@@ -2,31 +2,20 @@ from tezos.tests.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
 from tezos.tests.helpers.utility import (
     get_build_dir,
-    to_michelson_type,
-    to_micheline,
     originate_from_file,
 )
 from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
-from typing import (
-    Any,
-    TypedDict,
-)
+from typing import Any
 from os.path import join
 from tezos.tests.helpers.metadata import Metadata
 from tezos.tests.helpers.contracts.tokens import (
     TokenHelper,
     TokenInfo,
 )
-from tezos.tests.helpers.tickets import Ticket
-
-
-class DepositParams(TypedDict):
-    amount: int
-
-
-# Ticket content type is fixed to match FA2.1 ticket content type:
-TICKET_CONTENT_TYPE = '(pair nat (option bytes))'
+from tezos.tests.helpers.ticket import Ticket
+from tezos.tests.helpers.ticket_content import TicketContent
+from tezos.tests.helpers.addressable import Addressable
 
 
 class Ticketer(ContractHelper):
@@ -34,12 +23,13 @@ class Ticketer(ContractHelper):
     def make_storage(
         token: TokenHelper,
         extra_token_info: TokenInfo,
+        content_token_id: int = 0,
     ) -> dict[str, Any]:
         metadata = Metadata.make_default(
             name='Ticketer',
             description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
         )
-        content = token.make_content(extra_token_info)
+        content = (content_token_id, token.make_token_info_bytes(extra_token_info))
         return {
             'content': content,
             'token': token.as_dict(),
@@ -60,26 +50,32 @@ class Ticketer(ContractHelper):
         filename = join(get_build_dir(), 'ticketer.tz')
         return originate_from_file(filename, client, storage)
 
-    def deposit(self, params: DepositParams) -> ContractCall:
+    def deposit(self, amount: int) -> ContractCall:
         """Deposits given amount of given token to the contract"""
 
-        return self.contract.deposit(params['amount'])
+        return self.contract.deposit(amount)
 
-    def get_ticket(self, amount: int = 0) -> Ticket:
-        """Returns ticket with given content and amount that can be used in
-        `ticket_transfer` call"""
+    def read_content(self) -> TicketContent:
+        """Returns content of the ticketer"""
 
-        content = to_michelson_type(
-            self.contract.storage['content'](),
-            TICKET_CONTENT_TYPE,
-        ).to_micheline_value()
+        raw_content = self.contract.storage['content']()
+        return TicketContent(
+            token_id=raw_content[0],
+            token_info=raw_content[1],
+        )
 
-        return Ticket(
+    def read_ticket(
+        self,
+        owner: Addressable,
+    ) -> Ticket:
+        """Returns ticket with Ticketer's content that can be used in
+        `ticket_transfer` call. Amount is set to the client's balance."""
+
+        return Ticket.create(
             client=self.client,
+            owner=owner,
             ticketer=self.address,
-            content_type=to_micheline(TICKET_CONTENT_TYPE),
-            content=content,
-            amount=amount,
+            content=self.read_content(),
         )
 
     def get_token(self) -> TokenHelper:
@@ -88,3 +84,18 @@ class Ticketer(ContractHelper):
         token = self.contract.storage['token']()
         assert isinstance(token, dict)
         return TokenHelper.from_dict(self.client, token)
+
+    def get_total_supply_view(self) -> int:
+        """Returns total supply of tickets"""
+
+        return self.contract.get_total_supply().run_view()  # type: ignore
+
+    def get_content_view(self) -> tuple[int, bytes]:
+        """Returns content of the ticketer"""
+
+        return self.contract.get_content().run_view()  # type: ignore
+
+    def get_token_view(self) -> dict[str, Any]:
+        """Returns token info"""
+
+        return self.contract.get_token().run_view()  # type: ignore

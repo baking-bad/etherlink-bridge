@@ -16,8 +16,6 @@ function hashTicket(bytes22 ticketer, bytes memory content)
  */
 contract ERC20Proxy is ERC20 {
     uint256 private _ticketHash;
-    // TODO: when we have kernel address fixed at some precompile address in
-    //       Etherlink L2 side, we can remove this field from constructor.
     address private _kernel;
     uint8 private _decimals;
 

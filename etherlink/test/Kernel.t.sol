@@ -80,7 +80,4 @@ contract KernelTest is BaseTest, IWithdrawalEvent, IDepositEvent {
         );
         kernel.withdraw(address(token), receiver, 100, ticketer, content);
     }
-
-    // TODO: test_ShouldIncreaseTicketBalanceOfReceiverIfWrongTokenAddress
-    //       -- however this logic is not implemented in kernel
 }

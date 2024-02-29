@@ -18,13 +18,7 @@ let get_transfer_op
     match token with
     | Fa12 addr -> TokenFa12.get_transfer_op from_ to_ addr amount
     | Fa2 (addr, token_id) -> begin
-        let txs = [
-            {
-                to_ = to_;
-                token_id = token_id;
-                amount = amount;
-            }
-        ] in
+        let txs = [{ to_; token_id; amount; }] in
         TokenFa2.get_transfer_op from_ addr txs
     end
 

@@ -4,6 +4,7 @@ from tezos.tests.helpers.utility import (
 )
 from tezos.tests.helpers.contracts import (
     ContractHelper,
+    TokenHelper,
     Ticketer,
 )
 from pytezos.client import PyTezosClient
@@ -11,6 +12,11 @@ from pytezos.operation.group import OperationGroup
 from os.path import join
 from tezos.tests.helpers.metadata import Metadata
 from pytezos.contract.call import ContractCall
+from tezos.tests.helpers.addressable import (
+    Addressable,
+    get_address,
+)
+from typing import Optional
 
 
 class TicketHelper(ContractHelper):
@@ -20,11 +26,13 @@ class TicketHelper(ContractHelper):
         client: PyTezosClient,
         ticketer: Ticketer,
         erc_proxy: bytes,
+        token: Optional[TokenHelper] = None,
     ) -> OperationGroup:
         """Deploys Ticket Helper"""
 
+        token = token or ticketer.get_token()
         storage = {
-            'token': ticketer.get_token().as_dict(),
+            'token': token.as_dict(),
             'ticketer': ticketer.address,
             'erc_proxy': erc_proxy,
             'context': None,
@@ -37,12 +45,17 @@ class TicketHelper(ContractHelper):
 
         return originate_from_file(filename, client, storage)
 
-    def deposit(self, rollup: str, receiver: bytes, amount: int) -> ContractCall:
+    def deposit(
+        self, rollup: Addressable, receiver: bytes, amount: int
+    ) -> ContractCall:
         """Deposits given amount of tokens to the L2 address set in routing data"""
 
-        return self.contract.deposit(
-            {'rollup': rollup, 'receiver': receiver, 'amount': amount}
-        )
+        deposit_params = {
+            'rollup': get_address(rollup),
+            'receiver': receiver,
+            'amount': amount,
+        }
+        return self.contract.deposit(deposit_params)
 
     def get_ticketer(self) -> Ticketer:
         """Returns ticketer"""

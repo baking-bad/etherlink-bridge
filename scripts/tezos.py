@@ -3,12 +3,11 @@ from pytezos.client import PyTezosClient
 from tezos.tests.helpers.contracts import (
     Ticketer,
     RollupMock,
-    Router,
+    TicketRouterTester,
     TokenHelper,
     TicketHelper,
 )
 from tezos.tests.helpers.utility import (
-    pkh,
     pack,
     make_address_bytes,
 )
@@ -64,7 +63,7 @@ def deploy_token(
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
     Token = TokenHelper.get_cls(token_type)
-    balances = {pkh(manager): total_supply}
+    balances = {manager: total_supply}
     opg = Token.originate(manager, balances, token_id).send()
     manager.wait(opg)
     token = Token.from_opg(manager, opg)
@@ -87,9 +86,9 @@ def get_ticketer_params(
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
     ticketer_contract = Ticketer.from_address(manager, ticketer)
-    ticket = ticketer_contract.get_ticket()
+    ticket = ticketer_contract.read_ticket(manager)
     address_bytes = make_address_bytes(ticketer_contract.address)
-    content_bytes = ticket.make_bytes_payload()
+    content_bytes = ticket.content.to_bytes_hex()
     print(f'address_bytes: {address_bytes}')
     print(f'content_bytes: {content_bytes}')
     return {
@@ -199,14 +198,11 @@ def deploy_ticket_helper(
     return ticket_helper
 
 
-def deploy_router(manager: PyTezosClient) -> Router:
-    print('Deploying Router...')
-    router_opg = Router.originate(manager).send()
+def deploy_router(manager: PyTezosClient) -> TicketRouterTester:
+    print('Deploying TicketRouterTester...')
+    router_opg = TicketRouterTester.originate(manager).send()
     manager.wait(router_opg)
-    router = Router.from_opg(manager, router_opg)
-    router_bytes = make_address_bytes(router.address)
-    print(f'router address bytes: `{router_bytes}`')
-    return router
+    return TicketRouterTester.from_opg(manager, router_opg)
 
 
 def deploy_rollup_mock(manager: PyTezosClient) -> RollupMock:
@@ -242,7 +238,7 @@ def deposit(
     rollup_address: Optional[str],
     private_key: Optional[str],
     rpc_url: Optional[str],
-) -> None:
+) -> str:
     """Deposits given amount of given token to the Etherlink Bridge"""
 
     private_key = private_key or load_or_ask('L1_PRIVATE_KEY', is_secret=True)
@@ -257,12 +253,14 @@ def deposit(
     token = ticket_helper.get_ticketer().get_token()
 
     opg = manager.bulk(
-        # TODO: there is a problem with UnsafeAllowanceChange for FA1.2 token (!)
-        token.allow(pkh(manager), ticket_helper.address),
+        token.disallow(manager, ticket_helper),
+        token.allow(manager, ticket_helper),
         ticket_helper.deposit(rollup_address, receiver_bytes, amount),
     ).send()
     manager.wait(opg)
-    print(f'Succeed, transaction hash: {opg.hash()}')
+    operation_hash = opg.hash()
+    print(f'Succeed, transaction hash: {operation_hash}')
+    return operation_hash
 
 
 # TODO: consider moving this code to the Etherlink side?
@@ -370,6 +368,11 @@ def build_contracts(
 
     print('Compiling Tezos side contracts:')
     compile_contract(
+        'contracts/ticket-router-tester/ticket-router-tester.mligo',
+        'TicketRouterTester',
+        'build/ticket-router-tester.tz',
+    )
+    compile_contract(
         'contracts/ticket-helper/ticket-helper.mligo',
         'TicketHelper',
         'build/ticket-helper.tz',
@@ -384,27 +387,4 @@ def build_contracts(
         'Ticketer',
         'build/ticketer.tz',
     )
-    compile_contract(
-        'contracts/router.mligo',
-        'Router',
-        'build/router.tz',
-    )
     print('Done')
-
-
-# TODO: rework these functions:
-'''
-def unpack_ticket(
-    client: PyTezosClient,
-    contracts: TokenSet,
-    amount: int = 3,
-) -> None:
-    """This function run ticket unpacking for given client"""
-
-    helper = contracts['helper']
-    ticketer = contracts['ticketer']
-    ticket = ticketer.get_ticket()
-    entrypoint = f'{helper.address}%withdraw'
-    opg = ticket.using(client).transfer(entrypoint, amount).send()
-    client.wait(opg)
-'''

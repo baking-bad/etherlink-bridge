@@ -1,6 +1,7 @@
 from tezos.tests.helpers.utility import to_michelson_type
 from pytezos.michelson.types.base import MichelsonType
 from dataclasses import dataclass
+from tezos.tests.helpers.utility import to_micheline
 from typing import (
     Optional,
     Any,
@@ -35,7 +36,7 @@ class TicketContent:
         """This function allows to make ticket payload bytes to be used in
         L2 Etherlink Bridge contracts"""
 
-        michelson_type = MichelsonType.match(self.michelson_type)
+        michelson_type = MichelsonType.match(to_micheline(self.michelson_type))
         micheline_value = self.to_micheline()
         value = michelson_type.from_micheline_value(micheline_value)
         payload: str = value.forge('legacy_optimized').hex()

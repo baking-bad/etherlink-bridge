@@ -200,3 +200,34 @@ class TicketHelperTestCase(BaseTestCase):
         with self.assertRaises(MichelsonError) as err:
             helper.using(alice).deposit(rollup, RECEIVER, 1).with_amount(100).send()
         assert 'XTZ_DEPOSIT_DISALLOWED' in str(err.exception)
+
+    def test_should_fail_on_unwrap_with_attached_xtz(self) -> None:
+        alice, helper, rollup_mock = self.default_setup_helper('FA2')
+        tester = self.deploy_ticket_router_tester()
+
+        # It is impossible to deposit ticket with amount from implicit address,
+        # so instead TicketRouterTester will be used to mint ticket to the helper.
+        # To do this, first, mint ticket to Alice:
+        ticketer = helper.get_ticketer()
+        ticketer.using(alice).deposit(12).send()
+        self.bake_block()
+
+        ticket = ticketer.read_ticket(alice)
+        assert ticket.amount == 12
+
+        with self.assertRaises(MichelsonError) as err:
+            alice.bulk(
+                tester.set_default(
+                    target=f'{helper.address}%unwrap',
+                    xtz_amount=100,
+                ),
+                ticket.transfer(tester),
+            ).send()
+        assert 'XTZ_DEPOSIT_DISALLOWED' in str(err.exception)
+
+        # Checking that transaction without XTZ will succeed:
+        alice.bulk(
+            tester.set_default(f'{helper.address}%unwrap'),
+            ticket.transfer(tester),
+        ).send()
+        self.bake_block()

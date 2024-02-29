@@ -1,8 +1,8 @@
-from tezos.tests.helpers.utility import (
+from scripts.helpers.utility import (
     originate_from_file,
     get_build_dir,
 )
-from tezos.tests.helpers.contracts import (
+from scripts.helpers.contracts import (
     ContractHelper,
     TokenHelper,
     Ticketer,
@@ -10,9 +10,9 @@ from tezos.tests.helpers.contracts import (
 from pytezos.client import PyTezosClient
 from pytezos.operation.group import OperationGroup
 from os.path import join
-from tezos.tests.helpers.metadata import Metadata
+from scripts.helpers.metadata import Metadata
 from pytezos.contract.call import ContractCall
-from tezos.tests.helpers.addressable import (
+from scripts.helpers.addressable import (
     Addressable,
     get_address,
 )

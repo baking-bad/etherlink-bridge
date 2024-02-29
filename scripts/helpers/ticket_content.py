@@ -1,7 +1,7 @@
-from tezos.tests.helpers.utility import to_michelson_type
+from scripts.helpers.utility import to_michelson_type
 from pytezos.michelson.types.base import MichelsonType
 from dataclasses import dataclass
-from tezos.tests.helpers.utility import to_micheline
+from scripts.helpers.utility import to_micheline
 from typing import (
     Optional,
     Any,

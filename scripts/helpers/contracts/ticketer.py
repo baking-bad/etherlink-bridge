@@ -1,6 +1,6 @@
-from tezos.tests.helpers.contracts.contract import ContractHelper
+from scripts.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
-from tezos.tests.helpers.utility import (
+from scripts.helpers.utility import (
     get_build_dir,
     originate_from_file,
 )
@@ -8,14 +8,14 @@ from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
 from typing import Any
 from os.path import join
-from tezos.tests.helpers.metadata import Metadata
-from tezos.tests.helpers.contracts.tokens import (
+from scripts.helpers.metadata import Metadata
+from scripts.helpers.contracts.tokens import (
     TokenHelper,
     TokenInfo,
 )
-from tezos.tests.helpers.ticket import Ticket
-from tezos.tests.helpers.ticket_content import TicketContent
-from tezos.tests.helpers.addressable import Addressable
+from scripts.helpers.ticket import Ticket
+from scripts.helpers.ticket_content import TicketContent
+from scripts.helpers.addressable import Addressable
 
 
 class Ticketer(ContractHelper):

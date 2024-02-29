@@ -1,5 +1,5 @@
 from tezos.tests.base import BaseTestCase
-from tezos.tests.helpers.utility import pack
+from scripts.helpers.utility import pack
 
 
 class RollupCommunicationTestCase(BaseTestCase):

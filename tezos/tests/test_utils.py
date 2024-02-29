@@ -1,8 +1,8 @@
 import unittest
-from tezos.tests.helpers.contracts.tokens import FA2, FA12
-from tezos.tests.helpers.ticket_content import TicketContent
+from scripts.helpers.contracts.tokens import CtezToken, FxhashToken
+from scripts.helpers.ticket_content import TicketContent
 from unittest.mock import Mock
-from tezos.tests.helpers.utility import pack
+from scripts.helpers.utility import pack
 
 
 class TestTicketContentGeneration(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestTicketContentGeneration(unittest.TestCase):
         mock_contract = Mock()
         mock_client = Mock()
         token_address = 'KT1LpdETWYvPWCQTR2FEW6jE6dVqJqxYjdeW'
-        token = FA12(mock_contract, mock_client, token_address, 0)
+        token = CtezToken(mock_contract, mock_client, token_address, 0)
         token_info_bytes = token.make_token_info_bytes()
         expected_token_info_hex = (
             '05020000005907040100000010636f6e74726163745f616464726573730a0000'
@@ -41,7 +41,7 @@ class TestTicketContentGeneration(unittest.TestCase):
         mock_contract = Mock()
         mock_client = Mock()
         token_address = 'KT195Eb8T524v5VJ99ZzH2wpnPfQ2wJfMi6h'
-        token = FA2(mock_contract, mock_client, token_address, 42)
+        token = FxhashToken(mock_contract, mock_client, token_address, 42)
         token_info_bytes = token.make_token_info_bytes()
         expected_token_info_hex = (
             '05020000006e07040100000010636f6e74726163745f616464726573730a0000'
@@ -64,7 +64,7 @@ class TestTicketContentGeneration(unittest.TestCase):
         mock_contract = Mock()
         mock_client = Mock()
         token_address = 'KT195Eb8T524v5VJ99ZzH2wpnPfQ2wJfMi6h'
-        token = FA2(mock_contract, mock_client, token_address, 42)
+        token = FxhashToken(mock_contract, mock_client, token_address, 42)
         token_info_bytes = token.make_token_info_bytes(
             {
                 'decimals': pack(3, 'nat'),

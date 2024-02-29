@@ -41,13 +41,7 @@ def get_address_from_op(op: dict) -> str:
 def get_build_dir() -> str:
     """Returns path to the build directory"""
 
-    return join(dirname(__file__), '..', '..', 'build')
-
-
-def get_tokens_dir() -> str:
-    """Returns path to the tokens directory"""
-
-    return join(dirname(__file__), '..', 'tokens')
+    return join(dirname(__file__), '..', '..', 'tezos', 'build')
 
 
 def load_contract_from_address(

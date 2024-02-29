@@ -1,26 +1,26 @@
-from tezos.tests.helpers.contracts.contract import ContractHelper
+from scripts.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
-from tezos.tests.helpers.utility import (
+from scripts.helpers.utility import (
     get_build_dir,
     originate_from_file,
 )
-from tezos.tests.helpers.ticket import (
+from scripts.helpers.ticket import (
     Ticket,
     get_all_tickets,
 )
 from pytezos.operation.group import OperationGroup
 from pytezos.contract.call import ContractCall
 from os.path import join
-from tezos.tests.helpers.metadata import Metadata
+from scripts.helpers.metadata import Metadata
 from typing import (
     TypedDict,
     Any,
 )
-from tezos.tests.helpers.addressable import (
+from scripts.helpers.addressable import (
     Addressable,
     get_address,
 )
-from tezos.tests.helpers.contracts.ticketer import Ticketer
+from scripts.helpers.contracts.ticketer import Ticketer
 
 
 class TicketId(TypedDict):

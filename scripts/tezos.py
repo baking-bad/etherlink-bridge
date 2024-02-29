@@ -1,20 +1,20 @@
 from pytezos import pytezos
 from pytezos.client import PyTezosClient
-from tezos.tests.helpers.contracts import (
+from scripts.helpers.contracts import (
     Ticketer,
     RollupMock,
     TicketRouterTester,
     TokenHelper,
     TicketHelper,
 )
-from tezos.tests.helpers.utility import (
+from scripts.helpers.utility import (
     pack,
     make_address_bytes,
 )
 from typing import Optional
 import click
 from scripts.environment import load_or_ask
-from tezos.tests.helpers.proof import (
+from scripts.helpers.proof import (
     get_proof as get_proof_from_rpc,
     Proof,
 )

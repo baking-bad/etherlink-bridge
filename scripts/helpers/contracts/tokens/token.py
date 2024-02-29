@@ -1,12 +1,12 @@
 from abc import abstractmethod
-from tezos.tests.helpers.contracts.contract import ContractHelper
+from scripts.helpers.contracts.contract import ContractHelper
 from pytezos.contract.call import ContractCall
-from tezos.tests.helpers.utility import pack
+from scripts.helpers.utility import pack
 from typing import Optional, Type
 from pytezos.operation.group import OperationGroup
 from pytezos.client import PyTezosClient
 from dataclasses import dataclass
-from tezos.tests.helpers.addressable import Addressable
+from scripts.helpers.addressable import Addressable
 
 
 TicketContent = tuple[int, Optional[bytes]]
@@ -63,8 +63,8 @@ class TokenHelper(ContractHelper):
     def from_dict(cls, client: PyTezosClient, token_dict: dict) -> 'TokenHelper':
         """Creates TokenHelper from dict with token info"""
 
-        from tezos.tests.helpers.contracts.tokens.fa12 import FA12
-        from tezos.tests.helpers.contracts.tokens.fa2 import FA2
+        from scripts.helpers.contracts.tokens.fa12 import FA12
+        from scripts.helpers.contracts.tokens.fa2 import FA2
 
         if 'fa12' in token_dict:
             return FA12.from_address(client, token_dict['fa12'])
@@ -79,8 +79,8 @@ class TokenHelper(ContractHelper):
     def get_cls(token_type: str) -> Type['TokenHelper']:
         """Returns token class by token type string"""
 
-        from tezos.tests.helpers.contracts.tokens.fa12 import FA12
-        from tezos.tests.helpers.contracts.tokens.fa2 import FA2
+        from scripts.helpers.contracts.tokens.fa12 import FA12
+        from scripts.helpers.contracts.tokens.fa2 import FA2
 
         assert token_type in ['FA2', 'FA1.2']
         return FA12 if token_type == 'FA1.2' else FA2

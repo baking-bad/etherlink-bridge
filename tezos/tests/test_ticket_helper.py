@@ -1,15 +1,15 @@
 from tezos.tests.base import BaseTestCase
 from pytezos.rpc.errors import MichelsonError
 from typing import Any
-from tezos.tests.helpers.ticket_content import TicketContent
-from tezos.tests.helpers.ticket import get_ticket_balance
+from scripts.helpers.ticket_content import TicketContent
+from scripts.helpers.ticket import get_ticket_balance
 from pytezos.client import PyTezosClient
-from tezos.tests.helpers.contracts import (
+from scripts.helpers.contracts import (
     TicketHelper,
     RollupMock,
     TicketRouterTester,
 )
-from tezos.tests.helpers.ticket import Ticket
+from scripts.helpers.ticket import Ticket
 
 
 def select_routing_info(operation: dict[str, Any]) -> bytes:

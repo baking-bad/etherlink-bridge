@@ -3,12 +3,12 @@ from pytezos.rpc.query import RpcQuery
 from dataclasses import dataclass, replace
 from pytezos.operation.group import OperationGroup
 from typing import Optional
-from tezos.tests.helpers.utility import to_micheline
-from tezos.tests.helpers.addressable import (
+from scripts.helpers.utility import to_micheline
+from scripts.helpers.addressable import (
     Addressable,
     get_address,
 )
-from tezos.tests.helpers.ticket_content import TicketContent
+from scripts.helpers.ticket_content import TicketContent
 
 
 def get_ticket_balance(

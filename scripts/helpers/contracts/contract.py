@@ -2,7 +2,7 @@ from pytezos.contract.interface import ContractInterface
 from pytezos.client import PyTezosClient
 from pytezos.operation.group import OperationGroup
 from dataclasses import dataclass, replace
-from tezos.tests.helpers.utility import (
+from scripts.helpers.utility import (
     load_contract_from_address,
     find_op_by_hash,
     get_address_from_op,

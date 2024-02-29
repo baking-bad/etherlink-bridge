@@ -3,9 +3,11 @@ from pytezos.operation.group import OperationGroup
 from pytezos.sandbox.node import SandboxedNodeTestCase
 from pytezos.contract.result import ContractCallResult
 from pytezos.operation.result import OperationResult
-from tezos.tests.helpers.contracts import (
+from scripts.helpers.contracts import (
     Ticketer,
     RollupMock,
+    CtezToken,
+    FxhashToken,
     FA2,
     FA12,
     TokenHelper,
@@ -13,7 +15,7 @@ from tezos.tests.helpers.contracts import (
     TicketHelper,
 )
 from typing import Optional
-from tezos.tests.helpers.addressable import Addressable
+from scripts.helpers.addressable import Addressable
 
 
 class BaseTestCase(SandboxedNodeTestCase):
@@ -31,16 +33,16 @@ class BaseTestCase(SandboxedNodeTestCase):
     def deploy_fa2(self, balances: dict[Addressable, int], token_id: int = 0) -> FA2:
         """Deploys FA2 contract with given balances"""
 
-        opg = FA2.originate(self.manager, balances, token_id).send()
+        opg = FxhashToken.originate(self.manager, balances, token_id).send()
         self.bake_block()
-        return FA2.from_opg(self.manager, opg, token_id=token_id)
+        return FxhashToken.from_opg(self.manager, opg, token_id=token_id)
 
     def deploy_fa12(self, balances: dict[Addressable, int]) -> FA12:
         """Deploys FA12 contract with given balances"""
 
-        opg = FA12.originate(self.manager, balances).send()
+        opg = CtezToken.originate(self.manager, balances).send()
         self.bake_block()
-        return FA12.from_opg(self.manager, opg)
+        return CtezToken.from_opg(self.manager, opg)
 
     def deploy_rollup_mock(self) -> RollupMock:
         """Deploys RollupMock contract"""

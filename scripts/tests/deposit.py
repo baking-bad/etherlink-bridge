@@ -13,7 +13,7 @@ from scripts.tezos import deposit
 from scripts.tests.conftest import Bridge
 from scripts.tests.conftest import Token
 from scripts.tests.conftest import Wallet
-from tezos.tests.helpers.contracts import TicketHelper
+from scripts.helpers.contracts import TicketHelper
 
 
 class TestDeposit:

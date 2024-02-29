@@ -1,5 +1,5 @@
 from typing import Union
-from tezos.tests.helpers.contracts.contract import ContractHelper
+from scripts.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
 
 

@@ -51,7 +51,7 @@
 - [x] test_ticket_content_generation_for_empty_metadata
 - [x] test_ticket_content_generation_for_fa2_without_extra_metadata
 - [x] test_ticket_content_generation_for_fa12_without_extra_metadata
-- [ ] test_ticket_content_generation_with_extra_metadata_added
+- [x] test_ticket_content_generation_with_extra_metadata_added
 
 ## TicketHelper tests [(code)](test_ticket_helper.py):
 - [x] test_deposit_succeed_for_correct_fa2_token_and_ticketer

@@ -29,10 +29,7 @@ class Ticketer(ContractHelper):
             name='Ticketer',
             description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
         )
-        content = (
-            content_token_id,
-            token.make_token_info_bytes(extra_token_info)
-        )
+        content = (content_token_id, token.make_token_info_bytes(extra_token_info))
         return {
             'content': content,
             'token': token.as_dict(),

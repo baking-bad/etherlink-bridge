@@ -45,13 +45,15 @@ class TicketHelper(ContractHelper):
 
         return originate_from_file(filename, client, storage)
 
-    def deposit(self, rollup: Addressable, receiver: bytes, amount: int) -> ContractCall:
+    def deposit(
+        self, rollup: Addressable, receiver: bytes, amount: int
+    ) -> ContractCall:
         """Deposits given amount of tokens to the L2 address set in routing data"""
 
         deposit_params = {
             'rollup': get_address(rollup),
             'receiver': receiver,
-            'amount': amount
+            'amount': amount,
         }
         return self.contract.deposit(deposit_params)
 

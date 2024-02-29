@@ -12,7 +12,7 @@ class TestTicketContentGeneration(unittest.TestCase):
         assert content.to_bytes_hex() == expected_content
         self.assertDictEqual(
             content.to_micheline(),
-            {'prim': 'Pair', 'args': [{'int': '0'}, {'prim': 'None'}]}
+            {'prim': 'Pair', 'args': [{'int': '0'}, {'prim': 'None'}]},
         )
 
     def test_ticket_content_generation_for_fa12_without_extra_metadata(self) -> None:
@@ -65,11 +65,13 @@ class TestTicketContentGeneration(unittest.TestCase):
         mock_client = Mock()
         token_address = 'KT195Eb8T524v5VJ99ZzH2wpnPfQ2wJfMi6h'
         token = FA2(mock_contract, mock_client, token_address, 42)
-        token_info_bytes = token.make_token_info_bytes({
-            'decimals': pack(3, 'nat'),
-            'symbol': pack('TEST', 'string'),
-            'name': pack('Test Token', 'string'),
-        })
+        token_info_bytes = token.make_token_info_bytes(
+            {
+                'decimals': pack(3, 'nat'),
+                'symbol': pack('TEST', 'string'),
+                'name': pack('Test Token', 'string'),
+            }
+        )
 
         expected_token_info_hex = (
             '0502000000c107040100000010636f6e74726163745f616464726573730a0000'

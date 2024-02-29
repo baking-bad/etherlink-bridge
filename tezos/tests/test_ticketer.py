@@ -43,10 +43,10 @@ class TicketerTestCase(BaseTestCase):
     def test_create_ticket_on_deposit_fa2_if_token_expected(self) -> None:
         alice, token, ticketer, _ = self.default_setup(
             token_type='FA2',
-            extra_metadata = {
+            extra_metadata={
                 'decimals': pack(12, 'nat'),
                 'symbol': pack('FA2', 'string'),
-            }
+            },
         )
 
         # Alice deposits 1 token to the Ticketer and creates a ticket:
@@ -276,10 +276,10 @@ class TicketerTestCase(BaseTestCase):
     def test_should_return_content_on_view_call_for_fa12(self) -> None:
         alice, token, ticketer, _ = self.default_setup(
             token_type='FA1.2',
-            extra_metadata = {
+            extra_metadata={
                 'decimals': pack(16, 'nat'),
                 'symbol': pack('tBTC', 'string'),
-            }
+            },
         )
 
         token_info_bytes = pack(
@@ -300,12 +300,15 @@ class TicketerTestCase(BaseTestCase):
         alice, token, ticketer, _ = self.default_setup(
             token_type='FA2',
             token_id=42,
-            extra_metadata = {
-                'some_strange_metadata': pack({
-                    'list_of_strings': pack(['one', 'two'], 'list string'),
-                }, 'map string bytes'),
+            extra_metadata={
+                'some_strange_metadata': pack(
+                    {
+                        'list_of_strings': pack(['one', 'two'], 'list string'),
+                    },
+                    'map string bytes',
+                ),
                 'symbol': pack('NFT', 'string'),
-            }
+            },
         )
 
         token_info_bytes = pack(
@@ -313,9 +316,12 @@ class TicketerTestCase(BaseTestCase):
                 'contract_address': pack(token.address, 'address'),
                 'token_type': pack("FA2", 'string'),
                 'token_id': pack(42, 'nat'),
-                'some_strange_metadata': pack({
-                    'list_of_strings': pack(['one', 'two'], 'list string'),
-                }, 'map string bytes'),
+                'some_strange_metadata': pack(
+                    {
+                        'list_of_strings': pack(['one', 'two'], 'list string'),
+                    },
+                    'map string bytes',
+                ),
                 'symbol': pack('NFT', 'string'),
             },
             'map %token_info string bytes',
@@ -331,18 +337,14 @@ class TicketerTestCase(BaseTestCase):
 
     def test_should_return_token_on_view_call_for_fa12(self) -> None:
         alice, token, ticketer, _ = self.default_setup('FA1.2')
-        expected_token = {
-            'fa12': token.address
-        }
+        expected_token = {'fa12': token.address}
         actual_token = ticketer.get_token_view()
 
         assert actual_token == expected_token
 
     def test_should_return_token_on_view_call_for_fa2(self) -> None:
         alice, token, ticketer, _ = self.default_setup('FA2', token_id=777)
-        expected_token = {
-            'fa2': (token.address, 777)
-        }
+        expected_token = {'fa2': (token.address, 777)}
         actual_token = ticketer.get_token_view()
 
         assert actual_token == expected_token

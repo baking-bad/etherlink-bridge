@@ -41,9 +41,7 @@ RECEIVER = bytes.fromhex('abcdabcdabcdabcdabcdabcdabcdabcdabcdabcd')
 
 class TicketHelperTestCase(BaseTestCase):
     def default_setup_helper(
-        self,
-        *args: Any,
-        **kwargs: Any
+        self, *args: Any, **kwargs: Any
     ) -> tuple[PyTezosClient, TicketHelper, RollupMock]:
         """Default setup for TicketHelper contract with given token and ticketer"""
         alice, token, ticketer, _ = self.default_setup(*args, **kwargs)
@@ -55,9 +53,7 @@ class TicketHelperTestCase(BaseTestCase):
         return alice, helper, rollup_mock
 
     def setup_helper_bind_to_tester(
-        self,
-        *args: Any,
-        **kwargs: Any
+        self, *args: Any, **kwargs: Any
     ) -> tuple[PyTezosClient, TicketHelper, RollupMock, TicketRouterTester]:
         """Special setup with TicketRouterTester as a Ticketer which implements
         Ticketer.deposit interface and can be used to test TicketHelper context
@@ -143,10 +139,7 @@ class TicketHelperTestCase(BaseTestCase):
 
         # Check that rollup_mock has received the ticket:
         ticket_balance = get_ticket_balance(
-            alice,
-            rollup_mock,
-            tester.address,
-            some_ticket_content
+            alice, rollup_mock, tester.address, some_ticket_content
         )
         assert ticket_balance == 111
 

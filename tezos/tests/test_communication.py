@@ -63,10 +63,12 @@ class RollupCommunicationTestCase(BaseTestCase):
     def test_create_and_burn_multuple_tickets_from_different_users(self) -> None:
         alice = self.bootstrap_account()
         boris = self.bootstrap_account()
-        token = self.deploy_fa2({
-            alice: 1000,
-            boris: 1000,
-        })
+        token = self.deploy_fa2(
+            {
+                alice: 1000,
+                boris: 1000,
+            }
+        )
         ticketer = self.deploy_ticketer(token)
         helper = self.deploy_ticket_helper(token, ticketer)
 

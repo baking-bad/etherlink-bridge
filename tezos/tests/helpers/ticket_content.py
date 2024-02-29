@@ -21,9 +21,7 @@ class TicketContent:
         token_info = None
         has_token_info = content['args'][1]['prim'] == 'Some'
         if has_token_info:
-            token_info = bytes.fromhex(
-                content['args'][1]['args'][0]['bytes']
-            )
+            token_info = bytes.fromhex(content['args'][1]['args'][0]['bytes'])
         return cls(token_id=token_id, token_info=token_info)
 
     def to_micheline(self) -> dict[str, Any]:

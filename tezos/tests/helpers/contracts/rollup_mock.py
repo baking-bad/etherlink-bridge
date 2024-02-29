@@ -41,6 +41,7 @@ def serialize_ticket_id(ticket_id: TicketId) -> dict[str, Any]:
         'ticketer': ticket_id['ticketer'].address,
     }
 
+
 def serialize_execute_params(params: ExecuteParams) -> dict[str, Any]:
     return {
         'ticket_id': serialize_ticket_id(params['ticket_id']),
@@ -48,6 +49,7 @@ def serialize_execute_params(params: ExecuteParams) -> dict[str, Any]:
         'receiver': get_address(params['receiver']),
         'router': get_address(params['router']),
     }
+
 
 class RollupMock(ContractHelper):
     @classmethod
@@ -73,6 +75,4 @@ class RollupMock(ContractHelper):
     def execute_outbox_message(self, params: ExecuteParams) -> ContractCall:
         """Releases message with given id"""
 
-        return self.contract.execute_outbox_message(
-            serialize_execute_params(params)
-        )
+        return self.contract.execute_outbox_message(serialize_execute_params(params))

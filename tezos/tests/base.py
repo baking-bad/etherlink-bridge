@@ -28,11 +28,7 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.accounts.append(bootstrap)
         return bootstrap
 
-    def deploy_fa2(
-        self,
-        balances: dict[Addressable, int],
-        token_id: int = 0
-    ) -> FA2:
+    def deploy_fa2(self, balances: dict[Addressable, int], token_id: int = 0) -> FA2:
         """Deploys FA2 contract with given balances"""
 
         opg = FA2.originate(self.manager, balances, token_id).send()
@@ -81,10 +77,7 @@ class BaseTestCase(SandboxedNodeTestCase):
         """Deploys TicketHelper contract with given token and ticketer"""
 
         opg = TicketHelper.originate(
-            self.manager,
-            ticketer,
-            erc_proxy,
-            token=token
+            self.manager, ticketer, erc_proxy, token=token
         ).send()
         self.bake_block()
         return TicketHelper.from_opg(self.manager, opg)
@@ -94,12 +87,12 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.manager = self.bootstrap_account()
 
     def default_setup(
-            self,
-            token_type: str = 'FA2',
-            balance: int = 1000,
-            extra_metadata: Optional[dict[str, bytes]] = None,
-            token_id: int = 0,
-        ) -> tuple[PyTezosClient, TokenHelper, Ticketer, TicketRouterTester]:
+        self,
+        token_type: str = 'FA2',
+        balance: int = 1000,
+        extra_metadata: Optional[dict[str, bytes]] = None,
+        token_id: int = 0,
+    ) -> tuple[PyTezosClient, TokenHelper, Ticketer, TicketRouterTester]:
 
         alice = self.bootstrap_account()
 
@@ -119,11 +112,7 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.bake_block()
         return alice, token, ticketer, tester
 
-    def find_call_result(
-        self,
-        opg: OperationGroup,
-        idx: int = 0
-    ) -> OperationResult:
+    def find_call_result(self, opg: OperationGroup, idx: int = 0) -> OperationResult:
         """Returns result of the last call in the given operation group"""
 
         blocks = self.manager.shell.blocks['head':]  # type: ignore

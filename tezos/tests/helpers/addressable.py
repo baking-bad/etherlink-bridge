@@ -5,6 +5,7 @@ from pytezos.client import PyTezosClient
 
 Addressable = Union[ContractHelper, PyTezosClient, str]
 
+
 def get_address(client_or_contract: Addressable) -> str:
     if isinstance(client_or_contract, ContractHelper):
         return client_or_contract.address

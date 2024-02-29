@@ -59,7 +59,7 @@ class Ticket:
             owner=owner,
             ticketer=ticketer,
             content=content,
-            amount=get_ticket_balance(client, owner, ticketer, content)
+            amount=get_ticket_balance(client, owner, ticketer, content),
         )
 
     def split(self, amount: int) -> tuple['Ticket', 'Ticket']:

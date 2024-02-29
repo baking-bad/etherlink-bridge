@@ -42,8 +42,7 @@ class FA12(TokenHelper):
         filename = join(get_tokens_dir(), 'fa12-Ctez.tz')
         storage = cls.default_storage.copy()
         storage['tokens'] = {
-            get_address(addressable): amount for addressable, amount
-            in balances.items()
+            get_address(addressable): amount for addressable, amount in balances.items()
         }
         storage['token_metadata'] = {0: (0, {})}
         storage['total_supply'] = sum(balances.values())

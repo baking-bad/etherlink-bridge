@@ -16,7 +16,7 @@ class TicketerRouterTesterTestCase(BaseTestCase):
         ticket = ticketer.read_ticket(alice)
         assert ticket.amount == 100
 
-        opg = alice.bulk(
+        alice.bulk(
             tester.set_rollup_deposit(
                 target=f'{rollup_mock.address}%rollup',
                 routing_info=alice_l2_address,

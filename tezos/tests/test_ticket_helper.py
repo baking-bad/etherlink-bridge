@@ -9,6 +9,7 @@ from tezos.tests.helpers.contracts import (
     RollupMock,
     TicketRouterTester,
 )
+from tezos.tests.helpers.ticket import Ticket
 
 
 def select_routing_info(operation: dict[str, Any]) -> bytes:
@@ -160,3 +161,35 @@ class TicketHelperTestCase(BaseTestCase):
                 tester.mint(some_ticket_content, 1),
             ).send()
         assert 'ROUTING_DATA_IS_NOT_SET' in str(err.exception)
+
+    def test_should_not_accept_ticket_from_wrong_sender(self) -> None:
+        # Special setup with TicketRouterTester as a ticketer:
+        alice, helper, rollup_mock, tester = self.setup_helper_bind_to_tester('FA2')
+        content = TicketContent(0, None)
+
+        # Setting up TicketHelper contract:
+        rollup = f'{rollup_mock.address}%rollup'
+        helper.using(alice).deposit(rollup, RECEIVER, 1).send()
+        self.bake_block()
+
+        # First mint ticket to Alice:
+        alice.bulk(
+            tester.set_default(alice),
+            tester.mint(content, 1),
+        ).send()
+        self.bake_block()
+
+        ticket = Ticket.create(alice, alice, tester.address, content)
+        assert ticket.amount == 1
+
+        # Then Alice tries to finalize deposit and it should fail:
+        with self.assertRaises(MichelsonError) as err:
+            ticket.transfer(helper).send()
+        assert 'UNEXPECTED_SENDER' in str(err.exception)
+
+        # Then using tester to redirect ticket back to TicketHelper:
+        alice.bulk(
+            tester.set_default(helper),
+            ticket.transfer(tester),
+        ).send()
+        self.bake_block()

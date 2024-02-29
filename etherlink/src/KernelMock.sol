@@ -13,14 +13,14 @@ function hashTicketOwner(bytes22 ticketer, bytes memory content, address owner)
 }
 
 /**
- * The Kernel is mock contract that used to represent the rollup kernel
+ * The KernelMock is a contract that used to represent the rollup kernel
  * on L2 side, which is resposible for bridging tokens between L1 and L2.
  * Kernel address is the one who should be allowed to mint new tokens in
  * ERC20Proxy contract.
  * The Kernel is responsible for maintainig the ledger of L2 tickets
  * and emiting `Deposit` and `Withdraw` events.
  */
-contract Kernel is IWithdrawalEvent, IDepositEvent {
+contract KernelMock is IWithdrawalEvent, IDepositEvent {
     uint256 private _rollupId;
     uint256 private _inboxLevel;
     uint256 private _inboxMsgId;
@@ -54,7 +54,7 @@ contract Kernel is IWithdrawalEvent, IDepositEvent {
         bytes32 ticketOwner = hashTicketOwner(ticketer, content, owner);
         uint256 ticketBalance = _tickets[ticketOwner];
         if (ticketBalance < amount) {
-            revert("Kernel: ticket balance is not enough");
+            revert("KernelMock: ticket balance is not enough");
         }
         _tickets[ticketOwner] -= amount;
     }

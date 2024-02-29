@@ -29,7 +29,7 @@ contract KernelTest is BaseTest, IWithdrawalEvent, IDepositEvent {
         kernel.inboxDeposit(address(token), bob, 1, ticketer, content);
         assertEq(kernel.getBalance(ticketer, content, address(token)), 1);
         vm.prank(address(alice));
-        vm.expectRevert("Kernel: ticket balance is not enough");
+        vm.expectRevert("KernelMock: ticket balance is not enough");
         kernel.withdraw(address(token), receiver, 2, ticketer, content);
     }
 

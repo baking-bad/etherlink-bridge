@@ -5,11 +5,6 @@ from unittest.mock import Mock
 from tezos.tests.helpers.utility import pack
 
 
-def split_by(string, by=64):
-    return [
-        string[n*by:(n+1)*by] for n in range(len(string) // by + 1)
-    ]
-
 class TestTicketContentGeneration(unittest.TestCase):
     def test_ticket_content_generation_for_empty_metadata(self) -> None:
         content = TicketContent(0, None)

@@ -119,9 +119,13 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.bake_block()
         return alice, token, ticketer, tester
 
-    def find_call_result(self, opg: OperationGroup) -> OperationResult:
+    def find_call_result(
+        self,
+        opg: OperationGroup,
+        idx: int = 0
+    ) -> OperationResult:
         """Returns result of the last call in the given operation group"""
 
         blocks = self.manager.shell.blocks['head':]  # type: ignore
         operation = blocks.find_operation(opg.hash())
-        return ContractCallResult.from_operation_group(operation)[0]
+        return ContractCallResult.from_operation_group(operation)[idx]

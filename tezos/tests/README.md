@@ -49,8 +49,8 @@
 
 ## Utils tests [(code)](test_utils.py):
 - [x] test_ticket_content_generation_for_empty_metadata
-- [ ] test_ticket_content_generation_for_fa2_without_extra_metadata
-- [ ] test_ticket_content_generation_for_fa12_without_extra_metadata
+- [x] test_ticket_content_generation_for_fa2_without_extra_metadata
+- [x] test_ticket_content_generation_for_fa12_without_extra_metadata
 - [ ] test_ticket_content_generation_with_extra_metadata_added
 
 ## TicketHelper tests [(code)](test_ticket_helper.py):

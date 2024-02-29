@@ -13,8 +13,7 @@ let create
     | None -> failwith Errors.ticket_creation_failed
     | Some t -> t
 
-// TODO: consider renaming to get, the same as in entrypoints modules
-let get_ticket_entrypoint
+let get
         (address : address)
         : t contract =
     match Tezos.get_contract_opt address with
@@ -38,5 +37,5 @@ let send
         (ticket : t)
         (receiver : address)
         : operation =
-    let receiver_contract = get_ticket_entrypoint receiver in
+    let receiver_contract = get receiver in
     Tezos.transaction ticket 0mutez receiver_contract

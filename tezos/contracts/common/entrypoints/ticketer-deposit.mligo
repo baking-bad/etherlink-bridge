@@ -9,7 +9,7 @@ let get (router : address) : t contract =
     | None -> failwith(Errors.ticketer_deposit_not_found)
     | Some entry -> entry
 
-let make
+let send
         (ticketer : address)
         (amount : t)
         : operation =

@@ -16,7 +16,7 @@ let get (router : address) : t contract =
     | None -> failwith(Errors.router_entrypoint_not_found)
     | Some entry -> entry
 
-let make
+let send
         (router : address)
         (params : t)
         : operation =

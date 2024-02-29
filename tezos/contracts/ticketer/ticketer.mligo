@@ -1,9 +1,9 @@
-#import "../common/tokens/index.mligo" "Token"
+#import "../common/tokens/tokens.mligo" "Token"
 #import "../common/types/ticket.mligo" "Ticket"
 #import "../common/entrypoints/ticketer-deposit.mligo" "TicketerDepositEntry"
 #import "../common/entrypoints/router-withdraw.mligo" "RouterWithdrawEntry"
 #import "../common/errors.mligo" "Errors"
-#import "../common/utility.mligo" "Utility"
+#import "../common/assertions.mligo" "Assertions"
 #import "./storage.mligo" "Storage"
 
 
@@ -39,11 +39,11 @@ module Ticketer = struct
             the ticket is minted.
         *)
 
-        let () = Utility.assert_no_xtz_deposit () in
+        let () = Assertions.no_xtz_deposit () in
         let self = Tezos.get_self_address () in
         let sender = Tezos.get_sender () in
         let ticket = Ticket.create store.content amount in
-        let token_transfer_op = Token.get_transfer_op store.token amount sender self in
+        let token_transfer_op = Token.send_transfer store.token amount sender self in
         let ticket_transfer_op = Ticket.send ticket sender in
         let store = Storage.increase_total_supply amount store in
         [token_transfer_op; ticket_transfer_op], store
@@ -61,10 +61,10 @@ module Ticketer = struct
         let { ticket; receiver } = params in
         let (ticketer, (content, amount)), _ = Tezos.read_ticket ticket in
         let () = assert_content_is_expected content store.content in
-        let () = Utility.assert_address_is_self ticketer in
-        let () = Utility.assert_no_xtz_deposit () in
+        let () = Assertions.address_is_self ticketer in
+        let () = Assertions.no_xtz_deposit () in
         let self = Tezos.get_self_address () in
-        let transfer_op = Token.get_transfer_op store.token amount self receiver in
+        let transfer_op = Token.send_transfer store.token amount self receiver in
         let store = Storage.decrease_total_supply amount store in
         [transfer_op], store
 

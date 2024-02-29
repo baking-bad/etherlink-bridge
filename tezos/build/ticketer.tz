@@ -12,26 +12,29 @@
            { UNPAIR 4 ;
              IF_LEFT
                { CONTRACT %transfer (pair (address %from) (address %to) (nat %value)) ;
-                 IF_NONE
-                   { DROP 3 ; PUSH string "INVALID_FA12" ; FAILWITH }
-                   { PUSH mutez 0 ; DIG 2 ; DIG 4 ; DIG 4 ; PAIR 3 ; TRANSFER_TOKENS } }
+                 IF_NONE { PUSH string "INVALID_FA12" ; FAILWITH } {} ;
+                 PUSH mutez 0 ;
+                 DIG 2 ;
+                 DIG 4 ;
+                 DIG 4 ;
+                 PAIR 3 ;
+                 TRANSFER_TOKENS }
                { UNPAIR ;
                  CONTRACT %transfer
                    (list (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount))))) ;
-                 IF_NONE
-                   { DROP 4 ; PUSH string "INVALID_FA2" ; FAILWITH }
-                   { PUSH mutez 0 ;
-                     NIL (pair address (list (pair address nat nat))) ;
-                     NIL (pair address nat nat) ;
-                     DIG 5 ;
-                     DIG 5 ;
-                     DIG 7 ;
-                     PAIR 3 ;
-                     CONS ;
-                     DIG 4 ;
-                     PAIR ;
-                     CONS ;
-                     TRANSFER_TOKENS } } } ;
+                 IF_NONE { PUSH string "INVALID_FA2" ; FAILWITH } {} ;
+                 PUSH mutez 0 ;
+                 NIL (pair address (list (pair address nat nat))) ;
+                 NIL (pair address nat nat) ;
+                 DIG 5 ;
+                 DIG 5 ;
+                 DIG 7 ;
+                 PAIR 3 ;
+                 CONS ;
+                 DIG 4 ;
+                 PAIR ;
+                 CONS ;
+                 TRANSFER_TOKENS } } ;
          LAMBDA
            unit
            unit

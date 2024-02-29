@@ -1,4 +1,4 @@
-#import "../common/tokens/index.mligo" "Token"
+#import "../common/tokens/tokens.mligo" "Token"
 #import "../common/types/ticket.mligo" "Ticket"
 #import "../common/errors.mligo" "Errors"
 

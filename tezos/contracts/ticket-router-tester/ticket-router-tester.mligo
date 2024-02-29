@@ -69,7 +69,7 @@ module TicketRouterTester = struct
         let { target; entrypoint; xtz_amount } = store.internal_call in
         match entrypoint with
         | Default () ->
-            let entry = Ticket.get_ticket_entrypoint target in
+            let entry = Ticket.get target in
             Tezos.transaction ticket xtz_amount entry
         | RouterWithdraw (receiver) ->
             let withdraw = { receiver; ticket } in

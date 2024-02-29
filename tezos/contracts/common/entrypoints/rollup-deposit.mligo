@@ -49,7 +49,7 @@ let get (rollup : address) : t contract =
     | None -> failwith Errors.rollup_deposit_not_found
     | Some entry -> entry
 
-let make
+let send
         (rollup : address)
         (deposit : deposit_t)
         : operation =

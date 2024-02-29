@@ -59,7 +59,7 @@ module RollupMock = struct
         let { ticket_id; router; amount; receiver } = params in
         let ticket, tickets = Tickets.get ticket_id amount tickets in
         let withdraw_params = { ticket; receiver } in
-        let withdraw_op = RouterWithdrawEntry.make router withdraw_params in
+        let withdraw_op = RouterWithdrawEntry.send router withdraw_params in
         let store = { tickets; metadata } in
         [withdraw_op], store
 end

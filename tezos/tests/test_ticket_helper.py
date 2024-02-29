@@ -76,3 +76,12 @@ class TicketHelperTestCase(BaseTestCase):
 
         ticket = helper.get_ticketer().read_ticket(rollup_mock)
         assert ticket.amount == 15
+
+    def test_deposit_succeed_for_correct_fa12_token_and_ticketer(self) -> None:
+        alice, helper, rollup_mock, _ = self.default_setup_helper('FA1.2')
+        rollup = f'{rollup_mock.address}%rollup'
+        helper.using(alice).deposit(rollup, RECEIVER, 1).send()
+        self.bake_block()
+
+        ticket = helper.get_ticketer().read_ticket(rollup_mock)
+        assert ticket.amount == 1

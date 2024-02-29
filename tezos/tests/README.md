@@ -56,7 +56,7 @@
 ## TicketHelper tests [(code)](test_ticket_helper.py):
 - [x] test_deposit_succeed_for_correct_fa2_token_and_ticketer
     - should send ticket to rollup
-- [ ] test_deposit_succeed_for_correct_fa12_token_and_ticketer
+- [x] test_deposit_succeed_for_correct_fa12_token_and_ticketer
     - should send ticket to rollup
 - [ ] test_context_updated_during_deposit
     - probably will require some mock ticketer (?)

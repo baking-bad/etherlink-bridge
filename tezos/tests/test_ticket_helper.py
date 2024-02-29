@@ -26,18 +26,25 @@ def select_routing_info(operation: dict[str, Any]) -> bytes:
     return bytes.fromhex(routing_info)
 
 
+ERC20_PROXY = bytes.fromhex('fa00fa00fa00fa00fa00fa00fa00fa00fa00fa00')
+RECEIVER = bytes.fromhex('abcdabcdabcdabcdabcdabcdabcdabcdabcdabcd')
+
+
 class TicketHelperTestCase(BaseTestCase):
-    def test_should_prepare_correct_routing_info(self) -> None:
-        alice, token, ticketer, _ = self.default_setup('FA2')
-        erc_proxy = bytes.fromhex('fa02fa02fa02fa02fa02fa02fa02fa02fa02fa02')
-        helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
+    def default_setup_helper(self, *args, **kwargs) -> tuple:  # type: ignore
+        alice, token, ticketer, tester = self.default_setup(*args, **kwargs)
+        helper = self.deploy_ticket_helper(token, ticketer, ERC20_PROXY)
         rollup_mock = self.deploy_rollup_mock()
         token.using(alice).allow(alice, helper).send()
         self.bake_block()
 
+        return alice, helper, rollup_mock, tester
+
+    def test_should_prepare_correct_routing_info(self) -> None:
+        alice, helper, rollup_mock, _ = self.default_setup_helper('FA2')
+
         rollup = f'{rollup_mock.address}%rollup'
-        l2_address = bytes.fromhex('abcdabcdabcdabcdabcdabcdabcdabcdabcdabcd')
-        opg = helper.using(alice).deposit(rollup, l2_address, 99).send()
+        opg = helper.using(alice).deposit(rollup, RECEIVER, 99).send()
         self.bake_block()
 
         result = self.find_call_result(opg)
@@ -45,15 +52,10 @@ class TicketHelperTestCase(BaseTestCase):
 
         rollup_call = result.operations[3]  # type: ignore
         assert rollup_call['destination'] == rollup_mock.address
-        assert select_routing_info(rollup_call) == l2_address + erc_proxy
+        assert select_routing_info(rollup_call) == RECEIVER + ERC20_PROXY
 
     def test_should_fail_if_routing_info_has_inccorrect_size(self) -> None:
-        alice, token, ticketer, _ = self.default_setup('FA2')
-        erc_proxy = bytes.fromhex('fa02fa02fa02fa02fa02fa02fa02fa02fa02fa02')
-        helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
-        rollup_mock = self.deploy_rollup_mock()
-        token.using(alice).allow(alice, helper).send()
-        self.bake_block()
+        alice, helper, rollup_mock, _ = self.default_setup_helper('FA2')
 
         rollup = f'{rollup_mock.address}%rollup'
         short_l2 = bytes.fromhex('abcdabcd')
@@ -65,3 +67,12 @@ class TicketHelperTestCase(BaseTestCase):
         with self.assertRaises(MichelsonError) as err:
             helper.using(alice).deposit(rollup, long_l2, 33).send()
         assert 'WRONG_ROUTING_INFO_LENGTH' in str(err.exception)
+
+    def test_deposit_succeed_for_correct_fa2_token_and_ticketer(self) -> None:
+        alice, helper, rollup_mock, _ = self.default_setup_helper('FA2')
+        rollup = f'{rollup_mock.address}%rollup'
+        helper.using(alice).deposit(rollup, RECEIVER, 15).send()
+        self.bake_block()
+
+        ticket = helper.get_ticketer().read_ticket(rollup_mock)
+        assert ticket.amount == 15

@@ -54,7 +54,7 @@
 - [ ] test_ticket_content_generation_with_extra_metadata_added
 
 ## TicketHelper tests [(code)](test_ticket_helper.py):
-- [ ] test_deposit_succeed_for_correct_fa2_token_and_ticketer
+- [x] test_deposit_succeed_for_correct_fa2_token_and_ticketer
     - should send ticket to rollup
 - [ ] test_deposit_succeed_for_correct_fa12_token_and_ticketer
     - should send ticket to rollup

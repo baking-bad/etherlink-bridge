@@ -63,3 +63,9 @@ class FA2(TokenHelper):
             'token_type': pack("FA2", 'string'),
             'token_id': pack(self.token_id, 'nat'),
         }
+
+    @classmethod
+    def originate(
+        cls, client: PyTezosClient, balances: dict[Addressable, int], token_id: int = 0
+    ) -> OperationGroup:
+        raise NotImplementedError("FA2 generic originate not implemented")

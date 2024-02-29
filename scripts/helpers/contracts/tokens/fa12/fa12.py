@@ -47,3 +47,12 @@ class FA12(TokenHelper):
             'contract_address': pack(self.address, 'address'),
             'token_type': pack("FA1.2", 'string'),
         }
+
+    def get_balance(self, client_or_contract: Addressable) -> int:
+        raise NotImplementedError("FA1.2 generic get_balance not implemented")
+
+    @classmethod
+    def originate(
+        cls, client: PyTezosClient, balances: dict[Addressable, int], token_id: int = 0
+    ) -> OperationGroup:
+        raise NotImplementedError("FA1.2 generic originate not implemented")

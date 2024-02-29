@@ -79,8 +79,12 @@ class TokenHelper(ContractHelper):
     def get_cls(token_type: str) -> Type['TokenHelper']:
         """Returns token class by token type string"""
 
-        from scripts.helpers.contracts.tokens.fa12 import FA12
-        from scripts.helpers.contracts.tokens.fa2 import FA2
+        from scripts.helpers.contracts.tokens.fa12 import FA12, CtezToken
+        from scripts.helpers.contracts.tokens.fa2 import FA2, FxhashToken
 
-        assert token_type in ['FA2', 'FA1.2']
-        return FA12 if token_type == 'FA1.2' else FA2
+        return {
+            'FA1.2': CtezToken,
+            'FA2': FxhashToken,
+            'Ctez': CtezToken,
+            'Fxhash': FxhashToken,
+        }[token_type]

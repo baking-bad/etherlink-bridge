@@ -231,3 +231,29 @@ class TicketHelperTestCase(BaseTestCase):
             ticket.transfer(tester),
         ).send()
         self.bake_block()
+
+    def test_should_fail_when_received_ticket_along_with_xtz(self) -> None:
+        # Special setup with TicketRouterTester as a ticketer:
+        alice, helper, rollup_mock, tester = self.setup_helper_bind_to_tester('FA2')
+        content = TicketContent(0, None)
+        rollup = f'{rollup_mock.address}%rollup'
+
+        # Minting ticket to the TicketHelper.default with xtz amount fails:
+        with self.assertRaises(MichelsonError) as err:
+            alice.bulk(
+                helper.deposit(rollup, RECEIVER, 1),
+                tester.set_default(
+                    target=helper,
+                    xtz_amount=100,
+                ),
+                tester.mint(content, 1).with_amount(100),
+            ).send()
+        assert 'XTZ_DEPOSIT_DISALLOWED' in str(err.exception)
+
+        # Minting ticket to the TicketHelper.default without xtz amount succeeds:
+        alice.bulk(
+            helper.deposit(rollup, RECEIVER, 1),
+            tester.set_default(target=helper),
+            tester.mint(content, 1),
+        ).send()
+        self.bake_block()

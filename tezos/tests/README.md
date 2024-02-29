@@ -58,9 +58,11 @@
     - should send ticket to rollup
 - [x] test_deposit_succeed_for_correct_fa12_token_and_ticketer
     - should send ticket to rollup
-- [ ] test_context_updated_during_deposit
-    - probably will require some mock ticketer (?)
-- [ ] test_can_receive_ticket_when_context_set
+- [x] test_context_updated_during_deposit
+    - use TicketRouterTester as a mock instead of Ticketer
+    - check context updated correctly before ticket received
+    - check can receive ticket when context set
+    - check context emptied after ticket received
 - [ ] test_should_not_accept_ticket_when_context_empty
 - [ ] test_should_not_accept_ticket_from_wrong_sender
 - [ ] test_should_fail_on_deposit_with_attached_xtz

@@ -4,6 +4,7 @@ from tezos.tests.helpers.utility import (
 )
 from tezos.tests.helpers.contracts import (
     ContractHelper,
+    TokenHelper,
     Ticketer,
 )
 from pytezos.client import PyTezosClient
@@ -15,6 +16,7 @@ from tezos.tests.helpers.addressable import (
     Addressable,
     get_address,
 )
+from typing import Optional
 
 
 class TicketHelper(ContractHelper):
@@ -24,11 +26,13 @@ class TicketHelper(ContractHelper):
         client: PyTezosClient,
         ticketer: Ticketer,
         erc_proxy: bytes,
+        token: Optional[TokenHelper] = None,
     ) -> OperationGroup:
         """Deploys Ticket Helper"""
 
+        token = token or ticketer.get_token()
         storage = {
-            'token': ticketer.get_token().as_dict(),
+            'token': token.as_dict(),
             'ticketer': ticketer.address,
             'erc_proxy': erc_proxy,
             'context': None,

@@ -63,7 +63,7 @@
     - check context updated correctly before ticket received
     - check can receive ticket when context set
     - check context emptied after ticket received
-- [ ] test_should_not_accept_ticket_when_context_empty
+- [x] test_should_not_accept_ticket_when_context_empty
 - [ ] test_should_not_accept_ticket_from_wrong_sender
 - [ ] test_should_fail_on_deposit_with_attached_xtz
 - [ ] test_should_fail_on_unwrap_with_attached_xtz

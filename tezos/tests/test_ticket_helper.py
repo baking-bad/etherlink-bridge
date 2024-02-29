@@ -3,6 +3,12 @@ from pytezos.rpc.errors import MichelsonError
 from typing import Any
 from tezos.tests.helpers.ticket_content import TicketContent
 from tezos.tests.helpers.ticket import get_ticket_balance
+from pytezos.client import PyTezosClient
+from tezos.tests.helpers.contracts import (
+    TicketHelper,
+    RollupMock,
+    TicketRouterTester,
+)
 
 
 def select_routing_info(operation: dict[str, Any]) -> bytes:
@@ -33,7 +39,12 @@ RECEIVER = bytes.fromhex('abcdabcdabcdabcdabcdabcdabcdabcdabcdabcd')
 
 
 class TicketHelperTestCase(BaseTestCase):
-    def default_setup_helper(self, *args, **kwargs) -> tuple:  # type: ignore
+    def default_setup_helper(
+        self,
+        *args: Any,
+        **kwargs: Any
+    ) -> tuple[PyTezosClient, TicketHelper, RollupMock]:
+        """Default setup for TicketHelper contract with given token and ticketer"""
         alice, token, ticketer, _ = self.default_setup(*args, **kwargs)
         helper = self.deploy_ticket_helper(token, ticketer, ERC20_PROXY)
         rollup_mock = self.deploy_rollup_mock()
@@ -41,6 +52,22 @@ class TicketHelperTestCase(BaseTestCase):
         self.bake_block()
 
         return alice, helper, rollup_mock
+
+    def setup_helper_bind_to_tester(
+        self,
+        *args: Any,
+        **kwargs: Any
+    ) -> tuple[PyTezosClient, TicketHelper, RollupMock, TicketRouterTester]:
+        """Special setup with TicketRouterTester as a Ticketer which implements
+        Ticketer.deposit interface and can be used to test TicketHelper context
+        updates during deposit operations"""
+        alice, token, _, tester = self.default_setup(*args, **kwargs)
+        helper = self.deploy_ticket_helper(token, tester, ERC20_PROXY)  # type: ignore
+        rollup_mock = self.deploy_rollup_mock()
+        token.using(alice).allow(alice, helper).send()
+        self.bake_block()
+
+        return alice, helper, rollup_mock, tester
 
     def test_should_prepare_correct_routing_info(self) -> None:
         alice, helper, rollup_mock = self.default_setup_helper('FA2')
@@ -89,15 +116,8 @@ class TicketHelperTestCase(BaseTestCase):
         assert ticket.amount == 1
 
     def test_context_updated_during_deposit(self) -> None:
-        alice, token, ticketer, tester = self.default_setup('FA2')
-
-        # Tester contract implements Ticketer.deposit interface
-        # and it can be replace Ticketer for the test purposes:
-        helper = self.deploy_ticket_helper(token, tester, ERC20_PROXY)  # type: ignore
-        token.using(alice).allow(alice, helper).send()
-        self.bake_block()
-
-        rollup_mock = self.deploy_rollup_mock()
+        # Special setup with TicketRouterTester as a ticketer:
+        alice, helper, rollup_mock, tester = self.setup_helper_bind_to_tester('FA2')
         rollup = f'{rollup_mock.address}%rollup'
         helper.using(alice).deposit(rollup, RECEIVER, 1).send()
         self.bake_block()
@@ -128,3 +148,15 @@ class TicketHelperTestCase(BaseTestCase):
             some_ticket_content
         )
         assert ticket_balance == 111
+
+    def test_should_not_accept_ticket_when_context_empty(self) -> None:
+        # Special setup with TicketRouterTester as a ticketer:
+        alice, helper, rollup_mock, tester = self.setup_helper_bind_to_tester('FA2')
+        some_ticket_content = TicketContent(0, None)
+
+        with self.assertRaises(MichelsonError) as err:
+            alice.bulk(
+                tester.set_default(helper),
+                tester.mint(some_ticket_content, 1),
+            ).send()
+        assert 'ROUTING_DATA_IS_NOT_SET' in str(err.exception)

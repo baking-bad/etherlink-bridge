@@ -193,3 +193,10 @@ class TicketHelperTestCase(BaseTestCase):
             ticket.transfer(tester),
         ).send()
         self.bake_block()
+
+    def test_should_fail_on_deposit_with_attached_xtz(self) -> None:
+        alice, helper, rollup_mock = self.default_setup_helper('FA2')
+        rollup = f'{rollup_mock.address}%rollup'
+        with self.assertRaises(MichelsonError) as err:
+            helper.using(alice).deposit(rollup, RECEIVER, 1).with_amount(100).send()
+        assert 'XTZ_DEPOSIT_DISALLOWED' in str(err.exception)

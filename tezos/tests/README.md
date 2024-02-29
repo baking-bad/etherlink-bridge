@@ -10,7 +10,7 @@
     - check rollup has 95 tickets
     - check boris has 5 tokens
 
-- [ ] test_create_and_burn_multuple_tickets_from_different_users
+- [x] test_create_and_burn_multuple_tickets_from_different_users
     - check alice create one ticket from 5 tokens
     - check alice burns 2 tickets
     - check alice transfers 2 tickets to boris

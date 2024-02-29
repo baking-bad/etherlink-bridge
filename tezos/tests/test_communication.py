@@ -59,3 +59,58 @@ class RollupCommunicationTestCase(BaseTestCase):
         # Checking withdraw operations results:
         assert ticketer.read_ticket(rollup_mock).amount == 95
         assert token.get_balance(boris) == 5
+
+    def test_create_and_burn_multuple_tickets_from_different_users(self) -> None:
+        alice = self.bootstrap_account()
+        boris = self.bootstrap_account()
+        token = self.deploy_fa2({
+            alice: 1000,
+            boris: 1000,
+        })
+        ticketer = self.deploy_ticketer(token)
+        helper = self.deploy_ticket_helper(token, ticketer)
+
+        # Alice creates one ticket from 5 tokens:
+        alice.bulk(
+            token.allow(alice, ticketer),
+            ticketer.deposit(5),
+        ).send()
+        self.bake_block()
+
+        ticket = ticketer.read_ticket(alice)
+        assert ticket.amount == 5
+        assert token.get_balance(ticketer) == 5
+
+        # Alice burns 2 tickets:
+        burned_ticket, remaining_ticket = ticket.split(2)
+        burned_ticket.transfer(helper, 'unwrap').send()
+        self.bake_block()
+
+        assert token.get_balance(ticketer) == 3
+
+        # Alice transfers 2 tickets to Boris:
+        transferred_ticket, remaining_ticket = remaining_ticket.split(2)
+        transferred_ticket.transfer(boris).send()
+        self.bake_block()
+
+        assert ticketer.read_ticket(alice).amount == 1
+        assert ticketer.read_ticket(boris).amount == 2
+        assert ticketer.get_total_supply_view() == 3
+
+        # Boris creates 1 more ticket:
+        boris.bulk(
+            token.allow(boris, ticketer),
+            ticketer.deposit(1),
+        ).send()
+        self.bake_block()
+
+        boris_ticket = ticketer.read_ticket(boris)
+        assert boris_ticket.amount == 3
+        assert ticketer.get_total_supply_view() == 4
+
+        # Boris burns 3 tickets:
+        boris_ticket.transfer(helper, 'unwrap').send()
+        self.bake_block()
+
+        assert ticketer.read_ticket(boris).amount == 0
+        assert ticketer.get_total_supply_view() == 1

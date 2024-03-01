@@ -6,8 +6,6 @@ contract NativeWithdrawalPrecompile {
 }
 
 contract NativeWithdrawalProxy {
-    event LogEvent(uint256 num);
-
     address precompile;
 
     constructor(address precompile_) {

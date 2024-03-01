@@ -5,7 +5,7 @@ from typing import (
     Any,
 )
 from scripts.environment import load_or_ask
-from tezos.tests.helpers.utility import make_address_bytes
+from scripts.helpers.utility import make_address_bytes
 import requests
 
 
@@ -129,7 +129,7 @@ def deploy_erc20(
             kernel_address,
             token_name,
             token_symbol,
-            '0',
+            str(decimals),
             '--gas-limit',
             '200000',
         ],

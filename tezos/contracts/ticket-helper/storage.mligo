@@ -1,5 +1,4 @@
-#import "../common/types/routing-info.mligo" "RoutingInfo"
-#import "../common/tokens/index.mligo" "Token"
+#import "../common/tokens/tokens.mligo" "Token"
 
 
 type context_t = [@layout:comb] {

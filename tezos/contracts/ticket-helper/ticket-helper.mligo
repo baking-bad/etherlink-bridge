@@ -1,12 +1,11 @@
 #import "./storage.mligo" "Storage"
-#import "../common/types/routing-info.mligo" "RoutingInfo"
-#import "../common/entrypoints/rollup-deposit.mligo" "RollupEntry"
-#import "../common/entrypoints/ticketer-deposit.mligo" "DepositEntry"
-#import "../common/entrypoints/router-withdraw.mligo" "WithdrawEntry"
-#import "../common/tokens/index.mligo" "Token"
+#import "../common/entrypoints/rollup-deposit.mligo" "RollupDepositEntry"
+#import "../common/entrypoints/ticketer-deposit.mligo" "TicketerDepositEntry"
+#import "../common/entrypoints/router-withdraw.mligo" "RouterWithdrawEntry"
+#import "../common/tokens/tokens.mligo" "Token"
 #import "../common/types/ticket.mligo" "Ticket"
 #import "../common/errors.mligo" "Errors"
-#import "../common/utility.mligo" "Utility"
+#import "../common/assertions.mligo" "Assertions"
 
 
 module TicketHelper = struct
@@ -28,6 +27,13 @@ module TicketHelper = struct
         amount : nat;
     }
 
+    let assert_routing_info_len_is_equal_to_40n
+            (routing_info : bytes) : unit =
+        let length = Bytes.length routing_info in
+        if length <> 40n then
+            failwith Errors.wrong_routing_info_length
+
+
     [@entry] let deposit
             (params : deposit_params)
             (store: Storage.t) : return_t =
@@ -42,15 +48,14 @@ module TicketHelper = struct
         *)
 
         let { amount; receiver; rollup } = params in
-        let () = Utility.assert_no_xtz_deposit () in
+        let () = Assertions.no_xtz_deposit () in
         let token = store.token in
         let ticketer = store.ticketer in
-        let entry = DepositEntry.get ticketer in
         let sender = Tezos.get_sender () in
         let self = Tezos.get_self_address () in
-        let token_transfer_op = Token.get_transfer_op token amount sender self in
-        let start_deposit_op = Tezos.transaction amount 0mutez entry in
-        let approve_token_op = Token.get_approve_op token ticketer amount in
+        let token_transfer_op = Token.send_transfer token amount sender self in
+        let start_deposit_op = TicketerDepositEntry.send ticketer amount in
+        let approve_token_op = Token.send_approve token ticketer amount in
         let context = { rollup; receiver } in
         let updated_store = Storage.set_context context store in
         [token_transfer_op; approve_token_op; start_deposit_op], updated_store
@@ -66,26 +71,24 @@ module TicketHelper = struct
             contract stored in context during `deposit` entrypoint call.
         *)
 
-        let () = Utility.assert_no_xtz_deposit () in
-        let () = Utility.assert_sender_is s.ticketer in
+        let () = Assertions.no_xtz_deposit () in
+        let () = Assertions.sender_is s.ticketer in
         match s.context with
         | Some context ->
             let { rollup; receiver } = context in
-            let entry = RollupEntry.get rollup in
             let routing_info = Bytes.concat receiver s.erc_proxy in
-            (* TODO: assert routing_info length equal to 40 bytes *)
+            let () = assert_routing_info_len_is_equal_to_40n routing_info in
             let deposit = { routing_info; ticket } in
-            let payload = RollupEntry.wrap deposit in
-            let finish_deposit_op = Tezos.transaction payload 0mutez entry in
+            let finish_deposit_op = RollupDepositEntry.send rollup deposit in
             let updated_store = Storage.clear_context s in
             [finish_deposit_op], updated_store
         | None -> failwith Errors.routing_data_is_not_set
 
-    [@entry] let withdraw
+    [@entry] let unwrap
             (ticket : Ticket.t)
             (s: Storage.t) : return_t =
         (*
-            `withdraw` entrypoint called when user wants to convert tickets
+            `unwrap` entrypoint called when user wants to convert tickets
             back to tokens for implicit account that not supported to send
             tickets within additional data structure.
 
@@ -96,10 +99,9 @@ module TicketHelper = struct
             It is the Ticketer responsibility to check that ticket is valid.
         *)
 
-        let () = Utility.assert_no_xtz_deposit () in
+        let () = Assertions.no_xtz_deposit () in
         let receiver = Tezos.get_sender () in
-        let entry = WithdrawEntry.get s.ticketer in
         let withdraw = { receiver; ticket } in
-        let withdraw_op = Tezos.transaction withdraw 0mutez entry in
+        let withdraw_op = RouterWithdrawEntry.send s.ticketer withdraw in
         [withdraw_op], s
 end

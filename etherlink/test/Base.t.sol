@@ -3,11 +3,11 @@ pragma solidity ^0.8.21;
 
 import {Test} from "forge-std/Test.sol";
 import {ERC20Proxy, hashTicket} from "../src/ERC20Proxy.sol";
-import {Kernel} from "../src/Kernel.sol";
+import {KernelMock} from "../src/KernelMock.sol";
 
 contract BaseTest is Test {
     ERC20Proxy public token;
-    Kernel public kernel;
+    KernelMock public kernel;
     address public alice = vm.addr(0x1);
     address public bob = vm.addr(0x2);
     uint256 public ticketHash;
@@ -21,7 +21,7 @@ contract BaseTest is Test {
     function setUp() public {
         vm.label(alice, "Alice");
         vm.label(bob, "Bob");
-        kernel = new Kernel();
+        kernel = new KernelMock();
         token = new ERC20Proxy(
             ticketer,
             content,

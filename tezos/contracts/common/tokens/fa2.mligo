@@ -1,13 +1,6 @@
 #import "../errors.mligo" "Errors"
 
 type t = address * nat
-// TODO: consider replacing `t` with:
-(*
-type t = [@layout:comb] {
-    address : address;
-    token_id : nat;
-}
-*)
 
 type transfer_txs_item = [@layout:comb] {
     to_: address;
@@ -22,16 +15,19 @@ type transfer_params = [@layout:comb] {
     txs: transfer_txs;
 } list
 
-let get_transfer_op
+let get_transfer (address : address) : transfer_params contract =
+    match Tezos.get_entrypoint_opt "%transfer" address with
+    | None -> failwith Errors.invalid_fa2
+    | Some entry -> entry
+
+let send_transfer
         (from_: address)
-        (addr: address)
+        (token_address: address)
         (txs: transfer_txs)
         : operation =
-    match Tezos.get_entrypoint_opt "%transfer" addr with
-    | None -> failwith Errors.invalid_fa2
-    | Some c ->
-        let params = [{ from_ = from_; txs = txs }] in
-        Tezos.transaction params 0mutez c
+    let params = [{ from_; txs }] in
+    let entry = get_transfer token_address in
+    Tezos.transaction params 0mutez entry
 
 type operator_param_t = [@layout:comb] {
     owner: address;
@@ -45,18 +41,18 @@ type update_operator_param_t = [@layout:comb]
 
 type update_operator_params_t = update_operator_param_t list
 
-let get_approve_op
+let get_approve (address : address) : update_operator_params_t contract =
+    match Tezos.get_entrypoint_opt "%update_operators" address with
+    | None -> failwith Errors.invalid_fa2
+    | Some entry -> entry
+
+let send_approve
         (contract_address: address)
         (token_id: nat)
-        (spender: address)
+        (operator: address)
         : operation =
-    let entry_option = Tezos.get_entrypoint_opt "%update_operators" contract_address in
-    let operator_param = {
-        owner = Tezos.get_self_address ();
-        operator = spender;
-        token_id = token_id;
-    } in
+    let owner = Tezos.get_self_address () in
+    let operator_param = { operator; token_id; owner } in
     let params = [Add_operator(operator_param)] in
-    match entry_option with
-    | None -> failwith Errors.invalid_fa2
-    | Some entry -> Tezos.transaction params 0mutez entry
+    let entry = get_approve contract_address in
+    Tezos.transaction params 0mutez entry

@@ -1,0 +1,214 @@
+import subprocess
+from random import randint
+from time import sleep
+
+import pytest
+from gql import gql
+from gql.client import SyncClientSession
+from graphql import DocumentNode
+from pytezos import pytezos
+
+from scripts.helpers.utility import make_address_bytes
+from scripts.tests.dto import Bridge
+from scripts.tests.dto import Token
+from scripts.tests.dto import Wallet
+
+
+class TestWithdraw:
+    @pytest.fixture
+    def bridge_withdrawal_query(self) -> DocumentNode:
+        return gql(
+            """
+            query BridgeWithdrawal($transaction_hash: String) {
+                bridge_withdrawal(where: {l2_transaction: {transaction_hash: {_eq: $transaction_hash}}}) {
+                    l2_transaction {
+                        transaction_hash
+                        l1_account
+                        l2_account
+                        ticket_hash
+                        l2_token {
+                            id
+                            ticket {
+                                ticketer_address
+                            }
+                        }
+                        outbox_message {
+                            commitment_id
+                            proof
+                        }
+                    }
+                    l1_transaction_id
+                }
+            }
+        """
+        )
+
+    @pytest.fixture
+    def bridge_pending_withdrawal_query(self) -> DocumentNode:
+        return gql(
+            """
+            query FindPendingWithdrawalOperation($l2_account: String, $ticket_hash: String) {
+                bridge_withdrawal(
+                    where: {
+                        l1_transaction_id: {_is_null: true}
+                        l2_transaction: {
+                            l2_account: {_eq: $l2_account}
+                            ticket_hash: {_eq: $ticket_hash},
+                        }
+                    },
+                    order_by: {l2_transaction: {level: desc}},
+                    limit: 1
+                )
+                {
+                      l2_transaction_id
+                }
+            }
+
+            query FetchOutboxMessageProof($l2_transaction_id: uuid) {
+                bridge_withdrawal(where: {l2_transaction_id: {_eq: $l2_transaction_id}}) {
+                    l2_transaction {
+                        outbox_message {
+                            commitment {
+                                inbox_level
+                                hash
+                            }
+                            level
+                            index
+                            proof
+                        }
+                    }
+                }
+            }
+        """
+        )
+
+    def test_create_token_withdraw(
+        self,
+        bridge: Bridge,
+        wallet: Wallet,
+        token: Token,
+        indexer: SyncClientSession,
+        bridge_withdrawal_query: gql,
+        bridge_pending_withdrawal_query: gql,
+    ):
+        amount = randint(3, 10)
+
+        receiver_address_bytes = make_address_bytes(wallet.l1_public_key_hash)
+        router_address_bytes = make_address_bytes(token.l1_ticketer_address)
+        routing_info = receiver_address_bytes + router_address_bytes
+
+        result = subprocess.run(
+            [
+                'cast',
+                'send',
+                bridge.l2_withdraw_precompile_address,
+                'withdraw(address,bytes,uint256,bytes22,bytes)',
+                token.l2_token_address,
+                routing_info,
+                str(amount),
+                make_address_bytes(token.l1_ticketer_address),
+                token.ticket_content_hex,
+                '--rpc-url',
+                bridge.l2_rpc_url,
+                '--private-key',
+                wallet.l2_private_key,
+                '--legacy',
+                '--gas-limit',
+                '1000000',
+            ],
+            capture_output=True,
+            text=True,
+        )
+
+        assert result.returncode in [0, 1]
+
+        for line in result.stdout.split('\n'):
+            try:
+                k, v = list(filter(len, line.split(' ')))
+            except ValueError:
+                continue
+
+            if k == 'transactionHash':
+                transaction_hash = v.removeprefix('0x')
+
+        assert transaction_hash
+
+        query_params = {'transaction_hash': transaction_hash}
+        indexed_operations = []
+        for _ in range(20):
+            response = indexer.execute(bridge_withdrawal_query, variable_values=query_params)
+            indexed_operations = response['bridge_withdrawal']
+            if len(indexed_operations):
+                break
+            sleep(3)
+
+        assert indexed_operations == [
+            {
+                'l2_transaction': {
+                    'transaction_hash': transaction_hash,
+                    'l1_account': wallet.l1_public_key_hash,
+                    'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
+                    'ticket_hash': str(token.ticket_hash),
+                    'l2_token': {
+                        'id': token.l2_token_address,
+                        'ticket': {
+                            'ticketer_address': token.l1_ticketer_address,
+                        }
+                    },
+                    'outbox_message': {
+                        'commitment_id': None,
+                        'proof': None,
+                    },
+                },
+                'l1_transaction_id': None,
+            },
+        ]
+
+    def test_finish_token_withdraw(
+        self,
+        bridge: Bridge,
+        wallet: Wallet,
+        token: Token,
+        indexer: SyncClientSession,
+        bridge_pending_withdrawal_query: gql,
+    ):
+        query_params = {
+            'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
+            'ticket_hash': str(token.ticket_hash),
+        }
+        response = indexer.execute(
+            bridge_pending_withdrawal_query,
+            variable_values=query_params,
+            operation_name='FindPendingWithdrawalOperation'
+        )
+        assert len(response['bridge_withdrawal']) == 1
+        l2_operation_id = response['bridge_withdrawal'][0]['l2_transaction_id']
+        assert l2_operation_id
+
+        query_params = {'l2_transaction_id': l2_operation_id}
+        for _ in range(bridge.rollup_challenge_window+bridge.rollup_commitment_period*2):
+            response = indexer.execute(
+                bridge_pending_withdrawal_query,
+                variable_values=query_params,
+                operation_name='FetchOutboxMessageProof'
+            )
+            cemented_withdrawal = response['bridge_withdrawal'][0]['l2_transaction']
+            if cemented_withdrawal['outbox_message']['proof'] and cemented_withdrawal['outbox_message']['commitment']:
+                break
+
+            sleep(bridge.l1_time_between_blocks)
+
+        assert cemented_withdrawal
+
+        manager = pytezos.using(shell=bridge.l1_rpc_url, key=wallet.l1_private_key)
+        opg = manager.smart_rollup_execute_outbox_message(
+            bridge.l1_smart_rollup_address,
+            cemented_withdrawal['outbox_message']['commitment']['hash'],
+            bytes.fromhex(cemented_withdrawal['outbox_message']['proof']),
+        ).send()
+        manager.wait(opg)
+
+        operation_hash = opg.hash()
+        assert operation_hash
+
+        # todo: compare operations

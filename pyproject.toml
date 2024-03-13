@@ -23,8 +23,7 @@ types-requests = "^2.31.0.20240125"
 ruff = "^0.2.1"
 gql = "^3.5.0"
 pydantic = "^2.6.1"
-pytest-asyncio = "^0.23.5"
-aiohttp = "^3.9.3"
+requests-toolbelt = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

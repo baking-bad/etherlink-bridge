@@ -5,7 +5,7 @@ import {ERC20} from "openzeppelin-contracts/token/ERC20/ERC20.sol";
 
 function hashTicket(bytes22 ticketer, bytes memory content)
     pure
-    returns (uint256)
+    returns (uint256 ticketHash)
 {
     return uint256(keccak256(abi.encodePacked(ticketer, content)));
 }

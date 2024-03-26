@@ -47,19 +47,21 @@ contract ERC20Proxy is ERC20 {
     /**
      * Checks if the sender is the kernel address.
      */
-    function _requireSenderIsKernel() internal view {
+    modifier onlyKernel() {
         require(
             _kernel == _msgSender(),
             "ERC20Proxy: only kernel allowed to deposit / withdraw tokens"
         );
+        _;
     }
 
     /**
      * Checks if the provided `ticketHash` is equal to the ticket hash
      * of the ticketer and content set during token deployment.
      */
-    function _requireTicketHash(uint256 ticketHash) internal view {
+    modifier onlyAllowedTicketHash(uint256 ticketHash) {
         require(_ticketHash == ticketHash, "ERC20Proxy: wrong ticket hash");
+        _;
     }
 
     /**
@@ -74,9 +76,9 @@ contract ERC20Proxy is ERC20 {
      */
     function deposit(address account, uint256 value, uint256 ticketHash)
         public
+        onlyKernel
+        onlyAllowedTicketHash(ticketHash)
     {
-        _requireSenderIsKernel();
-        _requireTicketHash(ticketHash);
         _mint(account, value);
     }
 
@@ -93,9 +95,9 @@ contract ERC20Proxy is ERC20 {
      */
     function withdraw(address account, uint256 value, uint256 ticketHash)
         public
+        onlyKernel
+        onlyAllowedTicketHash(ticketHash)
     {
-        _requireSenderIsKernel();
-        _requireTicketHash(ticketHash);
         _burn(account, value);
     }
 

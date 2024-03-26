@@ -63,8 +63,7 @@ module Ticketer = struct
         let () = assert_content_is_expected content store.content in
         let () = Assertions.address_is_self ticketer in
         let () = Assertions.no_xtz_deposit () in
-        let self = Tezos.get_self_address () in
-        let transfer_op = Token.send_transfer store.token amount self receiver in
+        let transfer_op = Token.send_transfer store.token amount ticketer receiver in
         let store = Storage.decrease_total_supply amount store in
         [transfer_op], store
 

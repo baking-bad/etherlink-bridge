@@ -15,9 +15,9 @@ function hashTicket(bytes22 ticketer, bytes memory content)
  * on L2.
  */
 contract ERC20Proxy is ERC20 {
-    uint256 private _ticketHash;
-    address private _kernel;
-    uint8 private _decimals;
+    uint256 private immutable _ticketHash;
+    address private immutable _kernel;
+    uint8 private immutable _decimals;
 
     /**
      * @param ticketer_ address of the L1 ticketer contract which tickets are

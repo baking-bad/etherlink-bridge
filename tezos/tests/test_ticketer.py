@@ -187,7 +187,7 @@ class TicketerTestCase(BaseTestCase):
         # NOTE: it is important to check for the error message here
         # because along with wrong content, the ticketer address is also wrong.
         # Also the content check is done before the ticketer address check.
-        assert 'UNEXPECTED_TICKET_PAYLOAD' in str(err.exception)
+        assert 'UNEXPECTED_TKT_CONTENT' in str(err.exception)
 
     def test_should_fail_on_deposit_with_attached_xtz(self) -> None:
         alice, token, ticketer, _ = self.default_setup('FA2')

@@ -40,12 +40,12 @@ module Ticketer = struct
         *)
 
         let () = Assertions.no_xtz_deposit () in
+        let store = Storage.increase_total_supply amount store in
         let self = Tezos.get_self_address () in
         let sender = Tezos.get_sender () in
         let ticket = Ticket.create store.content amount in
         let token_transfer_op = Token.send_transfer store.token amount sender self in
         let ticket_transfer_op = Ticket.send ticket sender in
-        let store = Storage.increase_total_supply amount store in
         [token_transfer_op; ticket_transfer_op], store
 
     [@entry] let withdraw
@@ -63,8 +63,8 @@ module Ticketer = struct
         let () = assert_content_is_expected content store.content in
         let () = Assertions.address_is_self ticketer in
         let () = Assertions.no_xtz_deposit () in
-        let transfer_op = Token.send_transfer store.token amount ticketer receiver in
         let store = Storage.decrease_total_supply amount store in
+        let transfer_op = Token.send_transfer store.token amount ticketer receiver in
         [transfer_op], store
 
     [@view] let get_total_supply (() : unit) (store : Storage.t) : nat =

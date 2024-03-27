@@ -65,7 +65,7 @@ contract ERC20Proxy is ERC20 {
     }
 
     /**
-     * Mints `value` tokens amount for `account` address if provided
+     * Mints given `amount` of tokens for `receiver` address if provided
      * `ticketHash` is correct.
      *
      * Requirements:
@@ -74,16 +74,16 @@ contract ERC20Proxy is ERC20 {
      * - `ticketHash` must be equal to the ticket hash of the ticketer
      * and identifier used during deployment.
      */
-    function deposit(address account, uint256 value, uint256 ticketHash)
+    function deposit(address receiver, uint256 amount, uint256 ticketHash)
         public
         onlyKernel
         onlyAllowedTicketHash(ticketHash)
     {
-        _mint(account, value);
+        _mint(receiver, amount);
     }
 
     /**
-     * Burns `value` tokens amount from the `account` address if provided
+     * Burns `amount` of tokens amount from the `sender` address if provided
      * `ticketHash` is correct.
      *
      * Requirements:
@@ -93,12 +93,12 @@ contract ERC20Proxy is ERC20 {
      *    and content set during deployment.
      * - `amount` must be less or equal to the balance of the caller.
      */
-    function withdraw(address account, uint256 value, uint256 ticketHash)
+    function withdraw(address sender, uint256 amount, uint256 ticketHash)
         public
         onlyKernel
         onlyAllowedTicketHash(ticketHash)
     {
-        _burn(account, value);
+        _burn(sender, amount);
     }
 
     function decimals() public view override returns (uint8) {

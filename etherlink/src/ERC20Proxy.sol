@@ -24,8 +24,8 @@ contract ERC20Proxy is ERC20 {
      *        allowed to be minted by this ERC20Proxy
      * @param content_ content of the L1 ticket allowed to be minted by
      *        this ERC20Proxy
-     * @param kernel_ address of the rollup kernel which is responsible for
-     *        minting and burning tokens
+     * @param kernel_ address of the rollup kernel which has rights for
+     *        the minting and burning tokens
      * @param name_ name of the token
      * @param symbol_ symbol of the token
      * @param decimals_ number of decimals of the token

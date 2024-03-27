@@ -250,3 +250,57 @@ class TicketHelperTestCase(BaseTestCase):
             tester.mint(content, 1),
         ).send()
         self.bake_block()
+
+    def test_should_redirect_ticket_to_the_ticketer_on_withdraw(self) -> None:
+        alice, helper, rollup_mock = self.default_setup_helper('FA2')
+        ticketer = helper.get_ticketer()
+        token = ticketer.get_token()
+
+        # Alice deposits FA2 ticket to the rollup:
+        rollup = f'{rollup_mock.address}%rollup'
+        helper.using(alice).deposit(rollup, RECEIVER, 100).send()
+        self.bake_block()
+
+        # Boris withdraws ticket from the rollup, setting TicketHelper as router,
+        # checking ticket will be redirected to the ticketer:
+        boris = self.bootstrap_account()
+        rollup_mock.execute_outbox_message(
+            {
+                'ticket_id': {
+                    'ticketer': ticketer,
+                    'token_id': 0,
+                },
+                'amount': 15,
+                'receiver': boris,
+                'router': helper,
+            }
+        ).send()
+        self.bake_block()
+
+        # Checking withdraw operations results:
+        assert ticketer.read_ticket(rollup_mock).amount == 100 - 15
+        assert token.get_balance(boris) == 15
+
+        # deploying another set of contracts for FA1.2 token:
+        _, another_helper, _ = self.default_setup_helper('FA1.2')
+
+        # Camila withdraws ticket from the rollup, setting TicketHelper as router,
+        # checking ticket will be redirected to the ticketer, even it differs from
+        # the one set in the storage:
+        camila = self.bootstrap_account()
+        rollup_mock.execute_outbox_message(
+            {
+                'ticket_id': {
+                    'ticketer': ticketer,
+                    'token_id': 0,
+                },
+                'amount': 29,
+                'receiver': camila,
+                'router': another_helper,
+            }
+        ).send()
+        self.bake_block()
+
+        # Checking withdraw operations results:
+        assert ticketer.read_ticket(rollup_mock).amount == 100 - 15 - 29
+        assert token.get_balance(camila) == 29

@@ -70,3 +70,6 @@
 - [x] test_should_fail_when_received_ticket_along_with_xtz
 - [x] test_should_prepare_correct_routing_info
 - [x] test_should_fail_if_routing_info_has_inccorrect_size
+- [x] test_should_redirect_ticket_to_the_ticketer_on_withdraw
+    - check ticket will be redirected to the ticketer in the storage
+    - check ticket will be redirected to the ticketer even its address differs from the stored ticketer address

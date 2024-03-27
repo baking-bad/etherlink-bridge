@@ -104,4 +104,20 @@ module TicketHelper = struct
         let withdraw = { receiver; ticket } in
         let withdraw_op = RouterWithdrawEntry.send s.ticketer withdraw in
         [withdraw_op], s
+
+    [@entry] let withdraw
+            (params : RouterWithdrawEntry.t)
+            (s : Storage.t)
+            : return_t =
+        (*
+            `withdraw` entrypoint is added in case the user specifies this
+            Helper contract as the ticket recipient, instead of a Ticketer.
+            This entriponite reads the ticket and redirects it to the Ticketer
+            contract keeping the same routing information.
+        *)
+        let { ticket; receiver } = params in
+        let (ticketer, (_, _)), ticket = Tezos.read_ticket ticket in
+        let withdraw = { receiver; ticket } in
+        let withdraw_op = RouterWithdrawEntry.send ticketer withdraw in
+        [withdraw_op], s
 end

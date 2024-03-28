@@ -16,14 +16,14 @@ class RollupCommunicationTestCase(BaseTestCase):
             },
         )
         erc_proxy = bytes.fromhex('fa02fa02fa02fa02fa02fa02fa02fa02fa02fa02')
-        helper = self.deploy_ticket_helper(token, ticketer, erc_proxy)
+        helper = self.deploy_token_bridge_helper(token, ticketer, erc_proxy)
         rollup_mock = self.deploy_rollup_mock()
         alice_l2_address = bytes.fromhex('0202020202020202020202020202020202020202')
 
         # In order to deposit token to the rollup, in one bulk operation:
-        # - TicketHelper allowed to transfer tokens from Alice,
+        # - TokenBridgeHelper allowed to transfer tokens from Alice,
         # - Alice locks token on Ticketer and then transfer ticket
-        # to the Rollup via TicketHelper contract.
+        # to the Rollup via TokenBridgeHelper contract.
         rollup = f'{rollup_mock.address}%rollup'
         alice.bulk(
             token.allow(alice, helper),
@@ -70,7 +70,7 @@ class RollupCommunicationTestCase(BaseTestCase):
             }
         )
         ticketer = self.deploy_ticketer(token)
-        helper = self.deploy_ticket_helper(token, ticketer)
+        helper = self.deploy_token_bridge_helper(token, ticketer)
 
         # Alice creates one ticket from 5 tokens:
         alice.bulk(

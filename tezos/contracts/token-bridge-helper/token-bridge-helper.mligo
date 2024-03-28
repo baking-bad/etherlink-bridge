@@ -8,11 +8,13 @@
 #import "../common/assertions.mligo" "Assertions"
 
 
-module TicketHelper = struct
+module TokenBridgeHelper = struct
     (*
-        TicketHelper is a helper contract which helps user to communicate with
+        TokenBridgeHelper is a helper contract which helps user to communicate with
         Etherlink Bridge components that requires tickets to be packed into
         external data structure.
+
+        The TokenBridgeHelper implementation focused on FA1.2 and FA2 tokens only.
 
         This contract expected to be temporal solution until Tezos will support
         ability to transfer tickets within additional data structure from
@@ -43,7 +45,7 @@ module TicketHelper = struct
 
             This entrypoint will transfer tokens from the user to the contract
             and then call `Ticketer.deposit` entrypoint, which will mint ticket
-            and send it back to the TicketHelper contract triggering `default`
+            and send it back to the TokenBridgeHelper contract triggering `default`
             entrypoint.
         *)
 
@@ -65,7 +67,7 @@ module TicketHelper = struct
             (s: Storage.t) : return_t =
         (*
             `default` entrypoint called when Ticketer minted ticket and
-            sent it to the TicketHelper contract.
+            sent it to the TokenBridgeHelper contract.
 
             This entrypoint will transfer ticket to the Etherlink Bridge
             contract stored in context during `deposit` entrypoint call.
@@ -103,5 +105,21 @@ module TicketHelper = struct
         let receiver = Tezos.get_sender () in
         let withdraw = { receiver; ticket } in
         let withdraw_op = RouterWithdrawEntry.send s.ticketer withdraw in
+        [withdraw_op], s
+
+    [@entry] let withdraw
+            (params : RouterWithdrawEntry.t)
+            (s : Storage.t)
+            : return_t =
+        (*
+            `withdraw` entrypoint is added in case the user specifies this
+            Helper contract as the ticket recipient, instead of a Ticketer.
+            This entriponite reads the ticket and redirects it to the Ticketer
+            contract keeping the same routing information.
+        *)
+        let { ticket; receiver } = params in
+        let (ticketer, (_, _)), ticket = Tezos.read_ticket ticket in
+        let withdraw = { receiver; ticket } in
+        let withdraw_op = RouterWithdrawEntry.send ticketer withdraw in
         [withdraw_op], s
 end

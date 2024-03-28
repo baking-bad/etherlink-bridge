@@ -53,7 +53,7 @@
 - [x] test_ticket_content_generation_for_fa12_without_extra_metadata
 - [x] test_ticket_content_generation_with_extra_metadata_added
 
-## TicketHelper tests [(code)](test_ticket_helper.py):
+## TokenBridgeHelper tests [(code)](test_token_bridge_helper.py):
 - [x] test_deposit_succeed_for_correct_fa2_token_and_ticketer
     - should send ticket to rollup
 - [x] test_deposit_succeed_for_correct_fa12_token_and_ticketer
@@ -70,3 +70,6 @@
 - [x] test_should_fail_when_received_ticket_along_with_xtz
 - [x] test_should_prepare_correct_routing_info
 - [x] test_should_fail_if_routing_info_has_inccorrect_size
+- [x] test_should_redirect_ticket_to_the_ticketer_on_withdraw
+    - check ticket will be redirected to the ticketer in the storage
+    - check ticket will be redirected to the ticketer even its address differs from the stored ticketer address

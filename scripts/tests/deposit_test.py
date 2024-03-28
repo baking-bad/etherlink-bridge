@@ -8,7 +8,7 @@ from graphql import DocumentNode
 from pytezos import pytezos
 
 from scripts.helpers.contracts import ContractHelper
-from scripts.helpers.contracts import TicketHelper
+from scripts.helpers.contracts import TokenBridgeHelper
 from scripts.helpers.contracts import TicketRouterTester
 from scripts.helpers.contracts import Ticketer
 from scripts.tests.dto import Bridge
@@ -98,7 +98,7 @@ class TestDeposit:
         amount = randint(10, 20)
 
         operation_hash = deposit.callback(
-            ticket_helper_address=token.l1_ticket_helper_address,
+            token_bridge_helper_address=token.l1_ticket_helper_address,
             amount=amount,
             receiver_address=wallet.l2_public_key,
             rollup_address=bridge.l1_smart_rollup_address,
@@ -151,7 +151,7 @@ class TestDeposit:
         amount = randint(3, 20)
 
         manager = pytezos.using(shell=bridge.l1_rpc_url, key=wallet.l1_private_key)
-        ticket_helper = TicketHelper.from_address(manager, token.l1_ticket_helper_address)
+        ticket_helper = TokenBridgeHelper.from_address(manager, token.l1_ticket_helper_address)
         token_helper = ticket_helper.get_ticketer().get_token()
 
         operations_group = (

@@ -4,7 +4,7 @@ This repository demonstrates the implementation of a bridge connecting Tezos and
 
 On the Tezos side, the setup includes smart contracts written in [CameLIGO](https://ligolang.org/docs/intro/introduction?lang=cameligo), featuring:
 - [**Ticketer**](tezos/contracts/ticketer/ticketer.mligo), which facilitates the wrapping of **FA1.2** and **FA1.2** tokens into tickets. These tickets can then be sent to the bridge using a permissionless ticket transport mechanism.
-- [**TicketHelper**](tezos/contracts/ticket-helper/ticket-helper.mligo), designed to allow users to transfer tickets even without the support for the **ticket_transfer** operation in the current Tezos infrastructure.
+- [**TokenBridgeHelper**](tezos/contracts/token-bridge-helper/token-bridge-helper.mligo), designed to allow users to transfer tickets even without the support for the **ticket_transfer** operation in the current Tezos infrastructure.
 
 On the Etherlink side, the setup includes Solidity contracts, notably the **ERC20Proxy**: an ERC20 contract that implements the L2 proxy [deposit interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-deposit-interface) and [withdraw interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-withdraw-interface).
 
@@ -33,7 +33,7 @@ NOTE: Upgrades to the Ticketer contract are highly unwanted. Ideally, it should 
 
 Once it's determined which tickets will bridge the token to Etherlink, users can deploy an **ERC20Proxy** – an ERC20 token integrated with L2 deposit and withdrawal interfaces for the bridge. This contract needs to be configured to recognize tickets from the **Ticketer** deployed initially. It should include the Ticketer address and ticket content. With this configuration, the rollup kernel can call ERC20 to mint tokens for receiver corresponding to the incoming tickets from Tezos.
 
-Additionally, deploying a **TicketHelper** on the Tezos side is required, targeting the specific **Token** and **Ticketer** pair on the L1 side and **ERC20Proxy** address on the L2 side. This deployment is crucial since wallets currently do not support the **transfer_ticket** operation. The **TicketHelper** streamlines the process by wrapping tokens into tickets and enabling their transfer to the rollup in a single transaction. Note, however, that this type of contract may become obsolete in the future when (1) wallets begin supporting the **transfer_ticket** operation and (2) Tezos undergoes a protocol upgrade that permits implicit addresses to transfer tickets with arbitrary data.
+Additionally, deploying a **TokenBridgeHelper** on the Tezos side is required, targeting the specific **Token** and **Ticketer** pair on the L1 side and **ERC20Proxy** address on the L2 side. This deployment is crucial since wallets currently do not support the **transfer_ticket** operation. The **TokenBridgeHelper** streamlines the process by wrapping tokens into tickets and enabling their transfer to the rollup in a single transaction. Note, however, that this type of contract may become obsolete in the future when (1) wallets begin supporting the **transfer_ticket** operation and (2) Tezos undergoes a protocol upgrade that permits implicit addresses to transfer tickets with arbitrary data.
 
 #### Deploying a Token
 For demonstration purposes, users can deploy a test token intended for bridging. The bridge has been tested with two types of tokens available in the repository:
@@ -67,21 +67,21 @@ NOTE: To retrieve the **ticketer-address-bytes** and **content-bytes** from an a
 poetry run get_ticketer_params --ticketer KT1V4Eac6ZSW4TuwES2oVYg6smmCGPUPPM1A
 ```
 
-#### Deploying a Ticket Helper
-Finally, to allow the interaction of Tezos wallets with tickets, users need to deploy a Ticket Helper. During origination, Ticket Helper linked to the Token, Tikiter and ERC20Proxy. To originate Ticket Helper user should run the `deploy_ticket_helper` command, which requires the `--ticketer-address` and `--proxy-address` parameters to be provided. The Ticketer's storage will be parsed to retrieve information about the token. Below is an example that illustrates deploying a ticket helper for the ticketer previously deployed on Oxfordnet:
+#### Deploying a Token Bridge Helper
+Finally, to allow the interaction of Tezos wallets with tickets, users need to deploy a Token Bridge Helper. During origination, Token Bridge Helper linked to the Token, Tikiter and ERC20Proxy. To originate Token Bridge Helper user should run the `deploy_token_bridge_helper` command, which requires the `--ticketer-address` and `--proxy-address` parameters to be provided. The Ticketer's storage will be parsed to retrieve information about the token. Below is an example that illustrates deploying a token bridge helper for the ticketer previously deployed on Oxfordnet:
 ```shell
-poetry run deploy_ticket_helper --ticketer-address KT1V4Eac6ZSW4TuwES2oVYg6smmCGPUPPM1A --proxy-address 0xe448b46E3c9167961ae4bD498E8dFb78Ae97da8a
+poetry run deploy_token_bridge_helper --ticketer-address KT1V4Eac6ZSW4TuwES2oVYg6smmCGPUPPM1A --proxy-address 0xe448b46E3c9167961ae4bD498E8dFb78Ae97da8a
 ```
 Here is a link to the resulting originated contract in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/KT1CMNe4cHBNTbaMwtASD9WxipqtKv1PQF7J/operations/).
 
 ### Deposit
-To initiate a deposit, users need to transfer Tickets to the rollup address, appending Routing Info in the [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#deposit): a 40 bytes payload comprising `| receiver | proxy |`, where both receiver and proxy are standard Ethereum addresses in raw form (H160). The Ticket Helper contract simplifies this process. To initiate a deposit using Ticket Helper users need to provide the Ticket Helper address (`--ticket-helper-address`) and a bridged amount (`--amount`) to initiate a deposit. Below is an example of how to execute this command:
+To initiate a deposit, users need to transfer Tickets to the rollup address, appending Routing Info in the [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#deposit): a 40 bytes payload comprising `| receiver | proxy |`, where both receiver and proxy are standard Ethereum addresses in raw form (H160). The Token Bridge Helper contract simplifies this process. To initiate a deposit using Token Bridge Helper users need to provide the Token Bridge Helper address (`--token-bridge-helper-address`) and a bridged amount (`--amount`) to initiate a deposit. Below is an example of how to execute this command:
 ```shell
-poetry run deposit --ticket-helper-address KT1CMNe4cHBNTbaMwtASD9WxipqtKv1PQF7J --amount 77
+poetry run deposit --token-bridge-helper-address KT1CMNe4cHBNTbaMwtASD9WxipqtKv1PQF7J --amount 77
 ```
 Here is a link to the resulting operation in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/onvJ5ZUWGaTtCLhZGk9cCXyB55LRxGmRk6AGV6hquWBANKTMvGC/133099) and [Etherlink Blockscout](http://blockscout.dipdup.net/tx/0x1ff86df2e46af962cf56b36cdee0e3c7b891471bbcfe019268db6fa4784fa3bb).
 
-NOTE: This script executes two operations in a batch. The first operation grants approval to the **Ticket Helper** for the token, and the second operation invokes the **deposit** entrypoint of the **Ticket Helper**.
+NOTE: This script executes two operations in a batch. The first operation grants approval to the **Token Bridge Helper** for the token, and the second operation invokes the **deposit** entrypoint of the **Token Bridge Helper**.
 
 ### Withdrawal Process
 The withdrawal process consists of two steps:

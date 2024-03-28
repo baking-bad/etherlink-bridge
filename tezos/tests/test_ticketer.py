@@ -91,7 +91,7 @@ class TicketerTestCase(BaseTestCase):
         assert token.get_balance(alice) == 0
 
         # Alice uses helper contract to unwrap 42 tickets back to tokens:
-        helper = self.deploy_ticket_helper(token, ticketer)
+        helper = self.deploy_token_bridge_helper(token, ticketer)
         spent_ticket, kept_ticket = ticket.split(42)
         spent_ticket.transfer(helper, 'unwrap').send()
         self.bake_block()
@@ -113,7 +113,7 @@ class TicketerTestCase(BaseTestCase):
         assert token.get_balance(alice) == 0
 
         # Alice uses helper contract to unwrap tickets back to tokens:
-        helper = self.deploy_ticket_helper(token, ticketer)
+        helper = self.deploy_token_bridge_helper(token, ticketer)
         ticket.transfer(helper, 'unwrap').send()
         self.bake_block()
 
@@ -187,7 +187,7 @@ class TicketerTestCase(BaseTestCase):
         # NOTE: it is important to check for the error message here
         # because along with wrong content, the ticketer address is also wrong.
         # Also the content check is done before the ticketer address check.
-        assert 'UNEXPECTED_TICKET_PAYLOAD' in str(err.exception)
+        assert 'UNEXPECTED_TKT_CONTENT' in str(err.exception)
 
     def test_should_fail_on_deposit_with_attached_xtz(self) -> None:
         alice, token, ticketer, _ = self.default_setup('FA2')

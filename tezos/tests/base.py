@@ -12,7 +12,7 @@ from scripts.helpers.contracts import (
     FA12,
     TokenHelper,
     TicketRouterTester,
-    TicketHelper,
+    TokenBridgeHelper,
 )
 from typing import Optional
 from scripts.helpers.addressable import Addressable
@@ -70,19 +70,19 @@ class BaseTestCase(SandboxedNodeTestCase):
         self.bake_block()
         return Ticketer.from_opg(self.manager, opg)
 
-    def deploy_ticket_helper(
+    def deploy_token_bridge_helper(
         self,
         token: TokenHelper,
         ticketer: Ticketer,
         erc_proxy: bytes = bytes.fromhex('00' * 20),
-    ) -> TicketHelper:
-        """Deploys TicketHelper contract with given token and ticketer"""
+    ) -> TokenBridgeHelper:
+        """Deploys TokenBridgeHelper contract with given token and ticketer"""
 
-        opg = TicketHelper.originate(
+        opg = TokenBridgeHelper.originate(
             self.manager, ticketer, erc_proxy, token=token
         ).send()
         self.bake_block()
-        return TicketHelper.from_opg(self.manager, opg)
+        return TokenBridgeHelper.from_opg(self.manager, opg)
 
     def setUp(self) -> None:
         self.accounts = []

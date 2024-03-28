@@ -19,7 +19,7 @@ from scripts.helpers.addressable import (
 from typing import Optional
 
 
-class TicketHelper(ContractHelper):
+class TokenBridgeHelper(ContractHelper):
     @classmethod
     def originate(
         cls,
@@ -28,7 +28,7 @@ class TicketHelper(ContractHelper):
         erc_proxy: bytes,
         token: Optional[TokenHelper] = None,
     ) -> OperationGroup:
-        """Deploys Ticket Helper"""
+        """Deploys Token Bridge Helper"""
 
         token = token or ticketer.get_token()
         storage = {
@@ -37,11 +37,11 @@ class TicketHelper(ContractHelper):
             'erc_proxy': erc_proxy,
             'context': None,
             'metadata': Metadata.make_default(
-                name='Ticket Helper',
-                description='The Ticket Helper is a helper contract which helps user to communicate with Etherlink Bridge components that requires tickets to be packed into external data structure.',
+                name='Token Bridge Helper',
+                description='The Token Bridge Helper is a helper contract which helps user to communicate with Etherlink Bridge components that requires tickets to be packed into external data structure.',
             ),
         }
-        filename = join(get_build_dir(), 'ticket-helper.tz')
+        filename = join(get_build_dir(), 'token-bridge-helper.tz')
 
         return originate_from_file(filename, client, storage)
 

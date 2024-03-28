@@ -91,7 +91,7 @@ class TicketerTestCase(BaseTestCase):
         assert token.get_balance(alice) == 0
 
         # Alice uses helper contract to unwrap 42 tickets back to tokens:
-        helper = self.deploy_ticket_helper(token, ticketer)
+        helper = self.deploy_token_bridge_helper(token, ticketer)
         spent_ticket, kept_ticket = ticket.split(42)
         spent_ticket.transfer(helper, 'unwrap').send()
         self.bake_block()
@@ -113,7 +113,7 @@ class TicketerTestCase(BaseTestCase):
         assert token.get_balance(alice) == 0
 
         # Alice uses helper contract to unwrap tickets back to tokens:
-        helper = self.deploy_ticket_helper(token, ticketer)
+        helper = self.deploy_token_bridge_helper(token, ticketer)
         ticket.transfer(helper, 'unwrap').send()
         self.bake_block()
 

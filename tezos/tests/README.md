@@ -53,7 +53,7 @@
 - [x] test_ticket_content_generation_for_fa12_without_extra_metadata
 - [x] test_ticket_content_generation_with_extra_metadata_added
 
-## TicketHelper tests [(code)](test_ticket_helper.py):
+## TokenBridgeHelper tests [(code)](test_token_bridge_helper.py):
 - [x] test_deposit_succeed_for_correct_fa2_token_and_ticketer
     - should send ticket to rollup
 - [x] test_deposit_succeed_for_correct_fa12_token_and_ticketer

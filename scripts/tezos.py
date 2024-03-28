@@ -5,7 +5,7 @@ from scripts.helpers.contracts import (
     RollupMock,
     TicketRouterTester,
     TokenHelper,
-    TicketHelper,
+    TokenBridgeHelper,
 )
 from scripts.helpers.utility import (
     pack,
@@ -177,13 +177,13 @@ def deploy_ticketer(
 )
 @click.option('--private-key', default=None, help='Use the provided private key.')
 @click.option('--rpc-url', default=None, help='Tezos RPC URL.')
-def deploy_ticket_helper(
+def deploy_token_bridge_helper(
     ticketer_address: str,
     proxy_address: str,
     private_key: Optional[str],
     rpc_url: Optional[str],
-) -> TicketHelper:
-    """Deploys `ticket_helper` contract for provided ticketer"""
+) -> TokenBridgeHelper:
+    """Deploys `token_bridge_helper` contract for provided ticketer"""
 
     private_key = private_key or load_or_ask('L1_PRIVATE_KEY', is_secret=True)
     rpc_url = rpc_url or load_or_ask('L1_RPC_URL')
@@ -192,10 +192,10 @@ def deploy_ticket_helper(
     ticketer = Ticketer.from_address(manager, ticketer_address)
     proxy_address = proxy_address.replace('0x', '')
     proxy_bytes = bytes.fromhex(proxy_address)
-    opg = TicketHelper.originate(manager, ticketer, proxy_bytes).send()
+    opg = TokenBridgeHelper.originate(manager, ticketer, proxy_bytes).send()
     manager.wait(opg)
-    ticket_helper = TicketHelper.from_opg(manager, opg)
-    return ticket_helper
+    token_bridge_helper = TokenBridgeHelper.from_opg(manager, opg)
+    return token_bridge_helper
 
 
 def deploy_router(manager: PyTezosClient) -> TicketRouterTester:
@@ -214,9 +214,9 @@ def deploy_rollup_mock(manager: PyTezosClient) -> RollupMock:
 
 @click.command()
 @click.option(
-    '--ticket-helper-address',
+    '--token-bridge-helper-address',
     required=True,
-    help='The address of the Tezos ticket helper contract.',
+    help='The address of the Tezos Token Bridge Helper contract.',
 )
 @click.option(
     '--amount', required=True, type=int, help='The amount of tokens to be deposited.'
@@ -232,7 +232,7 @@ def deploy_rollup_mock(manager: PyTezosClient) -> RollupMock:
 @click.option('--private-key', default=None, help='Use the provided private key.')
 @click.option('--rpc-url', default=None, help='Tezos RPC URL.')
 def deposit(
-    ticket_helper_address: str,
+    token_bridge_helper_address: str,
     amount: int,
     receiver_address: Optional[str],
     rollup_address: Optional[str],
@@ -249,13 +249,13 @@ def deposit(
     receiver_bytes = bytes.fromhex(receiver_address)
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
-    ticket_helper = TicketHelper.from_address(manager, ticket_helper_address)
-    token = ticket_helper.get_ticketer().get_token()
+    token_bridge_helper = TokenBridgeHelper.from_address(manager, token_bridge_helper_address)
+    token = token_bridge_helper.get_ticketer().get_token()
 
     opg = manager.bulk(
-        token.disallow(manager, ticket_helper),
-        token.allow(manager, ticket_helper),
-        ticket_helper.deposit(rollup_address, receiver_bytes, amount),
+        token.disallow(manager, token_bridge_helper),
+        token.allow(manager, token_bridge_helper),
+        token_bridge_helper.deposit(rollup_address, receiver_bytes, amount),
     ).send()
     manager.wait(opg)
     operation_hash = opg.hash()
@@ -373,9 +373,9 @@ def build_contracts(
         'build/ticket-router-tester.tz',
     )
     compile_contract(
-        'contracts/ticket-helper/ticket-helper.mligo',
-        'TicketHelper',
-        'build/ticket-helper.tz',
+        'contracts/token-bridge-helper/token-bridge-helper.mligo',
+        'TokenBridgeHelper',
+        'build/token-bridge-helper.tz',
     )
     compile_contract(
         'contracts/rollup-mock/rollup-mock.mligo',

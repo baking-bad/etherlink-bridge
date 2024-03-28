@@ -5,7 +5,7 @@ from scripts.helpers.ticket_content import TicketContent
 from scripts.helpers.ticket import get_ticket_balance
 from pytezos.client import PyTezosClient
 from scripts.helpers.contracts import (
-    TicketHelper,
+    TokenBridgeHelper,
     RollupMock,
     TicketRouterTester,
 )
@@ -39,13 +39,13 @@ ERC20_PROXY = bytes.fromhex('fa00fa00fa00fa00fa00fa00fa00fa00fa00fa00')
 RECEIVER = bytes.fromhex('abcdabcdabcdabcdabcdabcdabcdabcdabcdabcd')
 
 
-class TicketHelperTestCase(BaseTestCase):
+class TokenBridgeHelperTestCase(BaseTestCase):
     def default_setup_helper(
         self, *args: Any, **kwargs: Any
-    ) -> tuple[PyTezosClient, TicketHelper, RollupMock]:
-        """Default setup for TicketHelper contract with given token and ticketer"""
+    ) -> tuple[PyTezosClient, TokenBridgeHelper, RollupMock]:
+        """Default setup for TokenBridgeHelper contract with given token and ticketer"""
         alice, token, ticketer, _ = self.default_setup(*args, **kwargs)
-        helper = self.deploy_ticket_helper(token, ticketer, ERC20_PROXY)
+        helper = self.deploy_token_bridge_helper(token, ticketer, ERC20_PROXY)
         rollup_mock = self.deploy_rollup_mock()
         token.using(alice).allow(alice, helper).send()
         self.bake_block()
@@ -54,12 +54,12 @@ class TicketHelperTestCase(BaseTestCase):
 
     def setup_helper_bind_to_tester(
         self, *args: Any, **kwargs: Any
-    ) -> tuple[PyTezosClient, TicketHelper, RollupMock, TicketRouterTester]:
+    ) -> tuple[PyTezosClient, TokenBridgeHelper, RollupMock, TicketRouterTester]:
         """Special setup with TicketRouterTester as a Ticketer which implements
-        Ticketer.deposit interface and can be used to test TicketHelper context
+        Ticketer.deposit interface and can be used to test TokenBridgeHelper context
         updates during deposit operations"""
         alice, token, _, tester = self.default_setup(*args, **kwargs)
-        helper = self.deploy_ticket_helper(token, tester, ERC20_PROXY)  # type: ignore
+        helper = self.deploy_token_bridge_helper(token, tester, ERC20_PROXY)  # type: ignore
         rollup_mock = self.deploy_rollup_mock()
         token.using(alice).allow(alice, helper).send()
         self.bake_block()
@@ -126,7 +126,7 @@ class TicketHelperTestCase(BaseTestCase):
         context = helper.contract.storage['context']()
         assert context == expected_context
 
-        # Minting ticket to the TicketHelper.default entrypoint to finalize deposit:
+        # Minting ticket to the TokenBridgeHelper.default entrypoint to finalize deposit:
         some_ticket_content = TicketContent(1, bytes.fromhex('00'))
         alice.bulk(
             tester.set_default(helper),
@@ -160,7 +160,7 @@ class TicketHelperTestCase(BaseTestCase):
         alice, helper, rollup_mock, tester = self.setup_helper_bind_to_tester('FA2')
         content = TicketContent(0, None)
 
-        # Setting up TicketHelper contract:
+        # Setting up TokenBridgeHelper contract:
         rollup = f'{rollup_mock.address}%rollup'
         helper.using(alice).deposit(rollup, RECEIVER, 1).send()
         self.bake_block()
@@ -180,7 +180,7 @@ class TicketHelperTestCase(BaseTestCase):
             ticket.transfer(helper).send()
         assert 'UNEXPECTED_SENDER' in str(err.exception)
 
-        # Then using tester to redirect ticket back to TicketHelper:
+        # Then using tester to redirect ticket back to TokenBridgeHelper:
         alice.bulk(
             tester.set_default(helper),
             ticket.transfer(tester),
@@ -231,7 +231,7 @@ class TicketHelperTestCase(BaseTestCase):
         content = TicketContent(0, None)
         rollup = f'{rollup_mock.address}%rollup'
 
-        # Minting ticket to the TicketHelper.default with xtz amount fails:
+        # Minting ticket to the TokenBridgeHelper.default with xtz amount fails:
         with self.assertRaises(MichelsonError) as err:
             alice.bulk(
                 helper.deposit(rollup, RECEIVER, 1),
@@ -243,7 +243,7 @@ class TicketHelperTestCase(BaseTestCase):
             ).send()
         assert 'XTZ_DEPOSIT_DISALLOWED' in str(err.exception)
 
-        # Minting ticket to the TicketHelper.default without xtz amount succeeds:
+        # Minting ticket to the TokenBridgeHelper.default without xtz amount succeeds:
         alice.bulk(
             helper.deposit(rollup, RECEIVER, 1),
             tester.set_default(target=helper),
@@ -261,7 +261,7 @@ class TicketHelperTestCase(BaseTestCase):
         helper.using(alice).deposit(rollup, RECEIVER, 100).send()
         self.bake_block()
 
-        # Boris withdraws ticket from the rollup, setting TicketHelper as router,
+        # Boris withdraws ticket from the rollup, setting TokenBridgeHelper as router,
         # checking ticket will be redirected to the ticketer:
         boris = self.bootstrap_account()
         rollup_mock.execute_outbox_message(
@@ -284,7 +284,7 @@ class TicketHelperTestCase(BaseTestCase):
         # deploying another set of contracts for FA1.2 token:
         _, another_helper, _ = self.default_setup_helper('FA1.2')
 
-        # Camila withdraws ticket from the rollup, setting TicketHelper as router,
+        # Camila withdraws ticket from the rollup, setting TokenBridgeHelper as router,
         # checking ticket will be redirected to the ticketer, even it differs from
         # the one set in the storage:
         camila = self.bootstrap_account()

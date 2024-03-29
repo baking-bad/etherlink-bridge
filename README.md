@@ -139,6 +139,18 @@ poetry install
 
 3. Install Foundry by following the [installation guide](https://book.getfoundry.sh/getting-started/installation)
 
+4. Forge (part of the Foundry toolchain) uses [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) to manage dependencies. To install all dependencies run `forge install` inside the `etherlink` directory. This command should install OpenZeppelin contracts v4.9.3.
+```shell
+cd etherlink/
+forge install
+```
+
+You may then check used submodules by running `git submodule status` to make sure that the correct libraries are installed:
+```shell
+1d9650e951204a0ddce9ff89c32f1997984cef4d etherlink/lib/forge-std (v1.6.1)
+fd81a96f01cc42ef1c9a5399364968d0e07e9e90 etherlink/lib/openzeppelin-contracts (v4.9.3)
+```
+
 ### Linting
 To perform linting, execute the following commands:
 

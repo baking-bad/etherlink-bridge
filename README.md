@@ -1,14 +1,14 @@
-# Etherlink Bridge
+# Etherlink FA Token Bridge
 
-This repository demonstrates the implementation of a bridge connecting Tezos and Etherlink, adhering to the [TZIP-029](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md) standard.
+This repository showcases smart contracts for an FA tokens bridge between Tezos and Etherlink, aligned with the [TZIP-029](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md) standard.
 
-On the Tezos side, the setup includes smart contracts written in [CameLIGO](https://ligolang.org/docs/intro/introduction?lang=cameligo), featuring:
-- [**Ticketer**](tezos/contracts/ticketer/ticketer.mligo), which facilitates the wrapping of **FA1.2** and **FA1.2** tokens into tickets. These tickets can then be sent to the bridge using a permissionless ticket transport mechanism.
-- [**TokenBridgeHelper**](tezos/contracts/token-bridge-helper/token-bridge-helper.mligo), designed to allow users to transfer tickets even without the support for the **ticket_transfer** operation in the current Tezos infrastructure.
+On the Tezos side, there are smart contracts written in [CameLIGO](https://ligolang.org/docs/intro/introduction?lang=cameligo), featuring:
+- [**Ticketer**](tezos/contracts/ticketer/ticketer.mligo), which enables the wrapping of **FA1.2** and **FA1.2** tokens into tickets. These tickets can then be sent to the bridge using a permissionless ticket transport mechanism.
+- [**TokenBridgeHelper**](tezos/contracts/token-bridge-helper/token-bridge-helper.mligo), which is designed to allow users to transfer tickets even without the support for the **ticket_transfer** operation in the current Tezos infrastructure. The Token Bridge Helper implementation focused on FA1.2 and FA2 tokens only.
 
 On the Etherlink side, the setup includes Solidity contracts, notably the **ERC20Proxy**: an ERC20 contract that implements the L2 proxy [deposit interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-deposit-interface) and [withdraw interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-withdraw-interface).
 
-Additionally, the [scripts](scripts/) directory contains Python scripts designed for interacting with the bridge. These scripts facilitate various operations, including contract deployment on both sides of the bridge, as well as deposit and withdrawal functions.
+Additionally, the [scripts](scripts/) directory contains Python scripts with different CLI commands which enable interaction with the bridge. These commands include contract deployment on both sides of the bridge, as well as deposit and withdrawal functions.
 
 The most straightforward method to engage with the components, execute scripts, and observe the interaction between different parts of the bridge is by running the demo notebook. It is set up to run in Google Colab's cloud environment. You can access it here: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/baking-bad/etherlink-bridge/blob/main/etherlink_bridge_demo.ipynb).
 

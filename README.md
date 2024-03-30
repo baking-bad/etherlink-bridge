@@ -3,134 +3,15 @@
 This repository showcases smart contracts for an FA tokens bridge between Tezos and Etherlink, aligned with the [TZIP-029](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md) standard.
 
 On the Tezos side, there are smart contracts written in [CameLIGO](https://ligolang.org/docs/intro/introduction?lang=cameligo), featuring:
-- [**Ticketer**](tezos/contracts/ticketer/ticketer.mligo), which enables the wrapping of **FA1.2** and **FA1.2** tokens into tickets. These tickets can then be sent to the bridge using a permissionless ticket transport mechanism.
+- [**Ticketer**](tezos/contracts/ticketer/ticketer.mligo), which enables wrapping of **FA1.2** and **FA2** tokens into tickets. These tickets can then be sent to the bridge using a permissionless ticket transport mechanism.
 - [**TokenBridgeHelper**](tezos/contracts/token-bridge-helper/token-bridge-helper.mligo), which is designed to allow users to transfer tickets even without the support for the **ticket_transfer** operation in the current Tezos infrastructure. The Token Bridge Helper implementation focused on FA1.2 and FA2 tokens only.
 
 On the Etherlink side, the setup includes Solidity contracts, notably the **ERC20Proxy**: an ERC20 contract that implements the L2 proxy [deposit interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-deposit-interface) and [withdraw interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-withdraw-interface).
 
-Additionally, the [scripts](scripts/) directory contains Python scripts with different CLI commands which enable interaction with the bridge. These commands include contract deployment on both sides of the bridge, as well as deposit and withdrawal functions.
+Additionally, the [scripts](scripts/) directory contains Python scripts with CLI commands enabling interaction with the bridge. These commands include contract deployment on both sides of the bridge, as well as deposit and withdrawal helpers.
 
-The most straightforward method to engage with the components, execute scripts, and observe the interaction between different parts of the bridge is by running the demo notebook. It is set up to run in Google Colab's cloud environment. You can access it here: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/baking-bad/etherlink-bridge/blob/main/etherlink_bridge_demo.ipynb).
-
-Alternatively, users can clone this Git repository, adhere to the [installation guide](#install-dependencies), and set up their environment by executing the following command:
-```shell
-poetry run init_wallets
-```
-This script prompts users to input their Tezos and Etherlink private and public keys. It also offers options to configure nodes for L1 and L2 communication. Default values are available, and testnet keys are included.
-
-Users might need to fund their Tezos and Etherlink accounts to execute scripts that interact with the L1 and L2 sides.
-- For funding accounts on the Tezos side, the Tezos [testnets faucet](https://faucet.oxfordnet.teztnets.com/) can be used (TODO: Replace the faucet link with Ghostnet upon the bridge's activation in Ghostnet).
-- To fund accounts on the Etherlink side, the native token bridge should be utilized (TODO: Insert a link to the native bridge).
-
-### Bridge Configuration (Listing New Token Pairs)
-To configure the bridge for a new token (i.e., to list a new token pair), users need to engage with the **Ticket Transport Layer**. This critical component of the bridge facilitates the transfer of tickets between Tezos and Etherlink.
-
-![permissionless ticket transfer short illustration](docs/permissionless-ticket-transfer.png)
-
-The **FA2** and **FA1.2** standard Tezos tokens are not inherently ticket-native. Therefore, to bridge these tokens, users must initially deploy a **Ticketer** contract on the Tezos side. This contract associates with the specific Tezos token and converts it into a ticket. Note that this contract is unnecessary for tokens that are ticket-native, such as those following the **FA2.1** standard.
-
-NOTE: Upgrades to the Ticketer contract are highly unwanted. Ideally, it should be deployed once and remain unchanged indefinitely.
-
-Once it's determined which tickets will bridge the token to Etherlink, users can deploy an **ERC20Proxy** – an ERC20 token integrated with L2 deposit and withdrawal interfaces for the bridge. This contract needs to be configured to recognize tickets from the **Ticketer** deployed initially. It should include the Ticketer address and ticket content. With this configuration, the rollup kernel can call ERC20 to mint tokens for receiver corresponding to the incoming tickets from Tezos.
-
-Additionally, deploying a **TokenBridgeHelper** on the Tezos side is required, targeting the specific **Token** and **Ticketer** pair on the L1 side and **ERC20Proxy** address on the L2 side. This deployment is crucial since wallets currently do not support the **transfer_ticket** operation. The **TokenBridgeHelper** streamlines the process by wrapping tokens into tickets and enabling their transfer to the rollup in a single transaction. Note, however, that this type of contract may become obsolete in the future when (1) wallets begin supporting the **transfer_ticket** operation and (2) Tezos undergoes a protocol upgrade that permits implicit addresses to transfer tickets with arbitrary data.
-
-#### Deploying a Token
-For demonstration purposes, users can deploy a test token intended for bridging. The bridge has been tested with two types of tokens available in the repository:
-- The **FA1.2** standard **Ctez** token.
-- The **FA2** standard **fxhash** token.
-
-To deploy a token and allocate the total supply to the token's originator, the `deploy_token` command can be utilized. It accepts various parameters, including `--token-type`, `--token-id`, and `--total-supply`. The following example demonstrates how to deploy an **FA1.2** token type using default parameters:
-```shell
-poetry run deploy_token --token-type FA1.2 --total-supply 1000
-```
-Here is a link to the deployed contract in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/KT1De9aiQZKswBdFeUixht3BzDVBebr1RwpM/operations/).
-
-#### Deploying a Ticketer
-The `deploy_ticketer` command is used to deploy a ticketer for a specific token. It requires the `--token-address`, `--token-type`, and `--token-id` parameters to be provided. Below is an example that demonstrates how to deploy a ticketer for the **FA1.2** token previously deployed on Oxfordnet:
-```shell
-poetry run deploy_ticketer --token-address KT1De9aiQZKswBdFeUixht3BzDVBebr1RwpM --token-type FA1.2 --token-id 0
-```
-Here is a link to the originated contract in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/KT1V4Eac6ZSW4TuwES2oVYg6smmCGPUPPM1A/operations/).
-
-During the deployment of the Ticketer, users will obtain its parameters, which include **address_bytes** and **content_bytes**. These parameters are essential for the origination of the **ERC20Proxy**.
-
-#### Deploying ERC20Proxy
-To deploy a token contract on the Etherlink side capable of minting tokens upon deposit, the `deploy_erc20` command can be used. This script requires the `--ticketer-address-bytes` and `--ticketer-content-bytes`, as well as `--token-name`, `--token-symbol`, and `--decimals` for the proper configuration of the L2 token contract. Below is an example that originates ERC20 contract connected to the ticketer previously deployed on Oxfordnet:
-```shell
-poetry run deploy_erc20 --ticketer-address-bytes 01e0944c15addcad6db042aa254249bd6a0a0dc95a00 --ticket-content-bytes 0707000005090a0000005f05020000005907040100000010636f6e74726163745f616464726573730a0000001c050a0000001601377c415100a3e242bb0a3dc9b870e38db66e1da0000704010000000a746f6b656e5f747970650a0000000b0501000000054641312e32 --token-name "FA1.2 More Tests" --token-symbol "FA1.2" --decimals 0
-```
-Here is a link to the resulting operation in the [Etherlink Blockscout](TODO: update link).
-
-NOTE: To retrieve the **ticketer-address-bytes** and **content-bytes** from an already deployed ticketer, users can utilize the script provided below:
-```shell
-poetry run get_ticketer_params --ticketer KT1V4Eac6ZSW4TuwES2oVYg6smmCGPUPPM1A
-```
-
-#### Deploying a Token Bridge Helper
-Finally, to allow the interaction of Tezos wallets with tickets, users need to deploy a Token Bridge Helper. During origination, Token Bridge Helper linked to the Token, Tikiter and ERC20Proxy. To originate Token Bridge Helper user should run the `deploy_token_bridge_helper` command, which requires the `--ticketer-address` and `--proxy-address` parameters to be provided. The Ticketer's storage will be parsed to retrieve information about the token. Below is an example that illustrates deploying a token bridge helper for the ticketer previously deployed on Oxfordnet:
-```shell
-poetry run deploy_token_bridge_helper --ticketer-address KT1V4Eac6ZSW4TuwES2oVYg6smmCGPUPPM1A --proxy-address 0xe448b46E3c9167961ae4bD498E8dFb78Ae97da8a
-```
-Here is a link to the resulting originated contract in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/KT1CMNe4cHBNTbaMwtASD9WxipqtKv1PQF7J/operations/).
-
-### Deposit
-To initiate a deposit, users need to transfer Tickets to the rollup address, appending Routing Info in the [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#deposit): a 40 bytes payload comprising `| receiver | proxy |`, where both receiver and proxy are standard Ethereum addresses in raw form (H160). The Token Bridge Helper contract simplifies this process. To initiate a deposit using Token Bridge Helper users need to provide the Token Bridge Helper address (`--token-bridge-helper-address`) and a bridged amount (`--amount`) to initiate a deposit. Below is an example of how to execute this command:
-```shell
-poetry run deposit --token-bridge-helper-address KT1CMNe4cHBNTbaMwtASD9WxipqtKv1PQF7J --amount 77
-```
-Here is a link to the resulting operation in the [Oxfordnet TzKT](https://oxfordnet.tzkt.io/onvJ5ZUWGaTtCLhZGk9cCXyB55LRxGmRk6AGV6hquWBANKTMvGC/133099) and [Etherlink Blockscout](http://blockscout.dipdup.net/tx/0x1ff86df2e46af962cf56b36cdee0e3c7b891471bbcfe019268db6fa4784fa3bb).
-
-NOTE: This script executes two operations in a batch. The first operation grants approval to the **Token Bridge Helper** for the token, and the second operation invokes the **deposit** entrypoint of the **Token Bridge Helper**.
-
-### Withdrawal Process
-The withdrawal process consists of two steps:
-1. Initiating the withdrawal on the Etherlink side, leading to the creation of an outbox message within the rollup commitment.
-2. Finalizing the withdrawal on the Tezos side by executing the outbox message, subsequent to the settlement of the commitment.
-
-#### Etherlink Withdrawal
-To initiate a withdrawal on the Etherlink side, users must invoke the withdrawal precompile. This involves providing the **ERC20Proxy** address along with Routing Info in the [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#withdrawal), which is a 44-byte concatenation of two forged contracts: `| receiver | proxy |`. A forged contract is comprised of a binary suffix/prefix and a body (a blake2b hash digest). A script is provided to streamline the withdrawal process. This script requires the **ERC20** contract address (which will burn tokens) as `--proxy-address`, the L1 **Router** address (which will receive the ticket from the rollup) as `--router-address`, and the bridged amount as `--amount`. Furthermore, `--ticketer-address-bytes` and `--ticketer-content-bytes` are required to enable the **ERC20Proxy** to validate the token before burning it.
-
-NOTE: The **Ticketer** may serve as a **Router** during withdrawals, automatically unwrapping tickets for a specified `receiver`. For **FA2.1** and other ticket-native tokens, a specialized **Router** contract can be employed to directly route tickets to the `receiver` without unwrapping.
-
-Below is an example demonstrating the execution of a script that initiates the withdrawal of 108 tokens previously deposited on Etherlink.
-```shell
-poetry run withdraw --proxy-address 0x8554cD57C0C3E5Ab9d1782c9063279fA9bFA4680 --amount 108 --ticketer-address-bytes 018ea031e382d5be16a357753fb833e609c7d2dd9b00 --ticket-content-bytes 0707000005090a0000007405020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a00000016013f65105866518de12034c340e2b2f65d80780c580007040100000008746f6b656e5f69640a000000030500000704010000000a746f6b656e5f747970650a00000009050100000003464132
-```
-Here is a link to the resulting operation in the [Etherlink Blockscout](TODO: update link).
-
-#### Finalizing Tezos Withdrawal
-To finalize the withdrawal process on the Tezos side, users must invoke the outbox message after it has been settled. This necessitates acquiring the **commitment** hash and **proof** bytes, which are obtainable from the rollup node using **outboxLevel** and **outboxMsgId**. These parameters are part of the **Withdrawal** event that is emitted during the withdrawal process on the Etherlink side.
-
-Since both **outboxLevel** and **outboxMsgId** are of type `uint256`, to extract **outboxMsgId**, users should take the last 32 bytes from the **Withdrawal** event logs. For **outboxLevel**, the preceding 32 bytes should be taken and both should be converted into integers. Here's how this process can be executed:
-
-- Link to the block explorer with the withdrawal transaction: [blockscout](TODO: update link)
-- **Withdrawal** event data: `0x000000000000000000000000befd2c6ffc36249ebebd21d6df6376ecf3bac4480000000000000000000000008554cd57c0c3e5ab9d1782c9063279fa9bfa468000008a7390072a389159c73687165cd7910e8a39160600000000000000000000000000000000000000000000000000000000000000000000000000000000006c00000000000000000000000000000000000000000000000000000000002920a70000000000000000000000000000000000000000000000000000000000000000`
-- **outboxMsgId**: The last 32 bytes are `0000000000000000000000000000000000000000000000000000000000000000`, which is integer `0`.
-- **outboxLevel**: The 32 bytes preceding those are `00000000000000000000000000000000000000000000000000000000002920a7`, which is integer `2695335`.
-
-To streamline this process, a script has been added to parse the withdrawal event:
-```shell
-poetry run parse_withdrawal_event --tx-hash 0xfc7e31241a44d3b23afdb41f5e69ecf4a8e3bc0e9f914039fe51beaa52400ed9
-```
-
-Now that users have the index and outbox level of the withdrawal transaction, they can retrieve the **commitment** and **proof**, both of which are necessary for the `execute_outbox_message` call. This involves making a call to the `global/block/head/helpers/proofs/outbox/{outbox_level}/messages` endpoint of the Rollup RPC Node. A script is available to facilitate this call:
-```shell
-poetry run get_proof --level 2695335 --index 0
-```
-
-Since the outbox message has settled on the L1 side, users can execute it by initiating the `execute_outbox_message` operation. A script is available to perform this operation using the provided private keys. Below is an example illustrating the execution of the `execute_outbox_message` operation for our test **FA1.2** token withdrawal, using the obtained commitment and proof:
-```shell
-poetry run execute_outbox_message --commitment src12xZPCATqCQ2yEwTsdjpUrZB3j5N4QEG2yE9ooKRkdebUoNnaVc --proof 03000246e559d1e67da67d8a58ba6336b2d0d590d907575b62bcb6f74b72a173fa1c4346e559d1e67da67d8a58ba6336b2d0d590d907575b62bcb6f74b72a173fa1c430005820764757261626c65d0e7d0dd265b0311f278277c7074a59f1e0ccd0eea95480712a8d16f2af2a5fd4803746167c00800000004536f6d650003c0eddd502da06bf12e3f51c320a2ae3e57ea25f85715bb937694c028196f5d4b40820576616c7565810370766d8107627566666572738205696e707574820468656164c00100066c656e677468c00100066f75747075740004820132810a6c6173745f6c6576656cc004002922470133810f76616c69646974795f706572696f64c00400013b0082013181086f7574626f786573010c0801061ec0b2503e758887e4c8867c03d8ee9fed3affd91be8d51b5c009fdc05dcf006c5220102ff01019500c30056c0284323d54769eace77824173c277fd6b0afc488e0c8793892d4ff56e6182445b0031c0641f1aec15551f28800a5b143a5138c20c32a6a79567e76121a03a34d7518c700019000d0009000700040004c092fc55432b8d1bb592f64e30bf689ca79cd662da42f5fa158742a5beefbe3108820732363933373233820468656164c00100066c656e677468c0010007323639353333350003810468656164c001008208636f6e74656e7473810130c0e9000000e500000000e007070a0000001600008a7390072a389159c73687165cd7910e8a39160607070a00000016018ea031e382d5be16a357753fb833e609c7d2dd9b0007070707000005090a0000007405020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a00000016013f65105866518de12034c340e2b2f65d80780c580007040100000008746f6b656e5f69640a000000030500000704010000000a746f6b656e5f747970650a0000000905010000000346413200ac01018ea031e382d5be16a357753fb833e609c7d2dd9b00000000087769746864726177066c656e677468c00101e0c0fbeb6f8dbed945498bb241f2aa59b61fa41ce8f4183e87a0fb207bad530de545c0928d01251fe92a323735aad221c34a984287441f9928653781aae2ba3e1ed20ec01c04d9bbd31a532e2b64f2cea68d299bc3588607b6f3301b337a382751891ff4c0edb46d89cd791d0ba42b375b963b2d3519d61f7e6b9ad7acad6836ded1b00aa9c0aec97545fa52e4fd6d81eb6616fa7c32d86ab299b2842f8f47094e69f409ebc8c0f233f9b7aaf566f55bf84c6a0d0aaa4466f24838bc9fdf8feff9cb589906a07bc0031742da1992a697d7ad87911a3c08b7ece1bd4ee8f2ff458f2ddcc75ec2e2b5c02bd0fc4984cea88f93335810d338afcea380f16c6273a48ec617f755730319e20134810d6d6573736167655f6c696d6974c002a401047761736dd07a5feea7b7245822330d8f990fd24bf317c760800acf697a8e9289b16b05222b46e559d1e67da67d8a58ba6336b2d0d590d907575b62bcb6f74b72a173fa1c43002920a70000000000e007070a0000001600008a7390072a389159c73687165cd7910e8a39160607070a00000016018ea031e382d5be16a357753fb833e609c7d2dd9b0007070707000005090a0000007405020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a00000016013f65105866518de12034c340e2b2f65d80780c580007040100000008746f6b656e5f69640a000000030500000704010000000a746f6b656e5f747970650a0000000905010000000346413200ac01018ea031e382d5be16a357753fb833e609c7d2dd9b00000000087769746864726177
-```
-Here is a link to the resulting operation in the [Oxfordnet TzKT](TODO: update link).
-
-## Compilation and Running Tests
-### Install Dependencies
-1. If [Poetry](https://python-poetry.org/) is not already installed on your system, you can install it by executing the following command:
-```shell
-pip install poetry
-```
+### Setup
+1. To run scripts it is required for the [Poetry](https://python-poetry.org/) to be installed in the system
 
 2. Install all Python dependencies with:
 ```shell
@@ -139,16 +20,165 @@ poetry install
 
 3. Install Foundry by following the [installation guide](https://book.getfoundry.sh/getting-started/installation)
 
-4. Forge (part of the Foundry toolchain) uses [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) to manage dependencies. To install all dependencies run `forge install` inside the `etherlink` directory. This command should install OpenZeppelin contracts v4.9.3.
+4. Install Solidity dependencies with Forge (part of the Foundry toolchain). Installation should be executed from the `etherlink` directory:
 ```shell
-cd etherlink/
-forge install
+(cd etherlink && forge test)
 ```
 
-You may then check used submodules by running `git submodule status` to make sure that the correct libraries are installed:
+Forge uses [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) to manage dependencies. It is possible to check versions of the Solidity libraries installed by running `git submodule status`. Here are the versions used to compile contracts:
 ```shell
 1d9650e951204a0ddce9ff89c32f1997984cef4d etherlink/lib/forge-std (v1.6.1)
 fd81a96f01cc42ef1c9a5399364968d0e07e9e90 etherlink/lib/openzeppelin-contracts (v4.9.3)
+```
+
+5. Set up environment variables by running `init_wallets` script. It will ask users to enter their Tezos and Etherlink private and public keys. It also offers options to configure parameters for L1 and L2 communication. Default values are available and test keys are included:
+```shell
+poetry run init_wallets
+```
+
+Users also may need some funds in their accounts to pay for the execution fees:
+- To fund a Tezos account, the [faucet](https://faucet.oxfordnet.teztnets.com/) can be used.
+- One of the ways to fund an Etherlink account is to execute `fund_etherlink_account` script which will send 1 xtz to the account which is set in the environment variables:
+```shell
+poetry run fund_etherlink_account
+```
+
+### Bridge Configuration (Listing New Token Pairs)
+To configure the bridge for a new token (i.e., to list a new token pair), users need to engage with the **Ticket Transport Layer**. This critical component of the bridge facilitates the transfer of tickets between Tezos and Etherlink.
+
+![permissionless ticket transfer short illustration](docs/permissionless-ticket-transfer.png)
+
+The **FA2** and **FA1.2** standard Tezos tokens are not inherently ticket-native. Therefore, to bridge these tokens, users must initially convert them to tickets. To do this they first need to deploy a **Ticketer** contract on the Tezos side. This contract will be associated with the specific Tezos token and provide entrypoint to wrap them into tickets. This contract is unnecessary for the forthcoming tokens that are ticket-native, such as those following **FA2.1** standard.
+
+NOTE: Upgrades to the Ticketer contract are highly unwanted because this will lead to liquidity fragmentation. Ideally, it should be deployed once and remain unchanged indefinitely.
+
+Once it's determined what **Ticketer** will represent the token, users can deploy an **ERC20Proxy** – an ERC20 token integrated with bridge deposit and withdrawal interfaces. The Ticketer address and ticket content are provided to the ERC20Proxy constructor during origination to bind the L2 token to the L1 ticket. It is also required to provide rollup kernel address to the ERC20 proxy which will be allowed to mint and burn tokens which is the `0x00` address.
+
+Additionally, deploying a **TokenBridgeHelper** on the Tezos side is required, targeting the specific **Token** and **Ticketer** pair on the L1 side and **ERC20Proxy** address on the L2 side. This deployment is crucial since wallets currently do not support the **transfer_ticket** operation. The **TokenBridgeHelper** streamlines the process by wrapping tokens into tickets and enabling their transfer to the rollup in a single transaction. Note, however, that this type of contract may become obsolete in the future when (1) wallets begin supporting the **transfer_ticket** operation and (2) Tezos undergoes a protocol upgrade that permits implicit addresses to transfer tickets with arbitrary data.
+
+#### Deploying a Token
+For demonstration purposes, users can deploy a test token intended for bridging. The bridge has been tested with two types of tokens available in the repository:
+- The **FA1.2** standard **Ctez** token.
+- The **FA2** standard **fxhash** token.
+
+To deploy a test version of a token and allocate the total supply to the token's originator, the `deploy_token` command can be used. It is possible to configure `--token-type`, `--token-id`, and `--total-supply` providing these params to the command. The following example demonstrates how to deploy an **FA1.2** token type using default parameters:
+```shell
+poetry run deploy_token --token-type FA1.2 --total-supply 1000
+```
+Here is an example of the deployed [token](https://oxfordnet.tzkt.io/KT1QKYoSpV5BLKg8xoexG25yZwA1sjVrrymU/operations/).
+
+#### Deploying a Ticketer
+The `deploy_ticketer` command can be used to deploy a ticketer configured for a specific token. It requires the `--token-address`, `--token-type`, and `--token-id` parameters to be provided. Below is an example that demonstrates how to deploy a ticketer for the **FA1.2** token previously deployed on Oxfordnet:
+```shell
+poetry run deploy_ticketer --token-address KT1QKYoSpV5BLKg8xoexG25yZwA1sjVrrymU --token-type FA1.2
+```
+Here is an example of the deployed [ticketer](https://oxfordnet.tzkt.io/KT1C2gmhvA1FrscWe8KbrHf8dWG9XJETR127/metadata).
+
+After the Ticketer contract is deployed, users can obtain the parameters required for the **ERC20Proxy** origination, **ticketer-address_bytes** and **content_bytes**. To do this users can execute `get_ticketer_params` command:
+```shell
+poetry run get_ticketer_params --ticketer KT1C2gmhvA1FrscWe8KbrHf8dWG9XJETR127
+```
+
+For example, the ticketer deployed in the previous step has the following parameters:
+```
+address_bytes: 0125cf30bfba37ed7907f524f7b4eaf304e03d097600
+content_bytes: 0707000005090a0000005f05020000005907040100000010636f6e74726163745f616464726573730a0000001c050a0000001601aca11e3f7734be9b46df1642a7d5f7d66c7bf6e8000704010000000a746f6b656e5f747970650a0000000b0501000000054641312e32
+```
+
+#### Deploying ERC20Proxy
+Then, to deploy a token contract on the Etherlink side, the `deploy_erc20` command can be used. This script requires the `--ticketer-address-bytes` and `--ticketer-content-bytes`, as well as `--token-name`, `--token-symbol`, and `--decimals` to be provided for the L2 token contract configuration. Below is an example that originates ERC20 contract connected to the ticketer previously deployed:
+```shell
+poetry run deploy_erc20 --ticketer-address-bytes 0125cf30bfba37ed7907f524f7b4eaf304e03d097600 --ticket-content-bytes 0707000005090a0000005f05020000005907040100000010636f6e74726163745f616464726573730a0000001c050a0000001601aca11e3f7734be9b46df1642a7d5f7d66c7bf6e8000704010000000a746f6b656e5f747970650a0000000b0501000000054641312e32 --token-name "FA1.2 Test Token" --token-symbol "FA1.2" --decimals 0
+```
+Here is an example of the deployed [token](http://blockscout.dipdup.net/address/0x03E39FF2b379FBcd9284Ab457113D82fF4daBBF4).
+
+#### Deploying a Token Bridge Helper
+Finally, to allow the interaction of Tezos wallets with tickets, users need to deploy a Token Bridge Helper. During origination, Token Bridge Helper linked to the Token, Ticketer and ERC20Proxy. To originate Token Bridge Helper user should run the `deploy_token_bridge_helper` command, which requires the `--ticketer-address` and `--proxy-address` (the address of the L2 token) parameters to be provided. The Ticketer's storage will be parsed to retrieve information about the token. Below is an example that illustrates deploying a token bridge helper for the previously deployed ticketer and proxy:
+```shell
+poetry run deploy_token_bridge_helper --ticketer-address KT1C2gmhvA1FrscWe8KbrHf8dWG9XJETR127 --proxy-address 0x03E39FF2b379FBcd9284Ab457113D82fF4daBBF4
+```
+Here is an example of the deployed [helper](https://oxfordnet.tzkt.io/KT1RWw9NyPDZm9jeiEA1hXMd4PgGQVPHYrzj/metadata).
+
+### Deposit
+To deposit a token, users need to wrap tokens to tickets and then transfer them to the smart rollup address, along with routing info provided in the [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#deposit): a 40 bytes payload comprising `| receiver | proxy |`. The Token Bridge Helper contract allows users to perform these operations in one call. To deposit a token users may utilize `deposit` command and provide the `--token-bridge-helper-address` and a bridged `--amount` as parameters. Here is an example:
+```shell
+poetry run deposit --token-bridge-helper-address KT1RWw9NyPDZm9jeiEA1hXMd4PgGQVPHYrzj --amount 77
+```
+Here are examples of these operations on the [Tezos](https://oxfordnet.tzkt.io/opKzkXfctBRH7cBHSKm6r3EJR4YcWBoSQyjWdvmird8esAssatS/228619) and [Etherlink](http://blockscout.dipdup.net/tx/0x35f7b104df97784a22b75ac78708bcdc9286fccd5a193915d19cb56380e1e94c) sides.
+
+### Withdrawal Process
+The withdrawal process consists of two steps:
+1. Initiating the withdrawal on the Etherlink side, leading to the creation of an outbox message from Etherlink to Tezos.
+2. Finalizing the withdrawal on the Tezos side by executing the outbox message, after the settlement of the commitment.
+
+#### Etherlink Withdrawal
+To initiate a withdrawal on the Etherlink side, users must invoke the withdrawal precompile. An **ERC20Proxy** address along with routing info should be provided. The [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#withdrawal) of the routing info is a 44-byte concatenation of two forged contracts: `| receiver | proxy |`.
+
+To demonstrate this operation, the `withdraw` script is provided, which requires the `--proxy-address` (an ERC20 token address), the `--router-address` (a ticketer address which will process the ticket from the rollup), and the bridged `--amount` to withdraw from Etherlink. Furthermore, `--ticketer-address-bytes` and `--ticketer-content-bytes` are required to enable the **ERC20Proxy** to validate the token before burning it.
+
+NOTE: The **Ticketer** implements a router withdrawal interface, and it will automatically unwrap tickets for a specified `receiver`.
+
+Below is an example demonstrating the execution of a script that initiates the withdrawal of 18 tokens previously deposited on Etherlink.
+```shell
+poetry run withdraw --proxy-address 0x03E39FF2b379FBcd9284Ab457113D82fF4daBBF4 --amount 18 --ticketer-address-bytes 0125cf30bfba37ed7907f524f7b4eaf304e03d097600 --ticket-content-bytes 0707000005090a0000005f05020000005907040100000010636f6e74726163745f616464726573730a0000001c050a0000001601aca11e3f7734be9b46df1642a7d5f7d66c7bf6e8000704010000000a746f6b656e5f747970650a0000000b0501000000054641312e32 --router-address KT1C2gmhvA1FrscWe8KbrHf8dWG9XJETR127
+```
+Here is an example of the [withdraw](http://blockscout.dipdup.net/tx/0x51b9f37dbd18ca24b6c92f8685713f5d9767fbd1bdb3b8b8a00b88197c42c73c) operation.
+
+#### Finalizing Tezos Withdrawal
+To finalize the withdrawal process on the Tezos side, users must invoke the outbox message after it has been settled. To do this, the **commitment** hash and **proof** bytes need to be acquired, which in turn are obtainable from the rollup node by **outboxLevel** and **outboxMsgId**. These parameters are part of the **Withdrawal** event that is emitted during the withdrawal process on the Etherlink side.
+
+Since both **outboxLevel** and **outboxMsgId** are of type `uint256`, to extract **outboxMsgId**, users should take the last 32 bytes from the **Withdrawal** event logs. For **outboxLevel**, the preceding 32 bytes should be taken and both should be converted into integers. Here's how this process can be executed:
+
+- Link to the block explorer with the withdrawal transaction: [blockscout](http://blockscout.dipdup.net/tx/0x51b9f37dbd18ca24b6c92f8685713f5d9767fbd1bdb3b8b8a00b88197c42c73c/logs)
+- **Withdrawal** event data: `0x0000000000000000000000007e6f6ccfe485a087f0f819eabfdbfb1a49b9767700000000000000000000000003e39ff2b379fbcd9284ab457113d82ff4dabbf40000a79057282732a2736064001cf4b4c56b84ec31ee000000000000000000000000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000012071e0000000000000000000000000000000000000000000000000000000000000000`
+- **outboxMsgId**: The last 32 bytes are `0000000000000000000000000000000000000000000000000000000000000000`, which is integer `0`.
+- **outboxLevel**: The 32 bytes preceding those are `000000000000000000000000000000000000000000000000000000000012071e`, which is integer `1181470`.
+
+The `parse_withdrawal_event` script allows to parse withdrawal event by transaction hash:
+```shell
+poetry run parse_withdrawal_event --tx-hash 0x51b9f37dbd18ca24b6c92f8685713f5d9767fbd1bdb3b8b8a00b88197c42c73c
+```
+
+After the withdrawal transaction is settled, users can retrieve the **commitment** and **proof**, which are necessary for the `execute_outbox_message` call. This involves making a call to the `global/block/head/helpers/proofs/outbox/{outbox_level}/messages` endpoint of the Rollup RPC Node. The `get_proof` script can be used to get this information:
+```shell
+poetry run get_proof --level 1181470 --index 0
+```
+
+Since the outbox message has settled on the L1 side, users can execute it by initiating the `execute_outbox_message` operation. Bellow a script `execute_outbox_message` used to finalize withdrawal for the test **FA1.2** token where acquired `--commitment` and `--proof` are provided:
+```shell
+poetry run execute_outbox_message --commitment src13PirA1PzjLWRYJvNFJL5V6tfdbhzmAgML2UtQHuojjjFv6ARsf --proof 03000251dd09b9e7c635d0a23a9a02c6268edcf2a3e74a9980cd8ce568612f8dd6886951dd09b9e7c635d0a23a9a02c6268edcf2a3e74a9980cd8ce568612f8dd688690005820764757261626c65d09177f273e0b4b3646d59424754cbc1a5368b75a201a7fa133551e39afbc25b3903746167c00800000004536f6d650003c02411766c7a6adf7e0f2f3a1608fdde179275ff6881c5712387bd21d401d9365c820576616c7565810370766d8107627566666572738205696e707574820468656164c00100066c656e677468c00100066f75747075740004820132810a6c6173745f6c6576656cc0040012072b0133810f76616c69646974795f706572696f64c00400013b0082013181086f7574626f7865730200013b00c07dc3e23702625eb3ecd86216a989553e1c95c9611f209e54fcefbf598f96b849019e68014f18c0dda898697e4f913f5af0017d501c8dd825696ea12f41168fd98a1243d3d4b0ae0127a40113bf0109f2c0f8d9aa295d40a87361a32f534a539c3304d87286125baf97fad5692209f5e1a40104cec02e83ddeb15e1e93ccc0b9eeaa17453499b0acccefb56831e4b57f084467da05b01027101013800b1c00a9ab9a19d10248b3810f3be53af9fa0012280024e512fce2dc30653e85b94f20054002a0017c0e68c3b7ad7e6f130881c5da857a5992daf77fb911cf6a94fb669f9eeb6a11a23000ec0e48a085d60ed9f24c26a44d4d9825d545098165a8aec0a518059431f1a564ea30005c0ba795987ddd0ec6bbcaef394f12f322b7fe73ee5b5f53c0b95466fc9b9e165270004c0f37ede9ba69186bc32eb2d85541fe28de505097a3755fb0eed841ffe20ae0ace820731313230323030820468656164c00100066c656e677468c0010007313138313437300003810468656164c001008208636f6e74656e7473810130c0d3000000cf00000000ca07070a000000160000a79057282732a2736064001cf4b4c56b84ec31ee07070a000000160125cf30bfba37ed7907f524f7b4eaf304e03d09760007070707000005090a0000005f05020000005907040100000010636f6e74726163745f616464726573730a0000001c050a0000001601aca11e3f7734be9b46df1642a7d5f7d66c7bf6e8000704010000000a746f6b656e5f747970650a0000000b0501000000054641312e3200120125cf30bfba37ed7907f524f7b4eaf304e03d097600000000087769746864726177066c656e677468c00101c0ad7442a17d12b3355594da691f158d37a0d44a7eae4a901f02b78819014efa26c05bc495b3831636f3f356a681b5e81bc47c250151048452fd09ab24f5550d6334c00bece9f7a7ae300e23932bbc972eeebc35b64f82ddbf3ca35f3f911fe96189e0c0760bdf103b185a9ca7234e7a0b631c7e5a2c45d4a86aad483758c36db0017107c008796620943748d80efa68d459f16839f0b95891b566ec5ccbfa80e120e0f420c0ebe4e9a10f88ea5b510233f903f66ee80a8faa3c212a5bddf27421cc0deb7362c09cfb372f3f6c6f9659e15f9a8a9b3b3d2824a707c426d43eb8711e83bf2252990134810d6d6573736167655f6c696d6974c002a401047761736dd0d535afa926245d335484f18570628898b144af4686673c5dbd96fa2431025e4d0012071e0000000000ca07070a000000160000a79057282732a2736064001cf4b4c56b84ec31ee07070a000000160125cf30bfba37ed7907f524f7b4eaf304e03d09760007070707000005090a0000005f05020000005907040100000010636f6e74726163745f616464726573730a0000001c050a0000001601aca11e3f7734be9b46df1642a7d5f7d66c7bf6e8000704010000000a746f6b656e5f747970650a0000000b0501000000054641312e3200120125cf30bfba37ed7907f524f7b4eaf304e03d097600000000087769746864726177
+```
+Here is an example of the finished [withdrawal](https://oxfordnet.tzkt.io/oo9FJdy6byfy6HoTqpnzs68eLrpfwu1aouvnM8bv6HCbjrsXPF2/228622).
+
+## Compilation and Running Tests
+### Compilation
+#### 1. Tezos side:
+To compile Tezos-side contracts, the LIGO compiler must be installed. The most convenient method is to use the Docker version of the LIGO compiler. Compilation of all contracts using the dockerized LIGO compiler can be initiated with the following command:
+```shell
+poetry run build_tezos_contracts
+```
+NOTE: This repository includes built Tezos side contracts which are located in the [tezos/build](tezos/build/) directory.
+
+#### 2. Etherlink side:
+To compile contracts on the Etherlink side, Foundry must be installed. To initiate the compilation, navigate to the [etherlink](etherlink/) directory and run `forge build`, or execute the following script from the root directory:
+```shell
+poetry run build_etherlink_contracts
+```
+NOTE: This repository includes built Etherlink side contracts which are located in the [etherlink/build](etherlink/build/) directory.
+
+### Tests
+#### 1. Tezos side:
+The testing stack for Tezos contracts is based on Python and requires [poetry](https://python-poetry.org/), [pytezos](https://pytezos.org/), and [pytest](https://docs.pytest.org/en/7.4.x/) to be installed.
+
+To run tests for the Tezos contracts, execute:
+```shell
+poetry run pytest tezos/tests
+```
+
+#### 2. Etherlink side:
+The Etherlink contract tests use the [Foundry](https://book.getfoundry.sh/getting-started/installation) stack and are implemented in Solidity. To run these tests, navigate to the [etherlink](etherlink/) directory and run `forge test`, or execute the following script from the root directory:
+```shell
+poetry run etherlink_tests
 ```
 
 ### Linting
@@ -159,33 +189,3 @@ poetry run mypy .
 poetry run ruff .
 poetry run black .
 ```
-
-### Tests
-#### 1. Tezos side:
-The testing stack for Tezos contracts based on Python and requires [poetry](https://python-poetry.org/), [pytezos](https://pytezos.org/), and [pytest](https://docs.pytest.org/en/7.4.x/) to be installed.
-
-To run tests for the Tezos contracts, execute:
-```shell
-poetry run pytest
-```
-
-#### 2. Etherlink side:
-Testing of Etherlink contracts is conducted with Solidity, using the [Foundry](https://book.getfoundry.sh/getting-started/installation) stack. To run these tests, navigate to the [etherlink](etherlink/) directory and run `forge test`, or execute the following script from the root directory:
-```shell
-poetry run etherlink_tests
-```
-
-### Compilation
-#### 1. Tezos side:
-To compile Tezos-side contracts, the LIGO compiler must be installed. The most convenient method is to use the Docker version of the LIGO compiler. Compilation of all contracts using the dockerized LIGO compiler can be initiated with the following command:
-```shell
-poetry run build_tezos_contracts
-```
-NOTE: This repository includes builded Tezos side contracts which located in the [tezos/build](tezos/build/) directory.
-
-#### 2. Etherlink side:
-To compile contracts on the Etherlink side, Foundry must be installed. To initiate the compilation, navigate to the [etherlink](etherlink/) directory and run `forge build`, or execute the following script from the root directory:
-```shell
-poetry run build_etherlink_contracts
-```
-NOTE: This repository includes builded Etherlink side contracts which located in the [etherlink/build](etherlink/build/) directory.

@@ -35,24 +35,24 @@ def init_wallets() -> None:
     variables = [
         Variable(
             'L1_PRIVATE_KEY',
-            default='edsk2nu78mRwg4V5Ka7XCJFVbVPPwhry8YPeEHRwzGQHEpGAffDvrH',
+            default='edsk4baRSdYGM7dkgasgGgHDr4Ge8BtRZBkx1Cq634dSRFez81MDhK',
             is_secret=True,
         ),
         # TODO: it is possible to get L1_PUBLIC_KEY_HASH from L1_PRIVATE_KEY
-        Variable('L1_PUBLIC_KEY_HASH', default='tz1YG6P2GTQKFpd9jeuESam2vg6aA9HHRkKo'),
+        Variable('L1_PUBLIC_KEY_HASH', default='tz1av2T75Wazm8UovatQB3wYD4tqUVfCcwrZ'),
         Variable('L1_RPC_URL', default='https://rpc.tzkt.io/oxfordnet/'),
         Variable('L1_ROLLUP_ADDRESS', default='sr1T4XVcVtBRzYy52edVTdgup9Kip4Wrmn97'),
         Variable(
             'L2_PRIVATE_KEY',
-            default='8636c473b431be57109d4153735315a5cdf36b3841eb2cfa80b75b3dcd2d941a',
+            default='f463e320ed1bd1cd833e29efc383878f34abe6b596e5d163f51bb8581de6f8b8',
             is_secret=True,
         ),
         # TODO: it is possible to get L2_PUBLIC_KEY from L2_PRIVATE_KEY
-        Variable('L2_PUBLIC_KEY', default='0xBefD2C6fFC36249ebEbd21d6DF6376ecF3BAc448'),
-        # TODO: maybe it is better not to ask for L2_MASTER_KEY
+        Variable('L2_PUBLIC_KEY', default='0x7e6f6CCFe485a087F0F819eaBfDBfb1a49b97677'),
+        # Master key is an L2 account with xtz balance to fund other accounts
         Variable(
             'L2_MASTER_KEY',
-            default='9722f6cc9ff938e63f8ccb74c3daa6b45837e5c5e3835ac08c44c50ab5f39dc0',
+            default='8636c473b431be57109d4153735315a5cdf36b3841eb2cfa80b75b3dcd2d941a',
             is_secret=True,
         ),
         Variable('L2_RPC_URL', default='https://etherlink.dipdup.net'),

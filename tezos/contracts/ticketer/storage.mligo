@@ -3,6 +3,13 @@
 #import "../common/errors.mligo" "Errors"
 
 
+(*
+    Ticketer storage type:
+    - metadata: a big_map containing the metadata of the contract (TZIP-016), immutable
+    - token: a token which Ticketer accepts for minting tickets, immutable
+    - content: a content of the ticket to be minted, immutable
+    - total_supply: a total supply of the ticket, the initial value should be 0
+*)
 type t = {
     metadata : (string, bytes) big_map;
     token : Token.t;

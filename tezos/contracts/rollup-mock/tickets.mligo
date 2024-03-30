@@ -2,25 +2,33 @@
 #import "../common/errors.mligo" "Errors"
 
 
+(*
+    Tools to manage a collection of tickets in the form of a big_map.
+    Each ticket is identified by a unique id, which is a pair of a ticketer
+    address and a token id. `save`, `pop` and `get` operations are provided.
+*)
+
 type id_t = {
     ticketer : address;
     token_id : nat;
 }
 
+type t = (id_t, Ticket.t) big_map
+
 let read_id
         (ticket : Ticket.t)
         : id_t * Ticket.t =
+    (* Reads ticket and returns its id and the ticket itself *)
     let (ticketer, (payload, _amt)), ticket = Tezos.read_ticket ticket in
     let token_id = payload.0 in
     let id = { ticketer; token_id } in
     id, ticket
 
-type t = (id_t, Ticket.t) big_map
-
 let save
         (ticket : Ticket.t)
         (tickets : t)
         : t =
+    (* Saves a ticket in the big_map, joining it with the existing one if any *)
     let id, ticket = read_id ticket in
     let ticket_opt, tickets = Big_map.get_and_update id None tickets in
     let ticket : Ticket.t = match ticket_opt with
@@ -34,6 +42,7 @@ let pop
         (id : id_t)
         (tickets : t)
         : Ticket.t * t =
+    (* Pops a ticket from the big_map, returning it and the updated big_map *)
     let ticket_opt, tickets = Big_map.get_and_update id None tickets in
     let ticket = Option.unopt_with_error ticket_opt Errors.ticket_not_found in
     ticket, tickets
@@ -43,6 +52,7 @@ let get
         (amount : nat)
         (tickets : t)
         : Ticket.t * t =
+    (* Gets a ticket of some amount from the big_map *)
     let ticket_keep, tickets = pop id tickets in
     let ticket, ticket_keep = Ticket.split ticket_keep amount in
     let tickets = Big_map.update id (Some ticket_keep) tickets in

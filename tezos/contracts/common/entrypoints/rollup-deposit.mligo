@@ -6,8 +6,11 @@
 (*
     `rollup-deposit` is an interface for the Ehterlink smart rollup.
     As far as smart rollups currently do not support entrypoints (like
-    smart contracts), to access `deposit` entrypoint, it needs to be
+    smart contracts), to access the `deposit` entrypoint, it needs to be
     constructed from the full contract type:
+    - routing_info: routing information for the deposit (20 or 40 bytes
+        representing a receiver and an ERC20 token address concatinated)
+    - ticket: a ticket to be deposited
 *)
 type deposit_t = [@layout:comb] {
     routing_info: RoutingInfo.l1_to_l2_t;

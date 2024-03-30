@@ -37,6 +37,8 @@ module Ticketer = struct
             `deposit` entrypoint is used to convert legacy token to a ticket.
             The legacy token is transferred to the ticketer contract and
             the ticket is minted.
+
+            @param amount: amount of the token to be converted to the ticket.
         *)
 
         let () = Assertions.no_xtz_deposit () in
@@ -56,6 +58,9 @@ module Ticketer = struct
             `withdraw` entrypoint is used to release the legacy token from the
             ticket. The ticket is burned and the legacy token is transferred
             to the ticket holder.
+
+            @param receiver: an address which will receive the unlocked token.
+            @param ticket: provided ticket to be burned.
         *)
 
         let { ticket; receiver } = params in

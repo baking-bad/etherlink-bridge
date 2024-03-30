@@ -40,13 +40,17 @@ module TokenBridgeHelper = struct
             (params : deposit_params)
             (store: Storage.t) : return_t =
         (*
-            `deposit` entrypoint called when user wants to deposit tokens
+            `deposit` entrypoint called when the user wants to deposit tokens
             to the Etherlink Bridge.
 
             This entrypoint will transfer tokens from the user to the contract
-            and then call `Ticketer.deposit` entrypoint, which will mint ticket
+            and then call `Ticketer.deposit` entrypoint, which will mint a ticket
             and send it back to the TokenBridgeHelper contract triggering `default`
             entrypoint.
+
+            @param rollup: an address of the Etherlink smart rollup contract
+            @param receiver: an address in the Etherlink that will receive tokens
+            @param amount: an amount of tokens to be bridged
         *)
 
         let { amount; receiver; rollup } = params in
@@ -69,8 +73,10 @@ module TokenBridgeHelper = struct
             `default` entrypoint called when Ticketer minted ticket and
             sent it to the TokenBridgeHelper contract.
 
-            This entrypoint will transfer ticket to the Etherlink Bridge
+            This entrypoint will transfer a ticket to the Etherlink Bridge
             contract stored in context during `deposit` entrypoint call.
+
+            @param ticket: a ticket from the Ticketer contract
         *)
 
         let () = Assertions.no_xtz_deposit () in
@@ -90,15 +96,18 @@ module TokenBridgeHelper = struct
             (ticket : Ticket.t)
             (s: Storage.t) : return_t =
         (*
-            `unwrap` entrypoint called when user wants to convert tickets
-            back to tokens for implicit account that not supported to send
-            tickets within additional data structure.
+            `unwrap` entrypoint is called when the user wants to convert
+            tickets back to tokens. This allows implicit account to wrap
+            tickets within an additional data structure and send it to
+            the Ticketer.
 
-            Any ticket that sent to this entrypoint will be redirected to
-            the Ticketer contract set in the storage, to the standard
-            `withdraw` entrypoint that implements `RouterWithdraw` interface.
+            Any ticket sent to this entrypoint will be redirected to
+            the Ticketer contract set in the storage, to the `withdraw`
+            entrypoint that implements `RouterWithdraw` interface.
 
-            It is the Ticketer responsibility to check that ticket is valid.
+            It is Ticketer's responsibility to check that the ticket is valid.
+
+            @param ticket: ticket from the user to be unwrapped
         *)
 
         let () = Assertions.no_xtz_deposit () in
@@ -116,6 +125,9 @@ module TokenBridgeHelper = struct
             Helper contract as the ticket recipient, instead of a Ticketer.
             This entriponite reads the ticket and redirects it to the Ticketer
             contract keeping the same routing information.
+
+            @param receiver: an address that will receive the unlocked token.
+            @param ticket: provided ticket to be burned.
         *)
         let { ticket; receiver } = params in
         let (ticketer, (_, _)), ticket = Tezos.read_ticket ticket in

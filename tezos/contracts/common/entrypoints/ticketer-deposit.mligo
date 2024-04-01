@@ -1,7 +1,10 @@
 #import "../errors.mligo" "Errors"
 
 
-(* `ticketer-deposit` is deposit interface for the Ticketer contract: *)
+(*
+    `ticketer-deposit` is deposit interface for the Ticketer contract
+    which represents the amount of token to be wrapped to the ticket
+*)
 type t = nat
 
 let get (router : address) : t contract =

@@ -9,6 +9,11 @@ module RollupMock = struct
         the L1 side in the similar way Rollup would do.
     *)
 
+    (*
+        Storage of the RollupMock contract:
+        - tickets: a big_map of tickets, keys are ticket ids and values are tickets
+        - metadata: a big_map containing the metadata of the contract (TZIP-016), immutable
+    *)
     type storage_t = {
         tickets : Tickets.t;
         metadata : (string, bytes) big_map;
@@ -31,6 +36,8 @@ module RollupMock = struct
             `rollup` entrypoint emulates L1 rollup full entrypoint.
             It allows to deposit tickets the same way as L1 rollup would do.
             RollupMock saves provided tickets in the storage.
+
+            @param rollup_entry: the full entrypoint of the Etherlink smart rollup
         *)
 
         let deposit = RollupDepositEntry.unwrap rollup_entry in
@@ -50,9 +57,15 @@ module RollupMock = struct
             execution. It will call the withdraw router contract with the
             ticket and receiver address.
 
-            NOTE: the entrypoint for the real L1 rollup has different
-            signature: `commitment` and `proof` should be provided instead
-            execution parameters as in this mock.
+            The real L1 rollup `execute_outbox_message` is not an entrypoint
+            but a special operation that requires `commitment` and `proof` to
+            be provided instead of execution parameters as in this mock.
+
+            @param ticket_id: a ticket id to release
+            @param amount: an amount of the ticket to release
+            @param receiver: an address that would be passed as a receiver
+                to the router
+            @param router: an address of the router (ticketer) contract
         *)
 
         let { tickets; metadata } = store in

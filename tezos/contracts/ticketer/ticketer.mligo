@@ -37,15 +37,17 @@ module Ticketer = struct
             `deposit` entrypoint is used to convert legacy token to a ticket.
             The legacy token is transferred to the ticketer contract and
             the ticket is minted.
+
+            @param amount: amount of the token to be converted to the ticket.
         *)
 
         let () = Assertions.no_xtz_deposit () in
+        let store = Storage.increase_total_supply amount store in
         let self = Tezos.get_self_address () in
         let sender = Tezos.get_sender () in
         let ticket = Ticket.create store.content amount in
         let token_transfer_op = Token.send_transfer store.token amount sender self in
         let ticket_transfer_op = Ticket.send ticket sender in
-        let store = Storage.increase_total_supply amount store in
         [token_transfer_op; ticket_transfer_op], store
 
     [@entry] let withdraw
@@ -56,6 +58,9 @@ module Ticketer = struct
             `withdraw` entrypoint is used to release the legacy token from the
             ticket. The ticket is burned and the legacy token is transferred
             to the ticket holder.
+
+            @param receiver: an address which will receive the unlocked token.
+            @param ticket: provided ticket to be burned.
         *)
 
         let { ticket; receiver } = params in
@@ -63,9 +68,8 @@ module Ticketer = struct
         let () = assert_content_is_expected content store.content in
         let () = Assertions.address_is_self ticketer in
         let () = Assertions.no_xtz_deposit () in
-        let self = Tezos.get_self_address () in
-        let transfer_op = Token.send_transfer store.token amount self receiver in
         let store = Storage.decrease_total_supply amount store in
+        let transfer_op = Token.send_transfer store.token amount ticketer receiver in
         [transfer_op], store
 
     [@view] let get_total_supply (() : unit) (store : Storage.t) : nat =

@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "etherlink-bridge"
-version = "0.4.0"
-description = "This repository presents an implementation of a bridge between Tezos and Etherlink which implements TZIP-029."
+version = "1.0.0"
+description = "This repository showcases smart contracts for an FA tokens bridge between Tezos and Etherlink, aligned with the TZIP-029 standard."
 authors = ["Stepan Naumov <ztepler@baking-bad.org>"]
 packages = [
     { include = "tezos/tests" },
@@ -40,7 +40,7 @@ skip-string-normalization = true
 init_wallets = "scripts.environment:init_wallets"
 deploy_token = "scripts.tezos:deploy_token"
 deploy_ticketer = "scripts.tezos:deploy_ticketer"
-deploy_ticket_helper = "scripts.tezos:deploy_ticket_helper"
+deploy_token_bridge_helper = "scripts.tezos:deploy_token_bridge_helper"
 get_ticketer_params = "scripts.tezos:get_ticketer_params"
 deploy_erc20 = "scripts.etherlink:deploy_erc20"
 fund_etherlink_account = "scripts.etherlink:fund_account"

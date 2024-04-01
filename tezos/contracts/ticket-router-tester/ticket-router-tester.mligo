@@ -23,10 +23,10 @@ module TicketRouterTester = struct
             rollup `deposit` entrypoint
 
         Also, there are:
-        - two entrypoints allow to receive tickets from other contracts:
+        - two entrypoints allow receiving tickets from other contracts:
             - `default` handles tickets in the same way implicit address would do
             - `withdraw` handles tickets in the same way Ticketer would do
-        - `mint` entry allows to mint new tickets during `intrernal_call`.
+        - `mint` entry allows minting new tickets during `intrernal_call`.
 
         Finally, there is a `deposit` entrypoint which allows to use
         TicketRouterTester as a Ticketer mock contract. The call to this
@@ -66,6 +66,10 @@ module TicketRouterTester = struct
     let make_operation
             (ticket : Ticket.t)
             (store : storage_t) : operation =
+        (*
+            `make_operation` wraps a ticket into the appropriate entrypoint
+            structure and calls the target contract with the ticket.
+        *)
         let { target; entrypoint; xtz_amount } = store.internal_call in
         match entrypoint with
         | Default () ->
@@ -84,18 +88,39 @@ module TicketRouterTester = struct
     [@entry] let default
             (ticket : Ticket.t)
             (store : storage_t) : return_t =
+        (*
+            `default` entrypoint is used to receive tickets in the same way
+            an implicit address would do.
+
+            @param ticket: a ticket to be received
+        *)
         [make_operation ticket store], store
 
     [@entry] let withdraw
             (params : RouterWithdrawEntry.t)
             (store : storage_t) : return_t =
-        // NOTE: the receiver from params is dropped and used
-        // the one from the store.internal_call
+        (*
+            `withdraw` entrypoint is used to receive tickets in the same way
+            Ticketer and any other contract that implements the Router
+            withdraw interface would do.
+
+            @param receiver: an address that will receive the unlocked token.
+                NOTE: the receiver is not used and the address from the
+                `store.internal_call` is used instead.
+            @param ticket: provided ticket to be burned.
+        *)
         [make_operation params.ticket store], store
 
     [@entry] let mint
             (params : mint_params_t)
             (store : storage_t) : return_t =
+        (*
+            `mint` entrypoint is used to mint new tickets during the
+            `internal_call`.
+
+            @param content: any ticket content
+            @param amount: ticket amount
+        *)
         let { content; amount } = params in
         let ticket = Ticket.create content amount in
         [make_operation ticket store], store
@@ -103,7 +128,12 @@ module TicketRouterTester = struct
     [@entry] let deposit
             (_params : TicketerDepositEntry.t)
             (store : storage_t) : return_t =
-        // NOTE: the _params are not used and the call to the `deposit`
-        // entrypoint does not have any effect
+        (*
+            `deposit` entrypoint is used to pretend to be a Ticketer contract
+            for testing purposes as a mock contract.
+            The call to the `deposit` entrypoint does not have any effect.
+
+            @param amount: ticketer deposit parameters that are not used
+        *)
         [], store
 end

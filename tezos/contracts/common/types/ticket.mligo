@@ -1,6 +1,9 @@
 #import "../errors.mligo" "Errors"
 
 
+(*
+    Tools for working with tickets
+*)
 type content_t = nat * bytes option
 type t = content_t ticket
 

@@ -5,6 +5,9 @@
 (*
     `router-withdraw` is router interface that used for redirecting
     tickets during withdrawal from the Etherlink rollup:
+
+    - receiver: an address which will receive the unlocked token.
+    - ticket: provided ticket to be burned.
  *)
 type t = [@layout:comb] {
     receiver: address;

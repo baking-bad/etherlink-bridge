@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "etherlink-bridge"
-version = "0.4.1"
-description = "This repository presents an implementation of a bridge between Tezos and Etherlink which implements TZIP-029."
+version = "1.0.0"
+description = "This repository showcases smart contracts for an FA tokens bridge between Tezos and Etherlink, aligned with the TZIP-029 standard."
 authors = ["Stepan Naumov <ztepler@baking-bad.org>"]
 packages = [
     { include = "tezos/tests" },

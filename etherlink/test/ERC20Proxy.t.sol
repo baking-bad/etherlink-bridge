@@ -88,4 +88,12 @@ contract ERC20ProxyTest is BaseTest {
         uint256 anotherTokenHash = hashTicket(ticketer, content);
         assertEq(anotherToken.getTicketHash(), anotherTokenHash);
     }
+
+    function test_ShouldCalculateCorrectTicketHash() public {
+        bytes22 ticketer = bytes22("some ticketer");
+        bytes memory content = abi.encodePacked("forged content");
+        uint256 expectedHash =
+            73262422851238627501129965791220701988577749077266918980111107915199512083078;
+        assertEq(hashTicket(ticketer, content), expectedHash);
+    }
 }

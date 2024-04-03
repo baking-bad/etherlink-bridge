@@ -5,6 +5,14 @@ import {IWithdrawalEvent} from "./IWithdrawalEvent.sol";
 import {IDepositEvent} from "./IDepositEvent.sol";
 import {ERC20Proxy, hashTicket} from "./ERC20Proxy.sol";
 
+/**
+ * @notice Calculates the hash of the ticket including the owner's address to
+ * uniquely identify the L2 ticket owner pair.
+ * @param ticketer The L1 ticketer address in its forged form.
+ * @param content The ticket content as a micheline expression in its forged form.
+ * @param owner The address of the L2 ticket owner.
+ * @return The calculated ticket hash including the owner as a bytes32.
+ */
 function hashTicketOwner(bytes22 ticketer, bytes memory content, address owner)
     pure
     returns (bytes32)
@@ -13,12 +21,11 @@ function hashTicketOwner(bytes22 ticketer, bytes memory content, address owner)
 }
 
 /**
- * The KernelMock is a contract that used to represent the rollup kernel
- * on L2 side, which is resposible for bridging tokens between L1 and L2.
- * Kernel address is the one who should be allowed to mint new tokens in
- * ERC20Proxy contract.
- * The Kernel is responsible for maintainig the ledger of L2 tickets
- * and emiting `Deposit` and `Withdraw` events.
+ * @title Kernel Mock
+ * @notice Represents the rollup kernel on L2, responsible for bridging
+ * tokens between L1 and L2.
+ * This mock kernel allows for the minting of new tokens in ERC20Proxy
+ * contracts and manages L2 tickets, emitting `Deposit` and `Withdraw` events.
  */
 contract KernelMock is IWithdrawalEvent, IDepositEvent {
     uint256 private _rollupId;
@@ -30,7 +37,11 @@ contract KernelMock is IWithdrawalEvent, IDepositEvent {
     mapping(bytes32 => uint256) private _tickets;
 
     /**
-     * Increases `owner`'s tickets balance by `amount`.
+     * @notice Increases the L2 ticket balance for a given owner.
+     * @param ticketer The L1 ticketer address in its forged form.
+     * @param content The ticket content in its forged form.
+     * @param owner The address of the ticket owner.
+     * @param amount The amount by which to increase the ticket balance.
      */
     function _increaseTicketsBalance(
         bytes22 ticketer,
@@ -43,7 +54,11 @@ contract KernelMock is IWithdrawalEvent, IDepositEvent {
     }
 
     /**
-     * Decreases `owner`'s tickets balance by `amount`.
+     * @notice Decreases the L2 ticket balance for a given owner.
+     * @param ticketer The L1 ticketer address in its forged form.
+     * @param content The ticket content in its forged form.
+     * @param owner The address of the ticket owner.
+     * @param amount The amount by which to decrease the ticket balance.
      */
     function _decreaseTicketsBalance(
         bytes22 ticketer,
@@ -59,6 +74,13 @@ contract KernelMock is IWithdrawalEvent, IDepositEvent {
         _tickets[ticketOwner] -= amount;
     }
 
+    /**
+     * @notice Gets the balance of L2 tickets for a specified owner.
+     * @param ticketer The L1 ticketer address in its forged form.
+     * @param content The ticket content in its forged form.
+     * @param owner The address of the ticket owner.
+     * @return The balance of tickets for the specified owner.
+     */
     function getBalance(bytes22 ticketer, bytes memory content, address owner)
         public
         view
@@ -69,7 +91,12 @@ contract KernelMock is IWithdrawalEvent, IDepositEvent {
     }
 
     /**
-     * Emulates the deposit operation processed during inbox dispatch in Kernel.
+     * @notice Emulates the deposit operation processed during inbox dispatch in the Kernel.
+     * @param ticketReceiver The ERC20Proxy contract address.
+     * @param receiver The address to receive the minted tokens.
+     * @param amount The amount of tokens to mint.
+     * @param ticketer The L1 ticketer address in its forged form.
+     * @param identifier The ticket content in its forged form.
      */
     function inboxDeposit(
         address ticketReceiver,
@@ -98,9 +125,17 @@ contract KernelMock is IWithdrawalEvent, IDepositEvent {
         proxyToken.deposit(receiver, amount, ticketHash);
     }
 
+    /**
+     * @notice Emulates the withdraw operation processed during outbox dispatch in the Kernel.
+     * @param ticketOwner The ERC20Proxy contract address.
+     * @param routingInfo The encoded routing info with L1 receiver and router address.
+     * @param amount The amount of tokens to withdraw.
+     * @param ticketer The L1 ticketer address in forged form.
+     * @param content The ticket content in forged form.
+     */
     function withdraw(
         address ticketOwner,
-        bytes memory receiver,
+        bytes memory routingInfo,
         uint256 amount,
         bytes22 ticketer,
         bytes memory content
@@ -110,8 +145,8 @@ contract KernelMock is IWithdrawalEvent, IDepositEvent {
         uint256 ticketHash = hashTicket(ticketer, content);
         _decreaseTicketsBalance(ticketer, content, ticketOwner, amount);
 
-        require(receiver.length >= 22, "Receiver address is too short");
-        bytes22 receiver22 = bytes22(receiver);
+        require(routingInfo.length >= 22, "Routing info is too short");
+        bytes22 receiver22 = bytes22(routingInfo);
 
         emit Withdrawal(
             ticketHash,

@@ -7,7 +7,7 @@ function hashTicket(bytes22 ticketer, bytes memory content)
     pure
     returns (uint256 ticketHash)
 {
-    return uint256(keccak256(abi.encodePacked(ticketer, content)));
+    ticketHash = uint256(keccak256(abi.encodePacked(ticketer, content)));
 }
 
 /**

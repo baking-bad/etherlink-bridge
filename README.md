@@ -11,7 +11,10 @@ On the Etherlink side, the setup includes Solidity contracts, notably the **ERC2
 Additionally, the [scripts](scripts/) directory contains Python scripts with CLI commands enabling interaction with the bridge. These commands include contract deployment on both sides of the bridge, as well as deposit and withdrawal helpers.
 
 ### Setup
-1. To run scripts it is required for the [Poetry](https://python-poetry.org/) to be installed in the system
+1. To run scripts it is required for the [Poetry](https://python-poetry.org/) to be installed in the system:
+```shell
+curl -sSL https://install.python-poetry.org | python3 -
+```
 
 2. Install all Python dependencies with:
 ```shell

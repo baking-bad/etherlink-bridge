@@ -27,6 +27,7 @@ class TokenHelper(ContractHelper):
         client: PyTezosClient,
         balances: dict[Addressable, int],
         token_id: int = 0,
+        token_info: dict[str, bytes] = None,
     ) -> OperationGroup: ...
 
     @abstractmethod

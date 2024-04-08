@@ -26,7 +26,7 @@ class Ticketer(ContractHelper):
         content_token_id: int = 0,
     ) -> dict[str, Any]:
         metadata = Metadata.make_default(
-            name='Ticketer',
+            name=f'Ticketer: {extra_token_info["symbol"][6:].decode()}',
             description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
         )
         content = (content_token_id, token.make_token_info_bytes(extra_token_info))

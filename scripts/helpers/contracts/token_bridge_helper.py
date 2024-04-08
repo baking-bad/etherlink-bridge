@@ -27,6 +27,7 @@ class TokenBridgeHelper(ContractHelper):
         ticketer: Ticketer,
         erc_proxy: bytes,
         token: Optional[TokenHelper] = None,
+        symbol: Optional[str] = None,
     ) -> OperationGroup:
         """Deploys Token Bridge Helper"""
 
@@ -37,8 +38,9 @@ class TokenBridgeHelper(ContractHelper):
             'erc_proxy': erc_proxy,
             'context': None,
             'metadata': Metadata.make_default(
-                name='Token Bridge Helper',
-                description='The Token Bridge Helper is a helper contract which helps user to communicate with Etherlink Bridge components that requires tickets to be packed into external data structure.',
+                name=': '.join(filter(bool, ['Token Bridge Helper', symbol])),
+                description='The Token Bridge Helper is a helper contract which helps user to communicate with Etherlink Bridge ' +
+                            'components that requires tickets to be packed into external data structure.',
             ),
         }
         filename = join(get_build_dir(), 'token-bridge-helper.tz')

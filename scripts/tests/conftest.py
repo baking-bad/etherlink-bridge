@@ -126,8 +126,8 @@ def bridge() -> Bridge:
 @pytest.fixture(scope='session', autouse=True)
 def wallet() -> Wallet:
     return Wallet(
-        l1_private_key='edsk2nu78mRwg4V5Ka7XCJFVbVPPwhry8YPeEHRwzGQHEpGAffDvrH',
-        l1_public_key_hash='tz1YG6P2GTQKFpd9jeuESam2vg6aA9HHRkKo',
+        l1_private_key='edskRqDjCTNPh8QttChynaNcMwNqLKuEdtcrvSqmJojzDUFtBqtvbaXgs5eWpyQ2AABxS8FSZjzKytrLs38E4M9GcpAdiQjnUY',
+        l1_public_key_hash='tz1cdDUja6hsp4vNUBNmjVpEBDSYhDVLxg2X',
         l2_private_key='8636c473b431be57109d4153735315a5cdf36b3841eb2cfa80b75b3dcd2d941a',
         l2_public_key='0xBefD2C6fFC36249ebEbd21d6DF6376ecF3BAc448',
         l2_master_key='9722f6cc9ff938e63f8ccb74c3daa6b45837e5c5e3835ac08c44c50ab5f39dc0',

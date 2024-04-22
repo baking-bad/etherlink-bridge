@@ -5,63 +5,28 @@ from typing import Any
 import click
 import requests
 import survey
-from eth_abi import decode
-from pydantic import BaseModel
 from pytezos import PyTezosClient
 from pytezos import pytezos
 from pytezos.rpc import RpcError
-from web3 import Web3
 
+from scripts.bootstrap.const import DEFAULT_TOKEN_ID
+from scripts.bootstrap.const import MAINNET_TZKT_API_URL
+from scripts.bootstrap.const import MAINNET_WHITELIST
+from scripts.bootstrap.const import NETWORK_DEFAULTS
+
+from scripts.bootstrap.const import KERNEL_ADDRESS
+from scripts.bootstrap.dto import TicketerDTO
+from scripts.bootstrap.dto import UserInputDTO
 from scripts.etherlink import deploy_erc20
 from scripts.helpers.cli import notice_echo
 from scripts.helpers.cli import prompt_anyof
-from scripts.helpers.contracts import Ticketer
 from scripts.helpers.contracts import TokenHelper
 from scripts.tezos import deploy_ticketer
 from scripts.tezos import deploy_token_bridge_helper
 from scripts.tezos import get_ticketer_params
 
 
-class TicketerDTO(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
-
-    token_data: dict[str, Any]
-    ticketer: Ticketer
-    ticketer_params: dict[str, str]
-    ticket_hash: int
-
-
-class UserInputDTO(BaseModel):
-    is_mainnet: bool
-    smart_rollup_address: str
-    l1_private_key: str
-    l2_private_key: str
-    l1_rpc_url: str
-    l2_rpc_url: str
-    l1_testrunner_account: str
-    use_test_prefix: bool
-
-
-def get_ticket_hash(ticketer_params) -> int:
-    data = Web3.solidity_keccak(
-        ['bytes22', 'bytes'],
-        [
-            '0x' + ticketer_params['address_bytes'],
-            '0x' + ticketer_params['content_bytes'],
-        ],
-    )
-    ticket_hash = decode(['uint256'], data)[0]
-    return ticket_hash
-
-
 class RollupBootstrap:
-    mainnet_whitelist = [
-        'KT1PWx2mnDueood7fEmfbBDKx1D9BAnnXitn_0',  # tzBTC
-        'KT1AafHA1C1vk959wvHWBispY9Y2f3fxBUUo_0',  # Sirius
-        'KT1XnTn74bUtxHfDtBmm2bGZAQfhPbvKWR8o_0',  # USDt
-    ]
-
     def __init__(
         self,
         is_mainnet: bool,
@@ -89,7 +54,7 @@ class RollupBootstrap:
     def deploy_whitelist(self):
         survey.printers.info('Bootstrapping Whitelist...')
         token_counter = 0
-        for mainnet_asset_id in self.mainnet_whitelist:
+        for mainnet_asset_id in MAINNET_WHITELIST:
             token_counter += 1
             survey.printers.info(
                 f'Whitelisting Token having asset_id {mainnet_asset_id} in Tezos Mainnet...',
@@ -122,7 +87,7 @@ class RollupBootstrap:
             suffix=lambda x: state,
         ):
             state = ' fetching original token metadata...'
-            token_data = requests.get(f'https://api.tzkt.io/v1/tokens?contract={contract_address}&tokenId={token_id}').json()[0]
+            token_data = requests.get(f'{MAINNET_TZKT_API_URL}/tokens?contract={contract_address}&tokenId={token_id}').json()[0]
             if self._use_test_prefix:
                 token_data['metadata']['name'] = ' '.join(['Test', token_data['metadata']['name'], f'v{self._test_version}'])
                 token_data['metadata']['symbol'] = '_'.join(['TEST', token_data['metadata']['symbol'], str(self._test_version)])
@@ -187,7 +152,7 @@ class RollupBootstrap:
                 self._client.context.key,
                 self._client.context.shell,
             )
-            ticket_hash = get_ticket_hash(ticketer_params)
+            ticket_hash = ticketer.get_ticket_hash(ticketer_params)
 
         survey.printers.done(f'Ticketer Contract deployed for Token ${symbol}: {ticketer.address}.', re=True)
         return TicketerDTO(
@@ -208,8 +173,8 @@ class RollupBootstrap:
                 ticket_content_bytes=ticketer_params['content_bytes'],
                 token_name=token_data['metadata']['name'],
                 token_symbol=token_data['metadata']['symbol'],
-                decimals=int(token_data['metadata'].get('decimals'), 0),
-                kernel_address='0x0000000000000000000000000000000000000000',
+                decimals=int(token_data['metadata'].get('decimals'), DEFAULT_TOKEN_ID),
+                kernel_address=KERNEL_ADDRESS,
                 private_key=self._l2_private_key,
                 rpc_url=self._l2_rpc_url,
             )
@@ -230,7 +195,7 @@ class RollupBootstrap:
                 ticketer_address=ticketer_address,
                 proxy_address=erc20_proxy_address,
                 private_key=self._client.context.key,
-                rpc_url=self._client.context.shell,
+                rpc_url=self._client.context.shell, 
             )
 
         survey.printers.done(
@@ -252,27 +217,6 @@ class RollupBootstrap:
         return version
 
 
-network_defaults = [
-    {
-        'name': 'Oxfordnet',
-        'rpc_url': 'https://rpc.tzkt.io/oxfordnet',
-        'smart_rollup_address': 'sr1T4XVcVtBRzYy52edVTdgup9Kip4Wrmn97',
-        'l1_private_key': 'edsk2nu78mRwg4V5Ka7XCJFVbVPPwhry8YPeEHRwzGQHEpGAffDvrH',
-        'l2_private_key': '8636c473b431be57109d4153735315a5cdf36b3841eb2cfa80b75b3dcd2d941a',
-        'l2_rpc_url': 'https://etherlink.dipdup.net',
-        'l1_testrunner_account': 'tz1cdDUja6hsp4vNUBNmjVpEBDSYhDVLxg2X',
-    },
-    {
-        'name': 'Ghostnet',
-        'rpc_url': 'https://rpc.tzkt.io/ghostnet',
-    },
-    {
-        'name': 'Mainnet',
-        'rpc_url': 'https://rpc.tzkt.io/',
-    },
-]
-
-
 class BootstrapSurvey:
     def __init__(self, network_defaults: list[dict[str, Any]]):
         self._network_defaults = network_defaults
@@ -281,9 +225,11 @@ class BootstrapSurvey:
 
     def perform(self) -> UserInputDTO:
         l1_rpc_url = self._get_l1_rpc_url()
+        tzkt_api_url=self._get_tzkt_api_url()
         return UserInputDTO(
             l1_rpc_url=l1_rpc_url,
-            is_mainnet=l1_rpc_url == self._network_defaults[2]['rpc_url'],
+            tzkt_api_url=tzkt_api_url,
+            is_mainnet=tzkt_api_url == MAINNET_TZKT_API_URL,
             smart_rollup_address=self._get_smart_rollup_address(),
             l1_private_key=self._get_l1_private_key(),
             l2_rpc_url=self._get_l2_rpc_url(),
@@ -293,9 +239,9 @@ class BootstrapSurvey:
         )
 
     def _get_l1_rpc_url(self) -> str:
-        options = [network['name'] for network in network_defaults]
+        options = [network['name'] for network in NETWORK_DEFAULTS]
         options.append('Private')
-        comments = [f'Will be used RPC Endpoint {network["rpc_url"]}' for network in network_defaults]
+        comments = [f'Will be used RPC Endpoint {network["rpc_url"]}' for network in NETWORK_DEFAULTS]
         comments.append('Enter custom RPC Endpoint')
         while True:
             network_index, _ = prompt_anyof(
@@ -325,6 +271,12 @@ class BootstrapSurvey:
                 self._l1_rpc_url = rpc_url
                 survey.printers.text('', end='\r', re=True)
                 return rpc_url
+
+    def _get_tzkt_api_url(self) -> str:
+        return self._defaults.get(
+            'tzkt_api_url',
+            survey.routines.input('Enter Tzkt API url\n'),
+        )
 
     def _get_smart_rollup_address(self) -> str:
         while True:
@@ -412,7 +364,7 @@ class BootstrapSurvey:
 @click.command()
 def rollout():
     notice_echo('This command will help you to deploy all contracts for a new rollup.')
-    bootstrap_survey = BootstrapSurvey(network_defaults=network_defaults)
+    bootstrap_survey = BootstrapSurvey(network_defaults=NETWORK_DEFAULTS)
     user_input = bootstrap_survey.perform()
 
     rollup_bootstrap_service = RollupBootstrapFactory.build(user_input)
@@ -430,7 +382,7 @@ class RollupBootstrapFactory:
         return RollupBootstrap(
             is_mainnet=user_input.is_mainnet,
             client=tezos_client,
-            tzkt_api_url='https://api.oxfordnet.tzkt.io/v1',  # fixme
+            tzkt_api_url=user_input.tzkt_api_url,
             testrunner_account=user_input.l1_testrunner_account,
             use_test_prefix=user_input.use_test_prefix,
             l2_rpc_url=user_input.l2_rpc_url,

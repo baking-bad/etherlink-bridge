@@ -2,6 +2,7 @@ from contextlib import suppress
 from typing import Any
 
 import click
+import survey
 from tabulate import tabulate
 
 
@@ -22,14 +23,13 @@ def red_echo(message: str) -> None:
     echo(message, err=True, fg='red')
 
 
-def prompt_anyof(
+def survey_table(
     question: str,
     options: list[str],
     comments: list[str],
     default: int,
 ) -> tuple[int, str]:
     """Ask user to choose one of options; returns index and value"""
-    import survey  # type: ignore[import-untyped]
 
     table = tabulate(
         zip(options, comments, strict=True),

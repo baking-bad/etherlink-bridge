@@ -7,10 +7,7 @@ from scripts.helpers.contracts import (
     TokenHelper,
     TokenBridgeHelper,
 )
-from scripts.helpers.utility import (
-    pack,
-    make_address_bytes,
-)
+from scripts.helpers.utility import make_address_bytes
 from typing import Optional
 import click
 from scripts.environment import load_or_ask
@@ -105,10 +102,10 @@ def make_extra_metadata(
 
     extra_metadata = {}
     if decimals:
-        extra_metadata['decimals'] = pack(decimals, 'nat')
+        extra_metadata['decimals'] = str(decimals).encode('utf-8')
 
     if symbol:
-        extra_metadata['symbol'] = pack(symbol, 'string')
+        extra_metadata['symbol'] = symbol.encode('utf-8')
     return extra_metadata
 
 
@@ -249,7 +246,9 @@ def deposit(
     receiver_bytes = bytes.fromhex(receiver_address)
 
     manager = pytezos.using(shell=rpc_url, key=private_key)
-    token_bridge_helper = TokenBridgeHelper.from_address(manager, token_bridge_helper_address)
+    token_bridge_helper = TokenBridgeHelper.from_address(
+        manager, token_bridge_helper_address
+    )
     token = token_bridge_helper.get_ticketer().get_token()
 
     opg = manager.bulk(

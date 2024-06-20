@@ -1,5 +1,4 @@
 from scripts.helpers.contracts.tokens.token import TokenHelper
-from scripts.helpers.utility import pack
 from pytezos.client import PyTezosClient
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
@@ -44,8 +43,8 @@ class FA12(TokenHelper):
 
     def make_token_info(self) -> dict[str, bytes]:
         return {
-            'contract_address': pack(self.address, 'address'),
-            'token_type': pack("FA1.2", 'string'),
+            'contract_address': self.address.encode('utf-8'),
+            'token_type': "FA1.2".encode('utf-8'),
         }
 
     def get_balance(self, client_or_contract: Addressable) -> int:

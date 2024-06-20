@@ -51,6 +51,10 @@ class TokenHelper(ContractHelper):
         self,
         extra_token_info: Optional[TokenInfo] = None,
     ) -> bytes:
+        """Prepares TokenInfo metadata mapping encoded to the bytes in the same
+        way it is stored in FA2 tokens:
+        https://tzip.tezosagora.org/proposal/tzip-12/#token-metadata-values"""
+
         extra_token_info = extra_token_info or {}
         token_info = {
             **self.make_token_info(),
@@ -79,8 +83,8 @@ class TokenHelper(ContractHelper):
     def get_cls(token_type: str) -> Type['TokenHelper']:
         """Returns token class by token type string"""
 
-        from scripts.helpers.contracts.tokens.fa12 import FA12, CtezToken
-        from scripts.helpers.contracts.tokens.fa2 import FA2, FxhashToken
+        from scripts.helpers.contracts.tokens.fa12 import CtezToken
+        from scripts.helpers.contracts.tokens.fa2 import FxhashToken
 
         return {
             'FA1.2': CtezToken,

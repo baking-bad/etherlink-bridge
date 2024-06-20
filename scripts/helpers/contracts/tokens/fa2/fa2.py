@@ -3,7 +3,6 @@ from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
 
 from scripts.helpers.contracts.tokens.token import TokenHelper
-from scripts.helpers.utility import pack
 from scripts.helpers.addressable import (
     Addressable,
     get_address,
@@ -59,9 +58,9 @@ class FA2(TokenHelper):
 
     def make_token_info(self) -> dict[str, bytes]:
         return {
-            'contract_address': pack(self.address, 'address'),
-            'token_type': pack("FA2", 'string'),
-            'token_id': pack(self.token_id, 'nat'),
+            'contract_address': self.address.encode('utf-8'),
+            'token_type': "FA2".encode('utf-8'),
+            'token_id': str(self.token_id).encode('utf-8'),
         }
 
     @classmethod

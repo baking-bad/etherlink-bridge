@@ -25,8 +25,8 @@ class TicketerTestCase(BaseTestCase):
         # Checking ticket payload:
         token_info_bytes = pack(
             {
-                'contract_address': pack(token.address, 'address'),
-                'token_type': pack("FA1.2", 'string'),
+                'contract_address': token.address.encode(),
+                'token_type': "FA1.2".encode(),
             },
             'map %token_info string bytes',
         ).hex()
@@ -44,8 +44,8 @@ class TicketerTestCase(BaseTestCase):
         alice, token, ticketer, _ = self.default_setup(
             token_type='FA2',
             extra_metadata={
-                'decimals': pack(12, 'nat'),
-                'symbol': pack('FA2', 'string'),
+                'decimals': '12'.encode(),
+                'symbol': 'FA2'.encode(),
             },
         )
 
@@ -60,11 +60,11 @@ class TicketerTestCase(BaseTestCase):
         # Checking ticket payload:
         token_info_bytes = pack(
             {
-                'contract_address': pack(token.address, 'address'),
-                'token_type': pack('FA2', 'string'),
-                'token_id': pack(0, 'nat'),
-                'decimals': pack(12, 'nat'),
-                'symbol': pack('FA2', 'string'),
+                'contract_address': token.address.encode(),
+                'token_type': 'FA2'.encode(),
+                'token_id': '0'.encode(),
+                'decimals': '12'.encode(),
+                'symbol': 'FA2'.encode(),
             },
             'map %token_info string bytes',
         ).hex()
@@ -277,17 +277,17 @@ class TicketerTestCase(BaseTestCase):
         alice, token, ticketer, _ = self.default_setup(
             token_type='FA1.2',
             extra_metadata={
-                'decimals': pack(16, 'nat'),
-                'symbol': pack('tBTC', 'string'),
+                'decimals': '16'.encode(),
+                'symbol': 'tBTC'.encode(),
             },
         )
 
         token_info_bytes = pack(
             {
-                'contract_address': pack(token.address, 'address'),
-                'token_type': pack("FA1.2", 'string'),
-                'decimals': pack(16, 'nat'),
-                'symbol': pack('tBTC', 'string'),
+                'contract_address': token.address.encode(),
+                'token_type': 'FA1.2'.encode(),
+                'decimals': '16'.encode(),
+                'symbol': 'tBTC'.encode(),
             },
             'map %token_info string bytes',
         )
@@ -307,22 +307,22 @@ class TicketerTestCase(BaseTestCase):
                     },
                     'map string bytes',
                 ),
-                'symbol': pack('NFT', 'string'),
+                'symbol': 'NFT'.encode(),
             },
         )
 
         token_info_bytes = pack(
             {
-                'contract_address': pack(token.address, 'address'),
-                'token_type': pack("FA2", 'string'),
-                'token_id': pack(42, 'nat'),
+                'contract_address': token.address.encode(),
+                'token_type': 'FA2'.encode(),
+                'token_id': '42'.encode(),
                 'some_strange_metadata': pack(
                     {
                         'list_of_strings': pack(['one', 'two'], 'list string'),
                     },
                     'map string bytes',
                 ),
-                'symbol': pack('NFT', 'string'),
+                'symbol': 'NFT'.encode(),
             },
             'map %token_info string bytes',
         )

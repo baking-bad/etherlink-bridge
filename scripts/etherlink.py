@@ -125,7 +125,9 @@ def deploy_erc20(
             token_symbol,
             str(decimals),
             '--gas-limit',
-            '200000',
+            '50000000',
+            '--gas-price',
+            '1000000000',
         ],
         cwd='etherlink',
         # NOTE: not checking for return code, because it is very common
@@ -220,7 +222,7 @@ def withdraw(
             private_key,
             '--legacy',
             '--gas-limit',
-            '1000000',
+            '10000000',
         ],
         cwd='etherlink',
         # NOTE: not checking for return code, because it is very common

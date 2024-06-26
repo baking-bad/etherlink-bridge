@@ -87,9 +87,13 @@ def fund_account(
 @click.option(
     '--kernel-address',
     default=None,
-    help='The address of the Etherlink kernel which will be managing token.',
+    help='The address of the Etherlink kernel that will be managing token.',
 )
-@click.option('--private-key', default=None, help='Use the provided private key.')
+@click.option(
+    '--private-key',
+    default=None,
+    help='Private key that would be used to deploy contract on the Etherlink side.',
+)
 @click.option('--rpc-url', default=None, help='Etherlink RPC URL.')
 def deploy_erc20(
     ticketer_address_bytes: str,
@@ -100,7 +104,7 @@ def deploy_erc20(
     kernel_address: Optional[str],
     private_key: Optional[str],
     rpc_url: Optional[str],
-) -> None:
+) -> None | str:
     """Deploys ERC20 Proxy contract with given parameters"""
 
     private_key = private_key or load_or_ask('L2_PRIVATE_KEY', is_secret=True)
@@ -139,10 +143,17 @@ def deploy_erc20(
 
     if result.returncode != 0:
         print(result.stderr)
-        return
+        return None
 
     print('Successfully deployed ERC20 contract:')
     print(result.stdout)
+
+    # TODO: consider using more convenient way to get ERC20 address / obj
+    #       it would be great to have some kind of ERC20 helper returned
+    for line in result.stdout.split('\n'):
+        if line.startswith('Deployed to: '):
+            return line[15:]
+    return None
 
 
 @click.command()
@@ -179,7 +190,11 @@ def deploy_erc20(
     default=None,
     help='The address of the withdraw precompile contract.',
 )
-@click.option('--private-key', default=None, help='Use the provided private key.')
+@click.option(
+    '--private-key',
+    default=None,
+    help='Private key on the Etherlink side that should execute withdrawal.',
+)
 @click.option('--rpc-url', default=None, help='Etherlink RPC URL.')
 def withdraw(
     proxy_address: str,
@@ -250,7 +265,7 @@ def withdraw(
 @click.option(
     '--kernel-address',
     default=None,
-    help='The address of the Etherlink kernel which emits Withdrawal event.',
+    help='The address of the Etherlink kernel that emits Withdrawal event.',
 )
 def parse_withdrawal_event(
     tx_hash: str, rpc_url: Optional[str], kernel_address: Optional[str]

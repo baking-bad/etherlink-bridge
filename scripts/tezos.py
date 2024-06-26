@@ -44,7 +44,11 @@ def get_client() -> PyTezosClient:
     default=1_000_000,
     help='Total supply of originated token which will be mint for the manager, default: 1_000_000.',
 )
-@click.option('--private-key', default=None, help='Use the provided private key.')
+@click.option(
+    '--private-key',
+    default=None,
+    help='Private key that would be used to deploy token on the Tezos network.',
+)
 @click.option('--rpc-url', default=None, help='Tezos RPC URL.')
 def deploy_token(
     token_type: str,
@@ -69,7 +73,11 @@ def deploy_token(
 
 @click.command()
 @click.option('--ticketer', required=True, help='The address of the ticketer contract.')
-@click.option('--private-key', default=None, help='Use the provided private key.')
+@click.option(
+    '--private-key',
+    default=None,
+    help='Private key that would be used in the Tezos network.',
+)
 @click.option('--rpc-url', default=None, help='Tezos RPC URL.')
 def get_ticketer_params(
     ticketer: str,
@@ -95,17 +103,22 @@ def get_ticketer_params(
 
 
 def make_extra_metadata(
+    name: Optional[str],
     symbol: Optional[str],
     decimals: Optional[int],
 ) -> dict[str, bytes]:
-    """Creates extra metadata for ticketer content with symbol and decimals"""
+    """Creates extra metadata for ticketer content with name, symbol and decimals"""
 
     extra_metadata = {}
-    if decimals:
-        extra_metadata['decimals'] = str(decimals).encode('utf-8')
+    if name:
+        extra_metadata['name'] = name.encode('utf-8')
 
     if symbol:
         extra_metadata['symbol'] = symbol.encode('utf-8')
+
+    if decimals:
+        extra_metadata['decimals'] = str(decimals).encode('utf-8')
+
     return extra_metadata
 
 
@@ -132,7 +145,16 @@ def make_extra_metadata(
     default=None,
     help='Token symbol added to the ticketer metadata content.',
 )
-@click.option('--private-key', default=None, help='Use the provided private key.')
+@click.option(
+    '--name',
+    default=None,
+    help='Token name added to the ticketer metadata content.',
+)
+@click.option(
+    '--private-key',
+    default=None,
+    help='Private key that would be used to deploy contract on the Tezos network.',
+)
 @click.option('--rpc-url', default=None, help='Tezos RPC URL.')
 def deploy_ticketer(
     token_address: str,
@@ -140,6 +162,7 @@ def deploy_ticketer(
     token_id: int,
     decimals: Optional[int],
     symbol: Optional[str],
+    name: Optional[str],
     private_key: Optional[str],
     rpc_url: Optional[str],
 ) -> Ticketer:
@@ -152,7 +175,7 @@ def deploy_ticketer(
     manager = pytezos.using(shell=rpc_url, key=private_key)
     Token = TokenHelper.get_cls(token_type)
     token = Token.from_address(manager, token_address, token_id=token_id)
-    extra_metadata = make_extra_metadata(symbol, decimals)
+    extra_metadata = make_extra_metadata(name, symbol, decimals)
     opg = Ticketer.originate(manager, token, extra_metadata).send()
     manager.wait(opg)
     ticketer = Ticketer.from_opg(manager, opg)
@@ -172,7 +195,11 @@ def deploy_ticketer(
     required=True,
     help='The address of the ERC20Proxy on the Etherlink side in bytes form.',
 )
-@click.option('--private-key', default=None, help='Use the provided private key.')
+@click.option(
+    '--private-key',
+    default=None,
+    help='Private key that would be used to deploy contract on the Tezos network.',
+)
 @click.option('--rpc-url', default=None, help='Tezos RPC URL.')
 def deploy_token_bridge_helper(
     ticketer_address: str,
@@ -226,7 +253,11 @@ def deploy_rollup_mock(manager: PyTezosClient) -> RollupMock:
 @click.option(
     '--rollup-address', default=None, help='The address of the rollup contract.'
 )
-@click.option('--private-key', default=None, help='Use the provided private key.')
+@click.option(
+    '--private-key',
+    default=None,
+    help='Private key of the account on the Tezos network that should deposit token.',
+)
 @click.option('--rpc-url', default=None, help='Tezos RPC URL.')
 def deposit(
     token_bridge_helper_address: str,
@@ -257,7 +288,7 @@ def deposit(
         token_bridge_helper.deposit(rollup_address, receiver_bytes, amount),
     ).send()
     manager.wait(opg)
-    operation_hash = opg.hash()
+    operation_hash: str = opg.hash()
     print(f'Succeed, transaction hash: {operation_hash}')
     return operation_hash
 
@@ -293,7 +324,11 @@ def get_proof(
 @click.option(
     '--rollup-address', default=None, help='The address of the rollup contract.'
 )
-@click.option('--private-key', default=None, help='Use the provided private key.')
+@click.option(
+    '--private-key',
+    default=None,
+    help='Private key that would be used to execute message on the Tezos network.',
+)
 @click.option('--rpc-url', default=None, help='Tezos RPC URL.')
 def execute_outbox_message(
     commitment: str,

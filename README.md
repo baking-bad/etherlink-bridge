@@ -46,7 +46,32 @@ Users also may need some funds in their accounts to pay for the execution fees:
 poetry run fund_etherlink_account
 ```
 
-### Bridge Configuration (Listing New Token Pairs)
+### Bridging a new Token
+To establish a new bridge between Tezos and Etherlink for existing `FA1.2` and `FA2` tokens there is a `bridge_token` command that would deploy three contracts:
+- Ticketer contract on the Tezos side,
+- ERC20 contract on the Etherlink side,
+- Token Bridge Helper on the Tezos side.
+
+This command requires a user to provide all necessary information about the token as argument parameters:
+- `--token-address`: The address of the token contract.
+- `--token-type`: Token type, either `FA2` or `FA1.2`.
+- `--token-id`: Identifier of the token in the contract (only for FA2), default: `0`.
+- `--decimals`: Token decimals added to the bridged ERC20 token and ticketer metadata content.
+- `--symbol`: Token symbol added to the bridged ERC20 token and ticketer metadata content.
+- `--name`: Token name added to the ERC20 token and ticketer metadata content.
+
+There are also optional parameters that should be provided via environment variable or as a parameters to the `bridge_token` command:
+- `--tezos-private-key`: Private key that would be used to deploy contracts on the Tezos network.
+- `--tezos-rpc-url`: Tezos RPC URL.
+- `--etherlink-private-key`: Private key that would be used to deploy contract on the Etherlink side.
+- `--etherlink-rpc-url`: Etherlink RPC URL.
+- `--kernel-address`: The address of the Etherlink kernel that will be managing the token.
+
+Here is an example of the command to deploy an `FA1.2 tzBTC` Token bridge in Ghostnet:
+```shell
+poetry run bridge_token --token-address KT1P8RdJ5MfHMK5phKJ5JsfNfask5v2b2NQS --token-type "FA1.2" --decimals 8 --symbol "tzBTC" --name "random tzBTC test token" --tezos-rpc-url "https://rpc.tzkt.io/ghostnet/" --etherlink-rpc-url "https://node.ghostnet.etherlink.com/"
+```
+### Bridge configuration
 To configure the bridge for a new token (i.e., to list a new token pair), users need to engage with the **Ticket Transport Layer**. This critical component of the bridge facilitates the transfer of tickets between Tezos and Etherlink.
 
 ![permissionless ticket transfer short illustration](docs/permissionless-ticket-transfer.png)

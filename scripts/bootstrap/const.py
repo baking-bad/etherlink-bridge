@@ -2,9 +2,8 @@ MAINNET_L1_RPC_URL = 'https://rpc.tzkt.io'
 MAINNET_TZKT_API_URL = 'https://api.tzkt.io/v1'
 NETWORK_DEFAULTS = [
     {
-        'name': 'Oxfordnet',
-        'l1_rpc_url': 'https://rpc.tzkt.io/oxfordnet',
-        'smart_rollup_address': 'sr1T4XVcVtBRzYy52edVTdgup9Kip4Wrmn97',
+        'name': 'Parisnet',
+        'l1_rpc_url': 'https://rpc.tzkt.io/parisnet',
         'l1_private_key': 'edskS9uWwJB8U4NiD5YcV8SJvveA1ps7iTXRChXMrHn6fyMv8FpMoA6M855o6bSYBxaCtAPDfe9vK6hkiwGfoi7njK6M3PBSVP',
         'l2_private_key': '8636c473b431be57109d4153735315a5cdf36b3841eb2cfa80b75b3dcd2d941a',
         'l2_rpc_url': 'https://etherlink.dipdup.net',

@@ -321,6 +321,7 @@ class BootstrapSurvey:
                         f'{self._l1_rpc_url}/chains/main/blocks/head/context/smart_rollups/smart_rollup/{smart_rollup_address}' +
                         '/genesis_info',
                     ).json()
+                    assert isinstance(response, dict)
                     assert response['level']
             except (IOError, AssertionError):
                 survey.printers.fail('Could not retrieve the specified Smart Rollup address. Please try again.', re=True)
@@ -339,11 +340,17 @@ class BootstrapSurvey:
                 with survey.graphics.SpinProgress(
                     prefix='Checking the specified account ',
                 ):
-                    balance = pytezos.using(
+                    client = pytezos.using(
                         shell=self._l1_rpc_url,
                         key=l1_private_key,
-                    ).balance()
+                    )
+                    balance = client.balance()
                     assert int(balance) > 0
+                    try:
+                        client.reveal().autofill().sign().inject()
+                    except RpcError:
+                        pass
+
             except (OSError, ValueError):
                 survey.printers.fail('Incorrect Private Key is specified. Please try again.', re=True)
             except AssertionError:

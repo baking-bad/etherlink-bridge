@@ -40,8 +40,8 @@ def init_wallets() -> None:
         ),
         # TODO: it is possible to get L1_PUBLIC_KEY_HASH from L1_PRIVATE_KEY
         Variable('L1_PUBLIC_KEY_HASH', default='tz1av2T75Wazm8UovatQB3wYD4tqUVfCcwrZ'),
-        Variable('L1_RPC_URL', default='https://rpc.tzkt.io/oxfordnet/'),
-        Variable('L1_ROLLUP_ADDRESS', default='sr1T4XVcVtBRzYy52edVTdgup9Kip4Wrmn97'),
+        Variable('L1_RPC_URL', default='https://rpc.tzkt.io/parisnet/'),
+        Variable('L1_ROLLUP_ADDRESS', default='sr1D7sVcMMUMUHUK5hxcowgLtyUa9HnFnrEs'),
         Variable(
             'L2_PRIVATE_KEY',
             default='f463e320ed1bd1cd833e29efc383878f34abe6b596e5d163f51bb8581de6f8b8',
@@ -57,14 +57,14 @@ def init_wallets() -> None:
         ),
         Variable('L2_RPC_URL', default='https://etherlink.dipdup.net'),
         Variable(
-            'L2_ROLLUP_RPC_URL', default='https://etherlink-rollup-oxford.dipdup.net'
+            'L2_ROLLUP_RPC_URL', default='https://etherlink-rollup-paris.dipdup.net'
         ),
         Variable(
             'L2_KERNEL_ADDRESS', default='0x0000000000000000000000000000000000000000'
         ),
         Variable(
             'L2_WITHDRAW_PRECOMPILE_ADDRESS',
-            default='0x0000000000000000000000000000000000000040',
+            default='0xff00000000000000000000000000000000000002',
         ),
     ]
 

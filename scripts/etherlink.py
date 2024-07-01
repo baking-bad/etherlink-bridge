@@ -9,6 +9,7 @@ from scripts.helpers.utility import make_address_bytes
 import requests
 
 
+# TODO: consider remove / replace with deposit from L1 via native bridge
 @click.command()
 @click.option('--public-key', default=None, help='Etherlink address to fund.')
 @click.option(

@@ -111,3 +111,8 @@ class Ticketer(ContractHelper):
         )
         ticket_hash = decode(['uint256'], data)[0]
         return ticket_hash
+
+    def get_content_bytes_hex(self) -> str:
+        """Returns content of the ticketer as bytes hex string"""
+
+        return self.read_ticket(self.address).content.to_bytes_hex()

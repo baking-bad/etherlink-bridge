@@ -3,6 +3,11 @@ from getpass import getpass
 import os
 import click
 from dataclasses import dataclass
+from web3 import Web3
+from eth_account.signers.local import LocalAccount
+from pytezos.client import PyTezosClient
+from pytezos import pytezos
+from typing import Optional
 
 
 def load_or_ask(var_name: str, is_secret: bool = False) -> str:
@@ -73,6 +78,35 @@ def init_wallets() -> None:
     with open('.env', 'w') as f:
         for name, value in values.items():
             f.write(f'{name}={value}\n')
+
+
+def get_tezos_client(shell: Optional[str], key: Optional[str]) -> PyTezosClient:
+    """Returns client with private key and rpc url set in environment variables"""
+
+    key = key or load_or_ask('L1_PRIVATE_KEY', is_secret=True)
+    shell = shell or load_or_ask('L1_RPC_URL')
+    client: PyTezosClient = pytezos.using(shell=shell, key=key)
+    return client
+
+
+def get_etherlink_web3(shell: Optional[str]) -> Web3:
+    """Returns Web3 client with rpc url set in environment variables"""
+
+    shell = shell or load_or_ask('L2_RPC_URL')
+    web3 = Web3(Web3.HTTPProvider(shell))
+    return web3
+
+
+def get_etherlink_account(
+    web3: Optional[Web3], private_key: Optional[str]
+) -> LocalAccount:
+    """Returns Account with private key set in environment variables"""
+
+    private_key = private_key or load_or_ask('L2_PRIVATE_KEY', is_secret=True)
+    if web3 is None:
+        web3 = get_etherlink_web3(None)
+    account: LocalAccount = web3.eth.account.from_key(private_key)
+    return account
 
 
 load_dotenv()

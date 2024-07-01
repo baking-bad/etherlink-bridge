@@ -1,9 +1,7 @@
 import click
-from scripts.tezos import (
-    deploy_ticketer,
-    deploy_token_bridge_helper,
-    get_ticketer_params,
-)
+from scripts.tezos.deploy_ticketer import deploy_ticketer
+from scripts.tezos.get_ticketer_params import get_ticketer_params
+from scripts.tezos.deploy_token_bridge_helper import deploy_token_bridge_helper
 from scripts.etherlink import deploy_erc20
 from scripts.environment import load_or_ask
 from typing import Any, Dict, Optional
@@ -98,7 +96,7 @@ def bridge_token(
     )  # type: ignore
 
     ticketer_params = get_ticketer_params.callback(
-        ticketer.address, tezos_private_key, tezos_rpc_url
+        ticketer.address, tezos_private_key, tezos_rpc_url, silent=True
     )  # type: ignore
 
     erc_20_address = deploy_erc20.callback(

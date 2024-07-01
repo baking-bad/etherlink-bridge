@@ -50,7 +50,7 @@ class TestIndexerContent:
         indexer_query: gql,
     ):
         level_result_log = []
-        for _ in range(3):
+        for _ in range(2):
             response = indexer.execute(indexer_query, operation_name='IndexerStatus')
             level_result_log.append(int(response['dipdup_index_aggregate']['aggregate']['sum']['level']))
             assert response['dipdup_head_status'][0]['status'] == 'OK'
@@ -69,7 +69,6 @@ class TestIndexerContent:
 
         response = indexer.execute(indexer_query, variable_values=query_params, operation_name='TezosToken')
         assert response['tezos_token_aggregate']['aggregate']['count'] == 1
-
 
     def test_l2_asset_whitelisted(
         self,

@@ -115,7 +115,7 @@ class TestDeposit:
         for _ in range(20):
             response = indexer.execute(bridge_deposit_query, variable_values=query_params)
             indexed_operations = response['bridge_deposit']
-            if len(indexed_operations):
+            if len(indexed_operations) and indexed_operations[-1]['l2_transaction'] is not None:
                 break
             sleep(3)
 
@@ -177,7 +177,7 @@ class TestDeposit:
         for _ in range(20):
             response = indexer.execute(bridge_deposit_query, variable_values=query_params)
             indexed_operations = response['bridge_deposit']
-            if len(indexed_operations):
+            if len(indexed_operations) and indexed_operations[-1]['l2_transaction'] is not None:
                 break
             sleep(3)
 

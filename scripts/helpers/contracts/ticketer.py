@@ -1,21 +1,21 @@
-from scripts.helpers.contracts.contract import ContractHelper
-from pytezos.client import PyTezosClient
-from scripts.helpers.utility import (
-    get_build_dir,
-    originate_from_file,
-)
-from pytezos.operation.group import OperationGroup
-from pytezos.contract.call import ContractCall
-from typing import Any
 from os.path import join
+from typing import Any
+
+from eth_abi import decode
+from pytezos.client import PyTezosClient
+from pytezos.contract.call import ContractCall
+from pytezos.operation.group import OperationGroup
+from web3 import Web3
+
+from scripts.helpers.addressable import Addressable
+from scripts.helpers.contracts.contract import ContractHelper
+from scripts.helpers.contracts.tokens import TokenHelper
+from scripts.helpers.contracts.tokens import TokenInfo
 from scripts.helpers.metadata import Metadata
-from scripts.helpers.contracts.tokens import (
-    TokenHelper,
-    TokenInfo,
-)
 from scripts.helpers.ticket import Ticket
 from scripts.helpers.ticket_content import TicketContent
-from scripts.helpers.addressable import Addressable
+from scripts.helpers.utility import get_build_dir
+from scripts.helpers.utility import originate_from_file
 
 
 class Ticketer(ContractHelper):
@@ -26,7 +26,7 @@ class Ticketer(ContractHelper):
         content_token_id: int = 0,
     ) -> dict[str, Any]:
         metadata = Metadata.make_default(
-            name='Ticketer',
+            name=f'Ticketer: {extra_token_info["symbol"][6:].decode()}',
             description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
         )
         content = (content_token_id, token.make_token_info_bytes(extra_token_info))
@@ -99,3 +99,15 @@ class Ticketer(ContractHelper):
         """Returns token info"""
 
         return self.contract.get_token().run_view()  # type: ignore
+
+    @staticmethod
+    def get_ticket_hash(ticketer_params: dict[str, str]) -> int:
+        data = Web3.solidity_keccak(
+            ['bytes22', 'bytes'],
+            [
+                '0x' + ticketer_params['address_bytes'],
+                '0x' + ticketer_params['content_bytes'],
+            ],
+        )
+        ticket_hash = decode(['uint256'], data)[0]
+        return ticket_hash

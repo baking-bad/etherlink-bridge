@@ -34,7 +34,11 @@ class FxhashToken(FA2):
 
     @classmethod
     def originate(
-        cls, client: PyTezosClient, balances: dict[Addressable, int], token_id: int = 0
+        cls,
+        client: PyTezosClient,
+        balances: dict[Addressable, int],
+        token_id: int = 0,
+        token_info: dict | None = None,
     ) -> OperationGroup:
         """Deploys FA2 token with provided balances in the storage"""
 
@@ -44,5 +48,7 @@ class FxhashToken(FA2):
             (get_address(addressable), token_id): amount
             for addressable, amount in balances.items()
         }
-        storage['token_metadata'] = {token_id: (token_id, {})}
+        if token_info is None:
+            token_info = {}
+        storage['token_metadata'] = {token_id: (token_id, token_info)}
         return originate_from_file(filename, client, storage)

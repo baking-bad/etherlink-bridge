@@ -48,24 +48,29 @@ def pytest_configure(config):
 
 
 token_bridge_data_collection: dict[str, Token] = {
-    'FA1.2': Token(
-        l1_asset_id='KT1LpdETWYvPWCQTR2FEW6jE6dVqJqxYjdeW_0',
-        l1_ticketer_address='KT1RvSp4yDKUABqWmv3pKGE9fA6iCGy7bqGh',
-        l1_ticket_helper_address='KT1DHLWJorW9WB6ztkx1XcoaJKWXeTu9yoR1',
-        l2_token_address='87dcbf128677ba36e79d47daf4eb4e51610e0150',
-        ticket_hash=91175236955563041997969161541627053560043293816665252670757743059507881920725,
-        ticket_content_hex='0707000005090a0000005f05020000005907040100000010636f6e74726163745f616464726573730a0000001c050a00000016018640' +
-                           '607e2f2c3483ae9f15707d1823d4351742e0000704010000000a746f6b656e5f747970650a0000000b0501000000054641312e32'
+    'tzBTC': Token(
+        l1_asset_id='KT1V7YkCUvuLCcMvrNfxvfP7AYdh7SUy3gVk_0',
+        l1_ticketer_address='KT1KnYz9eRVQHYgj25FMdQ9fo5f9SUEonzxe',
+        l1_ticket_helper_address='KT1WmUoTU91RVjGv8MHW5DFRn8daoFvnoNBh',
+        l2_token_address='54b20569c0aa92a5618589142b2d5cc5fe6fe426',
+        ticket_hash=38501601458255431664549467905666194270780968624079854711059999119424038560263,
+        ticket_content_hex='...'
     ),
-    'FA2': Token(
-        l1_asset_id='KT195Eb8T524v5VJ99ZzH2wpnPfQ2wJfMi6h_42',
-        l1_ticketer_address='KT1VybveLaWhpQHKph28WcGwSy1ud22KSEan',
-        l1_ticket_helper_address='KT1DNtHLr9T9zksZjZvQwgtx5XJwrW9wzETB',
-        l2_token_address='cb5d40c6b1bdf5cd51b3801351b0a68d101a561b',
-        ticket_hash=56913057262569210987124064945996187916231781764461777232724305614325812366043,
-        ticket_content_hex='0707002a05090a0000007405020000006e07040100000010636f6e74726163745f616464726573730a0000001c050a00000016010562' +
-                           '347c75e60f8ef9a15242d8accc705d8798a90007040100000008746f6b656e5f69640a0000000305002a0704010000000a746f6b656e' +
-                           '5f747970650a00000009050100000003464132'
+    'SIRS': Token(
+        l1_asset_id='KT1Dhb74UkncT5FcZfqmgnnXsBe3LBVXbpRb_0',
+        l1_ticketer_address='KT1BSE3Vzu2aMMg1Aa35vnM1MMPq4YAJRU5G',
+        l1_ticket_helper_address='KT1KvgaQ9Eztr3hXzV2tGT85fPRPGmXBzF7r',
+        l2_token_address='1b674b7d28d3da4bb0cbda959de2bcebe2ac83e8',
+        ticket_hash=106896103357068750276116957911853427818210703182371619532851114745162512601884,
+        ticket_content_hex='...'
+    ),
+    'USDt': Token(
+        l1_asset_id='KT1TJK6aTreCyfrrEjj1ZRPUmKdnLXfcgAAa_0',
+        l1_ticketer_address='KT1LBv2tVJt17UXC32SS6Vtbtg7yPcJ8scbb',
+        l1_ticket_helper_address='KT1H4TBKdAjCxQKBcdPqnfLvLbhShZ2CPC51',
+        l2_token_address='e4bf1873cfdaed33bab4e0f5788cba6d03a267f0',
+        ticket_hash=39756979904490530639324653565564362862566450403546985891700568436159160316336,
+        ticket_content_hex='...'
     ),
 }
 
@@ -103,9 +108,11 @@ def token(request: SubRequest) -> Token:
 def asset(request: SubRequest) -> Token | Native:
     yield request.param
 
+
 @pytest.fixture
 def ticket_router_tester_address() -> str:
     return 'KT1V8PLqiRQF7tLdc57a4mSdcsSfKaetjGC7'
+
 
 @pytest.fixture(scope='session', autouse=True)
 def bridge() -> Bridge:
@@ -126,8 +133,8 @@ def bridge() -> Bridge:
 @pytest.fixture(scope='session', autouse=True)
 def wallet() -> Wallet:
     return Wallet(
-        l1_private_key='edsk2nu78mRwg4V5Ka7XCJFVbVPPwhry8YPeEHRwzGQHEpGAffDvrH',
-        l1_public_key_hash='tz1YG6P2GTQKFpd9jeuESam2vg6aA9HHRkKo',
+        l1_private_key='edskRqDjCTNPh8QttChynaNcMwNqLKuEdtcrvSqmJojzDUFtBqtvbaXgs5eWpyQ2AABxS8FSZjzKytrLs38E4M9GcpAdiQjnUY',
+        l1_public_key_hash='tz1cdDUja6hsp4vNUBNmjVpEBDSYhDVLxg2X',
         l2_private_key='8636c473b431be57109d4153735315a5cdf36b3841eb2cfa80b75b3dcd2d941a',
         l2_public_key='0xBefD2C6fFC36249ebEbd21d6DF6376ecF3BAc448',
         l2_master_key='9722f6cc9ff938e63f8ccb74c3daa6b45837e5c5e3835ac08c44c50ab5f39dc0',

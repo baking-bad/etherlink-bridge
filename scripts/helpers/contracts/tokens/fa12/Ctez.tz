@@ -8,7 +8,7 @@ parameter (or
                   (pair %getTotalSupply (unit %request) (contract %callback nat))))
             (or (pair %mintOrBurn (int %quantity) (address %target))
                 (pair %transfer (address %from) (pair (address %to) (nat %value)))));
-storage (pair (big_map %tokens address nat)
+storage (pair (big_map %ledger address nat)
               (pair (big_map %allowances (pair (address %owner) (address %spender)) nat)
                     (pair (address %admin)
                           (pair (nat %total_supply)

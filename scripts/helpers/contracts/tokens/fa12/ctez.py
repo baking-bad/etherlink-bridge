@@ -18,7 +18,7 @@ from scripts.helpers.contracts.tokens.fa12.fa12 import FA12
 
 class CtezToken(FA12):
     default_storage = {
-        'tokens': {},
+        'ledger': {},
         'allowances': {},
         'admin': DEFAULT_ADDRESS,
         'total_supply': 0,
@@ -31,16 +31,22 @@ class CtezToken(FA12):
 
     @classmethod
     def originate(
-        cls, client: PyTezosClient, balances: dict[Addressable, int], token_id: int = 0
+        cls,
+        client: PyTezosClient,
+        balances: dict[Addressable, int],
+        token_id: int = 0,
+        token_info: dict | None = None,
     ) -> OperationGroup:
         """Deploys FA1.2 token with provided balances in the storage"""
 
         filename = join(dirname(__file__), 'Ctez.tz')
         storage = cls.default_storage.copy()
-        storage['tokens'] = {
+        storage['ledger'] = {
             get_address(addressable): amount for addressable, amount in balances.items()
         }
-        storage['token_metadata'] = {0: (0, {})}
+        if token_info is None:
+            token_info = {}
+        storage['token_metadata'] = {token_id: (token_id, token_info)}
         storage['total_supply'] = sum(balances.values())
         return originate_from_file(filename, client, storage)
 
@@ -55,7 +61,7 @@ class CtezToken(FA12):
 
         address = get_address(client_or_contract)
         try:
-            balance = self.contract.storage['tokens'][address]()
+            balance = self.contract.storage['ledger'][address]()
         except KeyError:
             balance = 0
         assert isinstance(balance, int)

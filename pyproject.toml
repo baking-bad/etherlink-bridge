@@ -16,6 +16,7 @@ click = "^8.1.7"
 eth-abi = "^5.1.0"
 web3 = "^6.20.0"
 survey = "^5.3.0"
+testcontainers = "^3.7.1"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.21.0"

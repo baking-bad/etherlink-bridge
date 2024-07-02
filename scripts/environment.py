@@ -94,6 +94,10 @@ def get_etherlink_web3(shell: Optional[str]) -> Web3:
 
     shell = shell or load_or_ask('L2_RPC_URL')
     web3 = Web3(Web3.HTTPProvider(shell))
+
+    if not web3.is_connected():
+        raise Exception(f'Failed to connect to Etherlink node: {shell}')
+
     return web3
 
 

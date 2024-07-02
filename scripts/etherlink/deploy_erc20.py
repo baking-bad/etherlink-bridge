@@ -1,10 +1,15 @@
 import click
 from typing import Optional
-import subprocess
-from scripts.environment import load_or_ask
+from scripts.environment import (
+    load_or_ask,
+    get_etherlink_web3,
+    get_etherlink_account,
+)
+from scripts.etherlink.erc20_helper import Erc20ProxyHelper
 
 
 @click.command()
+# TODO: consider simplify this command by using a single argument for the ticket
 @click.option(
     '--ticketer-address-bytes',
     required=True,
@@ -40,6 +45,7 @@ from scripts.environment import load_or_ask
     help='Private key that would be used to deploy contract on the Etherlink side.',
 )
 @click.option('--rpc-url', default=None, help='Etherlink RPC URL.')
+# TODO: consider adding gas price and gas limit here as parameters?
 def deploy_erc20(
     ticketer_address_bytes: str,
     ticket_content_bytes: str,
@@ -52,50 +58,24 @@ def deploy_erc20(
 ) -> None | str:
     """Deploys ERC20 Proxy contract with given parameters"""
 
-    private_key = private_key or load_or_ask('L2_PRIVATE_KEY', is_secret=True)
-    rpc_url = rpc_url or load_or_ask('L2_RPC_URL')
+    web3 = get_etherlink_web3(rpc_url)
+    account = get_etherlink_account(web3, private_key)
     kernel_address = kernel_address or load_or_ask('L2_KERNEL_ADDRESS')
 
-    result = subprocess.run(
-        [
-            'forge',
-            'create',
-            '--legacy',
-            '--rpc-url',
-            rpc_url,
-            '--private-key',
-            private_key,
-            'src/ERC20Proxy.sol:ERC20Proxy',
-            '--constructor-args',
-            ticketer_address_bytes,
-            ticket_content_bytes,
-            kernel_address,
-            token_name,
-            token_symbol,
-            str(decimals),
-            '--gas-limit',
-            '50000000',
-            '--gas-price',
-            '1000000000',
-        ],
-        cwd='etherlink',
-        # NOTE: not checking for return code, because it is very common
-        # to get non-zero exit status
-        # check=True,
-        capture_output=True,
-        text=True,
+    ticketer = bytes.fromhex(ticketer_address_bytes.replace('0x', ''))
+    content = bytes.fromhex(ticket_content_bytes.replace('0x', ''))
+
+    erc20 = Erc20ProxyHelper.originate(
+        web3=web3,
+        account=account,
+        ticketer=ticketer,
+        content=content,
+        kernel=kernel_address,
+        name=token_name,
+        symbol=token_symbol,
+        decimals=decimals,
     )
 
-    if result.returncode != 0:
-        print(result.stderr)
-        return None
-
-    print('Successfully deployed ERC20 contract:')
-    print(result.stdout)
-
-    # TODO: consider using more convenient way to get ERC20 address / obj
-    #       it would be great to have some kind of ERC20 helper returned
-    for line in result.stdout.split('\n'):
-        if line.startswith('Deployed to: '):
-            return line[15:]
-    return None
+    print(f'Successfully deployed ERC20 contract: {erc20.address}')
+    # TODO: consider returning the whole ERC20ProxyHelper object
+    return erc20.address

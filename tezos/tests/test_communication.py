@@ -1,5 +1,4 @@
 from tezos.tests.base import BaseTestCase
-from scripts.helpers.utility import pack
 
 
 class RollupCommunicationTestCase(BaseTestCase):
@@ -11,8 +10,8 @@ class RollupCommunicationTestCase(BaseTestCase):
             token_type='FA2',
             balance=1000,
             extra_metadata={
-                'decimals': pack(12, 'nat'),
-                'symbol': pack('FA2', 'string'),
+                'decimals': '12',
+                'symbol': 'FA2',
             },
         )
         erc_proxy = bytes.fromhex('fa02fa02fa02fa02fa02fa02fa02fa02fa02fa02')

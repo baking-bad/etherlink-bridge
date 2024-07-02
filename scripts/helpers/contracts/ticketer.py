@@ -1,7 +1,7 @@
 from os.path import join
 from typing import Any
 
-from eth_abi import decode
+from eth_abi import decode  # type: ignore
 from pytezos.client import PyTezosClient
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
@@ -25,8 +25,11 @@ class Ticketer(ContractHelper):
         extra_token_info: TokenInfo,
         content_token_id: int = 0,
     ) -> dict[str, Any]:
+        """Creates storage for the Ticketer contract"""
+
+        symbol = extra_token_info.get('symbol') if extra_token_info else None
         metadata = Metadata.make_default(
-            name=f'Ticketer: {extra_token_info["symbol"][6:].decode()}',
+            name=f'Ticketer: {symbol}' if symbol else 'Ticketer',
             description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
         )
         content = (content_token_id, token.make_token_info_bytes(extra_token_info))
@@ -109,7 +112,7 @@ class Ticketer(ContractHelper):
                 '0x' + ticketer_params['content_bytes'],
             ],
         )
-        ticket_hash = decode(['uint256'], data)[0]
+        ticket_hash: int = decode(['uint256'], data)[0]
         return ticket_hash
 
     def get_content_bytes_hex(self) -> str:

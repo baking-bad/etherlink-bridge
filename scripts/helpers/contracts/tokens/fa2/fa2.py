@@ -56,11 +56,11 @@ class FA2(TokenHelper):
         assert isinstance(balance, int)
         return balance
 
-    def make_token_info(self) -> dict[str, bytes]:
+    def make_token_info(self) -> dict[str, str]:
         return {
-            'contract_address': self.address.encode('utf-8'),
-            'token_type': "FA2".encode('utf-8'),
-            'token_id': str(self.token_id).encode('utf-8'),
+            'contract_address': self.address,
+            'token_type': "FA2",
+            'token_id': str(self.token_id),
         }
 
     @classmethod

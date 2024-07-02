@@ -14,6 +14,7 @@ from scripts.helpers.contracts import (
     TicketRouterTester,
     TokenBridgeHelper,
 )
+from scripts.helpers.contracts.tokens import TokenInfo
 from typing import Optional
 from scripts.helpers.addressable import Addressable
 
@@ -61,7 +62,7 @@ class BaseTestCase(SandboxedNodeTestCase):
     def deploy_ticketer(
         self,
         token: TokenHelper,
-        extra_metadata: Optional[dict[str, bytes]] = None,
+        extra_metadata: TokenInfo = None,
     ) -> Ticketer:
         """Deploys Ticketer contract with given token and additional metadata"""
 
@@ -92,7 +93,7 @@ class BaseTestCase(SandboxedNodeTestCase):
         self,
         token_type: str = 'FA2',
         balance: int = 1000,
-        extra_metadata: Optional[dict[str, bytes]] = None,
+        extra_metadata: TokenInfo = None,
         token_id: int = 0,
     ) -> tuple[PyTezosClient, TokenHelper, Ticketer, TicketRouterTester]:
 

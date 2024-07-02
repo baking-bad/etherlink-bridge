@@ -44,8 +44,8 @@ class TicketerTestCase(BaseTestCase):
         alice, token, ticketer, _ = self.default_setup(
             token_type='FA2',
             extra_metadata={
-                'decimals': '12'.encode(),
-                'symbol': 'FA2'.encode(),
+                'decimals': '12',
+                'symbol': 'FA2',
             },
         )
 
@@ -277,8 +277,8 @@ class TicketerTestCase(BaseTestCase):
         alice, token, ticketer, _ = self.default_setup(
             token_type='FA1.2',
             extra_metadata={
-                'decimals': '16'.encode(),
-                'symbol': 'tBTC'.encode(),
+                'decimals': '16',
+                'symbol': 'tBTC',
             },
         )
 
@@ -301,13 +301,7 @@ class TicketerTestCase(BaseTestCase):
             token_type='FA2',
             token_id=42,
             extra_metadata={
-                'some_strange_metadata': pack(
-                    {
-                        'list_of_strings': pack(['one', 'two'], 'list string'),
-                    },
-                    'map string bytes',
-                ),
-                'symbol': 'NFT'.encode(),
+                'symbol': 'NFT',
             },
         )
 
@@ -316,12 +310,6 @@ class TicketerTestCase(BaseTestCase):
                 'contract_address': token.address.encode(),
                 'token_type': 'FA2'.encode(),
                 'token_id': '42'.encode(),
-                'some_strange_metadata': pack(
-                    {
-                        'list_of_strings': pack(['one', 'two'], 'list string'),
-                    },
-                    'map string bytes',
-                ),
                 'symbol': 'NFT'.encode(),
             },
             'map %token_info string bytes',

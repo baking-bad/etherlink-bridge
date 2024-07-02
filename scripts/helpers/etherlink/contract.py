@@ -1,4 +1,3 @@
-# TODO: consider moving to scripts/helpers/etherlink ?
 from web3.contract import Contract, ContractConstructor  # type: ignore
 from web3 import Web3
 from os.path import join, dirname
@@ -7,13 +6,15 @@ import json
 from dataclasses import dataclass
 from typing import Optional
 from hexbytes import HexBytes
+from typing import TypeVar, Type
 
 
-def load_contract(web3: Web3, contract_name: str) -> type[Contract]:
-    """Returns path to the Etherlink contract by its name"""
+def load_contract_type(web3: Web3, contract_name: str) -> Type[Contract]:
+    """Returns a Contract class for a given contract name."""
 
     filename = join(
         dirname(__file__),
+        '..',
         '..',
         '..',
         'etherlink',
@@ -40,6 +41,8 @@ def originate_contract(
     nonce: Optional[int],
 ) -> HexBytes:
     # TODO: estimate gas and request gas price
+    # gas_limit = gas_limit or constructor.estimate_gas(transaction=transaction)
+    # gas_price = gas_price or web3.eth.gas_price
     gas_limit = gas_limit or 30_000_000
     gas_price = gas_price or web3.to_wei('1', 'gwei')
     nonce = nonce or web3.eth.get_transaction_count(account.address)
@@ -57,41 +60,24 @@ def originate_contract(
     return tx_hash
 
 
+T = TypeVar('T', bound='EvmContractHelper')
+
+
 @dataclass
-class Erc20ProxyHelper:
+class EvmContractHelper:
     contract: Contract
     web3: Web3
+    account: LocalAccount
     address: str
 
     @classmethod
-    def originate(
-        cls,
+    def from_address(
+        cls: Type[T],
+        contract_type: Type[Contract],
         web3: Web3,
         account: LocalAccount,
-        ticketer: bytes,
-        content: bytes,
-        kernel: str,
-        name: str,
-        symbol: str,
-        decimals: int,
-    ) -> 'Erc20ProxyHelper':
-        """Deploys ERC20 Proxy contract with given parameters"""
-
-        ERC20Proxy = load_contract(web3, 'ERC20Proxy')
-        constructor = ERC20Proxy.constructor(
-            ticketer, content, kernel, name, symbol, decimals
-        )
-
-        tx_hash = originate_contract(
-            web3=web3,
-            account=account,
-            constructor=constructor,
-            gas_limit=30_000_000,
-            gas_price=web3.to_wei('1', 'gwei'),
-            nonce=None,
-        )
-        tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
-        address = tx_receipt.contractAddress  # type: ignore
-        contract = web3.eth.contract(address=address, abi=ERC20Proxy.abi)
-
-        return cls(contract=contract, web3=web3, address=address)
+        address: str,
+    ) -> T:
+        # TODO: check if this OK to ignore type
+        contract = web3.eth.contract(address=address, abi=contract_type.abi)  # type: ignore
+        return cls(contract=contract, web3=web3, account=account, address=address)

@@ -23,6 +23,7 @@ from typing import Any, Dict, Optional
 @click.option(
     '--decimals',
     required=True,
+    default=0,
     help='Token decimals added to the ERC20 token and ticketer metadata content.',
 )
 @click.option(
@@ -115,6 +116,7 @@ def bridge_token(
         proxy_address=erc_20_address,
         private_key=tezos_private_key,
         rpc_url=tezos_rpc_url,
+        symbol=symbol,
     )  # type: ignore
 
     return {

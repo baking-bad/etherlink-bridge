@@ -73,4 +73,9 @@ def build_contracts(
         'Ticketer',
         'build/ticketer.tz',
     )
+    compile_contract(
+        'contracts/metadata-tracker/metadata-tracker.mligo',
+        'MetadataTracker',
+        'build/metadata-tracker.tz',
+    )
     print('Done')

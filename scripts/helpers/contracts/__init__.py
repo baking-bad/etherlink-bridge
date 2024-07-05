@@ -10,6 +10,7 @@ from scripts.helpers.contracts.rollup_mock import RollupMock
 from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
 from scripts.helpers.contracts.contract import ContractHelper
 from scripts.helpers.contracts.token_bridge_helper import TokenBridgeHelper
+from scripts.helpers.contracts.metadata_tracker import MetadataTracker
 
 
 # Allowing reimporting from this module:
@@ -24,4 +25,5 @@ __all__ = [
     'TokenBridgeHelper',
     'TokenHelper',
     'ContractHelper',
+    'MetadataTracker',
 ]

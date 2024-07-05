@@ -32,15 +32,17 @@ class TokenBridgeHelper(ContractHelper):
         """Deploys Token Bridge Helper"""
 
         token = token or ticketer.get_token()
+        name = f"Token Bridge Helper: {symbol}" if symbol else "Token Bridge Helper"
         storage = {
             'token': token.as_dict(),
             'ticketer': ticketer.address,
             'erc_proxy': erc_proxy,
             'context': None,
             'metadata': Metadata.make_default(
-                name=': '.join(filter(bool, ['Token Bridge Helper', symbol])),
-                description='The Token Bridge Helper is a helper contract which helps user to communicate with Etherlink Bridge ' +
-                            'components that requires tickets to be packed into external data structure.',
+                name=name,
+                description='The Token Bridge Helper is a helper contract which '
+                + 'helps user to communicate with Etherlink Bridge components '
+                + 'that requires tickets to be packed into external data structure.',
             ),
         }
         filename = join(get_build_dir(), 'token-bridge-helper.tz')

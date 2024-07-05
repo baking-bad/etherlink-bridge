@@ -1,8 +1,9 @@
 import click
 from typing import Optional
-import subprocess
 from scripts.environment import load_or_ask
 from scripts.helpers.utility import make_address_bytes
+from scripts.helpers.etherlink import FaWithdrawalPrecompileHelper, load_contract_type
+from scripts.environment import get_etherlink_web3, get_etherlink_account
 
 
 @click.command()
@@ -19,6 +20,7 @@ from scripts.helpers.utility import make_address_bytes
 @click.option(
     '--amount', required=True, type=int, help='The amount of tokens to be withdrawn.'
 )
+# TODO: consider get ticketer address bytes and content from the router address provided (make optional?)
 @click.option(
     '--ticketer-address-bytes',
     required=True,
@@ -29,6 +31,7 @@ from scripts.helpers.utility import make_address_bytes
     required=True,
     help='The content of the ticket as micheline expression is in its forged form, **legacy optimized mode**. Use `get_ticket_params` function to get the correct value for a given ticket address.',
 )
+# TODO: consider making mandatory and rename to `--to`
 @click.option(
     '--receiver-address',
     default=None,
@@ -58,8 +61,8 @@ def withdraw(
 ) -> None:
     """Withdraws token from L2 to L1"""
 
-    private_key = private_key or load_or_ask('L2_PRIVATE_KEY', is_secret=True)
-    rpc_url = rpc_url or load_or_ask('L2_RPC_URL')
+    web3 = get_etherlink_web3(rpc_url)
+    account = get_etherlink_account(web3, private_key)
     withdraw_precompile = withdraw_precompile or load_or_ask(
         'L2_WITHDRAW_PRECOMPILE_ADDRESS'
     )
@@ -67,38 +70,27 @@ def withdraw(
     receiver_address = receiver_address or load_or_ask('L1_PUBLIC_KEY_HASH')
     receiver_address_bytes = make_address_bytes(receiver_address)
     router_address_bytes = make_address_bytes(router_address)
-    routing_info = receiver_address_bytes + router_address_bytes
+    routing_info_str = receiver_address_bytes + router_address_bytes
+    routing_info = bytes.fromhex(routing_info_str)
+    ticketer = bytes.fromhex(ticketer_address_bytes.replace('0x', ''))
+    content = bytes.fromhex(ticket_content_bytes.replace('0x', ''))
 
-    result = subprocess.run(
-        [
-            'cast',
-            'send',
-            withdraw_precompile,
-            'withdraw(address,bytes,uint256,bytes22,bytes)',
-            proxy_address,
-            routing_info,
-            str(amount),
-            ticketer_address_bytes,
-            ticket_content_bytes,
-            '--rpc-url',
-            rpc_url,
-            '--private-key',
-            private_key,
-            '--legacy',
-            '--gas-limit',
-            '10000000',
-        ],
-        cwd='etherlink',
-        # NOTE: not checking for return code, because it is very common
-        # to get non-zero exit status
-        # check=True,
-        capture_output=True,
-        text=True,
+    fa_withdrawal_precompile = FaWithdrawalPrecompileHelper.from_address(
+        # TODO: consider adding FaWithdrawalPrecompile ABI to the repo
+        contract_type=load_contract_type(web3, 'KernelMock'),
+        web3=web3,
+        account=account,
+        # TODO: check: is it required `0x` to be added?
+        address=withdraw_precompile,
     )
 
-    if result.returncode != 0:
-        print(result.stderr)
-        return
+    receipt = fa_withdrawal_precompile.withdraw(
+        ticket_owner=proxy_address,
+        routing_info=routing_info,
+        amount=amount,
+        ticketer=ticketer,
+        content=content,
+    )
 
-    print('Successfully called withdraw:')
-    print(result.stdout)
+    tx_hash = receipt.transactionHash  # type: ignore
+    print(f'Successfully called withdraw, tx hash: {tx_hash.hex()}')

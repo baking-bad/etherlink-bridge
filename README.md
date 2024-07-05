@@ -1,17 +1,16 @@
 # Etherlink FA Token Bridge
 
-This repository showcases smart contracts for an FA tokens bridge between Tezos and Etherlink, aligned with the [TZIP-029](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md) standard.
+Smart contracts for an FA tokens bridge between Tezos and Etherlink, implementation of [TZIP-029](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md) standard.
 
-On the Tezos side, there are smart contracts written in [CameLIGO](https://ligolang.org/docs/intro/introduction?lang=cameligo), featuring:
-- [**Ticketer**](tezos/contracts/ticketer/ticketer.mligo), which enables wrapping of **FA1.2** and **FA2** tokens into tickets. These tickets can then be sent to the bridge using a permissionless ticket transport mechanism.
-- [**TokenBridgeHelper**](tezos/contracts/token-bridge-helper/token-bridge-helper.mligo), which is designed to allow users to transfer tickets even without the support for the **ticket_transfer** operation in the current Tezos infrastructure. The Token Bridge Helper implementation focused on FA1.2 and FA2 tokens only.
+Tezos side:
+- [**Ticketer**](tezos/contracts/ticketer/ticketer.mligo). Enables wrapping of **FA1.2** and **FA2** tokens into tickets. These tickets can then be sent to the bridge using a permissionless ticket transport mechanism.
+- [**TokenBridgeHelper**](tezos/contracts/token-bridge-helper/token-bridge-helper.mligo). Designed to allow users to transfer tickets even without the support for the **ticket_transfer** operation in the current Tezos infrastructure. The Token Bridge Helper implementation focused on FA1.2 and FA2 tokens only.
 
-On the Etherlink side, the setup includes Solidity contracts, notably the **ERC20Proxy**: an ERC20 contract that implements the L2 proxy [deposit interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-deposit-interface) and [withdraw interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-withdraw-interface).
-
-Additionally, the [scripts](scripts/) directory contains Python scripts with CLI commands enabling interaction with the bridge. These commands include contract deployment on both sides of the bridge, as well as deposit and withdrawal helpers.
+Etherlink side:
+- [**ERC20Proxy**](etherlink/src/ERC20Proxy.sol). An ERC20 contract that implements the L2 proxy [deposit interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-deposit-interface) and [withdraw interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-withdraw-interface).
 
 ### Setup
-1. To run scripts it is required for the [Poetry](https://python-poetry.org/) to be installed in the system:
+1. To run FA Token Bridge scripts it is required for the [Poetry](https://python-poetry.org/) to be installed in the system:
 ```shell
 curl -sSL https://install.python-poetry.org | python3 -
 ```
@@ -21,32 +20,15 @@ curl -sSL https://install.python-poetry.org | python3 -
 poetry install
 ```
 
-3. Install Foundry by following the [installation guide](https://book.getfoundry.sh/getting-started/installation)
-
-4. Install Solidity dependencies with Forge (part of the Foundry toolchain). Installation should be executed from the `etherlink` directory:
-```shell
-(cd etherlink && forge test)
-```
-
-Forge uses [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) to manage dependencies. It is possible to check versions of the Solidity libraries installed by running `git submodule status`. Here are the versions used to compile contracts:
-```shell
-1d9650e951204a0ddce9ff89c32f1997984cef4d etherlink/lib/forge-std (v1.6.1)
-fd81a96f01cc42ef1c9a5399364968d0e07e9e90 etherlink/lib/openzeppelin-contracts (v4.9.3)
-```
-
-5. Set up environment variables by running `init_wallets` script. It will ask users to enter their Tezos and Etherlink private and public keys. It also offers options to configure parameters for L1 and L2 communication. Default values are available and test keys are included:
-```shell
-poetry run init_wallets
-```
-
-Users also may need some funds in their accounts to pay for the execution fees:
-- To fund a Tezos account, the [faucet](https://faucet.oxfordnet.teztnets.com/) can be used.
-- One of the ways to fund an Etherlink account is to execute `fund_etherlink_account` script which will send 1 xtz to the account which is set in the environment variables:
-```shell
-poetry run fund_etherlink_account
-```
+3. To rebuild and test contracts it is also required to install Foundry and LIGO, see [compilation and running tests](#compilation-and-running-tests).
 
 ### Bridging a new Token
+> To set up environment, run `poetry run init_wallets`. It will ask Tezos and Etherlink keys, RPC node URIs and other variables used in scripts.
+
+> To get some funds in to pay for the execution fees:
+> - Tezos testnets [faucet](https://faucet.pariscnet.teztnets.com/)
+> - Etherlink testnets [faucet](https://faucet.etherlink.com/)
+
 To establish a new bridge between Tezos and Etherlink for existing `FA1.2` and `FA2` tokens there is a `bridge_token` command that would deploy three contracts:
 - Ticketer contract on the Tezos side,
 - ERC20 contract on the Etherlink side,
@@ -67,65 +49,19 @@ There are also optional parameters that should be provided via environment varia
 - `--etherlink-rpc-url`: Etherlink RPC URL.
 - `--kernel-address`: The address of the Etherlink kernel that will be managing the token.
 
-Here is an example of the command to deploy an `FA1.2 tzBTC` Token bridge in Ghostnet:
+Here is an example of the command to deploy an `FA1.2 tzBTC` Token bridge contracts in the Ghostnet:
 ```shell
-poetry run bridge_token --token-address KT1P8RdJ5MfHMK5phKJ5JsfNfask5v2b2NQS --token-type "FA1.2" --decimals 8 --symbol "tzBTC" --name "random tzBTC test token" --tezos-rpc-url "https://rpc.tzkt.io/ghostnet/" --etherlink-rpc-url "https://node.ghostnet.etherlink.com/"
-```
-### Bridge configuration
-To configure the bridge for a new token (i.e., to list a new token pair), users need to engage with the **Ticket Transport Layer**. This critical component of the bridge facilitates the transfer of tickets between Tezos and Etherlink.
-
-![permissionless ticket transfer short illustration](docs/permissionless-ticket-transfer.png)
-
-The **FA2** and **FA1.2** standard Tezos tokens are not inherently ticket-native. Therefore, to bridge these tokens, users must initially convert them to tickets. To do this they first need to deploy a **Ticketer** contract on the Tezos side. This contract will be associated with the specific Tezos token and provide entrypoint to wrap them into tickets. This contract is unnecessary for the forthcoming tokens that are ticket-native, such as those following **FA2.1** standard.
-
-NOTE: Upgrades to the Ticketer contract are highly unwanted because this will lead to liquidity fragmentation. Ideally, it should be deployed once and remain unchanged indefinitely.
-
-Once it's determined what **Ticketer** will represent the token, users can deploy an **ERC20Proxy** – an ERC20 token integrated with bridge deposit and withdrawal interfaces. The Ticketer address and ticket content are provided to the ERC20Proxy constructor during origination to bind the L2 token to the L1 ticket. It is also required to provide rollup kernel address to the ERC20 proxy which will be allowed to mint and burn tokens which is the `0x00` address.
-
-Additionally, deploying a **TokenBridgeHelper** on the Tezos side is required, targeting the specific **Token** and **Ticketer** pair on the L1 side and **ERC20Proxy** address on the L2 side. This deployment is crucial since wallets currently do not support the **transfer_ticket** operation. The **TokenBridgeHelper** streamlines the process by wrapping tokens into tickets and enabling their transfer to the rollup in a single transaction. Note, however, that this type of contract may become obsolete in the future when (1) wallets begin supporting the **transfer_ticket** operation and (2) Tezos undergoes a protocol upgrade that permits implicit addresses to transfer tickets with arbitrary data.
-
-#### Deploying a Token
-For demonstration purposes, users can deploy a test token intended for bridging. The bridge has been tested with two types of tokens available in the repository:
-- The **FA1.2** standard **Ctez** token.
-- The **FA2** standard **fxhash** token.
-
-To deploy a test version of a token and allocate the total supply to the token's originator, the `deploy_token` command can be used. It is possible to configure `--token-type`, `--token-id`, and `--total-supply` providing these params to the command. The following example demonstrates how to deploy an **FA1.2** token type using default parameters:
-```shell
-poetry run deploy_token --token-type FA1.2 --total-supply 1000
-```
-Here is an example of the deployed [token](https://oxfordnet.tzkt.io/KT1QKYoSpV5BLKg8xoexG25yZwA1sjVrrymU/operations/).
-
-#### Deploying a Ticketer
-The `deploy_ticketer` command can be used to deploy a ticketer configured for a specific token. It requires the `--token-address`, `--token-type`, and `--token-id` parameters to be provided. Below is an example that demonstrates how to deploy a ticketer for the **FA1.2** token previously deployed on Oxfordnet:
-```shell
-poetry run deploy_ticketer --token-address KT1QKYoSpV5BLKg8xoexG25yZwA1sjVrrymU --token-type FA1.2
-```
-Here is an example of the deployed [ticketer](https://oxfordnet.tzkt.io/KT1C2gmhvA1FrscWe8KbrHf8dWG9XJETR127/metadata).
-
-After the Ticketer contract is deployed, users can obtain the parameters required for the **ERC20Proxy** origination, **ticketer-address_bytes** and **content_bytes**. To do this users can execute `get_ticketer_params` command:
-```shell
-poetry run get_ticketer_params --ticketer KT1C2gmhvA1FrscWe8KbrHf8dWG9XJETR127
+poetry run bridge_token \
+    --token-address KT1P8RdJ5MfHMK5phKJ5JsfNfask5v2b2NQS \
+    --token-type "FA1.2" \
+    --decimals 8 \
+    --symbol "tzBTC" \
+    --name "tzBTC test token" \
+    --tezos-rpc-url "https://rpc.tzkt.io/ghostnet/" \
+    --etherlink-rpc-url "https://node.ghostnet.etherlink.com/"
 ```
 
-For example, the ticketer deployed in the previous step has the following parameters:
-```
-address_bytes: 0125cf30bfba37ed7907f524f7b4eaf304e03d097600
-content_bytes: 0707000005090a0000005f05020000005907040100000010636f6e74726163745f616464726573730a0000001c050a0000001601aca11e3f7734be9b46df1642a7d5f7d66c7bf6e8000704010000000a746f6b656e5f747970650a0000000b0501000000054641312e32
-```
-
-#### Deploying ERC20Proxy
-Then, to deploy a token contract on the Etherlink side, the `deploy_erc20` command can be used. This script requires the `--ticketer-address-bytes` and `--ticketer-content-bytes`, as well as `--token-name`, `--token-symbol`, and `--decimals` to be provided for the L2 token contract configuration. Below is an example that originates ERC20 contract connected to the ticketer previously deployed:
-```shell
-poetry run deploy_erc20 --ticketer-address-bytes 0125cf30bfba37ed7907f524f7b4eaf304e03d097600 --ticket-content-bytes 0707000005090a0000005f05020000005907040100000010636f6e74726163745f616464726573730a0000001c050a0000001601aca11e3f7734be9b46df1642a7d5f7d66c7bf6e8000704010000000a746f6b656e5f747970650a0000000b0501000000054641312e32 --token-name "FA1.2 Test Token" --token-symbol "FA1.2" --decimals 0
-```
-Here is an example of the deployed [token](http://blockscout.dipdup.net/address/0x03E39FF2b379FBcd9284Ab457113D82fF4daBBF4).
-
-#### Deploying a Token Bridge Helper
-Finally, to allow the interaction of Tezos wallets with tickets, users need to deploy a Token Bridge Helper. During origination, Token Bridge Helper linked to the Token, Ticketer and ERC20Proxy. To originate Token Bridge Helper user should run the `deploy_token_bridge_helper` command, which requires the `--ticketer-address` and `--proxy-address` (the address of the L2 token) parameters to be provided. The Ticketer's storage will be parsed to retrieve information about the token. Below is an example that illustrates deploying a token bridge helper for the previously deployed ticketer and proxy:
-```shell
-poetry run deploy_token_bridge_helper --ticketer-address KT1C2gmhvA1FrscWe8KbrHf8dWG9XJETR127 --proxy-address 0x03E39FF2b379FBcd9284Ab457113D82fF4daBBF4
-```
-Here is an example of the deployed [helper](https://oxfordnet.tzkt.io/KT1RWw9NyPDZm9jeiEA1hXMd4PgGQVPHYrzj/metadata).
+To find out the details of how the FA Bridge contracts deployed and communicate with each other, see: [bridge configuration](docs/Bridge-configuration.md)
 
 ### Deposit
 To deposit a token, users need to wrap tokens to tickets and then transfer them to the smart rollup address, along with routing info provided in the [specified format](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#deposit): a 40 bytes payload comprising `| receiver | proxy |`. The Token Bridge Helper contract allows users to perform these operations in one call. To deposit a token users may utilize `deposit` command and provide the `--token-bridge-helper-address` and a bridged `--amount` as parameters. Here is an example:
@@ -179,6 +115,19 @@ poetry run execute_outbox_message --commitment src13PirA1PzjLWRYJvNFJL5V6tfdbhzm
 Here is an example of the finished [withdrawal](https://oxfordnet.tzkt.io/oo9FJdy6byfy6HoTqpnzs68eLrpfwu1aouvnM8bv6HCbjrsXPF2/228622).
 
 ## Compilation and Running Tests
+1. Install Foundry by following the [installation guide](https://book.getfoundry.sh/getting-started/installation)
+
+2. Install Solidity dependencies with Forge (part of the Foundry toolchain). Installation should be executed from the `etherlink` directory:
+```shell
+(cd etherlink && forge install)
+```
+
+Forge uses [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) to manage dependencies. It is possible to check versions of the Solidity libraries installed by running `git submodule status`. Here are the versions used to compile contracts:
+```shell
+1d9650e951204a0ddce9ff89c32f1997984cef4d etherlink/lib/forge-std (v1.6.1)
+fd81a96f01cc42ef1c9a5399364968d0e07e9e90 etherlink/lib/openzeppelin-contracts (v4.9.3)
+```
+
 ### Compilation
 #### 1. Tezos side:
 To compile Tezos-side contracts, the LIGO compiler must be installed. The most convenient method is to use the Docker version of the LIGO compiler. Compilation of all contracts using the dockerized LIGO compiler can be initiated with the following command:

@@ -10,18 +10,18 @@ def make_extra_metadata(
     name: Optional[str],
     symbol: Optional[str],
     decimals: Optional[int],
-) -> dict[str, bytes]:
+) -> dict[str, str]:
     """Creates extra metadata for ticketer content with name, symbol and decimals"""
 
     extra_metadata = {}
     if name:
-        extra_metadata['name'] = name.encode('utf-8')
+        extra_metadata['name'] = name
 
     if symbol:
-        extra_metadata['symbol'] = symbol.encode('utf-8')
+        extra_metadata['symbol'] = symbol
 
     if decimals:
-        extra_metadata['decimals'] = str(decimals).encode('utf-8')
+        extra_metadata['decimals'] = str(decimals)
 
     return extra_metadata
 

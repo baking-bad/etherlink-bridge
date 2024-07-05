@@ -10,7 +10,7 @@ from scripts.helpers.addressable import Addressable
 
 
 TicketContent = tuple[int, Optional[bytes]]
-TokenInfo = Optional[dict[str, bytes]]
+TokenInfo = Optional[dict[str, str]]
 
 # Map token info type is the same as token info metadata in FA2:
 MAP_TOKEN_INFO_TYPE = 'map %token_info string bytes'
@@ -27,7 +27,7 @@ class TokenHelper(ContractHelper):
         client: PyTezosClient,
         balances: dict[Addressable, int],
         token_id: int = 0,
-        token_info: dict[str, bytes] = None,
+        token_info: TokenInfo = None,
     ) -> OperationGroup: ...
 
     @abstractmethod
@@ -46,7 +46,7 @@ class TokenHelper(ContractHelper):
     def get_balance(self, client_or_contract: Addressable) -> int: ...
 
     @abstractmethod
-    def make_token_info(self) -> dict[str, bytes]: ...
+    def make_token_info(self) -> dict[str, str]: ...
 
     def make_token_info_bytes(
         self,
@@ -61,8 +61,11 @@ class TokenHelper(ContractHelper):
             **self.make_token_info(),
             **extra_token_info,
         }
+        token_info_bytes = {
+            key: value.encode('utf-8') for key, value in token_info.items()
+        }
 
-        return pack(token_info, MAP_TOKEN_INFO_TYPE)
+        return pack(token_info_bytes, MAP_TOKEN_INFO_TYPE)
 
     @classmethod
     def from_dict(cls, client: PyTezosClient, token_dict: dict) -> 'TokenHelper':

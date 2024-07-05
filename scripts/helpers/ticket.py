@@ -9,6 +9,9 @@ from scripts.helpers.addressable import (
     get_address,
 )
 from scripts.helpers.ticket_content import TicketContent
+from scripts.helpers.utility import make_address_bytes
+from web3 import Web3
+from eth_abi import decode  # type: ignore
 
 
 def get_ticket_balance(
@@ -95,6 +98,20 @@ class Ticket:
             entrypoint=entrypoint,
         )
         return transfer_op
+
+    def hash(self) -> int:
+        """Returns hash of the ticket. It is used in the L2 TicketTable to
+        identify the ticket."""
+
+        data = Web3.solidity_keccak(
+            ['bytes22', 'bytes'],
+            [
+                '0x' + make_address_bytes(self.ticketer),
+                '0x' + self.content.to_bytes_hex(),
+            ],
+        )
+        ticket_hash: int = decode(['uint256'], data)[0]
+        return ticket_hash
 
 
 def deserialize_ticket(owner: Addressable, raw_ticket: dict) -> Ticket:

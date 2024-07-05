@@ -23,6 +23,7 @@ from typing import Any, Dict, Optional
 @click.option(
     '--decimals',
     required=True,
+    default=0,
     help='Token decimals added to the ERC20 token and ticketer metadata content.',
 )
 @click.option(
@@ -49,8 +50,8 @@ from typing import Any, Dict, Optional
 @click.option('--etherlink-rpc-url', default=None, help='Etherlink RPC URL.')
 @click.option(
     '--kernel-address',
-    default=None,
-    help='The address of the Etherlink kernel which will be managing token.',
+    default='0x0000000000000000000000000000000000000000',
+    help='The address of the Etherlink kernel which will be managing token. Default `0x0000000000000000000000000000000000000000`',
 )
 def bridge_token(
     token_address: str,
@@ -63,7 +64,7 @@ def bridge_token(
     tezos_rpc_url: Optional[str],
     etherlink_private_key: Optional[str],
     etherlink_rpc_url: Optional[str],
-    kernel_address: Optional[str],
+    kernel_address: str,
 ) -> Dict[str, Any]:
     """Deploys bridge contracts for a new token:
     - Ticketer
@@ -115,6 +116,7 @@ def bridge_token(
         proxy_address=erc_20_address,
         private_key=tezos_private_key,
         rpc_url=tezos_rpc_url,
+        symbol=symbol,
     )  # type: ignore
 
     return {

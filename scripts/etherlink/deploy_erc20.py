@@ -5,7 +5,7 @@ from scripts.environment import (
     get_etherlink_web3,
     get_etherlink_account,
 )
-from scripts.etherlink.erc20_helper import Erc20ProxyHelper
+from scripts.helpers.etherlink import Erc20ProxyHelper
 
 
 @click.command()

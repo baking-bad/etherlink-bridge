@@ -176,7 +176,7 @@ class TokenBootstrap:
                 self._tezos_client.context.shell,
             )
 
-            ticket_hash = ticketer.get_ticket_hash(ticketer_params_dict)
+            ticket_hash = ticketer.read_ticket().hash()
 
             ticketer_params = TicketerParamsDTO(
                 address_bytes_hex=ticketer_params_dict['address_bytes'],

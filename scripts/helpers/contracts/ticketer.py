@@ -1,11 +1,9 @@
 from os.path import join
-from typing import Any
+from typing import Any, Optional
 
-from eth_abi import decode
 from pytezos.client import PyTezosClient
 from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
-from web3 import Web3
 
 from scripts.helpers.addressable import Addressable
 from scripts.helpers.contracts.contract import ContractHelper
@@ -25,8 +23,11 @@ class Ticketer(ContractHelper):
         extra_token_info: TokenInfo,
         content_token_id: int = 0,
     ) -> dict[str, Any]:
+        """Creates storage for the Ticketer contract"""
+
+        symbol = extra_token_info.get('symbol') if extra_token_info else None
         metadata = Metadata.make_default(
-            name=f'Ticketer: {extra_token_info["symbol"][6:].decode()}',
+            name=f'Ticketer: {symbol}' if symbol else 'Ticketer',
             description='The Ticketer is a component of the Etherlink Bridge, designed to wrap legacy FA2 and FA1.2 tokens to tickets.',
         )
         content = (content_token_id, token.make_token_info_bytes(extra_token_info))
@@ -66,11 +67,12 @@ class Ticketer(ContractHelper):
 
     def read_ticket(
         self,
-        owner: Addressable,
+        owner: Optional[Addressable] = None,
     ) -> Ticket:
         """Returns ticket with Ticketer's content that can be used in
         `ticket_transfer` call. Amount is set to the client's balance."""
 
+        owner = owner or self.client
         return Ticket.create(
             client=self.client,
             owner=owner,
@@ -100,19 +102,7 @@ class Ticketer(ContractHelper):
 
         return self.contract.get_token().run_view()  # type: ignore
 
-    @staticmethod
-    def get_ticket_hash(ticketer_params: dict[str, str]) -> int:
-        data = Web3.solidity_keccak(
-            ['bytes22', 'bytes'],
-            [
-                '0x' + ticketer_params['address_bytes'],
-                '0x' + ticketer_params['content_bytes'],
-            ],
-        )
-        ticket_hash = decode(['uint256'], data)[0]
-        return ticket_hash
-
     def get_content_bytes_hex(self) -> str:
         """Returns content of the ticketer as bytes hex string"""
 
-        return self.read_ticket(self.address).content.to_bytes_hex()
+        return self.read_ticket().content.to_bytes_hex()

@@ -8,6 +8,7 @@ from pytezos import PyTezosClient
 from pytezos import pytezos
 from pytezos.rpc import RpcError
 
+from scripts.bootstrap.cli import echo
 from scripts.bootstrap.cli import notice_echo
 from scripts.bootstrap.cli import survey_table
 from scripts.bootstrap.const import DEFAULT_TOKEN_ID
@@ -49,6 +50,34 @@ class EtherlinkBootstrapClient:
         )
 
 
+def ask_origination_confirmation(token_info: TokenInfoDTO) -> None:
+    """Prints token info to the console and asks user to confirm origination."""
+
+    supply = token_info.supply / 10 ** token_info.metadata.decimals
+    supply_formatted = f'{supply:,}'.replace(',', '_')
+
+    def accent(msg: str) -> str:
+        return click.style(msg, fg='bright_cyan')
+
+    echo('  - Name:     ' + accent(token_info.metadata.name))
+    echo('  - Symbol:   ' + accent(token_info.metadata.symbol))
+    echo('  - Decimals: ' + accent(str(token_info.metadata.decimals)))
+    echo('  - Standard: ' + accent(token_info.standard))
+    echo('  - Supply:   ' + accent(supply_formatted))
+
+    echo(
+        'The following 4 contracts will be deployed: '
+        + accent('Token') + ', '
+        + accent('Ticker') + ', '
+        + accent('ERC20 Proxy') + ' and '
+        + accent('Token Bridge Helper')
+    )
+
+    if not survey.routines.inquire('Proceed with origination?\n', default=True):
+        survey.printers.fail('Good for you!')
+        return
+
+
 class TokenBootstrap:
     def __init__(
         self,
@@ -73,9 +102,13 @@ class TokenBootstrap:
 
     def run(self, whitelist_counter: int):
         survey.printers.info(
-            f'Whitelisting Token having asset_id {self._mainnet_asset_id} in Tezos Mainnet...',
+            f'Whitelisting Token having asset_id {self._mainnet_asset_id} in Tezos Mainnet, parameters:',
             mark=f'[{whitelist_counter}]',
         )
+
+        self._fetch_mainnet_token_metadata()
+        ask_origination_confirmation(self._token_info)
+
         asset_id = self.deploy_test_token()
         # asset_id = self.prepare_l1_token()
         ticketer_data = self.deploy_ticketer(asset_id)
@@ -123,8 +156,6 @@ class TokenBootstrap:
             prefix='Origination of testing Token Contract ',
             suffix=lambda x: state,
         ):
-            state = ' fetching original token metadata...'
-            self._fetch_mainnet_token_metadata()
             token = TokenHelper.get_cls(self._token_info.standard)
 
             state = ' processing transaction...'
@@ -423,11 +454,6 @@ def rollout():
     notice_echo('This command will help you to deploy all contracts for a new rollup.')
     bootstrap_survey = BootstrapSurvey(network_defaults=NETWORK_DEFAULTS)
     user_input = bootstrap_survey.perform()
-
-    notice_echo('Ready to bootstrap: Token, Ticketer, Proxy, Helper...')  # fixme: replace with proper message
-    if not survey.routines.inquire('Proceed with origination?\n', default=True):
-        survey.printers.fail('Good for you!')
-        return
 
     rollup_bootstrap_service = RollupBootstrapFactory.build(user_input)
     notice_echo('Starting Bridge Application Bootstrap process.')

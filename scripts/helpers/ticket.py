@@ -42,6 +42,7 @@ def get_ticket_balance(
 @dataclass
 class Ticket:
     owner: Addressable
+    # TODO: replace ticketer with Addressable
     ticketer: str
     content: TicketContent
     amount: int

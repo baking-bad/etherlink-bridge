@@ -20,12 +20,11 @@ from scripts.helpers.addressable import (
     Addressable,
     get_address,
 )
-from scripts.helpers.contracts.ticketer import Ticketer
 
 
 class TicketId(TypedDict):
     token_id: int
-    ticketer: Ticketer
+    ticketer: Addressable
 
 
 class ExecuteParams(TypedDict):
@@ -38,7 +37,7 @@ class ExecuteParams(TypedDict):
 def serialize_ticket_id(ticket_id: TicketId) -> dict[str, Any]:
     return {
         'token_id': ticket_id['token_id'],
-        'ticketer': ticket_id['ticketer'].address,
+        'ticketer': get_address(ticket_id['ticketer']),
     }
 
 

@@ -65,12 +65,12 @@ module TicketRouterTester = struct
 
     let make_operation
             (ticket : Ticket.t)
-            (store : storage_t) : operation =
+            (internal_call : internal_call_t) : operation =
         (*
             `make_operation` wraps a ticket into the appropriate entrypoint
             structure and calls the target contract with the ticket.
         *)
-        let { target; entrypoint; xtz_amount } = store.internal_call in
+        let { target; entrypoint; xtz_amount } = internal_call in
         match entrypoint with
         | Default () ->
             let entry = Ticket.get target in
@@ -94,7 +94,7 @@ module TicketRouterTester = struct
 
             @param ticket: a ticket to be received
         *)
-        [make_operation ticket store], store
+        [make_operation ticket store.internal_call], store
 
     [@entry] let withdraw
             (params : RouterWithdrawEntry.t)
@@ -105,11 +105,12 @@ module TicketRouterTester = struct
             withdraw interface would do.
 
             @param receiver: an address that will receive the unlocked token.
-                NOTE: the receiver is not used and the address from the
-                `store.internal_call` is used instead.
+                NOTE: the target from `store.internal_call` will be ignored.
             @param ticket: provided ticket to be burned.
         *)
-        [make_operation params.ticket store], store
+        let { ticket; receiver } = params in
+        let internal_call = { store.internal_call with target = receiver } in
+        [make_operation ticket internal_call], store
 
     [@entry] let mint
             (params : mint_params_t)
@@ -123,7 +124,7 @@ module TicketRouterTester = struct
         *)
         let { content; amount } = params in
         let ticket = Ticket.create content amount in
-        [make_operation ticket store], store
+        [make_operation ticket store.internal_call], store
 
     [@entry] let deposit
             (_params : TicketerDepositEntry.t)

@@ -101,9 +101,9 @@ class TestDeposit:
             token_bridge_helper_address=token.l1_ticket_helper_address,
             amount=amount,
             receiver_address=wallet.l2_public_key,
-            rollup_address=bridge.l1_smart_rollup_address,
-            private_key=wallet.l1_private_key,
-            rpc_url=bridge.l1_rpc_url,
+            smart_rollup_address=bridge.l1_smart_rollup_address,
+            tezos_private_key=wallet.l1_private_key,
+            tezos_rpc_url=bridge.l1_rpc_url,
         )
 
         assert operation_hash[0] == 'o'

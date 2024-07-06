@@ -1,8 +1,13 @@
 import click
 from typing import Optional
-from scripts.helpers.contracts import Ticketer
-from scripts.environment import get_tezos_client
-from scripts.helpers.contracts import TokenHelper
+from scripts.helpers.contracts import Ticketer, TokenHelper
+from scripts.helpers.utility import (
+    accent,
+    get_tezos_client,
+    echo_variable,
+    wrap,
+)
+from scripts import cli_options
 
 
 # TODO: consider moving this to helpers?
@@ -27,63 +32,58 @@ def make_extra_metadata(
 
 
 @click.command()
-@click.option(
-    '--token-address', required=True, help='The address of the token contract.'
-)
-# TODO: consider auto-determine token type by token entrypoints
-@click.option(
-    '--token-type', required=True, help='Token type, either `FA2` or `FA1.2`.'
-)
-@click.option(
-    '--token-id',
-    default=0,
-    help='Identifier of the token in the contract (only for FA2), default: 0.',
-)
-@click.option(
-    '--decimals',
-    default=None,
-    help='Token decimals added to the ticketer metadata content. If not set, will be not added to the content.',
-)
-@click.option(
-    '--symbol',
-    default=None,
-    help='Token symbol added to the ticketer metadata content.',
-)
-@click.option(
-    '--name',
-    default=None,
-    help='Token name added to the ticketer metadata content.',
-)
-@click.option(
-    '--private-key',
-    default=None,
-    help='Private key that would be used to deploy contract on the Tezos network.',
-)
-@click.option('--rpc-url', default=None, help='Tezos RPC URL.')
+@cli_options.token_address
+@cli_options.token_type
+@cli_options.token_id
+@cli_options.token_decimals
+@cli_options.token_symbol
+@cli_options.token_name
+@cli_options.tezos_private_key
+@cli_options.tezos_rpc_url
+@cli_options.skip_confirm
+@cli_options.silent
 def deploy_ticketer(
     token_address: str,
     token_type: str,
     token_id: int,
-    decimals: Optional[int],
-    symbol: Optional[str],
-    name: Optional[str],
-    private_key: Optional[str],
-    rpc_url: Optional[str],
+    token_decimals: int,
+    token_symbol: str,
+    token_name: str,
+    tezos_private_key: str,
+    tezos_rpc_url: str,
+    skip_confirm: bool = True,
+    silent: bool = True,
 ) -> Ticketer:
     """Deploys `ticketer` contract using provided key as a manager"""
 
-    # TODO: consider require token_id to be provided if token_type is FA2
-    # TODO: - it is possible to change Token.from_address implementation so it will
-    #       return FA2 or FA1.2 token based on the token entrypoints and fail if
-    #       token_id is not provided for FA2
-
-    manager = get_tezos_client(rpc_url, private_key)
+    manager = get_tezos_client(tezos_rpc_url, tezos_private_key)
     Token = TokenHelper.get_cls(token_type)
+    # TODO: consider changing Token.from_address implementation so it will
+    #       return FA2 or FA1.2 token based on the token entrypoints
     token = Token.from_address(manager, token_address, token_id=token_id)
-    extra_metadata = make_extra_metadata(name, symbol, decimals)
-    # TODO: consider awaiting action from user before deploying
+    extra_metadata = make_extra_metadata(token_name, token_symbol, token_decimals)
+
+    if not silent:
+        click.echo('Deploying Ticketer for ' + wrap(accent(token_symbol)) + ':')
+        echo_variable('  - ', 'Deployer', manager.key.public_key_hash())
+        echo_variable('  - ', 'Tezos RPC node', tezos_rpc_url)
+        click.echo('  - Params:')
+        echo_variable('      * ', 'Token type', token_type)
+        echo_variable('      * ', 'Token address', token_address)
+        if token_type == 'FA2':
+            echo_variable('      * ', 'Token id', str(token_id))
+        echo_variable('      * ', 'Token symbol', token_symbol)
+        echo_variable('      * ', 'Token name', token_name)
+        echo_variable('      * ', 'Token decimals', str(token_decimals))
+    if not skip_confirm:
+        click.confirm('Do you want to proceed?', abort=True, default=True)
+
     opg = Ticketer.originate(manager, token, extra_metadata).send()
     manager.wait(opg)
     ticketer = Ticketer.from_opg(manager, opg)
-    # TODO: consider printing ticketer address and params for ERC20?
+    if not silent:
+        click.echo(
+            'Successfully deployed Ticketer, address: ' + wrap(accent(ticketer.address))
+        )
+
     return ticketer

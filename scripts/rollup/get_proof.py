@@ -1,26 +1,29 @@
 import click
-from typing import Optional
 from scripts.helpers.proof import get_proof as get_proof_from_rpc, Proof
-from scripts.environment import load_or_ask
+from scripts import cli_options
+from scripts.helpers.utility import accent
 
 
 @click.command()
 @click.option('--level', required=True, type=int, help='The level of the outbox.')
 @click.option('--index', required=True, type=int, help='The index of the message.')
-@click.option('--rollup-rpc-url', default=None, help='Etherlink Rollup RPC URL.')
+@cli_options.etherlink_rollup_node_url
+@cli_options.silent
 def get_proof(
     level: int,
     index: int,
-    rollup_rpc_url: Optional[str],
+    etherlink_rollup_node_url: str,
+    silent: bool,
 ) -> Proof:
     """Makes call to the RPC and returns proof info required to execute outbox_message"""
 
-    rollup_rpc_url = rollup_rpc_url or load_or_ask('L2_ROLLUP_RPC_URL')
-    proof = get_proof_from_rpc(rollup_rpc_url, level, index)
+    level_and_index = 'level ' + accent(str(level)) + ', index ' + accent(str(index))
+    proof = get_proof_from_rpc(etherlink_rollup_node_url, level, index)
     if 'commitment' in proof:
-        print(f'commitment: {proof["commitment"]}')
-        print(f'proof: {proof["proof"]}')
+        if not silent:
+            click.echo('Outbox message at ' + level_and_index + ':')
+            click.echo('  - Commitment: `' + accent(proof['commitment']) + '`')
+            click.echo('  - Proof: `' + accent(proof['proof']) + '`')
         return proof
 
-    print('Something went wrong:')
-    print(proof)
+    click.echo('Failed to get proof for outbox message at ' + level_and_index + '.')

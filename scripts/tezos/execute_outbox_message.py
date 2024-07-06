@@ -1,36 +1,52 @@
 import click
-from typing import Optional
-from scripts.environment import load_or_ask, get_tezos_client
+from scripts.helpers.utility import (
+    get_tezos_client,
+    accent,
+)
+from scripts import cli_options
 
 
 @click.command()
 @click.option(
-    '--commitment', required=True, help='The commitment of the outbox message.'
+    '--commitment',
+    required=True,
+    prompt='Commitment with the outbox message',
+    help='Commitment with the outbox message.',
 )
-@click.option('--proof', required=True, help='The proof of the outbox message.')
 @click.option(
-    '--rollup-address', default=None, help='The address of the rollup contract.'
+    '--proof',
+    required=True,
+    prompt='The proof of the outbox message',
+    help='The proof of the outbox message.',
 )
-@click.option(
-    '--private-key',
-    default=None,
-    help='Private key that would be used to execute message on the Tezos network.',
-)
-@click.option('--rpc-url', default=None, help='Tezos RPC URL.')
+@cli_options.smart_rollup_address
+@cli_options.tezos_private_key
+@cli_options.tezos_rpc_url
 def execute_outbox_message(
     commitment: str,
     proof: str,
-    rollup_address: Optional[str],
-    private_key: Optional[str],
-    rpc_url: Optional[str],
-) -> None:
+    smart_rollup_address: str,
+    tezos_private_key: str,
+    tezos_rpc_url: str,
+) -> str:
     """Executes outbox message using provided `commitment` and `proof`"""
 
-    rollup_address = rollup_address or load_or_ask('L1_ROLLUP_ADDRESS')
-    # TODO: consider print the address of rollup contract
-    manager = get_tezos_client(rpc_url, private_key)
+    manager = get_tezos_client(tezos_rpc_url, tezos_private_key)
+    click.echo('Executing outbox message:')
+    click.echo('  - Commitment: `' + accent(commitment) + '`')
+    click.echo('  - Proof: `' + accent(proof) + '`')
+    click.echo('  - Smart Rollup address: `' + accent(smart_rollup_address) + '`')
+    click.echo('  - Executor: `' + accent(manager.key.public_key_hash()) + '`')
+    click.echo('  - Tezos RPC node: `' + accent(tezos_rpc_url) + '`')
+
     opg = manager.smart_rollup_execute_outbox_message(
-        rollup_address, commitment, bytes.fromhex(proof)
+        smart_rollup_address, commitment, bytes.fromhex(proof)
     ).send()
     manager.wait(opg)
-    print(f'Succeed, transaction hash: {opg.hash()}')
+    operation_hash: str = opg.hash()
+    click.echo(
+        'Successfully executed outbox message, tx hash: `'
+        + accent(operation_hash)
+        + '`'
+    )
+    return operation_hash

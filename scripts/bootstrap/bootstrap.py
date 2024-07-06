@@ -42,10 +42,10 @@ class EtherlinkBootstrapClient:
             ticket_content_bytes=ticketer_params.content_bytes_hex,
             token_name=metadata.name,
             token_symbol=metadata.symbol,
-            decimals=metadata.decimals,
+            token_decimals=metadata.decimals,
             kernel_address=KERNEL_ADDRESS,
-            private_key=self._private_key,
-            rpc_url=self._rpc_url,
+            etherlink_private_key=self._private_key,
+            etherlink_rpc_url=self._rpc_url,
         )
 
 
@@ -162,11 +162,11 @@ class TokenBootstrap:
                 token_address=contract_address,
                 token_type=self._token_info.standard,
                 token_id=token_id,
-                name=self._token_info.metadata.name,
-                decimals=self._token_info.metadata.decimals,
-                symbol=self._token_info.metadata.symbol,
-                private_key=self._tezos_client.context.key,
-                rpc_url=self._tezos_client.context.shell,
+                token_name=self._token_info.metadata.name,
+                token_decimals=self._token_info.metadata.decimals,
+                token_symbol=self._token_info.metadata.symbol,
+                tezos_private_key=self._tezos_client.context.key,
+                tezos_rpc_url=self._tezos_client.context.shell,
             )
 
             state = ' fetching ticketer params...'
@@ -217,9 +217,10 @@ class TokenBootstrap:
         ):
             helper = deploy_token_bridge_helper.callback(
                 ticketer_address=ticketer_address,
-                proxy_address=erc20_proxy_address,
-                private_key=self._tezos_client.context.key,
-                rpc_url=self._tezos_client.context.shell,
+                erc20_proxy_address=erc20_proxy_address,
+                tezos_private_key=self._tezos_client.context.key,
+                tezos_rpc_url=self._tezos_client.context.shell,
+                token_symbol=self._token_info.metadata.symbol,
             )
 
         survey.printers.done(

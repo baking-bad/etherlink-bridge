@@ -1,64 +1,61 @@
 import click
-from typing import Optional
-from scripts.environment import load_or_ask
 from scripts.helpers.contracts import TokenBridgeHelper
-from scripts.environment import get_tezos_client
+from scripts.helpers.utility import (
+    get_tezos_client,
+    accent,
+    echo_variable,
+    wrap,
+)
+from scripts import cli_options
 
 
 @click.command()
-@click.option(
-    # TODO: consider renaming to `--helper`
-    '--token-bridge-helper-address',
-    required=True,
-    help='The address of the Tezos Token Bridge Helper contract.',
-)
-@click.option(
-    '--amount', required=True, type=int, help='The amount of tokens to be deposited.'
-)
-# TODO: consider making mandatory
-@click.option(
-    # TODO: consider renaming to `--to`
-    '--receiver-address',
-    default=None,
-    help='The address of the Etherlink receiver contract which should receive token.',
-)
-@click.option(
-    '--rollup-address', default=None, help='The address of the rollup contract.'
-)
-@click.option(
-    '--private-key',
-    default=None,
-    help='Private key of the account on the Tezos network that should deposit token.',
-)
-@click.option('--rpc-url', default=None, help='Tezos RPC URL.')
+@cli_options.token_bridge_helper_address
+@cli_options.amount
+@cli_options.receiver_address
+@cli_options.smart_rollup_address
+@cli_options.tezos_private_key
+@cli_options.tezos_rpc_url
 def deposit(
     token_bridge_helper_address: str,
     amount: int,
-    receiver_address: Optional[str],
-    rollup_address: Optional[str],
-    private_key: Optional[str],
-    rpc_url: Optional[str],
+    receiver_address: str,
+    smart_rollup_address: str,
+    tezos_private_key: str,
+    tezos_rpc_url: str,
 ) -> str:
     """Deposits given amount of given token to the Etherlink Bridge"""
 
-    # TODO: using L2_PUBLIC_KEY for receiver_address is implicit logic
-    receiver_address = receiver_address or load_or_ask('L2_PUBLIC_KEY')
-    rollup_address = rollup_address or load_or_ask('L1_ROLLUP_ADDRESS')
-    receiver_address = receiver_address.replace('0x', '')
-    receiver_bytes = bytes.fromhex(receiver_address)
-
-    manager = get_tezos_client(rpc_url, private_key)
+    receiver_bytes = bytes.fromhex(receiver_address.replace('0x', ''))
+    manager = get_tezos_client(tezos_rpc_url, tezos_private_key)
     token_bridge_helper = TokenBridgeHelper.from_address(
         manager, token_bridge_helper_address
     )
-    token = token_bridge_helper.get_ticketer().get_token()
+    ticketer = token_bridge_helper.get_ticketer()
+    token = ticketer.get_token()
+    # TODO: validate manager has tokens in the token contract
+
+    click.echo(
+        'Making deposit using Helper ' + wrap(accent(token_bridge_helper_address)) + ':'
+    )
+    echo_variable('  - ', 'Executor', manager.key.public_key_hash())
+    echo_variable('  - ', 'Tezos RPC node', tezos_rpc_url)
+    echo_variable('  - ', 'Ticketer', ticketer.address)
+    click.echo('  - Deposit params:')
+    # TODO: add info about Token: type, addres, id
+    # TODO: add Etherlink side ERC20 Proxy address here too
+    echo_variable('      * ', 'Smart Rollup address', smart_rollup_address)
+    echo_variable('      * ', 'Receiver address', receiver_address)
+    echo_variable('      * ', 'Amount', str(amount))
 
     opg = manager.bulk(
         token.disallow(manager, token_bridge_helper),
         token.allow(manager, token_bridge_helper),
-        token_bridge_helper.deposit(rollup_address, receiver_bytes, amount),
+        token_bridge_helper.deposit(smart_rollup_address, receiver_bytes, amount),
     ).send()
     manager.wait(opg)
     operation_hash: str = opg.hash()
-    print(f'Succeed, transaction hash: {operation_hash}')
+    click.echo(
+        'Successfully executed Deposit, tx hash: ' + wrap(accent(operation_hash))
+    )
     return operation_hash

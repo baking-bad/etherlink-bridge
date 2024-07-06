@@ -1,69 +1,61 @@
 import click
-from typing import Optional
-from scripts.environment import (
-    load_or_ask,
+from scripts.helpers.utility import (
     get_etherlink_web3,
     get_etherlink_account,
+    accent,
+    echo_variable,
+    wrap,
 )
 from scripts.helpers.etherlink import Erc20ProxyHelper
+from scripts import cli_options
 
 
 @click.command()
-# TODO: consider simplify this command by using a single argument for the ticket
-@click.option(
-    '--ticketer-address-bytes',
-    required=True,
-    help='The address of the ticketer contract encoded in forged form: `| 0x01 | 20 bytes | 0x00 |`. Use `get_ticketer_params` function to get the correct value for a given ticket address.',
-)
-@click.option(
-    '--ticket-content-bytes',
-    required=True,
-    help='The content of the ticket as micheline expression is in its forged form, **legacy optimized mode**. Use `get_ticket_params` function to get the correct value for a given ticket address.',
-)
+# TODO: consider replacing two bytes options with one ticketer_address option
+@cli_options.ticketer_address_bytes
+@cli_options.ticket_content_bytes
 # TODO: consider extracting token name from the ticketer content bytes
-@click.option(
-    '--token-name', required=True, help='The name of the ERC20 token on Etherlink side.'
-)
-@click.option(
-    '--token-symbol',
-    required=True,
-    help='The symbol of the ERC20 token on Etherlink side.',
-)
-@click.option(
-    '--decimals',
-    default=0,
-    help='The number of decimals of the ERC20 token on Etherlink side.',
-)
-@click.option(
-    '--kernel-address',
-    default=None,
-    help='The address of the Etherlink kernel that will be managing token.',
-)
-@click.option(
-    '--private-key',
-    default=None,
-    help='Private key that would be used to deploy contract on the Etherlink side.',
-)
-@click.option('--rpc-url', default=None, help='Etherlink RPC URL.')
+@cli_options.token_name
+@cli_options.token_symbol
+@cli_options.token_decimals
+@cli_options.kernel_address
+@cli_options.etherlink_private_key
+@cli_options.etherlink_rpc_url
+@cli_options.skip_confirm
+@cli_options.silent
 # TODO: consider adding gas price and gas limit here as parameters?
 def deploy_erc20(
     ticketer_address_bytes: str,
     ticket_content_bytes: str,
     token_name: str,
     token_symbol: str,
-    decimals: int,
-    kernel_address: Optional[str],
-    private_key: Optional[str],
-    rpc_url: Optional[str],
+    token_decimals: int,
+    kernel_address: str,
+    etherlink_private_key: str,
+    etherlink_rpc_url: str,
+    skip_confirm: bool = True,
+    silent: bool = True,
 ) -> None | str:
     """Deploys ERC20 Proxy contract with given parameters"""
 
-    web3 = get_etherlink_web3(rpc_url)
-    account = get_etherlink_account(web3, private_key)
-    kernel_address = kernel_address or load_or_ask('L2_KERNEL_ADDRESS')
-
+    web3 = get_etherlink_web3(etherlink_rpc_url)
+    account = get_etherlink_account(web3, etherlink_private_key)
     ticketer = bytes.fromhex(ticketer_address_bytes.replace('0x', ''))
     content = bytes.fromhex(ticket_content_bytes.replace('0x', ''))
+
+    if not silent:
+        click.echo('Deploying ERC20 Proxy for ' + wrap(accent(token_symbol)) + ':')
+        echo_variable('  - ', 'Deployer', account.address)
+        echo_variable('  - ', 'Etherlink RPC node', etherlink_rpc_url)
+        click.echo('  - Constructor params:')
+        echo_variable('      * ', 'Ticketer address bytes', '0x' + ticketer.hex())
+        echo_variable('      * ', 'Content bytes', '0x' + content.hex())
+        echo_variable('      * ', 'Kernel address', kernel_address)
+        echo_variable('      * ', 'Name', token_name)
+        echo_variable('      * ', 'Symbol', token_symbol)
+        echo_variable('      * ', 'Decimals', str(token_decimals))
+    if not skip_confirm:
+        click.confirm('Do you want to proceed?', abort=True, default=True)
 
     erc20 = Erc20ProxyHelper.originate(
         web3=web3,
@@ -73,9 +65,13 @@ def deploy_erc20(
         kernel=kernel_address,
         name=token_name,
         symbol=token_symbol,
-        decimals=decimals,
+        decimals=token_decimals,
     )
 
-    print(f'Successfully deployed ERC20 contract: {erc20.address}')
+    if not silent:
+        click.echo(
+            'Successfully deployed ERC20 Proxy token, address: '
+            + wrap(accent(erc20.address))
+        )
     # TODO: consider returning the whole ERC20ProxyHelper object
     return erc20.address

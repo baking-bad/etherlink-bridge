@@ -1,35 +1,28 @@
 import click
 from typing import (
-    Optional,
     Any,
 )
-from scripts.environment import load_or_ask
 import requests
+from scripts import cli_options
 
 
 @click.command()
 @click.option(
     '--tx-hash',
     required=True,
+    prompt='Transaction hash',
     help='The hash of the transaction which called withdraw function.',
 )
-@click.option('--rpc-url', default=None, help='Etherlink RPC URL.')
-@click.option(
-    '--kernel-address',
-    default=None,
-    help='The address of the Etherlink kernel that emits Withdrawal event.',
-)
+@cli_options.etherlink_rpc_url
+@cli_options.kernel_address
 def parse_withdrawal_event(
-    tx_hash: str, rpc_url: Optional[str], kernel_address: Optional[str]
+    tx_hash: str, etherlink_rpc_url: str, kernel_address: str
 ) -> dict[str, Any]:
     """Parses the withdrawal event from the transaction receipt"""
 
-    rpc_url = rpc_url or load_or_ask('L2_RPC_URL')
-    kernel_address = kernel_address or load_or_ask('L2_KERNEL_ADDRESS')
-
-    # TODO: replace this logic with web3.py
+    # TODO: replace this logic with web3.py, there should be a way to parse events
     result = requests.post(
-        rpc_url,
+        etherlink_rpc_url,
         json={
             'jsonrpc': '2.0',
             'method': 'eth_getTransactionReceipt',
@@ -51,14 +44,14 @@ def parse_withdrawal_event(
     logs = receipt['logs']
 
     if len(logs) == 0:
-        print('No logs found')
-        return {'error': 'No logs found'}
+        click.echo('No logs found')
+        raise click.Abort()
 
     # NOTE: the order of logs is not determined, so we need to find the kernel log:
     kernel_logs = [log for log in logs if log['address'] == kernel_address]
     if len(kernel_logs) == 0:
-        print('Kernel logs not found')
-        return {'error': 'Kernel logs not found'}
+        click.echo('There are logs, but no kernel logs found')
+        raise click.Abort()
 
     assert len(kernel_logs) == 1, 'Multiple kernel logs found'
     data = kernel_logs[0]['data']

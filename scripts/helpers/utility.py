@@ -1,4 +1,5 @@
 from pytezos.client import PyTezosClient
+from pytezos import pytezos
 from pytezos.contract.interface import ContractInterface
 from pytezos.operation.group import OperationGroup
 from os.path import dirname
@@ -6,6 +7,9 @@ from os.path import join
 from pytezos.michelson.parse import michelson_to_micheline
 from pytezos.michelson.types.base import MichelsonType
 from typing import Any
+from web3 import Web3
+from eth_account.signers.local import LocalAccount
+import click
 
 
 # Default address used as a placeholder in the contract storage
@@ -90,7 +94,47 @@ def originate_from_file(
     """Deploys contract from filename with given storage
     using given client and returns OperationGroup"""
 
-    print(f'deploying contract from filename {filename}')
     raw_contract = ContractInterface.from_file(filename)
     contract = raw_contract.using(key=client.key, shell=client.shell)
     return contract.originate(initial_storage=storage)
+
+
+def get_tezos_client(shell: str, key: str) -> PyTezosClient:
+    """Returns PyTezosClient using given shell and key"""
+
+    client: PyTezosClient = pytezos.using(shell=shell, key=key)
+    # TODO: validate balance, validate that account revealed (reuse logic from bootstrap?)
+
+    return client
+
+
+def get_etherlink_web3(shell: str) -> Web3:
+    """Returns Web3 instance using given shell"""
+
+    web3 = Web3(Web3.HTTPProvider(shell))
+    if not web3.is_connected():
+        raise Exception(f'Failed to connect to Etherlink node: {shell}')
+    # TODO: validate balance (reuse logic from bootstrap?)
+
+    return web3
+
+
+def get_etherlink_account(web3: Web3, private_key: str) -> LocalAccount:
+    """Returns LocalAccount using given web3 and private key"""
+
+    account: LocalAccount = web3.eth.account.from_key(private_key)
+    # TODO: validate balance
+
+    return account
+
+
+def accent(msg: str) -> str:
+    return click.style(msg, fg='bright_cyan')
+
+
+def wrap(msg: str, symbol: str = '`') -> str:
+    return '`' + msg + '`'
+
+
+def echo_variable(prefix: str, name: str, value: str) -> None:
+    click.echo(prefix + name + ': ' + wrap(accent(value)))

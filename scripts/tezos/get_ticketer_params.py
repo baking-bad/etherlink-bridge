@@ -1,35 +1,39 @@
 import click
-from typing import Optional
 from scripts.helpers.contracts import Ticketer
-from scripts.environment import get_tezos_client
-from scripts.helpers.utility import make_address_bytes
+from scripts.helpers.utility import (
+    get_tezos_client,
+    make_address_bytes,
+    accent,
+)
+from scripts import cli_options
 
 
 @click.command()
-@click.option('--ticketer', required=True, help='The address of the ticketer contract.')
-@click.option(
-    '--private-key',
-    default=None,
-    help='Private key that would be used in the Tezos network.',
-)
-@click.option('--rpc-url', default=None, help='Tezos RPC URL.')
+@cli_options.ticketer_address
+@cli_options.tezos_private_key
+@cli_options.tezos_rpc_url
+@cli_options.silent
 def get_ticketer_params(
-    ticketer: str,
-    private_key: Optional[str],
-    rpc_url: Optional[str],
-    silent: bool = False,
+    ticketer_address: str,
+    tezos_private_key: str,
+    tezos_rpc_url: str,
+    silent: bool = True,
 ) -> dict[str, str]:
-    """Founds ticketer in L1 and returns it params required for L2 ERC20 token deployment"""
+    """Returns Ticketer params required for L2 ERC20 token deployment"""
 
-    manager = get_tezos_client(rpc_url, private_key)
+    manager = get_tezos_client(tezos_rpc_url, tezos_private_key)
     # TODO: add ticketer validation by checking storage?
-    ticketer_contract = Ticketer.from_address(manager, ticketer)
-    content_bytes = ticketer_contract.get_content_bytes_hex()
-    address_bytes = make_address_bytes(ticketer)
-    ticket_hash = ticketer_contract.read_ticket().hash()
-    print(f'address_bytes: {address_bytes}')
-    print(f'content_bytes: {content_bytes}')
-    print(f'ticket_hash: {ticket_hash}')
+    ticketer = Ticketer.from_address(manager, ticketer_address)
+    content_bytes = ticketer.get_content_bytes_hex()
+    address_bytes = make_address_bytes(ticketer_address)
+    ticket_hash = ticketer.read_ticket().hash()
+
+    if not silent:
+        click.echo('Ticketer params:')
+        click.echo('  - Address bytes: `' + accent('0x' + address_bytes) + '`')
+        click.echo('  - Content bytes: `' + accent('0x' + content_bytes) + '`')
+        click.echo('  - Ticket hash: `' + accent('0x' + str(ticket_hash)) + '`')
+
     return {
         'address_bytes': address_bytes,
         'content_bytes': content_bytes,

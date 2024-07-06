@@ -41,7 +41,6 @@ disallow_any_generics = false
 skip-string-normalization = true
 
 [tool.poetry.scripts]
-init_wallets = "scripts.environment:init_wallets"
 deploy_token = "scripts.tezos:deploy_token"
 deploy_ticketer = "scripts.tezos:deploy_ticketer"
 deploy_token_bridge_helper = "scripts.tezos:deploy_token_bridge_helper"

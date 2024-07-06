@@ -3,124 +3,105 @@ from scripts.tezos.deploy_ticketer import deploy_ticketer
 from scripts.tezos.get_ticketer_params import get_ticketer_params
 from scripts.tezos.deploy_token_bridge_helper import deploy_token_bridge_helper
 from scripts.etherlink import deploy_erc20
-from scripts.environment import load_or_ask
-from typing import Any, Dict, Optional
+from scripts import cli_options
+from typing import Any, Dict
+from scripts.helpers.utility import (
+    accent,
+    echo_variable,
+    wrap,
+)
 
 
 @click.command()
-@click.option(
-    '--token-address', required=True, help='The address of the token contract.'
-)
+@cli_options.token_address
 # TODO: consider auto-determine token type by token entrypoints
-@click.option(
-    '--token-type', required=True, help='Token type, either `FA2` or `FA1.2`.'
-)
-@click.option(
-    '--token-id',
-    default=0,
-    help='Identifier of the token in the contract (only for FA2), default: 0.',
-)
-@click.option(
-    '--decimals',
-    required=True,
-    default=0,
-    help='Token decimals added to the ERC20 token and ticketer metadata content.',
-)
-@click.option(
-    '--symbol',
-    required=True,
-    help='Token symbol added to the ERC20 token and ticketer metadata content.',
-)
-@click.option(
-    '--name',
-    required=True,
-    help='Token name added to the ERC20 token and ticketer metadata content.',
-)
-@click.option(
-    '--tezos-private-key',
-    default=None,
-    help='Private key that would be used to deploy contracts on the Tezos network.',
-)
-@click.option('--tezos-rpc-url', default=None, help='Tezos RPC URL.')
-@click.option(
-    '--etherlink-private-key',
-    default=None,
-    help='Private key that would be used to deploy contract on the Etherlink network.',
-)
-@click.option('--etherlink-rpc-url', default=None, help='Etherlink RPC URL.')
-@click.option(
-    '--kernel-address',
-    default='0x0000000000000000000000000000000000000000',
-    help='The address of the Etherlink kernel which will be managing token. Default `0x0000000000000000000000000000000000000000`',
-)
+@cli_options.token_type
+@cli_options.token_id
+@cli_options.token_decimals
+@cli_options.token_symbol
+@cli_options.token_name
+@cli_options.tezos_private_key
+@cli_options.tezos_rpc_url
+@cli_options.etherlink_private_key
+@cli_options.etherlink_rpc_url
+@cli_options.kernel_address
+@cli_options.skip_confirm
 def bridge_token(
     token_address: str,
     token_type: str,
     token_id: int,
-    decimals: int,
-    symbol: str,
-    name: str,
-    tezos_private_key: Optional[str],
-    tezos_rpc_url: Optional[str],
-    etherlink_private_key: Optional[str],
-    etherlink_rpc_url: Optional[str],
+    token_decimals: int,
+    token_symbol: str,
+    token_name: str,
+    tezos_private_key: str,
+    tezos_rpc_url: str,
+    etherlink_private_key: str,
+    etherlink_rpc_url: str,
     kernel_address: str,
+    skip_confirm: bool,
 ) -> Dict[str, Any]:
-    """Deploys bridge contracts for a new token:
-    - Ticketer
-    - ERC20 Proxy
-    - Token Bridge Helper
+    """Deploys bridge contracts for a new token: Ticketer, ERC20 Proxy
+    and Token Bridge Helper.
     """
-
-    tezos_private_key = tezos_private_key or load_or_ask(
-        'L1_PRIVATE_KEY', is_secret=True
-    )
-    tezos_rpc_url = tezos_rpc_url or load_or_ask('L1_RPC_URL')
-    etherlink_private_key = etherlink_private_key or load_or_ask(
-        'L2_PRIVATE_KEY', is_secret=True
-    )
-    etherlink_rpc_url = etherlink_rpc_url or load_or_ask('L2_RPC_URL')
-    kernel_address = kernel_address or load_or_ask('L2_KERNEL_ADDRESS')
 
     # TODO: consider require token_id to be provided if token_type is FA2
     # TODO: consider adding a TzKT API call to get token metadata if not provided
+    click.echo('Deploying bridge contracts for ' + wrap(accent(token_symbol)) + ':')
+    echo_variable('  - ', 'Token contract', token_address)
+    if token_type == 'FA2':
+        echo_variable('  - ', 'Token id', str(token_id))
+    # TODO: echo token metadata
+    # TODO: echo public keys, rpc node addresses
+    if not skip_confirm:
+        click.confirm('Do you want to proceed?', abort=True, default=True)
+    click.echo('')
 
     ticketer = deploy_ticketer.callback(
         token_address=token_address,
         token_type=token_type,
         token_id=token_id,
-        decimals=decimals,
-        symbol=symbol,
-        name=name,
-        private_key=tezos_private_key,
-        rpc_url=tezos_rpc_url,
+        token_decimals=token_decimals,
+        token_symbol=token_symbol,
+        token_name=token_name,
+        tezos_private_key=tezos_private_key,
+        tezos_rpc_url=tezos_rpc_url,
+        skip_confirm=True,
+        silent=False,
     )  # type: ignore
+    click.echo('')
 
     ticketer_params = get_ticketer_params.callback(
         ticketer.address, tezos_private_key, tezos_rpc_url, silent=True
     )  # type: ignore
 
-    erc_20_address = deploy_erc20.callback(
+    erc20_address = deploy_erc20.callback(
         ticketer_address_bytes=ticketer_params['address_bytes'],
         ticket_content_bytes=ticketer_params['content_bytes'],
-        token_name=name,
-        token_symbol=symbol,
-        decimals=decimals,
+        token_name=token_name,
+        token_symbol=token_symbol,
+        token_decimals=token_decimals,
         kernel_address=kernel_address,
-        private_key=etherlink_private_key,
-        rpc_url=etherlink_rpc_url,
+        etherlink_private_key=etherlink_private_key,
+        etherlink_rpc_url=etherlink_rpc_url,
+        skip_confirm=True,
+        silent=False,
     )  # type: ignore
+    click.echo('')
 
     token_bridge_helper = deploy_token_bridge_helper.callback(
         ticketer_address=ticketer.address,
-        proxy_address=erc_20_address,
-        private_key=tezos_private_key,
-        rpc_url=tezos_rpc_url,
-        symbol=symbol,
+        erc20_proxy_address=erc20_address,
+        tezos_private_key=tezos_private_key,
+        tezos_rpc_url=tezos_rpc_url,
+        token_symbol=token_symbol,
+        skip_confirm=True,
+        silent=False,
     )  # type: ignore
+    click.echo('')
 
+    click.echo('Successfully deployed FA Bridge contracts for ' + accent(token_symbol))
     return {
         'ticketer': ticketer,
-        'erc20': erc_20_address,
+        'erc20': erc20_address,
         'token_bridge_helper': token_bridge_helper,
     }

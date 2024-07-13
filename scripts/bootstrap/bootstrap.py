@@ -75,7 +75,7 @@ def ask_origination_confirmation(token_info: TokenInfoDTO) -> None:
 
     if not survey.routines.inquire('Proceed with origination?\n', default=True):
         survey.printers.fail('Good for you!')
-        return
+        exit(0)
 
 
 class TokenBootstrap:

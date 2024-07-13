@@ -82,7 +82,7 @@ def pack(object: Any, type_expression: str) -> bytes:
 
 
 def make_address_bytes(address: str) -> str:
-    """Converts address string to bytes"""
+    """Converts address string to bytes"""  # fixme: REALLY?
 
     # packing address to bytes and taking the last 22 bytes:
     return pack(address, 'address')[-22:].hex()

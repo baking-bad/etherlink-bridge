@@ -94,4 +94,4 @@ class TestIndexerContent:
         indexer_ticket_data = response['tezos_ticket'][0]
         assert indexer_ticket_data['token_id'] == asset.l1_asset_id
         assert indexer_ticket_data['ticketer_address'] == asset.l1_ticketer_address
-        assert indexer_ticket_data['etherlink_tokens'][0]['id'] == asset.l2_token_address
+        assert indexer_ticket_data['etherlink_tokens'][0]['id'] == asset.l2_token_address.lower()

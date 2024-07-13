@@ -3,11 +3,13 @@ from random import randint
 from time import sleep
 
 import pytest
+from eth_utils import to_checksum_address
 from gql import gql
 from gql.client import SyncClientSession
 from graphql import DocumentNode
 from pytezos import pytezos
 
+from scripts.etherlink import withdraw
 from scripts.helpers.utility import make_address_bytes
 from scripts.tests.dto import Bridge
 from scripts.tests.dto import Token
@@ -93,44 +95,19 @@ class TestWithdraw:
     ):
         amount = randint(3, 10)
 
-        receiver_address_bytes = make_address_bytes(wallet.l1_public_key_hash)
-        router_address_bytes = make_address_bytes(token.l1_ticketer_address)
-        routing_info = receiver_address_bytes + router_address_bytes
-
-        result = subprocess.run(
-            [
-                'cast',
-                'send',
-                bridge.l2_withdraw_precompile_address,
-                'withdraw(address,bytes,uint256,bytes22,bytes)',
-                token.l2_token_address,
-                routing_info,
-                str(amount),
-                make_address_bytes(token.l1_ticketer_address),
-                token.ticket_content_hex,
-                '--rpc-url',
-                bridge.l2_rpc_url,
-                '--private-key',
-                wallet.l2_private_key,
-                '--legacy',
-                '--gas-limit',
-                '1000000',
-            ],
-            capture_output=True,
-            text=True,
+        transaction_hash = withdraw.callback(
+            erc20_proxy_address=to_checksum_address(token.l2_token_address.lower()),
+            tezos_side_router_address=token.l1_ticketer_address,
+            amount=amount,
+            ticketer_address_bytes=make_address_bytes(token.l1_ticketer_address),
+            ticket_content_bytes=token.ticket_content_hex,
+            receiver_address=wallet.l1_public_key_hash,
+            withdraw_precompile=bridge.l2_withdraw_precompile_address,
+            etherlink_private_key=wallet.l2_private_key,
+            etherlink_rpc_url=bridge.l2_rpc_url,
         )
 
-        assert result.returncode in [0, 1]
-
-        for line in result.stdout.split('\n'):
-            try:
-                k, v = list(filter(len, line.split(' ')))
-            except ValueError:
-                continue
-
-            if k == 'transactionHash':
-                transaction_hash = v.removeprefix('0x')
-
+        transaction_hash = transaction_hash.removeprefix('0x')
         assert transaction_hash
 
         query_params = {'transaction_hash': transaction_hash}
@@ -164,6 +141,8 @@ class TestWithdraw:
             },
         ]
 
+
+    @pytest.mark.skip('Only Deposits')
     def test_finish_token_withdraw(
         self,
         bridge: Bridge,

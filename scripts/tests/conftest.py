@@ -49,35 +49,35 @@ def pytest_configure(config):
 
 token_bridge_data_collection: dict[str, Token] = {
     'tzBTC': Token(
-        l1_asset_id='KT1V7YkCUvuLCcMvrNfxvfP7AYdh7SUy3gVk_0',
-        l1_ticketer_address='KT1KnYz9eRVQHYgj25FMdQ9fo5f9SUEonzxe',
-        l1_ticket_helper_address='KT1WmUoTU91RVjGv8MHW5DFRn8daoFvnoNBh',
-        l2_token_address='54b20569c0aa92a5618589142b2d5cc5fe6fe426',
-        ticket_hash=38501601458255431664549467905666194270780968624079854711059999119424038560263,
+        l1_asset_id='KT1KQ4myF9ekWazFTGjRboaFgTWeu9J1ps4m_0',
+        l1_ticketer_address='KT1KUhD7qjMSxoQxyJcFUyGQWMcMuiruXnyh',
+        l1_ticket_helper_address='KT19ggVkcZFRRutiyDbmU4iVLpkQRm94SLbE',
+        l2_token_address='87dcBf128677ba36E79D47dAf4eb4e51610e0150',
+        ticket_hash=102223148047824962743277397523626790056850653399522833634490401931066231955492,
         ticket_content_hex='...'
     ),
     'SIRS': Token(
-        l1_asset_id='KT1Dhb74UkncT5FcZfqmgnnXsBe3LBVXbpRb_0',
-        l1_ticketer_address='KT1BSE3Vzu2aMMg1Aa35vnM1MMPq4YAJRU5G',
-        l1_ticket_helper_address='KT1KvgaQ9Eztr3hXzV2tGT85fPRPGmXBzF7r',
-        l2_token_address='1b674b7d28d3da4bb0cbda959de2bcebe2ac83e8',
-        ticket_hash=106896103357068750276116957911853427818210703182371619532851114745162512601884,
+        l1_asset_id='KT1F8RXfsdGZXR8AYvDGTjEEg4SY7SdakD9y_0',
+        l1_ticketer_address='KT1HF2CqbX4Y7vivhQQZUjaedh5pMZvugowS',
+        l1_ticket_helper_address='KT1E2RvgzjpwLookeBzqeDYhSxRhqiY2PShZ',
+        l2_token_address='cB5d40c6B1bdf5Cd51b3801351b0A68D101a561b',
+        ticket_hash=60429552818179168089794801387545592689683828830449518753454321925180330625109,
         ticket_content_hex='...'
     ),
     'USDt': Token(
-        l1_asset_id='KT1TJK6aTreCyfrrEjj1ZRPUmKdnLXfcgAAa_0',
-        l1_ticketer_address='KT1LBv2tVJt17UXC32SS6Vtbtg7yPcJ8scbb',
-        l1_ticket_helper_address='KT1H4TBKdAjCxQKBcdPqnfLvLbhShZ2CPC51',
-        l2_token_address='e4bf1873cfdaed33bab4e0f5788cba6d03a267f0',
-        ticket_hash=39756979904490530639324653565564362862566450403546985891700568436159160316336,
+        l1_asset_id='KT1QbE9Y61X8iQha24FxKVy1nDXv7KLVmPPM_0',
+        l1_ticketer_address='KT1A8zkhk8FZhLhA1CqFuHM17WXunYuAtonw',
+        l1_ticket_helper_address='KT1R7bVGLYjwPiscSRuEDj8CXv11iXCYvvXb',
+        l2_token_address='8554cD57C0C3E5Ab9d1782c9063279fA9bFA4680',
+        ticket_hash=31161235475596582520747269255812898622847428761680693015168846798964942293064,
         ticket_content_hex='...'
     ),
 }
 
 xtz_bridge_data: Native = Native(
     l1_asset_id='xtz',
-    l1_ticketer_address='KT1Q6aNZ9aGro4DvBKwhKvVdia2UmVGsS9zE',
-    l1_ticket_helper_address='KT1DWVsu4Jtu2ficZ1qtNheGPunm5YVniegT',
+    l1_ticketer_address='KT1Bdyc1UcmjgPr3prJziMyfjSCPK6SEjfqs',
+    l1_ticket_helper_address='KT1MJxf4KVN3sosR99VRG7WBbWTJtAyWUJt9',
     l2_token_address='xtz',
     ticket_hash=10666650643273303508566200220257708314889526103361559239516955374962850039068,
     ticket_content_hex='...',
@@ -117,24 +117,24 @@ def ticket_router_tester_address() -> str:
 @pytest.fixture(scope='session', autouse=True)
 def bridge() -> Bridge:
     return Bridge(
-        l1_smart_rollup_address='sr1T4XVcVtBRzYy52edVTdgup9Kip4Wrmn97',
-        l1_rpc_url='https://rpc.tzkt.io/oxfordnet',
+        l1_smart_rollup_address='sr1JBmCsMoXmCeeYQWB3YYYqP9d68wUXQzkC',
+        l1_rpc_url='https://rpc.tzkt.io/parisnet',
         l2_rpc_url='https://etherlink.dipdup.net',
-        rollup_rpc_url='https://etherlink-rollup-oxford.dipdup.net',
+        rollup_rpc_url='https://etherlink-rollup-paris.dipdup.net',
         l2_kernel_address='0x0000000000000000000000000000000000000000',
         l2_withdraw_precompile_address='0x0000000000000000000000000000000000000040',
         l2_native_withdraw_precompile_address='0x0000000000000000000000000000000000000020',
         rollup_commitment_period=20,
         rollup_challenge_window=40,
-        l1_time_between_blocks=8,
+        l1_time_between_blocks=7,
     )
 
 
 @pytest.fixture(scope='session', autouse=True)
 def wallet() -> Wallet:
     return Wallet(
-        l1_private_key='edskRqDjCTNPh8QttChynaNcMwNqLKuEdtcrvSqmJojzDUFtBqtvbaXgs5eWpyQ2AABxS8FSZjzKytrLs38E4M9GcpAdiQjnUY',
-        l1_public_key_hash='tz1cdDUja6hsp4vNUBNmjVpEBDSYhDVLxg2X',
+        l1_private_key='edskRvrUVVsEDcuupaGY94gcwajN9HUHPBBZci8jkaeWn3VXGaKqYHepDFmiTpBL4kVpzS7swQCEMJBwW2t4oTHC1FVSevbkTy',
+        l1_public_key_hash='tz1TZDn2ZK35UnEjyuGQRVeM2NC5tQScJLpQ',
         l2_private_key='8636c473b431be57109d4153735315a5cdf36b3841eb2cfa80b75b3dcd2d941a',
         l2_public_key='0xBefD2C6fFC36249ebEbd21d6DF6376ecF3BAc448',
         l2_master_key='9722f6cc9ff938e63f8ccb74c3daa6b45837e5c5e3835ac08c44c50ab5f39dc0',

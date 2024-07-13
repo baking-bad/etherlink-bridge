@@ -76,7 +76,7 @@ class TestIndexerContent:
         asset: Native | Token,
         indexer_query: gql,
     ):
-        query_params = {'token_address': asset.l2_token_address}
+        query_params = {'token_address': asset.l2_token_address.lower()}
 
         response = indexer.execute(indexer_query, variable_values=query_params, operation_name='EtherlinkToken')
         assert response['etherlink_token_aggregate']['aggregate']['count'] == 1

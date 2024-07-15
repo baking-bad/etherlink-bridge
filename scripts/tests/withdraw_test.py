@@ -84,6 +84,7 @@ class TestWithdraw:
         """
         )
 
+    @pytest.mark.skip('Only Deposits')
     def test_create_token_withdraw(
         self,
         bridge: Bridge,

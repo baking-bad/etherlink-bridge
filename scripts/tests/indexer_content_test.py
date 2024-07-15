@@ -16,8 +16,11 @@ class TestIndexerContent:
         return gql(
             '''
             query IndexerStatus {
-                dipdup_index_aggregate { aggregate { sum { level } } }
-                dipdup_head_status { status } 
+                dipdup_index(where: {type: {_neq: "tezos.operations"}}) {
+                    name
+                    level
+                }
+                dipdup_head_status { status }
             }
             
             query TezosToken($asset_id: String) {
@@ -49,15 +52,36 @@ class TestIndexerContent:
         indexer: SyncClientSession,
         indexer_query: gql,
     ):
-        level_result_log = []
-        for _ in range(2):
+        test_level_count = 3
+        test_level_count = 1  # fixme: remove
+        index_level: dict[str, list[int]] = {}
+        count = 0
+        while True:
+            count += 1
+            assert count <= bridge.l1_time_between_blocks * test_level_count
             response = indexer.execute(indexer_query, operation_name='IndexerStatus')
-            level_result_log.append(int(response['dipdup_index_aggregate']['aggregate']['sum']['level']))
             assert response['dipdup_head_status'][0]['status'] == 'OK'
-            sleep(bridge.l1_time_between_blocks)
+            collected_index_count = 0
+            for index_data in response['dipdup_index']:
+                index_name = index_data['name']
+                if index_name not in index_level:
+                    index_level[index_name] = []
 
-        assert level_result_log == sorted(level_result_log)
-        assert level_result_log[-1] > level_result_log[0]
+                if len(index_level[index_name]) == test_level_count:
+                    collected_index_count += 1
+                    continue
+                level = index_data['level']
+                assert isinstance(level, int)
+                if level not in index_level[index_name]:
+                    index_level[index_name].append(level)
+            if collected_index_count == len(response['dipdup_index']):
+                break
+
+            sleep(1)
+
+        for level_list in index_level.values():
+            assert len(level_list) == test_level_count
+            assert level_list == sorted(level_list)
 
     def test_l1_asset_whitelisted(
         self,

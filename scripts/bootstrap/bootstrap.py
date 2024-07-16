@@ -1,3 +1,4 @@
+import json
 import os
 from typing import Any
 
@@ -22,10 +23,11 @@ from scripts.bootstrap.dto import TokenMetadataDTO
 from scripts.bootstrap.dto import UserInputDTO
 from scripts.etherlink import deploy_erc20
 from scripts.helpers.contracts import TokenHelper
+from scripts.helpers.utility import accent
 from scripts.tezos import deploy_ticketer
 from scripts.tezos import deploy_token_bridge_helper
 from scripts.tezos import get_ticketer_params
-
+from scripts.tests.dto import Token as TokenFixtureDTO
 
 class EtherlinkBootstrapClient:
     def __init__(
@@ -102,18 +104,24 @@ class TokenBootstrap:
 
     def run(self, whitelist_counter: int):
         survey.printers.info(
-            f'Whitelisting Token having asset_id {self._mainnet_asset_id} in Tezos Mainnet, parameters:',
+            f'Whitelisting Token having asset_id {accent(self._mainnet_asset_id)} in Tezos Mainnet, parameters:',
             mark=f'[{whitelist_counter}]',
         )
 
         self._fetch_mainnet_token_metadata()
-        ask_origination_confirmation(self._token_info)
 
         asset_id = self.deploy_test_token()
-        # asset_id = self.prepare_l1_token()
         ticketer_data = self.deploy_ticketer(asset_id)
         erc20_proxy_address = self.deploy_erc20_proxy(ticketer_data.ticketer_params)
-        self.deploy_helper(ticketer_data.ticketer.address, erc20_proxy_address)
+        ticket_helper_address = self.deploy_helper(ticketer_data.ticketer.address, erc20_proxy_address)
+        return TokenFixtureDTO(
+            l1_asset_id=asset_id,
+            l1_ticketer_address=ticketer_data.ticketer.address,
+            l1_ticket_helper_address=ticket_helper_address,
+            l2_token_address=erc20_proxy_address.removeprefix('0x'),
+            ticket_hash=ticketer_data.ticket_hash,
+            ticket_content_hex=ticketer_data.ticketer_params.content_bytes_hex,
+        )
 
     def prepare_l1_token(self) -> str:
         contract_address, token_id = self._mainnet_asset_id.split('_')
@@ -173,7 +181,10 @@ class TokenBootstrap:
             deployed_token = token.from_opg(self._tezos_client, opg)
 
         asset_id = f'{deployed_token.address}_{deployed_token.token_id}'
-        survey.printers.done(f'FA Contract deployed: Token `{self._token_info.metadata.name}` with asset_id {asset_id}.', re=True)
+        survey.printers.done(
+            f'FA Contract deployed: Token `{self._token_info.metadata.name}` with asset_id {accent(asset_id)}.',
+            re=True,
+        )
         return asset_id
 
     def deploy_ticketer(self, asset_id) -> TicketerDTO:
@@ -214,9 +225,7 @@ class TokenBootstrap:
                 content_bytes_hex=ticketer_params_dict['content_bytes'],
             )
 
-        survey.printers.done(f'Ticketer Contract deployed for Token `{self._token_info.metadata.name}`: {ticketer.address}.', re=True)
-        survey.printers.done(f'Ticket Hash: `{ticket_hash}`.')
-        survey.printers.done(f'Ticket Content: `0x{ticketer_params.content_bytes_hex}`.')
+        survey.printers.done(f'Ticketer Contract deployed for Token `{self._token_info.metadata.name}`: {accent(ticketer.address)}.', re=True)
         return TicketerDTO(
             ticketer=ticketer,
             ticketer_params=ticketer_params,
@@ -237,12 +246,12 @@ class TokenBootstrap:
             )
 
         survey.printers.done(
-            f'Etherlink ERC20 Proxy Contract deployed for Token `{self._token_info.metadata.name}`: 0x{erc20_proxy_address}.',
+            f'Etherlink ERC20 Proxy Contract deployed for Token `{self._token_info.metadata.name}`: {accent(erc20_proxy_address)}.',
             re=True,
         )
-        return erc20_proxy_address.lower()
+        return erc20_proxy_address
 
-    def deploy_helper(self, ticketer_address, erc20_proxy_address):
+    def deploy_helper(self, ticketer_address, erc20_proxy_address) -> str:
         survey.printers.text('', end='\r')
         with survey.graphics.SpinProgress(
             prefix='Token Bridge Helper Contract Origination ',
@@ -257,9 +266,10 @@ class TokenBootstrap:
             )
 
         survey.printers.done(
-            f'Token Bridge Helper Contract deployed for Token `{self._token_info.metadata.name}`: {helper.address}.',
+            f'Token Bridge Helper Contract deployed for Token `{self._token_info.metadata.name}`: {accent(helper.address)}.',
             re=True,
         )
+        return helper.address
 
 
 class RollupBootstrap:
@@ -272,15 +282,18 @@ class RollupBootstrap:
         self._is_mainnet = is_mainnet
         self._tezos_client = tezos_client
         self._tokens = tokens
-
+        self._token_fixture_collection = {}
     def run(self):
         self.deploy_whitelist()
         # deploy_ticket_router_tester
+        with open('fixture.log', 'w') as f:
+            f.write(json.dumps(self._token_fixture_collection, indent=2))
 
     def deploy_whitelist(self):
         survey.printers.info('Bootstrapping Whitelist...')
         for index, token_bootstrap in enumerate(self._tokens):
-            token_bootstrap.run(index + 1)
+            token_fixture = token_bootstrap.run(index + 1)
+            self._token_fixture_collection[token_bootstrap._token_info.metadata.symbol] = token_fixture.model_dump_json(indent=2)
 
 
 class BootstrapSurvey:

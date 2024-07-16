@@ -1,4 +1,3 @@
-import subprocess
 from random import randint
 from time import sleep
 
@@ -34,12 +33,12 @@ class TestWithdraw:
                                 ticketer_address
                             }
                         }
-                        outbox_message {
-                            commitment_id
-                            proof
-                        }
                     }
                     l1_transaction_id
+                    outbox_message {
+                        commitment_id
+                        proof
+                    }
                 }
             }
         """
@@ -62,29 +61,26 @@ class TestWithdraw:
                     limit: 1
                 )
                 {
-                      l2_transaction_id
+                    l2_transaction_id
                 }
             }
 
             query FetchOutboxMessageProof($l2_transaction_id: uuid) {
                 bridge_withdrawal(where: {l2_transaction_id: {_eq: $l2_transaction_id}}) {
-                    l2_transaction {
-                        outbox_message {
-                            commitment {
-                                inbox_level
-                                hash
-                            }
-                            level
-                            index
-                            proof
+                    outbox_message {
+                        commitment {
+                            inbox_level
+                            hash
                         }
+                        level
+                        index
+                        proof
                     }
                 }
             }
         """
         )
 
-    @pytest.mark.skip('Only Deposits')
     def test_create_token_withdraw(
         self,
         bridge: Bridge,
@@ -116,7 +112,7 @@ class TestWithdraw:
         for _ in range(20):
             response = indexer.execute(bridge_withdrawal_query, variable_values=query_params)
             indexed_operations = response['bridge_withdrawal']
-            if len(indexed_operations):
+            if len(indexed_operations) and indexed_operations[0]['outbox_message'] is not None:
                 break
             sleep(3)
 
@@ -128,22 +124,20 @@ class TestWithdraw:
                     'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
                     'ticket_hash': str(token.ticket_hash),
                     'l2_token': {
-                        'id': token.l2_token_address,
+                        'id': token.l2_token_address.lower(),
                         'ticket': {
                             'ticketer_address': token.l1_ticketer_address,
                         }
                     },
-                    'outbox_message': {
-                        'commitment_id': None,
-                        'proof': None,
-                    },
+                },
+                'outbox_message': {
+                    'commitment_id': None,
+                    'proof': None,
                 },
                 'l1_transaction_id': None,
             },
         ]
 
-
-    @pytest.mark.skip('Only Deposits')
     def test_finish_token_withdraw(
         self,
         bridge: Bridge,
@@ -172,7 +166,7 @@ class TestWithdraw:
                 variable_values=query_params,
                 operation_name='FetchOutboxMessageProof'
             )
-            cemented_withdrawal = response['bridge_withdrawal'][0]['l2_transaction']
+            cemented_withdrawal = response['bridge_withdrawal'][0]
             if cemented_withdrawal['outbox_message']['proof'] and cemented_withdrawal['outbox_message']['commitment']:
                 break
 

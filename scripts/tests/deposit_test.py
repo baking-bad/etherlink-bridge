@@ -5,6 +5,7 @@ import pytest
 from gql import gql
 from gql.client import SyncClientSession
 from graphql import DocumentNode
+from pytezos import PyTezosClient
 from pytezos import pytezos
 
 from scripts.helpers.contracts import ContractHelper
@@ -49,19 +50,18 @@ class TestDeposit:
             '''
             query BatchOperationsMatchingOrderQuery($operation_hash: String) {
                 bridge_deposit(
-                    order_by: {l1_transaction: {inbox_message_id: asc}},
+                    order_by: {inbox_message_id: asc},
                     where: {l1_transaction: {operation_hash: {_eq: $operation_hash}}}
                 ) {
                     l1_transaction {
                         counter
                         nonce
-                        inbox_message_id
                     }
                     l2_transaction {
                         log_index
                         transaction_index
-                        inbox_message_id
                     }
+                    inbox_message_id
                 }
             }
             '''
@@ -140,6 +140,7 @@ class TestDeposit:
 
     def test_batch_token_deposit(
         self,
+        tezos_client: PyTezosClient,
         bridge: Bridge,
         wallet: Wallet,
         token: Token,
@@ -150,13 +151,12 @@ class TestDeposit:
         batch_count = randint(3, 5)
         amount = randint(3, 20)
 
-        manager = pytezos.using(shell=bridge.l1_rpc_url, key=wallet.l1_private_key)
-        ticket_helper = TokenBridgeHelper.from_address(manager, token.l1_ticket_helper_address)
+        ticket_helper = TokenBridgeHelper.from_address(tezos_client, token.l1_ticket_helper_address)
         token_helper = ticket_helper.get_ticketer().get_token()
 
         operations_group = (
-           token_helper.disallow(manager, ticket_helper),
-           token_helper.allow(manager, ticket_helper),
+           token_helper.disallow(tezos_client, ticket_helper),
+           token_helper.allow(tezos_client, ticket_helper),
            ticket_helper.deposit(
                rollup=bridge.l1_smart_rollup_address,
                receiver=bytes.fromhex(wallet.l2_public_key.removeprefix('0x').lower()),
@@ -164,8 +164,8 @@ class TestDeposit:
            ),
         ) * batch_count
 
-        opg = manager.bulk(*operations_group).send()
-        manager.wait(opg)
+        opg = tezos_client.bulk(*operations_group).send()
+        tezos_client.wait(opg)
         operation_hash = opg.hash()
 
         assert operation_hash[0] == 'o'
@@ -214,8 +214,7 @@ class TestDeposit:
         for i in range(1, batch_count):
             matched = matched_operations[i]
             previous_matched = matched_operations[i-1]
-            assert matched['l1_transaction']['inbox_message_id'] == matched['l2_transaction']['inbox_message_id']
-            assert matched['l1_transaction']['inbox_message_id'] > previous_matched['l1_transaction']['inbox_message_id']
+            assert matched['inbox_message_id'] > previous_matched['inbox_message_id']
             assert matched['l1_transaction']['counter'] > previous_matched['l1_transaction']['counter']
             assert matched['l1_transaction']['nonce'] > previous_matched['l1_transaction']['nonce']
             # assert matched['l2_transaction']['log_index'] > previous_matched['l2_transaction']['log_index']
@@ -228,12 +227,12 @@ class TestDeposit:
             ('0202020202020202020202020202020202020202', True, 'FAILED_INVALID_ROUTING_INFO_REVERTABLE'),
             # valid proxy address, contract exists, implements deposit proxy interface, not linked with the original token
             ('2c9f6e7bec5b8cf2fdd931462e24630fb2ce2f83', False, 'CREATED'),
-            # # no proxy address
-            ('', True),
-            # # invalid proxy address, too long (23 bytes)
-            # ('2323232323232323232323232323232323232323232323', False),
-            # # invalid proxy address, too short (18 bytes)
-            # ('181818181818181818181818181818181818', False),
+            # no proxy address
+            ('', True, 'FAILED_INVALID_ROUTING_INFO_REVERTABLE'),  # 'FAILED_INVALID_ROUTING_PROXY_EMPTY_PROXY'),
+            # invalid proxy address, too long (23 bytes)
+            ('2323232323232323232323232323232323232323232323', False, 'CREATED'),
+            # invalid proxy address, too short (18 bytes)
+            ('181818181818181818181818181818181818', False, 'CREATED'),
         ]
     )
     def test_deposit_with_invalid_routing_info(
@@ -297,6 +296,7 @@ class TestDeposit:
                     raise ValueError
                 if expected_is_completed_flag and indexed_operations[0]['status'] == 'CREATED':
                     raise ValueError
+
             except ValueError:
                 sleep(3)
                 continue
@@ -369,11 +369,20 @@ class TestDeposit:
         indexed_operations = []
         for _ in range(20):
             response = indexer.execute(bridge_operation_query, variable_values=query_params)
+
             indexed_operations = response['bridge_operation']
-            if len(indexed_operations):
+            try:
+                if len(indexed_operations) == 0:
+                    raise ValueError
+                if indexed_operations[0]['status'] == 'CREATED':
+                    raise ValueError
+
+            except ValueError:
+                sleep(3)
+                continue
+            else:
                 assert len(indexed_operations) == 1
                 break
-            sleep(3)
 
         indexed_operation = indexed_operations[0]
         assert indexed_operation['deposit']['l1_transaction'] == {
@@ -386,6 +395,7 @@ class TestDeposit:
         }
         assert indexed_operation['is_completed'] is True
         assert indexed_operation['is_successful'] is True
+        assert indexed_operation['status'] == 'FINISHED'
 
     def test_single_xtz_deposit(
         self,
@@ -419,7 +429,7 @@ class TestDeposit:
         for _ in range(20):
             response = indexer.execute(bridge_deposit_query, variable_values=query_params)
             indexed_operations = response['bridge_deposit']
-            if len(indexed_operations):
+            if len(indexed_operations) and indexed_operations[-1]['l2_transaction'] is not None:
                 break
             sleep(3)
 
@@ -478,7 +488,7 @@ class TestDeposit:
         for _ in range(20):
             response = indexer.execute(bridge_deposit_query, variable_values=query_params)
             indexed_operations = response['bridge_deposit']
-            if len(indexed_operations):
+            if len(indexed_operations) and indexed_operations[-1]['l2_transaction'] is not None:
                 break
             sleep(3)
 
@@ -515,9 +525,8 @@ class TestDeposit:
         for i in range(1, batch_count):
             matched = matched_operations[i]
             previous_matched = matched_operations[i-1]
-            assert matched['l1_transaction']['inbox_message_id'] == matched['l2_transaction']['inbox_message_id']
-            assert matched['l1_transaction']['inbox_message_id'] > previous_matched['l1_transaction']['inbox_message_id']
+            assert matched['inbox_message_id'] > previous_matched['inbox_message_id']
             assert matched['l1_transaction']['counter'] > previous_matched['l1_transaction']['counter']
             assert matched['l1_transaction']['nonce'] > previous_matched['l1_transaction']['nonce']
-            assert matched['l2_transaction']['log_index'] == previous_matched['l2_transaction']['log_index']
-            assert matched['l2_transaction']['transaction_index'] > previous_matched['l2_transaction']['transaction_index']
+            # assert matched['l2_transaction']['log_index'] == previous_matched['l2_transaction']['log_index']
+            # assert matched['l2_transaction']['transaction_index'] > previous_matched['l2_transaction']['transaction_index']

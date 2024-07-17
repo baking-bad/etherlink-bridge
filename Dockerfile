@@ -5,7 +5,7 @@ RUN apt-get update && \
     apt-get clean
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="/root/.local/bin:${PATH}"
-ARG BRANCH=feat/cli-improvements
+ARG BRANCH=main
 ENV POETRY_HTTP_TIMEOUT=300
 RUN git clone --branch $BRANCH https://github.com/baking-bad/etherlink-bridge.git /bridge
 WORKDIR /bridge

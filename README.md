@@ -25,7 +25,7 @@ poetry install
 > [!TIP]
 > To fund you wallets and pay for gas in test networks there are: [Tezos faucet](https://faucet.ghostnet.teztnets.com/) and [Etherlink faucet](https://faucet.etherlink.com/).
 
-### Bridging a new Token
+## Bridging a new Token
 To establish a new bridge between Tezos and Etherlink for existing `FA1.2` and `FA2` tokens there is a `bridge_token` command that would deploy three contracts:
 - Ticketer contract on the Tezos side,
 - ERC20 Proxy contract on the Etherlink side,
@@ -44,7 +44,7 @@ poetry run bridge_token \
 > [!NOTE]
 > To find out the details of how the FA Bridge contracts deployed and communicate with each other, see: [bridge configuration](docs/README.md#bridge-configuration).
 
-### Deposit
+## Deposit
 To deposit tokens from the Tezos side to the Etherlink side there is a `deposit` command:
 ```shell
 poetry run deposit \
@@ -57,7 +57,7 @@ poetry run deposit \
 > [!NOTE]
 > For details on how the FA Bridge deposit works, see: [Deposit](docs/README.md#deposit).
 
-### Withdrawal
+## Withdrawal
 To initiate withdrawal on the Etherlink side there is a `withdraw` command:
 ```shell
 poetry run withdraw \

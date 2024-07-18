@@ -69,11 +69,16 @@ poetry run withdraw \
     --receiver-address tz1ekkzEN2LB1cpf7dCaonKt6x9KVd9YVydc
 ```
 
+> [!NOTE]
+> To get `--ticketer-address-bytes` and `--ticket-content-bytes` parameters for the ticketer contract, there is a `get_ticketer_command` command: `poetry run get_ticketer_params --ticketer-address KT199szFcgpAc46ZwsDykNBCa2t6u32xUyY7`.
+
 > [!IMPORTANT]
 > Withdrawal required to be finalized on Tezos side after commitment with witdhrawal has been settled. See more here: [Withdrawal process](docs/README.md#withdrawal-process).
 
 ## Compilation and Running Tests
 1. Install Foundry by following the [installation guide](https://book.getfoundry.sh/getting-started/installation)
+> [!NOTE]
+> Please note that the version of `forge` used to build contracts is `forge 0.2.0 (ca67d15 2023-08-02T00:16:51.291393754Z)`. Build results for newer versions may differ from the artifacts added to the build directory.
 
 2. Install Solidity dependencies with Forge (part of the Foundry toolchain). Installation should be executed from the `etherlink` directory:
 ```shell

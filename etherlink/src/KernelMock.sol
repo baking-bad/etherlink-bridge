@@ -31,8 +31,7 @@ contract KernelMock is IWithdrawalEvent, IDepositEvent {
     uint256 private _rollupId;
     uint256 private _inboxLevel;
     uint256 private _inboxMsgId;
-    uint256 private _outboxLevel;
-    uint256 private _outboxMsgId;
+    uint256 private _withdrawalId;
 
     mapping(bytes32 => uint256) private _tickets;
 
@@ -149,16 +148,10 @@ contract KernelMock is IWithdrawalEvent, IDepositEvent {
         bytes22 receiver22 = bytes22(routingInfo);
 
         emit Withdrawal(
-            ticketHash,
-            sender,
-            ticketOwner,
-            receiver22,
-            amount,
-            _outboxLevel,
-            _outboxMsgId
+            ticketHash, sender, ticketOwner, receiver22, amount, _withdrawalId
         );
 
-        _outboxMsgId += 1;
+        _withdrawalId += 1;
         proxyToken.withdraw(sender, amount, ticketHash);
         // NOTE: here the withdraw outbox message should be sent to L1
     }

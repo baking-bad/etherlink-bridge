@@ -67,16 +67,9 @@ contract KernelTest is BaseTest, IWithdrawalEvent, IDepositEvent {
         vm.prank(bob);
         // Checking that emited indexed data is the same in all topics:
         vm.expectEmit(true, true, true, true);
-        uint256 outboxLevel = 0;
-        uint256 outboxMsgId = 0;
+        uint256 withdrawalId = 0;
         emit Withdrawal(
-            ticketHash,
-            bob,
-            address(token),
-            receiver22,
-            100,
-            outboxLevel,
-            outboxMsgId
+            ticketHash, bob, address(token), receiver22, 100, withdrawalId
         );
         kernel.withdraw(address(token), receiver, 100, ticketer, content);
     }

@@ -36,13 +36,7 @@
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "outboxLevel",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "outboxMsgId",
+          "name": "withdrawalId",
           "type": "uint256"
         }
       ],
@@ -61,7 +55,7 @@
     "linkReferences": {}
   },
   "methodIdentifiers": {},
-  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"ticketHash\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"ticketOwner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes22\",\"name\":\"receiver\",\"type\":\"bytes22\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"outboxLevel\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"outboxMsgId\",\"type\":\"uint256\"}],\"name\":\"Withdrawal\",\"type\":\"event\"}],\"devdoc\":{\"events\":{\"Withdrawal(uint256,address,address,bytes22,uint256,uint256,uint256)\":{\"params\":{\"amount\":\"Amount of tokens being withdrawn.\",\"outboxLevel\":\"The level at which the withdrawal was processed in the rollup outbox.\",\"outboxMsgId\":\"Unique identifier for the withdrawal message within its level, facilitating tracking.\",\"receiver\":\"Encoded L1 address designated to receive the withdrawn amount.\",\"sender\":\"Address that initiated the withdrawal request.\",\"ticketHash\":\"Unique identifier for the withdrawal ticket.\",\"ticketOwner\":\"Owner of the ticket on L2, could be the sender or an L2 proxy contract.\"}}},\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"events\":{\"Withdrawal(uint256,address,address,bytes22,uint256,uint256,uint256)\":{\"notice\":\"Indicates a withdrawal from L2 to L1.\"}},\"kind\":\"user\",\"methods\":{},\"notice\":\"Interface for emitting Withdrawal events as part of an L2 to L1 token bridge.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/IWithdrawalEvent.sol\":\"IWithdrawalEvent\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/\",\":openzeppelin/=lib/openzeppelin-contracts/contracts/\"]},\"sources\":{\"src/IWithdrawalEvent.sol\":{\"keccak256\":\"0x11e8321ddb5b28622cf644e3b2d5b2b96c3d67a4e9a39b7e9654e99e565464bc\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d5b51deb766b5cfd58210391dbb257477490f00a53a6db2740d21cbfc8b07114\",\"dweb:/ipfs/QmX4SJ7QnbkUeXu88EhGiHYxMGMbc3Ci7Z5yXmDdBBkwnB\"]}},\"version\":1}",
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"ticketHash\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"ticketOwner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes22\",\"name\":\"receiver\",\"type\":\"bytes22\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"withdrawalId\",\"type\":\"uint256\"}],\"name\":\"Withdrawal\",\"type\":\"event\"}],\"devdoc\":{\"events\":{\"Withdrawal(uint256,address,address,bytes22,uint256,uint256)\":{\"params\":{\"amount\":\"Amount of tokens being withdrawn.\",\"receiver\":\"Encoded L1 address designated to receive the withdrawn amount.\",\"sender\":\"Address that initiated the withdrawal request.\",\"ticketHash\":\"Unique identifier for the withdrawal ticket.\",\"ticketOwner\":\"Owner of the ticket on L2, could be the sender or an L2 proxy contract.\",\"withdrawalId\":\"Unique identifier for the withdrawal message, facilitating tracking.\"}}},\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"events\":{\"Withdrawal(uint256,address,address,bytes22,uint256,uint256)\":{\"notice\":\"Indicates a withdrawal from L2 to L1.\"}},\"kind\":\"user\",\"methods\":{},\"notice\":\"Interface for emitting Withdrawal events as part of an L2 to L1 token bridge.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/IWithdrawalEvent.sol\":\"IWithdrawalEvent\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/\",\"lib/openzeppelin-contracts:openzeppelin/=lib/openzeppelin-contracts/contracts/\"]},\"sources\":{\"src/IWithdrawalEvent.sol\":{\"keccak256\":\"0x4c31c398bde6481ff2d53a59be280fdeffbe5bb6f70b9afbc2197d9dc9ba0ca0\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://7cf330488f1df81e3ebb40c397c21d8ba50418cba2f4e86dcaecfcb3081c5d85\",\"dweb:/ipfs/QmXKXPiN8DxgEobpsq1m4krKkw7J2ng77zARtMCZgcH9Rh\"]}},\"version\":1}",
   "metadata": {
     "compiler": {
       "version": "0.8.21+commit.d9974bed"
@@ -103,13 +97,7 @@
             },
             {
               "internalType": "uint256",
-              "name": "outboxLevel",
-              "type": "uint256",
-              "indexed": false
-            },
-            {
-              "internalType": "uint256",
-              "name": "outboxMsgId",
+              "name": "withdrawalId",
               "type": "uint256",
               "indexed": false
             }
@@ -136,7 +124,7 @@
         "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
         "forge-std/=lib/forge-std/src/",
         "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/",
-        "openzeppelin/=lib/openzeppelin-contracts/contracts/"
+        "lib/openzeppelin-contracts:openzeppelin/=lib/openzeppelin-contracts/contracts/"
       ],
       "optimizer": {
         "enabled": true,
@@ -152,10 +140,10 @@
     },
     "sources": {
       "src/IWithdrawalEvent.sol": {
-        "keccak256": "0x11e8321ddb5b28622cf644e3b2d5b2b96c3d67a4e9a39b7e9654e99e565464bc",
+        "keccak256": "0x4c31c398bde6481ff2d53a59be280fdeffbe5bb6f70b9afbc2197d9dc9ba0ca0",
         "urls": [
-          "bzz-raw://d5b51deb766b5cfd58210391dbb257477490f00a53a6db2740d21cbfc8b07114",
-          "dweb:/ipfs/QmX4SJ7QnbkUeXu88EhGiHYxMGMbc3Ci7Z5yXmDdBBkwnB"
+          "bzz-raw://7cf330488f1df81e3ebb40c397c21d8ba50418cba2f4e86dcaecfcb3081c5d85",
+          "dweb:/ipfs/QmXKXPiN8DxgEobpsq1m4krKkw7J2ng77zARtMCZgcH9Rh"
         ],
         "license": "MIT"
       }
@@ -164,14 +152,14 @@
   },
   "ast": {
     "absolutePath": "src/IWithdrawalEvent.sol",
-    "id": 44236,
+    "id": 44234,
     "exportedSymbols": {
       "IWithdrawalEvent": [
-        44235
+        44233
       ]
     },
     "nodeType": "SourceUnit",
-    "src": "32:1034:24",
+    "src": "32:894:24",
     "nodes": [
       {
         "id": 44216,
@@ -186,27 +174,27 @@
         ]
       },
       {
-        "id": 44235,
+        "id": 44233,
         "nodeType": "ContractDefinition",
-        "src": "156:909:24",
+        "src": "156:769:24",
         "nodes": [
           {
-            "id": 44234,
+            "id": 44232,
             "nodeType": "EventDefinition",
-            "src": "843:220:24",
+            "src": "731:192:24",
             "nodes": [],
             "anonymous": false,
             "documentation": {
               "id": 44218,
               "nodeType": "StructuredDocumentation",
-              "src": "189:649:24",
-              "text": " @notice Indicates a withdrawal from L2 to L1.\n @param ticketHash Unique identifier for the withdrawal ticket.\n @param sender Address that initiated the withdrawal request.\n @param ticketOwner Owner of the ticket on L2, could be the sender or an L2 proxy contract.\n @param receiver Encoded L1 address designated to receive the withdrawn amount.\n @param amount Amount of tokens being withdrawn.\n @param outboxLevel The level at which the withdrawal was processed in the rollup outbox.\n @param outboxMsgId Unique identifier for the withdrawal message within its level, facilitating tracking."
+              "src": "189:537:24",
+              "text": " @notice Indicates a withdrawal from L2 to L1.\n @param ticketHash Unique identifier for the withdrawal ticket.\n @param sender Address that initiated the withdrawal request.\n @param ticketOwner Owner of the ticket on L2, could be the sender or an L2 proxy contract.\n @param receiver Encoded L1 address designated to receive the withdrawn amount.\n @param amount Amount of tokens being withdrawn.\n @param withdrawalId Unique identifier for the withdrawal message, facilitating tracking."
             },
-            "eventSelector": "64e765b73c0829c01c6f3026a840120142d5a0b83626c548cff3a44ca5299c98",
+            "eventSelector": "589b38feb5b5559d564ed81012950893bfc35db66a90524d70410d1c15c8e56c",
             "name": "Withdrawal",
-            "nameLocation": "849:10:24",
+            "nameLocation": "737:10:24",
             "parameters": {
-              "id": 44233,
+              "id": 44231,
               "nodeType": "ParameterList",
               "parameters": [
                 {
@@ -215,10 +203,10 @@
                   "indexed": true,
                   "mutability": "mutable",
                   "name": "ticketHash",
-                  "nameLocation": "885:10:24",
+                  "nameLocation": "773:10:24",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44234,
-                  "src": "869:26:24",
+                  "scope": 44232,
+                  "src": "757:26:24",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -229,7 +217,7 @@
                     "id": 44219,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "869:7:24",
+                    "src": "757:7:24",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -243,10 +231,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "sender",
-                  "nameLocation": "913:6:24",
+                  "nameLocation": "801:6:24",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44234,
-                  "src": "905:14:24",
+                  "scope": 44232,
+                  "src": "793:14:24",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -257,7 +245,7 @@
                     "id": 44221,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "905:7:24",
+                    "src": "793:7:24",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -272,10 +260,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "ticketOwner",
-                  "nameLocation": "937:11:24",
+                  "nameLocation": "825:11:24",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44234,
-                  "src": "929:19:24",
+                  "scope": 44232,
+                  "src": "817:19:24",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -286,7 +274,7 @@
                     "id": 44223,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "929:7:24",
+                    "src": "817:7:24",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -301,10 +289,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "receiver",
-                  "nameLocation": "966:8:24",
+                  "nameLocation": "854:8:24",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44234,
-                  "src": "958:16:24",
+                  "scope": 44232,
+                  "src": "846:16:24",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -315,7 +303,7 @@
                     "id": 44225,
                     "name": "bytes22",
                     "nodeType": "ElementaryTypeName",
-                    "src": "958:7:24",
+                    "src": "846:7:24",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes22",
                       "typeString": "bytes22"
@@ -329,10 +317,10 @@
                   "indexed": false,
                   "mutability": "mutable",
                   "name": "amount",
-                  "nameLocation": "992:6:24",
+                  "nameLocation": "880:6:24",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44234,
-                  "src": "984:14:24",
+                  "scope": 44232,
+                  "src": "872:14:24",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -343,7 +331,7 @@
                     "id": 44227,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "984:7:24",
+                    "src": "872:7:24",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -356,11 +344,11 @@
                   "id": 44230,
                   "indexed": false,
                   "mutability": "mutable",
-                  "name": "outboxLevel",
-                  "nameLocation": "1016:11:24",
+                  "name": "withdrawalId",
+                  "nameLocation": "904:12:24",
                   "nodeType": "VariableDeclaration",
-                  "scope": 44234,
-                  "src": "1008:19:24",
+                  "scope": 44232,
+                  "src": "896:20:24",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -371,35 +359,7 @@
                     "id": 44229,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1008:7:24",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 44232,
-                  "indexed": false,
-                  "mutability": "mutable",
-                  "name": "outboxMsgId",
-                  "nameLocation": "1045:11:24",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 44234,
-                  "src": "1037:19:24",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 44231,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "1037:7:24",
+                    "src": "896:7:24",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -408,7 +368,7 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "859:203:24"
+              "src": "747:175:24"
             }
           }
         ],
@@ -425,14 +385,14 @@
         },
         "fullyImplemented": true,
         "linearizedBaseContracts": [
-          44235
+          44233
         ],
         "name": "IWithdrawalEvent",
         "nameLocation": "166:16:24",
-        "scope": 44236,
+        "scope": 44234,
         "usedErrors": [],
         "usedEvents": [
-          44234
+          44232
         ]
       }
     ],

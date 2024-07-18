@@ -12,8 +12,7 @@ interface IWithdrawalEvent {
      * @param ticketOwner Owner of the ticket on L2, could be the sender or an L2 proxy contract.
      * @param receiver Encoded L1 address designated to receive the withdrawn amount.
      * @param amount Amount of tokens being withdrawn.
-     * @param outboxLevel The level at which the withdrawal was processed in the rollup outbox.
-     * @param outboxMsgId Unique identifier for the withdrawal message within its level, facilitating tracking.
+     * @param withdrawalId Unique identifier for the withdrawal message, facilitating tracking.
      */
     event Withdrawal(
         uint256 indexed ticketHash,
@@ -21,7 +20,6 @@ interface IWithdrawalEvent {
         address ticketOwner,
         bytes22 receiver,
         uint256 amount,
-        uint256 outboxLevel,
-        uint256 outboxMsgId
+        uint256 withdrawalId
     );
 }

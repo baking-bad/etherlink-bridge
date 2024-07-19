@@ -82,7 +82,9 @@ def pack(object: Any, type_expression: str) -> bytes:
 
 
 def make_address_bytes(address: str) -> str:
-    """Converts address string to bytes"""  # fixme: REALLY?
+    """Forges Tezos contract address (KT1, tz1, tz2, tz3) to bytes hex.
+    Forged contract consists of binary suffix/prefix and body
+    (blake2b hash digest)"""
 
     # packing address to bytes and taking the last 22 bytes:
     return pack(address, 'address')[-22:].hex()

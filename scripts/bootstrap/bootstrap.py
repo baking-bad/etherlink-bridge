@@ -8,9 +8,9 @@ from pytezos import PyTezosClient
 from pytezos import pytezos
 from pytezos.rpc import RpcError
 
+from scripts.bootstrap.cli import echo
 from scripts.bootstrap.cli import notice_echo
 from scripts.bootstrap.cli import survey_table
-from scripts.bootstrap.const import DEFAULT_TOKEN_ID
 from scripts.bootstrap.const import KERNEL_ADDRESS
 from scripts.bootstrap.const import MAINNET_TZKT_API_URL
 from scripts.bootstrap.const import MAINNET_WHITELIST
@@ -49,6 +49,34 @@ class EtherlinkBootstrapClient:
         )
 
 
+def ask_origination_confirmation(token_info: TokenInfoDTO) -> None:
+    """Prints token info to the console and asks user to confirm origination."""
+
+    supply = token_info.supply / 10 ** token_info.metadata.decimals
+    supply_formatted = f'{supply:,}'.replace(',', '_')
+
+    def accent(msg: str) -> str:
+        return click.style(msg, fg='bright_cyan')
+
+    echo('  - Name:     ' + accent(token_info.metadata.name))
+    echo('  - Symbol:   ' + accent(token_info.metadata.symbol))
+    echo('  - Decimals: ' + accent(str(token_info.metadata.decimals)))
+    echo('  - Standard: ' + accent(token_info.standard))
+    echo('  - Supply:   ' + accent(supply_formatted))
+
+    echo(
+        'The following 4 contracts will be deployed: '
+        + accent('Token') + ', '
+        + accent('Ticker') + ', '
+        + accent('ERC20 Proxy') + ' and '
+        + accent('Token Bridge Helper')
+    )
+
+    if not survey.routines.inquire('Proceed with origination?\n', default=True):
+        survey.printers.fail('Good for you!')
+        exit(0)
+
+
 class TokenBootstrap:
     def __init__(
         self,
@@ -73,9 +101,13 @@ class TokenBootstrap:
 
     def run(self, whitelist_counter: int):
         survey.printers.info(
-            f'Whitelisting Token having asset_id {self._mainnet_asset_id} in Tezos Mainnet...',
+            f'Whitelisting Token having asset_id {self._mainnet_asset_id} in Tezos Mainnet, parameters:',
             mark=f'[{whitelist_counter}]',
         )
+
+        self._fetch_mainnet_token_metadata()
+        ask_origination_confirmation(self._token_info)
+
         asset_id = self.deploy_test_token()
         # asset_id = self.prepare_l1_token()
         ticketer_data = self.deploy_ticketer(asset_id)
@@ -116,15 +148,13 @@ class TokenBootstrap:
         contract_address, token_id = self._mainnet_asset_id.split('_')
 
         survey.printers.text('', end='\r', )
-        survey.printers.text('\n'*5, re=True)
+        survey.printers.text('\n' * 5, re=True)
         survey.printers.text('', end='\r', re=True)
         state = ''
         with survey.graphics.SpinProgress(
             prefix='Origination of testing Token Contract ',
             suffix=lambda x: state,
         ):
-            state = ' fetching original token metadata...'
-            self._fetch_mainnet_token_metadata()
             token = TokenHelper.get_cls(self._token_info.standard)
 
             state = ' processing transaction...'
@@ -150,7 +180,7 @@ class TokenBootstrap:
         token_id = int(token_id)
 
         survey.printers.text('', end='\r', )
-        survey.printers.text('\n'*3, re=True)
+        survey.printers.text('\n' * 3, re=True)
         survey.printers.text('', end='\r', re=True)
         state = ''
         with survey.graphics.SpinProgress(
@@ -171,9 +201,9 @@ class TokenBootstrap:
 
             state = ' fetching ticketer params...'
             ticketer_params_dict = get_ticketer_params.callback(
-                ticketer.address,
-                self._tezos_client.context.key,
-                self._tezos_client.context.shell,
+                ticketer_address=ticketer.address,
+                tezos_private_key=self._tezos_client.context.key,
+                tezos_rpc_url=self._tezos_client.context.shell,
             )
 
             ticket_hash = ticketer.read_ticket().hash()
@@ -184,6 +214,8 @@ class TokenBootstrap:
             )
 
         survey.printers.done(f'Ticketer Contract deployed for Token `{self._token_info.metadata.name}`: {ticketer.address}.', re=True)
+        survey.printers.done(f'Ticket Hash: `{ticket_hash}`.')
+        survey.printers.done(f'Ticket Content: `0x{ticketer_params.content_bytes_hex}`.')
         return TicketerDTO(
             ticketer=ticketer,
             ticketer_params=ticketer_params,
@@ -192,7 +224,7 @@ class TokenBootstrap:
 
     def deploy_erc20_proxy(self, ticketer_params) -> str:
         survey.printers.text('', end='\r', )
-        survey.printers.text('\n'*3, re=True)
+        survey.printers.text('\n' * 3, re=True)
         survey.printers.text('', end='\r', re=True)
         with survey.graphics.SpinProgress(
             prefix='Etherlink ERC20 Proxy Contract Origination ',
@@ -247,7 +279,7 @@ class RollupBootstrap:
     def deploy_whitelist(self):
         survey.printers.info('Bootstrapping Whitelist...')
         for index, token_bootstrap in enumerate(self._tokens):
-            token_bootstrap.run(index+1)
+            token_bootstrap.run(index + 1)
 
 
 class BootstrapSurvey:
@@ -423,11 +455,6 @@ def rollout():
     notice_echo('This command will help you to deploy all contracts for a new rollup.')
     bootstrap_survey = BootstrapSurvey(network_defaults=NETWORK_DEFAULTS)
     user_input = bootstrap_survey.perform()
-
-    notice_echo('Ready to bootstrap: Token, Ticketer, Proxy, Helper...')  # fixme: replace with proper message
-    if not survey.routines.inquire('Proceed with origination?\n', default=True):
-        survey.printers.fail('Good for you!')
-        return
 
     rollup_bootstrap_service = RollupBootstrapFactory.build(user_input)
     notice_echo('Starting Bridge Application Bootstrap process.')

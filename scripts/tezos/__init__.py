@@ -5,6 +5,7 @@ from scripts.tezos.deploy_token_bridge_helper import deploy_token_bridge_helper
 from scripts.tezos.deposit import deposit
 from scripts.tezos.execute_outbox_message import execute_outbox_message
 from scripts.tezos.get_ticketer_params import get_ticketer_params
+from scripts.tezos.xtz_deposit import xtz_deposit
 
 
 # Allowing reimporting from this module:
@@ -16,4 +17,5 @@ __all__ = [
     'deposit',
     'execute_outbox_message',
     'get_ticketer_params',
+    'xtz_deposit',
 ]

@@ -224,3 +224,11 @@ receiver_address = click.option(
     prompt='Receiver address',
     help='The address of the receiver of the tokens on another layer.',
 )
+
+# TODO: consider moving all of the consts to separate consts.py?
+xtz_ticket_helper = click.option(
+    '--xtz-ticket-helper',
+    default='KT1MJxf4KVN3sosR99VRG7WBbWTJtAyWUJt9',
+    help='The address of the xtz ticket helper used in xtz bridge.',
+    show_default=True,
+)

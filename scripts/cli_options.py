@@ -120,7 +120,7 @@ etherlink_rpc_url = click.option(
 )
 
 etherlink_rollup_node_url = click.option(
-    '--etherlink-rollup-rpc-url',
+    '--etherlink-rollup-node-url',
     default='https://etherlink-rollup-paris.dipdup.net',
     required=True,
     envvar='ETHERLINK_ROLLUP_NODE_URL',

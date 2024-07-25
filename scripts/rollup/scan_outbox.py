@@ -20,6 +20,12 @@ import json
     show_default=True,
 )
 @click.option(
+    '--echo-content',
+    default=True,
+    help='If set to True - the messages content will be shown, if set to False - only messages count per block will be shown.',
+    show_default=True,
+)
+@click.option(
     '--sleep-time',
     default=1,
     help='Time between requests in seconds.',
@@ -31,6 +37,7 @@ def scan_outbox(
     level_from: int,
     max_levels: int,
     sleep_time: int,
+    echo_content: bool,
     etherlink_rollup_node_url: str,
     silent: bool,
 ) -> None:
@@ -46,5 +53,6 @@ def scan_outbox(
 
     for level in range(level_from, level_from + max_levels):
         messages = get_messages(etherlink_rollup_node_url, level)
-        click.echo(accent(str(level)) + ': ' + json.dumps(messages, indent=2))
+        info = json.dumps(messages, indent=2) if echo_content else str(len(messages))
+        click.echo(accent(str(level)) + ': ' + info)
         time.sleep(sleep_time)

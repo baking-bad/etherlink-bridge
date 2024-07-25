@@ -155,4 +155,6 @@ contract KernelMock is IWithdrawalEvent, IDepositEvent {
         proxyToken.withdraw(sender, amount, ticketHash);
         // NOTE: here the withdraw outbox message should be sent to L1
     }
+
+    function withdraw_base58(string memory target) public payable {}
 }

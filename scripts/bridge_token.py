@@ -101,7 +101,9 @@ def bridge_token(
 
     click.echo('Successfully deployed FA Bridge contracts for ' + accent(token_symbol))
     return {
+        # TODO: consider returning ticketer helper instead of ticketer contract
         'ticketer': ticketer,
+        # TODO: replace erc20_address with ERC20 helper
         'erc20': erc20_address,
         'token_bridge_helper': token_bridge_helper,
     }

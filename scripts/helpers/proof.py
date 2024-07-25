@@ -8,6 +8,10 @@ class Proof(TypedDict):
     proof: str
 
 
+# TODO: add RollupNodeProvider and retry in the case of the following errors:
+# - requests.exceptions.ConnectionError: HTTPSConnectionPool
+
+
 def get_proof(rollup_rpc_url: str, outbox_level: int, index: int) -> Proof:
     parts = urlparse(rollup_rpc_url)
     parts = parts._replace(

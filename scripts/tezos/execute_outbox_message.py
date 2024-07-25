@@ -7,6 +7,7 @@ from scripts import cli_options
 
 
 @click.command()
+# TODO: consider simplifying by providing --level and --index instead?
 @click.option(
     '--commitment',
     required=True,

@@ -91,7 +91,7 @@ token_bridge_helper_address = click.option(
 
 smart_rollup_address = click.option(
     '--smart-rollup-address',
-    default='sr1HpyqJ662dWTY8GWffhHYgN2U26funbT1H',
+    default='sr1LmwJbvp8ZGwTRzAoy8mheGV5xX2kYef1L',
     required=True,
     prompt='Smart Rollup contract address',
     envvar='SMART_ROLLUP_ADDRESS',
@@ -165,11 +165,20 @@ ticket_content_bytes = click.option(
     help='The content of the ticket as micheline expression is in its forged form, **legacy optimized mode**. See also `get_ticket_params` command that helps with requesting and formatting this param for a given ticket address.',
 )
 
+# TODO: consider renaming to fa_withdraw_precompile?
 withdraw_precompile = click.option(
     '--withdraw-precompile',
     default='0xff00000000000000000000000000000000000002',
     envvar='WITHDRAW_PRECOMPILE_ADDRESS',
     help='The address of the FA Withdraw Precompile contract.',
+    show_default=True,
+)
+
+xtz_withdraw_precompile = click.option(
+    '--xtz-withdraw-precompile',
+    default='0xff00000000000000000000000000000000000001',
+    envvar='XTZ_WITHDRAW_PRECOMPILE_ADDRESS',
+    help='The address of the XTZ Withdraw Precompile contract.',
     show_default=True,
 )
 

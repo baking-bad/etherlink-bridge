@@ -38,7 +38,7 @@ def withdraw(
     etherlink_private_key: str,
     etherlink_rpc_url: str,
 ) -> str:
-    """Withdraws token from L2 to L1"""
+    """Withdraws provided wrapped FA token (ERC20) from L2 back to L1"""
 
     web3 = get_etherlink_web3(etherlink_rpc_url)
     account = get_etherlink_account(web3, etherlink_private_key)
@@ -49,7 +49,9 @@ def withdraw(
     ticketer = bytes.fromhex(ticketer_address_bytes.replace('0x', ''))
     content = bytes.fromhex(ticket_content_bytes.replace('0x', ''))
 
-    click.echo('Making withdrawal from ' + wrap(accent(erc20_proxy_address)) + ':')
+    click.echo(
+        'Making FA withdrawal, ERC20 token: ' + wrap(accent(erc20_proxy_address)) + ':'
+    )
     echo_variable('  - ', 'Executor', account.address)
     echo_variable('  - ', 'Etherlink RPC node', etherlink_rpc_url)
     click.echo('  - Withdrawal params:')
@@ -80,6 +82,6 @@ def withdraw(
 
     tx_hash: HexBytes = receipt.transactionHash  # type: ignore
     click.echo(
-        'Successfully initiated Withdraw, tx hash: ' + wrap(accent(tx_hash.hex()))
+        'Successfully initiated FA withdrawal, tx hash: ' + wrap(accent(tx_hash.hex()))
     )
     return tx_hash.hex()

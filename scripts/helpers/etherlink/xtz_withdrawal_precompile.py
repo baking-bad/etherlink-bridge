@@ -2,28 +2,24 @@ from web3.types import TxReceipt
 from scripts.helpers.etherlink.contract import EvmContractHelper
 
 
-class FaWithdrawalPrecompileHelper(EvmContractHelper):
+class XtzWithdrawalPrecompileHelper(EvmContractHelper):
     def withdraw(
         self,
-        ticket_owner: str,
-        routing_info: bytes,
+        receiver: str,
         # TODO: consider using BigNumber instead of int
-        amount: int,
-        ticketer: bytes,
-        content: bytes,
+        wei_amount: int,
     ) -> TxReceipt:
-        """Calls FA withdrawal precompile which allows to withdraw tokens from L2 to L1"""
+        """Calls XTZ withdrawal precompile which allows to withdraw XTZ from L2 to L1"""
 
-        call = self.contract.functions.withdraw(
-            ticket_owner, routing_info, amount, ticketer, content
-        )
-
+        call = self.contract.functions.withdraw_base58(receiver)
         transaction = call.build_transaction(
             {
                 'from': self.account.address,
+                'value': self.web3.to_wei(wei_amount, 'wei'),
                 'nonce': self.web3.eth.get_transaction_count(self.account.address),
                 'chainId': self.web3.eth.chain_id,
             }
         )
 
-        return self.legacy_send(transaction)
+        txn_receipt = self.legacy_send(transaction)
+        return txn_receipt

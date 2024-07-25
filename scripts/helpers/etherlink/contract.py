@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Optional
 from hexbytes import HexBytes
 from typing import TypeVar, Type
+from web3.types import TxReceipt, TxParams
 
 
 def load_contract_type(web3: Web3, contract_name: str) -> Type[Contract]:
@@ -81,3 +82,9 @@ class EvmContractHelper:
         # TODO: check if this OK to ignore type
         contract = web3.eth.contract(address=address, abi=contract_type.abi)  # type: ignore
         return cls(contract=contract, web3=web3, account=account, address=address)
+
+    def legacy_send(self, params: TxParams) -> TxReceipt:
+        signed_txn = self.web3.eth.account.sign_transaction(params, self.account.key)
+        txn_hash = self.web3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        txn_receipt = self.web3.eth.wait_for_transaction_receipt(txn_hash)
+        return txn_receipt

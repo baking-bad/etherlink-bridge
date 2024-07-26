@@ -6,14 +6,14 @@ import json
 from dataclasses import dataclass
 from typing import Optional
 from hexbytes import HexBytes
-from typing import TypeVar, Type
+from typing import TypeVar, Type, Tuple, Any
 from web3.types import TxReceipt, TxParams
 
 
-def load_contract_type(web3: Web3, contract_name: str) -> Type[Contract]:
-    """Returns a Contract class for a given contract name."""
+def make_filename(contract_name: str) -> str:
+    """Returns a path to the contract for a given contract name."""
 
-    filename = join(
+    return join(
         dirname(__file__),
         '..',
         '..',
@@ -23,6 +23,10 @@ def load_contract_type(web3: Web3, contract_name: str) -> Type[Contract]:
         f'{contract_name}.sol',
         f'{contract_name}.json',
     )
+
+
+def load_contract_type(web3: Web3, filename: str) -> Type[Contract]:
+    """Loads a Contract class from a given filename."""
 
     with open(filename) as contract_json:
         contract_data = json.load(contract_json)
@@ -37,9 +41,10 @@ def originate_contract(
     web3: Web3,
     account: LocalAccount,
     constructor: ContractConstructor,
-    gas_limit: Optional[int],
-    gas_price: Optional[int],
-    nonce: Optional[int],
+    # TODO: consider remove these optional parameters:
+    gas_limit: Optional[int] = None,
+    gas_price: Optional[int] = None,
+    nonce: Optional[int] = None,
 ) -> HexBytes:
     # TODO: estimate gas and request gas price
     # gas_limit = gas_limit or constructor.estimate_gas(transaction=transaction)
@@ -50,8 +55,9 @@ def originate_contract(
 
     transaction_parameters = {
         'from': account.address,
-        'gas': gas_limit,
-        'gasPrice': gas_price,
+        # TODO: consider remove:
+        # 'gas': gas_limit,
+        # 'gasPrice': gas_price,
         'nonce': nonce,
     }
     transaction = constructor.build_transaction(transaction_parameters)
@@ -88,3 +94,31 @@ class EvmContractHelper:
         txn_hash = self.web3.eth.send_raw_transaction(signed_txn.rawTransaction)
         txn_receipt = self.web3.eth.wait_for_transaction_receipt(txn_hash)
         return txn_receipt
+
+    @classmethod
+    def originate_from_file(
+        cls: Type[T],
+        web3: Web3,
+        account: LocalAccount,
+        filename: str,
+        constructor_args: Tuple[Any, ...],
+    ) -> T:
+        """Deploys contract with given parameters"""
+
+        Contract = load_contract_type(web3, filename)
+        constructor = Contract.constructor(*constructor_args)
+
+        tx_hash = originate_contract(
+            web3=web3,
+            account=account,
+            constructor=constructor,
+            # TODO: consider remove:
+            # gas_limit=30_000_000,
+            # gas_price=web3.to_wei('1', 'gwei'),
+            # nonce=None,
+        )
+        tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+        address = tx_receipt.contractAddress  # type: ignore
+        contract = web3.eth.contract(address=address, abi=Contract.abi)
+
+        return cls(contract=contract, web3=web3, account=account, address=address)

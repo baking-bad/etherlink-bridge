@@ -5,7 +5,11 @@ from scripts.helpers.etherlink.fa_withdrawal_precompile import (
 from scripts.helpers.etherlink.xtz_withdrawal_precompile import (
     XtzWithdrawalPrecompileHelper,
 )
-from scripts.helpers.etherlink.contract import load_contract_type, originate_contract
+from scripts.helpers.etherlink.contract import (
+    load_contract_type,
+    originate_contract,
+    make_filename,
+)
 
 
 # Allowing reimporting from this module:
@@ -15,4 +19,5 @@ __all__ = [
     'XtzWithdrawalPrecompileHelper',
     'load_contract_type',
     'originate_contract',
+    'make_filename',
 ]

@@ -6,7 +6,10 @@ from scripts.helpers.utility import (
     echo_variable,
     wrap,
 )
-from scripts.helpers.etherlink import Erc20ProxyHelper
+from scripts.helpers.etherlink import (
+    Erc20ProxyHelper,
+    make_filename,
+)
 from scripts import cli_options
 
 
@@ -57,15 +60,18 @@ def deploy_erc20(
     if not skip_confirm:
         click.confirm('Do you want to proceed?', abort=True, default=True)
 
-    erc20 = Erc20ProxyHelper.originate(
+    erc20 = Erc20ProxyHelper.originate_from_file(
         web3=web3,
         account=account,
-        ticketer=ticketer,
-        content=content,
-        kernel=kernel_address,
-        name=token_name,
-        symbol=token_symbol,
-        decimals=token_decimals,
+        filename=make_filename('ERC20Proxy'),
+        constructor_args=(
+            ticketer,
+            content,
+            kernel_address,
+            token_name,
+            token_symbol,
+            token_decimals,
+        ),
     )
 
     if not silent:

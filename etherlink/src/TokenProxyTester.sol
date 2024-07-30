@@ -65,11 +65,7 @@ contract TokenProxyTester is BatchCallHelper {
         callsCount = callsCount_;
     }
 
-    /**
-     * @notice Mocks the deposit function.
-     */
-    function deposit(address, uint256, uint256) public {
-        // Logic for reentrancy test during deposit
+    function _makeCallsToWithdrawlPrecomple() internal {
         bytes memory data = abi.encodeWithSignature(
             "withdraw(address,bytes,uint256,bytes22,bytes)",
             address(this),
@@ -82,24 +78,29 @@ contract TokenProxyTester is BatchCallHelper {
     }
 
     /**
-     * @notice Mocks the withdraw function, allows reentrancy.
+     * Ignores reentrant calls.
      */
-    function withdraw(address, uint256, uint256) public {
+    modifier ignoreReentrant() {
         if (_lock == 0) {
             _lock = 1;
-            bytes memory data = abi.encodeWithSignature(
-                "withdraw(address,bytes,uint256,bytes22,bytes)",
-                address(this),
-                routingInfo,
-                amount,
-                ticketer,
-                content
-            );
-            _makeCallMultipleTimes(withdrawalPrecompile, data, 0, callsCount);
+            _;
             _lock = 0;
         } else {
-            // Ignore reentrant call
             return;
         }
+    }
+
+    /**
+     * @notice Mocks the deposit function.
+     */
+    function deposit(address, uint256, uint256) public {
+        _makeCallsToWithdrawlPrecomple();
+    }
+
+    /**
+     * @notice Mocks the withdraw function, ignores reentrancy.
+     */
+    function withdraw(address, uint256, uint256) public ignoreReentrant {
+        _makeCallsToWithdrawlPrecomple();
     }
 }

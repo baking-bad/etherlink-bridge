@@ -11,6 +11,7 @@ from scripts.helpers.utility import (
 from scripts.helpers.etherlink import (
     FaWithdrawalPrecompileHelper,
     load_contract_type,
+    make_filename,
 )
 from scripts import cli_options
 
@@ -65,7 +66,7 @@ def withdraw(
 
     fa_withdrawal_precompile = FaWithdrawalPrecompileHelper.from_address(
         # TODO: consider adding FaWithdrawalPrecompile ABI to the repo
-        contract_type=load_contract_type(web3, 'KernelMock'),
+        contract_type=load_contract_type(web3, make_filename('KernelMock')),
         web3=web3,
         account=account,
         # TODO: check: is it required `0x` to be added?

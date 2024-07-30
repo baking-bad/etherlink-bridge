@@ -10,6 +10,7 @@ from scripts.helpers.utility import (
 from scripts.helpers.etherlink import (
     XtzWithdrawalPrecompileHelper,
     load_contract_type,
+    make_filename,
 )
 from scripts import cli_options
 
@@ -49,7 +50,7 @@ def xtz_withdraw(
 
     xtz_withdrawal_precompile = XtzWithdrawalPrecompileHelper.from_address(
         # TODO: consider adding XtzWithdrawalPrecompile ABI to the repo
-        contract_type=load_contract_type(web3, 'KernelMock'),
+        contract_type=load_contract_type(web3, make_filename('KernelMock')),
         web3=web3,
         account=account,
         # TODO: check: is it required `0x` to be added?

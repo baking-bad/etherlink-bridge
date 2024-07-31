@@ -4,6 +4,18 @@ from click.core import (
     Context,
     Option,
 )
+from scripts.defaults import (
+    SMART_ROLLUP_ADDRESS,
+    XTZ_TICKET_HELPER,
+    TEZOS_PRIVATE_KEY,
+    TEZOS_RPC_URL,
+    ETHERLINK_RPC_URL,
+    ETHERLINK_PRIVATE_KEY,
+    KERNEL_ADDRESS,
+    FA_WITHDRAWAL_PRECOMPILE,
+    XTZ_WITHDRAWAL_PRECOMPILE,
+    ETHERLINK_ROLLUP_NODE_URL,
+)
 
 # TODO: add validation to options? (reuse logic from bootstrap?)
 
@@ -24,7 +36,7 @@ silent = click.option(
 
 tezos_private_key = click.option(
     '--tezos-private-key',
-    default='edsk4XG4QyAj19dr78NNGH6dpXBtTnkmMdAkM9w5tUTCHaUP1pJaD5',
+    default=TEZOS_PRIVATE_KEY,
     required=True,
     prompt='Tezos private key',
     envvar='TEZOS_PRIVATE_KEY',
@@ -35,7 +47,7 @@ tezos_private_key = click.option(
 # TODO: consider renaming to `--tezos-rpc-node-url`
 tezos_rpc_url = click.option(
     '--tezos-rpc-url',
-    default='https://rpc.tzkt.io/parisnet/',
+    default=TEZOS_RPC_URL,
     help='Tezos RPC shell URL',
     prompt='Tezos RPC shell URL',
     envvar='TEZOS_RPC_URL',
@@ -91,7 +103,7 @@ token_bridge_helper_address = click.option(
 
 smart_rollup_address = click.option(
     '--smart-rollup-address',
-    default='sr1LmwJbvp8ZGwTRzAoy8mheGV5xX2kYef1L',
+    default=SMART_ROLLUP_ADDRESS,
     required=True,
     prompt='Smart Rollup contract address',
     envvar='SMART_ROLLUP_ADDRESS',
@@ -101,7 +113,7 @@ smart_rollup_address = click.option(
 
 etherlink_private_key = click.option(
     '--etherlink-private-key',
-    default='f463e320ed1bd1cd833e29efc383878f34abe6b596e5d163f51bb8581de6f8b8',
+    default=ETHERLINK_PRIVATE_KEY,
     prompt='Etherlink private key',
     envvar='ETHERLINK_PRIVATE_KEY',
     help='Private key that would be used to deploy contract on the Etherlink network.',
@@ -111,7 +123,7 @@ etherlink_private_key = click.option(
 # TODO: consider renaming to `--etherlink-rpc-node-url`
 etherlink_rpc_url = click.option(
     '--etherlink-rpc-url',
-    default='https://etherlink.dipdup.net',
+    default=ETHERLINK_RPC_URL,
     required=True,
     envvar='ETHERLINK_RPC_URL',
     prompt='Etherlink RPC shell URL',
@@ -121,7 +133,7 @@ etherlink_rpc_url = click.option(
 
 etherlink_rollup_node_url = click.option(
     '--etherlink-rollup-node-url',
-    default='https://etherlink-rollup-paris.dipdup.net',
+    default=ETHERLINK_ROLLUP_NODE_URL,
     required=True,
     envvar='ETHERLINK_ROLLUP_NODE_URL',
     prompt='Etherlink operator rollup node URL',
@@ -131,7 +143,7 @@ etherlink_rollup_node_url = click.option(
 
 kernel_address = click.option(
     '--kernel-address',
-    default='0x0000000000000000000000000000000000000000',
+    default=KERNEL_ADDRESS,
     envvar='KERNEL_ADDRESS',
     help='The address of the Etherlink kernel which manages (mints and burns) bridged tokens.',
     show_default=True,
@@ -165,20 +177,21 @@ ticket_content_bytes = click.option(
     help='The content of the ticket as micheline expression is in its forged form, **legacy optimized mode**. See also `get_ticket_params` command that helps with requesting and formatting this param for a given ticket address.',
 )
 
-# TODO: consider renaming to fa_withdraw_precompile?
+# TODO: rename to fa_withdrawal_precompile:
 withdraw_precompile = click.option(
     '--withdraw-precompile',
-    default='0xff00000000000000000000000000000000000002',
-    envvar='WITHDRAW_PRECOMPILE_ADDRESS',
-    help='The address of the FA Withdraw Precompile contract.',
+    default=FA_WITHDRAWAL_PRECOMPILE,
+    envvar='FA_WITHDRAWAL_PRECOMPILE',
+    help='The address of the FA Withdrawal Precompile contract.',
     show_default=True,
 )
 
+# TODO: rename to xtz_withdrawal_precompile:
 xtz_withdraw_precompile = click.option(
     '--xtz-withdraw-precompile',
-    default='0xff00000000000000000000000000000000000001',
-    envvar='XTZ_WITHDRAW_PRECOMPILE_ADDRESS',
-    help='The address of the XTZ Withdraw Precompile contract.',
+    default=XTZ_WITHDRAWAL_PRECOMPILE,
+    envvar='XTZ_WITHDRAWAL_PRECOMPILE',
+    help='The address of the XTZ Withdrawal Precompile contract.',
     show_default=True,
 )
 
@@ -234,10 +247,10 @@ receiver_address = click.option(
     help='The address of the receiver of the tokens on another layer.',
 )
 
-# TODO: consider moving all of the consts to separate consts.py?
 xtz_ticket_helper = click.option(
     '--xtz-ticket-helper',
-    default='KT1MJxf4KVN3sosR99VRG7WBbWTJtAyWUJt9',
+    default=XTZ_TICKET_HELPER,
+    envvar='XTZ_TICKET_HELPER',
     help='The address of the xtz ticket helper used in xtz bridge.',
     show_default=True,
 )

@@ -15,14 +15,12 @@ from scripts.helpers.addressable import (
     get_address,
     EtherlinkAddressable,
     get_etherlink_address,
+    make_deposit_routing_info,
 )
 from scripts.helpers.ticket import Ticket
 from scripts.helpers.contracts import (
     Ticketer,
     TicketRouterTester,
-)
-from scripts.helpers.utility import (
-    make_deposit_routing_info,
 )
 from eth_account.signers.local import LocalAccount
 from web3 import Web3

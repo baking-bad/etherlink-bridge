@@ -9,6 +9,12 @@ from pytezos.michelson.types.base import MichelsonType
 from typing import Any
 from web3 import Web3
 from eth_account.signers.local import LocalAccount
+from scripts.helpers.addressable import (
+    EtherlinkAddressable,
+    get_etherlink_address,
+    Addressable,
+    get_address,
+)
 
 
 # Default address used as a placeholder in the contract storage
@@ -80,13 +86,22 @@ def pack(object: Any, type_expression: str) -> bytes:
     return to_michelson_type(object, type_expression).pack()
 
 
-def make_address_bytes(address: str) -> str:
-    """Forges Tezos contract address (KT1, tz1, tz2, tz3) to bytes hex.
+def tezos_address_to_bytes(tezos_entity: Addressable) -> bytes:
+    """Forges Tezos contract address (KT1, tz1, tz2, tz3) to bytes.
     Forged contract consists of binary suffix/prefix and body
     (blake2b hash digest)"""
 
     # packing address to bytes and taking the last 22 bytes:
-    return pack(address, 'address')[-22:].hex()
+    return pack(get_address(tezos_entity), 'address')[-22:]
+
+
+# TODO: rename tezos_address_to_bytes_hex
+def make_address_bytes(tezos_entity: Addressable) -> str:
+    """Forges Tezos contract address (KT1, tz1, tz2, tz3) to bytes hex.
+    Forged contract consists of binary suffix/prefix and body
+    (blake2b hash digest)"""
+
+    return tezos_address_to_bytes(tezos_entity).hex()
 
 
 def originate_from_file(
@@ -127,3 +142,23 @@ def get_etherlink_account(web3: Web3, private_key: str) -> LocalAccount:
     # TODO: validate balance
 
     return account
+
+
+def etherlink_address_to_bytes(etherlink_entity: EtherlinkAddressable) -> bytes:
+    address = get_etherlink_address(etherlink_entity)
+    return bytes.fromhex(address.replace('0x', ''))
+
+
+def make_deposit_routing_info(
+    receiver: EtherlinkAddressable,
+    # TODO: make router Optional
+    router: EtherlinkAddressable,
+) -> bytes:
+    return etherlink_address_to_bytes(receiver) + etherlink_address_to_bytes(router)
+
+
+def make_withdrawal_routing_info(
+    receiver: Addressable,
+    router: Addressable,
+) -> bytes:
+    return tezos_address_to_bytes(receiver) + tezos_address_to_bytes(router)

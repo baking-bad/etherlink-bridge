@@ -14,6 +14,7 @@ from abc import ABC
 T = TypeVar('T', bound='ContractHelper')
 
 
+# TODO: consider renaming to TezosContractHelper
 @dataclass
 class ContractHelper(ABC):
     contract: ContractInterface

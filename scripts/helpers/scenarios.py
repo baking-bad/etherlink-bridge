@@ -13,9 +13,16 @@ from scripts.helpers.formatting import (
 from scripts.helpers.addressable import (
     Addressable,
     get_address,
+    EtherlinkAddressable,
 )
 from scripts.helpers.ticket import Ticket
-from scripts.helpers.contracts import Ticketer
+from scripts.helpers.contracts import (
+    Ticketer,
+    TicketRouterTester,
+)
+from scripts.helpers.utility import (
+    make_deposit_routing_info,
+)
 
 
 def transfer_ticket(ticket: Ticket, receiver: Addressable) -> str:
@@ -60,4 +67,36 @@ def wrap_tokens_to_tickets(
     opg_hash = wrap_opg.hash()
     click.echo('Successfully wrapped, tx hash: ' + wrap(accent(opg_hash)))
 
+    return opg_hash
+
+
+def setup_ticket_router_tester_to_rollup_deposit(
+    ticket_router_tester: TicketRouterTester,
+    target: Addressable,
+    receiver: EtherlinkAddressable,
+    # TODO: make router optional
+    router: EtherlinkAddressable,
+) -> str:
+
+    deposit_info = make_deposit_routing_info(receiver, router)
+
+    click.echo(
+        'Setting up '
+        + accent('TicketRouterTester')
+        + ' to the '
+        + accent('rollupDeposit')
+        + ' mode:'
+    )
+    echo_variable('  - ', 'Target', get_address(target))
+    echo_variable('  - ', 'Routing Info', '0x' + deposit_info.hex())
+
+    set_deposit_opg = ticket_router_tester.set_rollup_deposit(
+        target=target,
+        routing_info=deposit_info,
+    ).send()
+
+    ticket_router_tester.client.wait(set_deposit_opg)
+    opg_hash = set_deposit_opg.hash()
+
+    click.echo('Successfully set, tx hash: ' + wrap(accent(opg_hash)))
     return opg_hash

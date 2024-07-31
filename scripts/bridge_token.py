@@ -5,7 +5,7 @@ from scripts.tezos.deploy_token_bridge_helper import deploy_token_bridge_helper
 from scripts.etherlink import deploy_erc20
 from scripts import cli_options
 from typing import Any, Dict
-from scripts.helpers.utility import (
+from scripts.helpers.formatting import (
     accent,
     echo_variable,
     wrap,

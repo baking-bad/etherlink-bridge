@@ -3,8 +3,8 @@ from scripts.helpers.contracts import Ticketer
 from scripts.helpers.utility import (
     get_tezos_client,
     make_address_bytes,
-    accent,
 )
+from scripts.helpers.formatting import accent
 from scripts import cli_options
 
 

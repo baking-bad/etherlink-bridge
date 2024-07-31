@@ -3,6 +3,8 @@ from web3.types import HexBytes  # type: ignore
 from scripts.helpers.utility import (
     get_etherlink_web3,
     get_etherlink_account,
+)
+from scripts.helpers.formatting import (
     accent,
     echo_variable,
     wrap,

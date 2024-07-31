@@ -1,6 +1,6 @@
 import click
-from scripts.helpers.utility import (
-    get_tezos_client,
+from scripts.helpers.utility import get_tezos_client
+from scripts.helpers.formatting import (
     accent,
     echo_variable,
     wrap,

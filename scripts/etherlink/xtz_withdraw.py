@@ -8,6 +8,7 @@ from scripts.helpers.formatting import (
     accent,
     echo_variable,
     wrap,
+    format_int,
 )
 from scripts.helpers.etherlink import (
     XtzWithdrawalPrecompileHelper,
@@ -47,8 +48,8 @@ def xtz_withdraw(
     echo_variable('  - ', 'Etherlink RPC node', etherlink_rpc_url)
     click.echo('  - Withdrawal params:')
     echo_variable('      * ', 'Receiver', receiver_address)
-    echo_variable('      * ', 'Amount (wei):', str(amount))
-    echo_variable('      * ', 'Amount (mutez):', str(amount // 10**12))
+    echo_variable('      * ', 'Amount (wei):', format_int(amount))
+    echo_variable('      * ', 'Amount (mutez):', format_int(amount // 10**12))
 
     xtz_withdrawal_precompile = XtzWithdrawalPrecompileHelper.from_address(
         # TODO: consider adding XtzWithdrawalPrecompile ABI to the repo

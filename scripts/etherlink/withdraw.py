@@ -9,6 +9,7 @@ from scripts.helpers.formatting import (
     accent,
     echo_variable,
     wrap,
+    format_int,
 )
 from scripts.helpers.etherlink import (
     FaWithdrawalPrecompileHelper,
@@ -62,7 +63,7 @@ def withdraw(
     echo_variable('      * ', 'Receiver', receiver_address)
     echo_variable('      * ', 'Router', tezos_side_router_address)
     echo_variable('      * ', 'Routing info', '0x' + routing_info.hex())
-    echo_variable('      * ', 'Amount', str(amount))
+    echo_variable('      * ', 'Amount', format_int(amount))
     echo_variable('      * ', 'Ticketer address bytes', '0x' + ticketer.hex())
     echo_variable('      * ', 'Content bytes', '0x' + content.hex())
 

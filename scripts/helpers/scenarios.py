@@ -7,6 +7,7 @@ from scripts.helpers.formatting import (
     echo_variable,
     accent,
     wrap,
+    format_int,
 )
 from scripts.helpers.addressable import (
     Addressable,
@@ -27,7 +28,7 @@ def transfer_ticket(ticket: Ticket, receiver: Addressable) -> str:
     echo_variable('  - ', 'Owner', get_address(get_address(ticket.owner)))
     echo_variable('  - ', 'Ticketer address', ticket.ticketer)
     echo_variable('  - ', 'Ticket content', '0x' + ticket.content.to_bytes_hex())
-    echo_variable('  - ', 'Amount', str(ticket.amount))
+    echo_variable('  - ', 'Amount', format_int(ticket.amount))
     echo_variable('  - ', 'Receiver', get_address(receiver))
 
     transfer_opg = ticket.transfer(receiver).send()

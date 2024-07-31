@@ -5,6 +5,7 @@ from scripts.helpers.formatting import (
     accent,
     echo_variable,
     wrap,
+    format_int,
 )
 from scripts import cli_options
 
@@ -46,7 +47,7 @@ def deposit(
     # TODO: add Etherlink side ERC20 Proxy address here too
     echo_variable('      * ', 'Smart Rollup address', smart_rollup_address)
     echo_variable('      * ', 'Receiver address', receiver_address)
-    echo_variable('      * ', 'Amount', str(amount))
+    echo_variable('      * ', 'Amount', format_int(amount))
 
     opg = manager.bulk(
         token.disallow(manager, token_bridge_helper),

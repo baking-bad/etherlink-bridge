@@ -11,11 +11,7 @@ from scripts.helpers.formatting import (
     wrap,
     format_int,
 )
-from scripts.helpers.etherlink import (
-    FaWithdrawalPrecompileHelper,
-    load_contract_type,
-    make_filename,
-)
+from scripts.helpers.etherlink import FaWithdrawalPrecompileHelper
 from scripts import cli_options
 
 
@@ -31,11 +27,14 @@ from scripts import cli_options
 @cli_options.withdraw_precompile
 @cli_options.etherlink_private_key
 @cli_options.etherlink_rpc_url
+# TODO: consider renaming to fa_withdraw
 def withdraw(
     erc20_proxy_address: str,
     tezos_side_router_address: str,
     amount: int,
+    # TODO: consider changing this to ticketer_address_bytes_hex ?
     ticketer_address_bytes: str,
+    # TODO: consider changing this to ticket_content_bytes_hex ?
     ticket_content_bytes: str,
     receiver_address: str,
     withdraw_precompile: str,
@@ -68,8 +67,6 @@ def withdraw(
     echo_variable('      * ', 'Content bytes', '0x' + content.hex())
 
     fa_withdrawal_precompile = FaWithdrawalPrecompileHelper.from_address(
-        # TODO: consider adding FaWithdrawalPrecompile ABI to the repo
-        contract_type=load_contract_type(web3, make_filename('KernelMock')),
         web3=web3,
         account=account,
         # TODO: check: is it required `0x` to be added?

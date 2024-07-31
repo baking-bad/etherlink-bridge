@@ -3,7 +3,7 @@ from web3 import Web3
 from os.path import join, dirname
 from eth_account.signers.local import LocalAccount
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 from hexbytes import HexBytes
 from typing import TypeVar, Type, Tuple, Any
@@ -76,15 +76,21 @@ class EvmContractHelper:
     web3: Web3
     account: LocalAccount
     address: str
+    filename: str = field(init=False, default='')
 
     @classmethod
     def from_address(
         cls: Type[T],
-        contract_type: Type[Contract],
         web3: Web3,
         account: LocalAccount,
         address: str,
     ) -> T:
+        if not cls.filename:
+            raise NotImplementedError(
+                "EvmContractHelper subclasses must define a `filename` class attribute"
+            )
+        contract_type = load_contract_type(web3, cls.filename)
+
         # TODO: check if this OK to ignore type
         contract = web3.eth.contract(address=address, abi=contract_type.abi)  # type: ignore
         return cls(contract=contract, web3=web3, account=account, address=address)
@@ -112,10 +118,6 @@ class EvmContractHelper:
             web3=web3,
             account=account,
             constructor=constructor,
-            # TODO: consider remove:
-            # gas_limit=30_000_000,
-            # gas_price=web3.to_wei('1', 'gwei'),
-            # nonce=None,
         )
         tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
         address = tx_receipt.contractAddress  # type: ignore

@@ -14,6 +14,7 @@ from scripts.helpers.addressable import (
     Addressable,
     get_address,
     EtherlinkAddressable,
+    get_etherlink_address,
 )
 from scripts.helpers.ticket import Ticket
 from scripts.helpers.contracts import (
@@ -23,6 +24,10 @@ from scripts.helpers.contracts import (
 from scripts.helpers.utility import (
     make_deposit_routing_info,
 )
+from eth_account.signers.local import LocalAccount
+from web3 import Web3
+from web3.types import TxParams
+from web3.types import HexBytes  # type: ignore
 
 
 def transfer_ticket(ticket: Ticket, receiver: Addressable) -> str:
@@ -100,3 +105,31 @@ def setup_ticket_router_tester_to_rollup_deposit(
 
     click.echo('Successfully set, tx hash: ' + wrap(accent(opg_hash)))
     return opg_hash
+
+
+def etherlink_legacy_transfer(
+    web3: Web3,
+    etherlink_account: LocalAccount,
+    receiver: EtherlinkAddressable,
+    value_wei: int,
+) -> HexBytes:
+    click.echo('Sending Ethernlink xtz:')
+    receiever_address = get_etherlink_address(receiver)
+    echo_variable('  - ', 'Sender', get_etherlink_address(etherlink_account))
+    echo_variable('  - ', 'Receiver', receiever_address)
+    echo_variable('  - ', 'Amount (wei)', format_int(value_wei))
+    echo_variable('  - ', 'Amount (mutez)', format_int(value_wei // 10**12))
+
+    transaction: TxParams = {
+        'to': receiever_address,
+        'gasPrice': web3.to_wei('1', 'gwei'),
+        'value': web3.to_wei(value_wei, 'wei'),
+        'nonce': web3.eth.get_transaction_count(etherlink_account.address),
+    }
+
+    transaction['gas'] = web3.eth.estimate_gas(transaction)
+    signed_tx = etherlink_account.sign_transaction(transaction)  # type: ignore
+    tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+
+    click.echo('Successfully transfered, tx hash: ' + wrap(accent(tx_hash.hex())))
+    return tx_hash

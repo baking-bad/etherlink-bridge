@@ -17,6 +17,9 @@ from scripts.helpers.ticket_content import TicketContent
 
 
 class TicketRouterTester(ContractHelper):
+    # TODO: consider change `originate` to `make_originate_opg` for all tezos contracts
+    #       and also it would be good to have real `originate` with wait and
+    #       returning an actual object
     @classmethod
     def originate(cls, client: PyTezosClient) -> OperationGroup:
         """Deploys TicketRouterTester"""

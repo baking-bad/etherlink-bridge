@@ -17,6 +17,7 @@ from scripts import cli_options
 @cli_options.smart_rollup_address
 @cli_options.tezos_private_key
 @cli_options.tezos_rpc_url
+# TODO: consider renaming to fa_deposit
 def deposit(
     token_bridge_helper_address: str,
     amount: int,

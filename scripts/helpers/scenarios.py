@@ -8,12 +8,14 @@ from scripts.helpers.formatting import (
     accent,
     wrap,
     format_int,
+    format_token_info,
 )
 from scripts.helpers.addressable import (
     Addressable,
     get_address,
 )
 from scripts.helpers.ticket import Ticket
+from scripts.helpers.contracts import Ticketer
 
 
 def transfer_ticket(ticket: Ticket, receiver: Addressable) -> str:
@@ -36,4 +38,26 @@ def transfer_ticket(ticket: Ticket, receiver: Addressable) -> str:
     tezos_account.wait(transfer_opg)
     opg_hash = transfer_opg.hash()
     click.echo('Successfully transfered, tx hash: ' + wrap(accent(opg_hash)))
+    return opg_hash
+
+
+def wrap_tokens_to_tickets(
+    tezos_account: PyTezosClient, ticketer: Ticketer, amount: int
+) -> str:
+    click.echo(
+        'Wrapping ' + format_token_info(ticketer.get_token()) + ' tokens to tickets:'
+    )
+    echo_variable('  - ', 'Token holder', tezos_account.key.public_key_hash())
+    echo_variable('  - ', 'Ticketer', ticketer.address)
+    echo_variable('  - ', 'Amount', format_int(amount))
+
+    wrap_opg = tezos_account.bulk(
+        ticketer.get_token().allow(tezos_account, ticketer),
+        ticketer.deposit(amount),
+    ).send()
+
+    tezos_account.wait(wrap_opg)
+    opg_hash = wrap_opg.hash()
+    click.echo('Successfully wrapped, tx hash: ' + wrap(accent(opg_hash)))
+
     return opg_hash

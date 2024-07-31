@@ -37,7 +37,7 @@ class EtherlinkBootstrapClient:
         self._private_key = private_key
 
     def deploy_erc20_proxy(self, ticketer_params: TicketerParamsDTO, metadata: TokenMetadataDTO) -> str:
-        return deploy_erc20.callback(
+        erc20 = deploy_erc20.callback(
             ticketer_address_bytes=ticketer_params.address_bytes_hex,
             ticket_content_bytes=ticketer_params.content_bytes_hex,
             token_name=metadata.name,
@@ -47,6 +47,7 @@ class EtherlinkBootstrapClient:
             etherlink_private_key=self._private_key,
             etherlink_rpc_url=self._rpc_url,
         )
+        return erc20.address
 
 
 def ask_origination_confirmation(token_info: TokenInfoDTO) -> None:

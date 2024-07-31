@@ -74,7 +74,7 @@ def bridge_token(
         ticketer.address, tezos_private_key, tezos_rpc_url, silent=True
     )  # type: ignore
 
-    erc20_address = deploy_erc20.callback(
+    erc20 = deploy_erc20.callback(
         ticketer_address_bytes=ticketer_params['address_bytes'],
         ticket_content_bytes=ticketer_params['content_bytes'],
         token_name=token_name,
@@ -90,7 +90,7 @@ def bridge_token(
 
     token_bridge_helper = deploy_token_bridge_helper.callback(
         ticketer_address=ticketer.address,
-        erc20_proxy_address=erc20_address,
+        erc20_proxy_address=erc20.address,
         tezos_private_key=tezos_private_key,
         tezos_rpc_url=tezos_rpc_url,
         token_symbol=token_symbol,
@@ -101,9 +101,7 @@ def bridge_token(
 
     click.echo('Successfully deployed FA Bridge contracts for ' + accent(token_symbol))
     return {
-        # TODO: consider returning ticketer helper instead of ticketer contract
         'ticketer': ticketer,
-        # TODO: replace erc20_address with ERC20 helper
-        'erc20': erc20_address,
+        'erc20': erc20,
         'token_bridge_helper': token_bridge_helper,
     }

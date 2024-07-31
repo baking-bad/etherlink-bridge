@@ -1,5 +1,5 @@
 import click
-from scripts.helpers.proof import get_messages
+from scripts.helpers.rollup_node import get_messages
 from scripts import cli_options
 from scripts.helpers.utility import accent
 import time

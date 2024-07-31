@@ -1,5 +1,5 @@
 import click
-from scripts.helpers.proof import get_proof as get_proof_from_rpc, Proof
+from scripts.helpers.rollup_node import get_proof as get_proof_from_rpc, Proof
 from scripts import cli_options
 from scripts.helpers.utility import accent
 

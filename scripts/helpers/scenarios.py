@@ -131,3 +131,29 @@ def etherlink_legacy_transfer(
 
     click.echo('Successfully transfered, tx hash: ' + wrap(accent(tx_hash.hex())))
     return tx_hash
+
+
+def deploy_ticket_router_tester(
+    tezos_account: PyTezosClient,
+    tezos_rpc_url: str,
+    silent: bool = False,
+) -> TicketRouterTester:
+    # TODO: consider making CLI from this
+    # TODO: provide setup tools for ticket-router-tester in CLI too? OR at least during deployment?
+
+    if not silent:
+        click.echo('Deploying TicketRouterTester:')
+        echo_variable('  - ', 'Deployer', tezos_account.key.public_key_hash())
+        echo_variable('  - ', 'Tezos RPC node', tezos_rpc_url)
+
+    origination_opg = TicketRouterTester.originate(tezos_account).send()
+    tezos_account.wait(origination_opg)
+    ticket_router_tester = TicketRouterTester.from_opg(tezos_account, origination_opg)
+
+    if not silent:
+        click.echo(
+            'Successfully deployed TicketRouterTester, address: '
+            + wrap(accent(ticket_router_tester.address))
+        )
+
+    return ticket_router_tester

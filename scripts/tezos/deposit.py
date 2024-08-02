@@ -1,10 +1,11 @@
 import click
 from scripts.helpers.contracts import TokenBridgeHelper
-from scripts.helpers.utility import (
-    get_tezos_client,
+from scripts.helpers.utility import get_tezos_client
+from scripts.helpers.formatting import (
     accent,
     echo_variable,
     wrap,
+    format_int,
 )
 from scripts import cli_options
 
@@ -16,6 +17,7 @@ from scripts import cli_options
 @cli_options.smart_rollup_address
 @cli_options.tezos_private_key
 @cli_options.tezos_rpc_url
+# TODO: consider renaming to fa_deposit
 def deposit(
     token_bridge_helper_address: str,
     amount: int,
@@ -46,7 +48,7 @@ def deposit(
     # TODO: add Etherlink side ERC20 Proxy address here too
     echo_variable('      * ', 'Smart Rollup address', smart_rollup_address)
     echo_variable('      * ', 'Receiver address', receiver_address)
-    echo_variable('      * ', 'Amount', str(amount))
+    echo_variable('      * ', 'Amount', format_int(amount))
 
     opg = manager.bulk(
         token.disallow(manager, token_bridge_helper),

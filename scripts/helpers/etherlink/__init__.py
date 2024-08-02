@@ -9,6 +9,7 @@ from scripts.helpers.etherlink.contract import (
     load_contract_type,
     originate_contract,
     make_filename,
+    EvmContractHelper,
 )
 
 
@@ -20,4 +21,5 @@ __all__ = [
     'load_contract_type',
     'originate_contract',
     'make_filename',
+    'EvmContractHelper',
 ]

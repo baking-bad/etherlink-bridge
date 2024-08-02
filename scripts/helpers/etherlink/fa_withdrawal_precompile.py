@@ -1,8 +1,14 @@
 from web3.types import TxReceipt
-from scripts.helpers.etherlink.contract import EvmContractHelper
+from scripts.helpers.etherlink.contract import (
+    EvmContractHelper,
+    make_filename,
+)
 
 
 class FaWithdrawalPrecompileHelper(EvmContractHelper):
+    # TODO: consider adding FaWithdrawalPrecompile ABI to the repo
+    filename = make_filename('KernelMock')
+
     def withdraw(
         self,
         ticket_owner: str,

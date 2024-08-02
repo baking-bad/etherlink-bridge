@@ -9,7 +9,6 @@ from pytezos.michelson.types.base import MichelsonType
 from typing import Any
 from web3 import Web3
 from eth_account.signers.local import LocalAccount
-import click
 
 
 # Default address used as a placeholder in the contract storage
@@ -81,6 +80,7 @@ def pack(object: Any, type_expression: str) -> bytes:
     return to_michelson_type(object, type_expression).pack()
 
 
+# TODO: rename tezos_address_to_bytes_hex, make entity Addressable, move to addressable.py, reuse tezos_address_to_bytes
 def make_address_bytes(address: str) -> str:
     """Forges Tezos contract address (KT1, tz1, tz2, tz3) to bytes hex.
     Forged contract consists of binary suffix/prefix and body
@@ -128,15 +128,3 @@ def get_etherlink_account(web3: Web3, private_key: str) -> LocalAccount:
     # TODO: validate balance
 
     return account
-
-
-def accent(msg: str) -> str:
-    return click.style(msg, fg='bright_cyan')
-
-
-def wrap(msg: str, symbol: str = '`') -> str:
-    return '`' + msg + '`'
-
-
-def echo_variable(prefix: str, name: str, value: str) -> None:
-    click.echo(prefix + name + ': ' + wrap(accent(value)))

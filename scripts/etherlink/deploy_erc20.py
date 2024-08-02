@@ -2,6 +2,8 @@ import click
 from scripts.helpers.utility import (
     get_etherlink_web3,
     get_etherlink_account,
+)
+from scripts.helpers.formatting import (
     accent,
     echo_variable,
     wrap,
@@ -38,7 +40,7 @@ def deploy_erc20(
     etherlink_rpc_url: str,
     skip_confirm: bool = True,
     silent: bool = True,
-) -> None | str:
+) -> Erc20ProxyHelper:
     """Deploys ERC20 Proxy contract with given parameters"""
 
     web3 = get_etherlink_web3(etherlink_rpc_url)
@@ -79,5 +81,4 @@ def deploy_erc20(
             'Successfully deployed ERC20 Proxy token, address: '
             + wrap(accent(erc20.address))
         )
-    # TODO: consider returning the whole ERC20ProxyHelper object
-    return erc20.address
+    return erc20

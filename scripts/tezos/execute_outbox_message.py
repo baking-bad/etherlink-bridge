@@ -1,8 +1,6 @@
 import click
-from scripts.helpers.utility import (
-    get_tezos_client,
-    accent,
-)
+from scripts.helpers.utility import get_tezos_client
+from scripts.helpers.formatting import accent
 from scripts import cli_options
 
 

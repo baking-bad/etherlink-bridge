@@ -1,9 +1,9 @@
 import click
 from typing import Optional
 from scripts.helpers.contracts import Ticketer, TokenHelper
-from scripts.helpers.utility import (
+from scripts.helpers.utility import get_tezos_client
+from scripts.helpers.formatting import (
     accent,
-    get_tezos_client,
     echo_variable,
     wrap,
 )

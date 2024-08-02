@@ -16,6 +16,7 @@ from scripts.helpers.utility import get_build_dir
 from scripts.helpers.utility import originate_from_file
 
 
+# TODO: consider renaming to TicketerHelper:
 class Ticketer(ContractHelper):
     @staticmethod
     def make_storage(

@@ -1,7 +1,7 @@
 import click
 from scripts.helpers.contracts import Ticketer, TokenBridgeHelper
-from scripts.helpers.utility import (
-    get_tezos_client,
+from scripts.helpers.utility import get_tezos_client
+from scripts.helpers.formatting import (
     accent,
     wrap,
     echo_variable,

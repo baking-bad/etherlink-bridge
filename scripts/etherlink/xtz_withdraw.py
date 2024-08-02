@@ -3,15 +3,14 @@ from web3.types import HexBytes  # type: ignore
 from scripts.helpers.utility import (
     get_etherlink_web3,
     get_etherlink_account,
+)
+from scripts.helpers.formatting import (
     accent,
     echo_variable,
     wrap,
+    format_int,
 )
-from scripts.helpers.etherlink import (
-    XtzWithdrawalPrecompileHelper,
-    load_contract_type,
-    make_filename,
-)
+from scripts.helpers.etherlink import XtzWithdrawalPrecompileHelper
 from scripts import cli_options
 
 
@@ -45,12 +44,10 @@ def xtz_withdraw(
     echo_variable('  - ', 'Etherlink RPC node', etherlink_rpc_url)
     click.echo('  - Withdrawal params:')
     echo_variable('      * ', 'Receiver', receiver_address)
-    echo_variable('      * ', 'Amount (wei):', str(amount))
-    echo_variable('      * ', 'Amount (mutez):', str(amount // 10**12))
+    echo_variable('      * ', 'Amount (wei):', format_int(amount))
+    echo_variable('      * ', 'Amount (mutez):', format_int(amount // 10**12))
 
     xtz_withdrawal_precompile = XtzWithdrawalPrecompileHelper.from_address(
-        # TODO: consider adding XtzWithdrawalPrecompile ABI to the repo
-        contract_type=load_contract_type(web3, make_filename('KernelMock')),
         web3=web3,
         account=account,
         # TODO: check: is it required `0x` to be added?

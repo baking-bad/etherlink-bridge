@@ -1,9 +1,10 @@
 import click
-from scripts.helpers.utility import (
-    get_tezos_client,
+from scripts.helpers.utility import get_tezos_client
+from scripts.helpers.formatting import (
     accent,
     echo_variable,
     wrap,
+    format_int,
 )
 from scripts import cli_options
 
@@ -37,7 +38,7 @@ def xtz_deposit(
     click.echo('  - XTZ deposit params:')
     echo_variable('      * ', 'Smart Rollup address', smart_rollup_address)
     echo_variable('      * ', 'Receiver address', receiver_address)
-    echo_variable('      * ', 'Amount', str(amount))
+    echo_variable('      * ', 'Amount (mutez)', format_int(amount))
 
     opg = (
         helper.deposit(

@@ -1,29 +1,91 @@
 # Etherlink FA Token Bridge
 
-Smart contracts for an FA tokens bridge between Tezos and Etherlink, implementation of [TZIP-029](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md) standard:
+The tools in this repository help you bridge tokens between Tezos layer 1 and Etherlink.
+You can use them to set up bridging for any Tezos token that is compliant with the FA standard, versions 1.2, 2.0, and 2.1.
+For more information about the FA standards, see [Token standards](https://docs.tezos.com/architecture/tokens#token-standards) on docs.tezos.com.
 
-- [**Ticketer**](tezos/contracts/ticketer/ticketer.mligo). Enables wrapping of **FA1.2** and **FA2** tokens into tickets. These tickets can then be sent to Etherlink using a permissionless ticket transport mechanism.
-- [**TokenBridgeHelper**](tezos/contracts/token-bridge-helper/token-bridge-helper.mligo). Designed to allow users to transfer tickets even without the support for the **ticket_transfer** operation in the current Tezos infrastructure. The Token Bridge Helper implementation focused on **FA1.2** and **FA2** tokens only.
-- [**ERC20Proxy**](etherlink/src/ERC20Proxy.sol). An **ERC20** contract that implements the ERC20 Proxy [deposit interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-deposit-interface) and [withdraw interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-withdraw-interface).
+The tools also help you submit bridging transactions, both for bridging tokens from Tezos to Etherlink (depositing) and for bridging tokens from Etherlink to Tezos (withdrawing).
+
+For information on how this bridge works, see [Bridging FA tokens between Tezos layer 1 and Etherlink](https://docs.etherlink.com/building-on-etherlink/bridging-fa) in the Etherlink documentation.
+
+You can use the tool to bridge tokens between Tezos Mainnet and Etherlink Mainnet and between Tezos test networks and Etherlink Testnet.
+
+## Prerequisites
+
+To bridge tokens in this way, you need:
+
+- An FA-compliant smart contract deployed to Tezos.
+You can use your own contract or the tool can deploy a sample contract for you.
+
+- A Tezos wallet with enough tez to pay for the Tezos transaction fees.
+See [Installing and funding a wallet](https://docs.tezos.com/developing/wallet-setup) on docs.tezos.com.
+If you are using a test network, you can find faucets that provide free tez at https://teztnets.com, such as the Ghostnet faucet at https://faucet.ghostnet.teztnets.com/.
+
+- An EVM-compatible wallet with enough Etherlink XTZ to pay for the Etherlink transaction fees.
+See [Using your wallet](https://docs.etherlink.com/get-started/using-your-wallet) in the Etherlink documentation for a list of compatible wallets and information about connecting your wallet to Etherlink.
+If you are using Etherlink Testnet, you can get free XTZ at the [Etherlink faucet](https://faucet.etherlink.com/).
+
+## Contracts
+
+The bridging process relies on smart contracts that convert tokens to tickets and transfer the tickets between Tezos and Etherlink.
+These contracts are an implementation of the [TZIP-029](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md) standard for bridging between Tezos and Etherlink.
+
+Each FA token needs its own copy of these contracts for you to bridge that token:
+
+- **Ticketer**: This Tezos contract stores FA1.2 and FA2.0 tokens and issues tickets that represent those tokens, similar to a wrapped token.
+The ticket includes the type and number of tokens that it represents and the address of the ticketer contract.
+For an example, see the [`ticketer.mligo`](tezos/contracts/ticketer/ticketer.mligo) contract.
+
+- **Token bridge helper**: This Tezos contract accepts requests to bridge tokens, uses the ticketer contract to get tickets for them, and sends the tickets to Etherlink.
+For an example, see [`token-bridge-helper.mligo`](tezos/contracts/token-bridge-helper/token-bridge-helper.mligo).
+
+- **ERC-20 proxy**: This Etherlink contract accepts the tickets and mints ERC-20 tokens that are equivalent to the Tezos tokens.
+This contract implements the ERC20 Proxy [deposit interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-deposit-interface) and [withdraw interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-withdraw-interface).
+For an example, see [`ERC20Proxy.sol`](etherlink/src/ERC20Proxy.sol).
+
+FA2.1 tokens have built-in ticket capabilities, so they do not require a ticketer or token bridge helper contract.
 
 ## Setup
-1. Install [Poetry](https://python-poetry.org/) if not already installed:
-```shell
-curl -sSL https://install.python-poetry.org | python3 -
-```
 
-2. Install all dependencies with:
-```shell
-poetry install
-```
+Follow these steps to set up the tool for local use.
+You can run the tool directly or build a Docker container that runs it.
 
-3. To rebuild and test contracts it is also required to install Foundry and LIGO, see [compilation and running tests](#compilation-and-running-tests).
+### Local installation
 
-> [!TIP]
-> There is a `Dockerfile` allowing to run scripts in [docker](#running-in-docker).
+1. Install [Poetry](https://python-poetry.org/) if it is not already installed by running this command:
 
-> [!TIP]
-> To fund you wallets and pay for gas in test networks there are: [Tezos faucet](https://faucet.ghostnet.teztnets.com/) and [Etherlink faucet](https://faucet.etherlink.com/).
+   ```shell
+   curl -sSL https://install.python-poetry.org | python3 -
+   ```
+
+2. Clone this repository and go into its directory.
+
+3. Install the tool's dependencies by running this command:
+
+   ```shell
+   poetry install
+   ```
+
+4. Optional: Rebuild and test the contracts locally as described in [compilation and running tests](#compilation-and-running-tests).
+
+Then you can run commands by running `poetry run` followed by the command name, such as `poetry run bridge_token`.
+
+### Docker installation
+
+1. Clone this repository and go into its directory.
+
+2. Build the Docker image by running this command:
+
+   ```bash
+   docker build -t etherlink-bridge .
+   ```
+
+Now you can run commands by prefixing them with `docker run --rm etherlink-bridge`, such as `docker run --rm etherlink-bridge bridge_token`.
+
+
+
+
+
 
 ## Bridging a new Token
 To establish a new bridge between Tezos and Etherlink for existing `FA1.2` and `FA2` tokens there is a `bridge_token` command that would deploy three contracts:
@@ -80,7 +142,9 @@ poetry run withdraw \
 > [!NOTE]
 > Please note that the version of `forge` used to build contracts is `forge 0.2.0 (ca67d15 2023-08-02T00:16:51.291393754Z)`. Build results for newer versions may differ from the artifacts added to the build directory.
 
-2. Install Solidity dependencies with Forge (part of the Foundry toolchain). Installation should be executed from the `etherlink` directory:
+2. Install LIGO with the instructions at https://ligolang.org.
+
+3. Install Solidity dependencies with Forge (part of the Foundry toolchain). Installation should be executed from the `etherlink` directory:
 ```shell
 (cd etherlink && forge install)
 ```
@@ -134,17 +198,10 @@ poetry run ruff .
 poetry run black .
 ```
 
-## Running in Docker
-There is a `Dockerfile` provided that may simplify the installation of dependencies required to run **bridge_token**, **deposit** and **withdraw** scripts. Here is an example of how to use it:
+## Example commands
 
-### Build a docker image by running:
-```shell
-docker build -t etherlink-bridge .
-```
+### Deploy bridge contracts for a token
 
-Then it is possible to execute commands within a docker container, just make sure to provide all necessary variables directly to the scripts. It is also possible to set up environment variables for private keys, nodes and other parameters.
-
-### Bridge token example:
 ```shell
 docker run --rm etherlink-bridge bridge_token \
     --token-address KT19P1nbGzGnumMfRHcLNuyQUdcuwjpBfsCU \
@@ -159,7 +216,8 @@ docker run --rm etherlink-bridge bridge_token \
     --skip-confirm
 ```
 
-### Deposit example:
+### Bridge tokens from Tezos to Etherlink
+
 ```shell
 docker run --rm etherlink-bridge deposit \
     --token-bridge-helper-address KT1KiiUkGKFqNAK2BoAGi2conhGoGwiXcMTR \
@@ -170,7 +228,8 @@ docker run --rm etherlink-bridge deposit \
     --tezos-rpc-url "https://rpc.tzkt.io/parisnet/"
 ```
 
-### Withdraw example:
+### Bridge tokens from Etherlink to Tezos
+
 ```shell
 docker run --rm etherlink-bridge withdraw \
     --erc20-proxy-address 0x8AaBCd16bA3346649709e4Ff93E5c6Df18D8c2Ed \

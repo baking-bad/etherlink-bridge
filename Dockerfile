@@ -1,7 +1,7 @@
 FROM python:3.10-slim
 
 RUN apt-get update && \
-    apt-get install -y curl git gcc libsodium-dev libsecp256k1-dev libgmp-dev && \
+    apt-get install -y curl git gcc libsodium-dev libsecp256k1-dev libgmp-dev make && \
     apt-get clean
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="/root/.local/bin:${PATH}"

@@ -93,7 +93,18 @@ The tool also has separate commands for deploying the contracts individually if 
 Here is an example of the command to deploy the bridging contracts for an FA1.2 token:
 
 ```shell
-TODO
+poetry run bridge_token \
+    --token-address KT1SekNYSaT3sWp55nhmratovWN4Mvfc6cfQ \
+    --token-type FA1.2 \
+    --token-id=0 \
+    --token-decimals 0 \
+    --token-symbol "TST12" \
+    --token-name "Test FA1.2 Token" \
+    --tezos-private-key ${TEZOS_WALLET_PRIVATE_KEY} \
+    --tezos-rpc-url "https://rpc.ghostnet.teztnets.com" \
+    --etherlink-private-key ${ETHERLINK_WALLET_PRIVATE_KEY} \
+    --etherlink-rpc-url "https://node.ghostnet.etherlink.com" \
+    --skip-confirm
 ```
 
 Here is an example of the command to deploy the bridging contracts for an FA2 token:

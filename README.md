@@ -189,7 +189,7 @@ The `withdraw` command accepts these arguments:
 
 - `--erc20-proxy-address`: The address of the ERC-20 proxy contract on Etherlink
 - `--amount`: The amount of tokens to withdraw
-- `--tezos-side-router-address`: The address of the ticketer contract on Tezos
+- `--tezos-side-router-address`: The address of the ticketer contract on Tezos or a separate router contract if the token uses a router for bridging
 - `--ticketer-address-bytes`: The address of the ticketer contract as a series of bytes, which you can get from the output of the `bridge_token` command or the `get_ticketer_command` command
 - `--ticket-content-bytes`: The content of the ticket as a series of bytes, which you can get from the output of the `bridge_token` command or the `get_ticketer_command` command
 - `--receiver-address`: The Tezos address of the account to send the tokens to

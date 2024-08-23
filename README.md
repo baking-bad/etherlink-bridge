@@ -87,7 +87,7 @@ Now you can run commands by prefixing them with `docker run --rm etherlink-bridg
 ## Setting up bridging for a token
 
 This tool's `bridge_token` command deploys the bridging contracts for a single token.
-If you have multiple token types, as in FA2 multi-asset tokens, you must run this command once for each type of token to bridge.
+If you have multiple token types, as in FA2 multi-asset contracts, you must run this command once for each type of token to bridge.
 The tool also has separate commands for deploying the contracts individually if you want to deploy the contracts one at a time.
 
 Here is an example of the command to deploy the bridging contracts for an FA1.2 token:

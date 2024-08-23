@@ -1,7 +1,7 @@
 # Etherlink FA Token Bridge
 
 The tools in this repository help you bridge tokens between Tezos layer 1 and Etherlink.
-You can use them to set up bridging for any Tezos token that is compliant with the FA standard, versions 1.2, 2.0, and 2.1.
+You can use them to set up bridging for any Tezos token that is compliant with the FA standard, versions 1.2 or 2.
 For more information about the FA standards, see [Token standards](https://docs.tezos.com/architecture/tokens#token-standards) on docs.tezos.com.
 
 The tools also help you submit bridging transactions, both for bridging tokens from Tezos to Etherlink (depositing) and for bridging tokens from Etherlink to Tezos (withdrawing).
@@ -27,7 +27,7 @@ If you are using Etherlink Testnet, you can get free XTZ at the [Etherlink fauce
 
 ## Contracts
 
-The bridging process relies on smart contracts that convert tokens to tickets and transfer the tickets between Tezos and Etherlink.
+The bridging process relies on smart contracts that convert tokens to [tickets](https://docs.tezos.com/smart-contracts/data-types/complex-data-types#tickets) and transfer the tickets between Tezos and Etherlink.
 These contracts are an implementation of the [TZIP-029](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md) standard for bridging between Tezos and Etherlink.
 
 Each FA token needs its own copy of these contracts for you to bridge that token:
@@ -44,6 +44,8 @@ This contract implements the ERC20 Proxy [deposit interface](https://gitlab.com/
 For an example, see [`ERC20Proxy.sol`](etherlink/src/ERC20Proxy.sol).
 
 FA2.1 tokens have built-in ticket capabilities, so they do not require a ticketer or token bridge helper contract.
+
+For information about how these contracts communicate with each other, see [bridge configuration](docs/README.md#bridge-configuration).
 
 ## Setup
 
@@ -82,29 +84,50 @@ Then you can run commands by running `poetry run` followed by the command name, 
 
 Now you can run commands by prefixing them with `docker run --rm etherlink-bridge`, such as `docker run --rm etherlink-bridge bridge_token`.
 
+## Setting up bridging for a token
 
+This tool's `bridge_token` command deploys the bridging contracts for a single token.
+If you have multiple token types, as in FA2 multi-asset tokens, you must run this command once for each type of token to bridge.
+The tool also has separate commands for deploying the contracts individually if you want to deploy the contracts one at a time.
 
+Here is an example of the command to deploy the bridging contracts for an FA1.2 token:
 
+```shell
+TODO
+```
 
+Here is an example of the command to deploy the bridging contracts for an FA2 token:
 
-## Bridging a new Token
-To establish a new bridge between Tezos and Etherlink for existing `FA1.2` and `FA2` tokens there is a `bridge_token` command that would deploy three contracts:
-- Ticketer contract on the Tezos side,
-- ERC20 Proxy contract on the Etherlink side,
-- Token Bridge Helper on the Tezos side.
-
-Here is an example of the command to deploy Token bridge contracts for the test `FA1,2` token:
 ```shell
 poetry run bridge_token \
     --token-address KT19P1nbGzGnumMfRHcLNuyQUdcuwjpBfsCU \
-    --token-type FA1.2 \
+    --token-type FA2 \
+    --token-id=0 \
     --token-decimals 8 \
     --token-symbol "TST" \
-    --token-name "Test Token"
+    --token-name "TST Token" \
+    --tezos-private-key ${TEZOS_WALLET_PRIVATE_KEY} \
+    --tezos-rpc-url "https://rpc.ghostnet.teztnets.com" \
+    --etherlink-private-key ${ETHERLINK_WALLET_PRIVATE_KEY} \
+    --etherlink-rpc-url "https://node.ghostnet.etherlink.com" \
+    --skip-confirm
 ```
 
-> [!NOTE]
-> To find out the details of how the FA Bridge contracts deployed and communicate with each other, see: [bridge configuration](docs/README.md#bridge-configuration).
+The `bridge_token` command accepts these arguments:
+
+- `--token-address`: The Tezos address of the token contract, starting with `KT1`
+- `--token-type`: The token standard: `FA1.2` or `FA2`
+- `--token-id`: The ID of the token to bridge; for FA1.2 contracts, which have only one token, use `0`
+- `--token-decimals`: The number of decimal places used in the token quantity
+- `--token-symbol`: An alphanumeric symbol for the token
+- `--token-name`: A name for the token
+- `--tezos-private-key`: The private key for the Tezos account
+- `--tezos-rpc-url`: The URL to a Tezos RPC server to send the transactions to; for RPC servers on test networks, see https://teztnets.com
+- `--etherlink-private-key`: The private key for the EVM-compatible wallet that is connected to Etherlink
+- `--etherlink-rpc-url`: The URL to the Etherlink RPC server to send the transactions to; see [Network information](https://docs.etherlink.com/get-started/network-information) on docs.etherlink.com
+- `--skip-confirm`: Skip the confirmation step; required if you are running the command via Docker
+
+
 
 ## Deposit
 To deposit tokens from the Tezos side to the Etherlink side there is a `deposit` command:

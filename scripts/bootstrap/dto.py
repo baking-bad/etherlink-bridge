@@ -8,6 +8,7 @@ class TicketerParamsDTO(BaseModel):
     address_bytes_hex: str
     content_bytes_hex: str
 
+
 class TicketerDTO(BaseModel):
     class Config:
         arbitrary_types_allowed = True
@@ -16,15 +17,18 @@ class TicketerDTO(BaseModel):
     ticketer_params: TicketerParamsDTO
     ticket_hash: int
 
+
 class TokenMetadataDTO(BaseModel):
     name: str
     symbol: str
     decimals: int = DEFAULT_TOKEN_ID
 
+
 class TokenInfoDTO(BaseModel):
     metadata: TokenMetadataDTO
     standard: str
     supply: int
+
 
 class UserInputDTO(BaseModel):
     is_mainnet: bool

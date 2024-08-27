@@ -23,11 +23,13 @@ from scripts.bootstrap.dto import TokenMetadataDTO
 from scripts.bootstrap.dto import UserInputDTO
 from scripts.etherlink import deploy_erc20
 from scripts.helpers.contracts import TokenHelper
-from scripts.helpers.utility import accent
+from scripts.helpers.formatting import accent
+
 from scripts.tezos import deploy_ticketer
 from scripts.tezos import deploy_token_bridge_helper
 from scripts.tezos import get_ticketer_params
 from scripts.tests.dto import Token as TokenFixtureDTO
+
 
 class EtherlinkBootstrapClient:
     def __init__(
@@ -38,7 +40,9 @@ class EtherlinkBootstrapClient:
         self._rpc_url = rpc_url
         self._private_key = private_key
 
-    def deploy_erc20_proxy(self, ticketer_params: TicketerParamsDTO, metadata: TokenMetadataDTO) -> str:
+    def deploy_erc20_proxy(
+        self, ticketer_params: TicketerParamsDTO, metadata: TokenMetadataDTO
+    ) -> str:
         erc20 = deploy_erc20.callback(
             ticketer_address_bytes=ticketer_params.address_bytes_hex,
             ticket_content_bytes=ticketer_params.content_bytes_hex,
@@ -55,7 +59,7 @@ class EtherlinkBootstrapClient:
 def ask_origination_confirmation(token_info: TokenInfoDTO) -> None:
     """Prints token info to the console and asks user to confirm origination."""
 
-    supply = token_info.supply / 10 ** token_info.metadata.decimals
+    supply = token_info.supply / 10**token_info.metadata.decimals
     supply_formatted = f'{supply:,}'.replace(',', '_')
 
     def accent(msg: str) -> str:
@@ -69,9 +73,12 @@ def ask_origination_confirmation(token_info: TokenInfoDTO) -> None:
 
     echo(
         'The following 4 contracts will be deployed: '
-        + accent('Token') + ', '
-        + accent('Ticker') + ', '
-        + accent('ERC20 Proxy') + ' and '
+        + accent('Token')
+        + ', '
+        + accent('Ticker')
+        + ', '
+        + accent('ERC20 Proxy')
+        + ' and '
         + accent('Token Bridge Helper')
     )
 
@@ -90,14 +97,13 @@ class TokenBootstrap:
         testrunner_account: str,
         use_test_prefix: bool,
         test_version: int,
-
     ):
         self._mainnet_asset_id = mainnet_asset_id
         self._is_mainnet = is_mainnet
         self._tezos_client = tezos_client
         self._etherlink_client = etherlink_client
         self._l1_testrunner_account = testrunner_account
-        self._test_amount_multiplier = .2
+        self._test_amount_multiplier = 0.2
         self._use_test_prefix = use_test_prefix
         self._test_version = test_version
         self._token_info: TokenInfoDTO
@@ -113,7 +119,9 @@ class TokenBootstrap:
         asset_id = self.deploy_test_token()
         ticketer_data = self.deploy_ticketer(asset_id)
         erc20_proxy_address = self.deploy_erc20_proxy(ticketer_data.ticketer_params)
-        ticket_helper_address = self.deploy_helper(ticketer_data.ticketer.address, erc20_proxy_address)
+        ticket_helper_address = self.deploy_helper(
+            ticketer_data.ticketer.address, erc20_proxy_address
+        )
         return TokenFixtureDTO(
             l1_asset_id=asset_id,
             l1_ticketer_address=ticketer_data.ticketer.address,
@@ -138,10 +146,16 @@ class TokenBootstrap:
     def _fetch_mainnet_token_metadata(self) -> None:
         contract_address, token_id = self._mainnet_asset_id.split('_')
 
-        token_data = requests.get(f'{MAINNET_TZKT_API_URL}/tokens?contract={contract_address}&tokenId={token_id}').json()[0]
+        token_data = requests.get(
+            f'{MAINNET_TZKT_API_URL}/tokens?contract={contract_address}&tokenId={token_id}'
+        ).json()[0]
         if self._use_test_prefix:
-            token_data['metadata']['name'] = ' '.join(['Test', token_data['metadata']['name'], f'v{self._test_version}'])
-            token_data['metadata']['symbol'] = '_'.join(['TEST', token_data['metadata']['symbol'], str(self._test_version)])
+            token_data['metadata']['name'] = ' '.join(
+                ['Test', token_data['metadata']['name'], f'v{self._test_version}']
+            )
+            token_data['metadata']['symbol'] = '_'.join(
+                ['TEST', token_data['metadata']['symbol'], str(self._test_version)]
+            )
 
         self._token_info = TokenInfoDTO(
             metadata=TokenMetadataDTO(
@@ -156,7 +170,10 @@ class TokenBootstrap:
     def deploy_test_token(self) -> str:
         contract_address, token_id = self._mainnet_asset_id.split('_')
 
-        survey.printers.text('', end='\r', )
+        survey.printers.text(
+            '',
+            end='\r',
+        )
         survey.printers.text('\n' * 5, re=True)
         survey.printers.text('', end='\r', re=True)
         state = ''
@@ -169,14 +186,21 @@ class TokenBootstrap:
             state = ' processing transaction...'
             supply = self._token_info.supply
             round_mask = 10 ** (len(str(supply)) - 2)
-            test_amount = int(supply * self._test_amount_multiplier / round_mask) * round_mask
+            test_amount = (
+                int(supply * self._test_amount_multiplier / round_mask) * round_mask
+            )
             balances = {
                 self._tezos_client.key.public_key_hash(): abs(supply - test_amount),
                 self._l1_testrunner_account: test_amount,
             }
 
-            metadata_encoded = {k: str(v).encode() for k, v in self._token_info.metadata.model_dump().items()}
-            opg = token.originate(self._tezos_client, balances, int(token_id), metadata_encoded).send()
+            metadata_encoded = {
+                k: str(v).encode()
+                for k, v in self._token_info.metadata.model_dump().items()
+            }
+            opg = token.originate(
+                self._tezos_client, balances, int(token_id), metadata_encoded
+            ).send()
             self._tezos_client.wait(opg)
             deployed_token = token.from_opg(self._tezos_client, opg)
 
@@ -191,7 +215,10 @@ class TokenBootstrap:
         contract_address, token_id = asset_id.split('_')
         token_id = int(token_id)
 
-        survey.printers.text('', end='\r', )
+        survey.printers.text(
+            '',
+            end='\r',
+        )
         survey.printers.text('\n' * 3, re=True)
         survey.printers.text('', end='\r', re=True)
         state = ''
@@ -225,7 +252,10 @@ class TokenBootstrap:
                 content_bytes_hex=ticketer_params_dict['content_bytes'],
             )
 
-        survey.printers.done(f'Ticketer Contract deployed for Token `{self._token_info.metadata.name}`: {accent(ticketer.address)}.', re=True)
+        survey.printers.done(
+            f'Ticketer Contract deployed for Token `{self._token_info.metadata.name}`: {accent(ticketer.address)}.',
+            re=True,
+        )
         return TicketerDTO(
             ticketer=ticketer,
             ticketer_params=ticketer_params,
@@ -233,7 +263,10 @@ class TokenBootstrap:
         )
 
     def deploy_erc20_proxy(self, ticketer_params) -> str:
-        survey.printers.text('', end='\r', )
+        survey.printers.text(
+            '',
+            end='\r',
+        )
         survey.printers.text('\n' * 3, re=True)
         survey.printers.text('', end='\r', re=True)
         with survey.graphics.SpinProgress(
@@ -283,6 +316,7 @@ class RollupBootstrap:
         self._tezos_client = tezos_client
         self._tokens = tokens
         self._token_fixture_collection = {}
+
     def run(self):
         self.deploy_whitelist()
         # deploy_ticket_router_tester
@@ -293,7 +327,9 @@ class RollupBootstrap:
         survey.printers.info('Bootstrapping Whitelist...')
         for index, token_bootstrap in enumerate(self._tokens):
             token_fixture = token_bootstrap.run(index + 1)
-            self._token_fixture_collection[token_bootstrap._token_info.metadata.symbol] = token_fixture.model_dump_json(indent=2)
+            self._token_fixture_collection[
+                token_bootstrap._token_info.metadata.symbol
+            ] = token_fixture.model_dump_json(indent=2)
 
 
 class BootstrapSurvey:
@@ -341,7 +377,10 @@ class BootstrapSurvey:
                     response = requests.get(url).json()
                     assert response['protocol']
             except (IOError, AssertionError):
-                survey.printers.fail('Could not retrieve the specified RPC Endpoint. Please try again.', re=True)
+                survey.printers.fail(
+                    'Could not retrieve the specified RPC Endpoint. Please try again.',
+                    re=True,
+                )
             else:
                 self._l1_rpc_url = l1_rpc_url
                 survey.printers.text('', end='\r', re=True)
@@ -365,7 +404,10 @@ class BootstrapSurvey:
                     response = requests.get(url).json()
                     assert response['chain']
             except (IOError, AssertionError):
-                survey.printers.fail('Could not retrieve the specified Tzkt API Url. Please try again.', re=True)
+                survey.printers.fail(
+                    'Could not retrieve the specified Tzkt API Url. Please try again.',
+                    re=True,
+                )
             else:
                 self._tzkt_api_url = tzkt_api_url
                 survey.printers.text('', end='\r', re=True)
@@ -383,13 +425,16 @@ class BootstrapSurvey:
                     prefix='Checking the specified RPC Endpoint ',
                 ):
                     response = requests.get(
-                        f'{self._l1_rpc_url}/chains/main/blocks/head/context/smart_rollups/smart_rollup/{smart_rollup_address}' +
-                        '/genesis_info',
+                        f'{self._l1_rpc_url}/chains/main/blocks/head/context/smart_rollups/smart_rollup/{smart_rollup_address}'
+                        + '/genesis_info',
                     ).json()
                     assert isinstance(response, dict)
                     assert response['level']
             except (IOError, AssertionError):
-                survey.printers.fail('Could not retrieve the specified Smart Rollup address. Please try again.', re=True)
+                survey.printers.fail(
+                    'Could not retrieve the specified Smart Rollup address. Please try again.',
+                    re=True,
+                )
             else:
                 survey.printers.text('', end='\r', re=True)
                 return smart_rollup_address
@@ -422,9 +467,14 @@ class BootstrapSurvey:
                         pass
 
             except (OSError, ValueError):
-                survey.printers.fail('Incorrect Private Key is specified. Please try again.', re=True)
+                survey.printers.fail(
+                    'Incorrect Private Key is specified. Please try again.', re=True
+                )
             except AssertionError:
-                survey.printers.fail('Account has insufficient balance to contracts origination. Please try again.', re=True)
+                survey.printers.fail(
+                    'Account has insufficient balance to contracts origination. Please try again.',
+                    re=True,
+                )
             else:
                 survey.printers.text('', end='\r', re=True)
                 return l1_private_key
@@ -487,7 +537,9 @@ class RollupBootstrapFactory:
             private_key=user_input.l2_private_key,
         )
 
-        test_version: int = cls._bump_test_version() if user_input.use_test_prefix else 0
+        test_version: int = (
+            cls._bump_test_version() if user_input.use_test_prefix else 0
+        )
 
         tokens = []
         for mainnet_asset_id in MAINNET_WHITELIST:

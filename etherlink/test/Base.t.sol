@@ -17,18 +17,14 @@ contract BaseTest is Test {
     bytes public wrongContent = abi.encodePacked("another forged content");
     bytes public receiver = bytes("some receiver % entrypoint");
     bytes22 public receiver22 = bytes22("some receiver % entryp");
+    bytes22 public proxy22 = bytes22("0000000000000000000000");
 
     function setUp() public {
         vm.label(alice, "Alice");
         vm.label(bob, "Bob");
         kernel = new KernelMock();
         token = new ERC20Proxy(
-            ticketer,
-            content,
-            address(kernel),
-            "Token",
-            "TKN",
-            18
+            ticketer, content, address(kernel), "Token", "TKN", 18
         );
         ticketHash = hashTicket(ticketer, content);
     }

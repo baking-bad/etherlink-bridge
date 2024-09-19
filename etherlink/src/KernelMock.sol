@@ -147,8 +147,17 @@ contract KernelMock is IWithdrawalEvent, IDepositEvent {
         require(routingInfo.length >= 22, "Routing info is too short");
         bytes22 receiver22 = bytes22(routingInfo);
 
+        // NOTE: proxy22 is not parsed from routingInfo and hardcoded:
+        bytes22 proxy22 = bytes22("0000000000000000000000");
+
         emit Withdrawal(
-            ticketHash, sender, ticketOwner, receiver22, amount, _withdrawalId
+            ticketHash,
+            sender,
+            ticketOwner,
+            receiver22,
+            proxy22,
+            amount,
+            _withdrawalId
         );
 
         _withdrawalId += 1;

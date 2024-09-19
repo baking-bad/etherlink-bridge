@@ -69,7 +69,13 @@ contract KernelTest is BaseTest, IWithdrawalEvent, IDepositEvent {
         vm.expectEmit(true, true, true, true);
         uint256 withdrawalId = 0;
         emit Withdrawal(
-            ticketHash, bob, address(token), receiver22, 100, withdrawalId
+            ticketHash,
+            bob,
+            address(token),
+            receiver22,
+            proxy22,
+            100,
+            withdrawalId
         );
         kernel.withdraw(address(token), receiver, 100, ticketer, content);
     }

@@ -78,7 +78,7 @@ poetry run withdraw \
 ## Compilation and Running Tests
 1. Install Foundry by following the [installation guide](https://book.getfoundry.sh/getting-started/installation)
 > [!NOTE]
-> Please note that the version of `forge` used to build contracts is `forge 0.2.0 (ca67d15 2023-08-02T00:16:51.291393754Z)`. Build results for newer versions may differ from the artifacts added to the build directory.
+> The version of `forge` used to build contracts is `forge 0.2.0 (20b3da1 2024-07-02T00:18:52.435480726Z)`.
 
 2. Install Solidity dependencies with Forge (part of the Foundry toolchain). Installation should be executed from the `etherlink` directory:
 ```shell

@@ -21,6 +21,7 @@ from scripts.helpers.contracts import (
 )
 from scripts.helpers.etherlink import (
     Erc20ProxyHelper,
+    BulkWithdrawalHelper,
     make_filename,
 )
 from scripts.helpers.addressable import (

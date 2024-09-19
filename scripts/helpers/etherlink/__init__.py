@@ -11,6 +11,9 @@ from scripts.helpers.etherlink.contract import (
     make_filename,
     EvmContractHelper,
 )
+from scripts.helpers.etherlink.contract_testers import (
+    BulkWithdrawalHelper,
+)
 
 
 # Allowing reimporting from this module:
@@ -22,4 +25,5 @@ __all__ = [
     'originate_contract',
     'make_filename',
     'EvmContractHelper',
+    'BulkWithdrawalHelper',
 ]

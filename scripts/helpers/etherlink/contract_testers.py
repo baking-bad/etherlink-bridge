@@ -9,3 +9,7 @@ from web3.types import TxReceipt
 
 class BulkWithdrawalHelper(EvmContractHelper):
     filename = make_filename('BulkWithdrawal')
+
+
+class DepositTesterHelper(EvmContractHelper):
+    filename = make_filename('DepositTester')

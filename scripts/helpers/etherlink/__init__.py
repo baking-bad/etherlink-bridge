@@ -13,6 +13,7 @@ from scripts.helpers.etherlink.contract import (
 )
 from scripts.helpers.etherlink.contract_testers import (
     BulkWithdrawalHelper,
+    DepositTesterHelper,
 )
 
 
@@ -26,4 +27,5 @@ __all__ = [
     'make_filename',
     'EvmContractHelper',
     'BulkWithdrawalHelper',
+    'DepositTesterHelper',
 ]

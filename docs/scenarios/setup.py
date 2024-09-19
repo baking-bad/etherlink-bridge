@@ -23,6 +23,7 @@ from scripts.helpers.etherlink import (
     Erc20ProxyHelper,
     BulkWithdrawalHelper,
     DepositTesterHelper,
+    TokenProxyTesterHelper,
     make_filename,
 )
 from scripts.helpers.addressable import (

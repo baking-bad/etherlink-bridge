@@ -1,4 +1,7 @@
-from typing import Union
+from typing import (
+    Union,
+    Optional,
+)
 from scripts.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
 from eth_account.signers.local import LocalAccount
@@ -49,9 +52,10 @@ def etherlink_address_to_bytes(etherlink_entity: EtherlinkAddressable) -> bytes:
 # TODO: consider moving to separate module?
 def make_deposit_routing_info(
     receiver: EtherlinkAddressable,
-    # TODO: make router Optional
-    router: EtherlinkAddressable,
+    router: Optional[EtherlinkAddressable],
 ) -> bytes:
+    if router is None:
+        return etherlink_address_to_bytes(receiver)
     return etherlink_address_to_bytes(receiver) + etherlink_address_to_bytes(router)
 
 

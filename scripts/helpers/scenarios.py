@@ -26,6 +26,7 @@ from eth_account.signers.local import LocalAccount
 from web3 import Web3
 from web3.types import TxParams
 from web3.types import HexBytes  # type: ignore
+from typing import Optional
 
 
 def transfer_ticket(ticket: Ticket, receiver: Addressable) -> str:
@@ -77,8 +78,7 @@ def setup_ticket_router_tester_to_rollup_deposit(
     ticket_router_tester: TicketRouterTester,
     target: Addressable,
     receiver: EtherlinkAddressable,
-    # TODO: make router optional
-    router: EtherlinkAddressable,
+    router: Optional[EtherlinkAddressable],
 ) -> str:
 
     deposit_info = make_deposit_routing_info(receiver, router)

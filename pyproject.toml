@@ -28,6 +28,9 @@ ruff = "^0.2.1"
 gql = "^3.5.0"
 pydantic = "^2.6.1"
 requests-toolbelt = "^1.0.0"
+sgqlc = "^16.4"
+pandas = "^2.2.3"
+seaborn = "^0.13.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -43,8 +43,6 @@ For an example, see [`token-bridge-helper.mligo`](tezos/contracts/token-bridge-h
 This contract implements the ERC20 Proxy [deposit interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-deposit-interface) and [withdraw interface](https://gitlab.com/baking-bad/tzip/-/blob/wip/029-etherlink-token-bridge/drafts/current/draft-etherlink-token-bridge/etherlink-token-bridge.md#l2-proxy-withdraw-interface).
 For an example, see [`ERC20Proxy.sol`](etherlink/src/ERC20Proxy.sol).
 
-FA2.1 tokens have built-in ticket capabilities, so they do not require a ticketer or token bridge helper contract.
-
 For information about how these contracts communicate with each other, see [bridge configuration](docs/README.md#bridge-configuration).
 
 ## Setup

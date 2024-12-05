@@ -6,7 +6,7 @@ For more information about the FA standards, see [Token standards](https://docs.
 
 The tools also help you submit bridging transactions, both for bridging tokens from Tezos to Etherlink (depositing) and for bridging tokens from Etherlink to Tezos (withdrawing).
 
-For information on how this bridge works, see [Bridging FA tokens between Tezos layer 1 and Etherlink](https://docs.etherlink.com/building-on-etherlink/bridging-fa) in the Etherlink documentation.
+For information on how this bridge works, see [Bridging FA tokens between Tezos layer 1 and Etherlink](https://docs.etherlink.com/bridging/bridging-fa) in the Etherlink documentation.
 
 You can use the tool to bridge tokens between Tezos Mainnet and Etherlink Mainnet and between Tezos test networks and Etherlink Testnet.
 

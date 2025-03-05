@@ -14,6 +14,7 @@ def build_contracts(
 ) -> None:
     """Compiles Tezos side contracts using dockerized LIGO compiler."""
 
+    # TODO: consider making this a separate script to compile one contract:
     def compile_contract(
         contract_path: str,
         module_name: str,
@@ -77,5 +78,57 @@ def build_contracts(
         'contracts/metadata-tracker/metadata-tracker.mligo',
         'MetadataTracker',
         'build/metadata-tracker.tz',
+    )
+
+
+@click.command()
+@click.option(
+    '--ligo-version',
+    default='1.9.2',
+    help='LIGO compiler version used to compile Tezos side contracts, default: 1.9.2',
+)
+def build_fast_withdrawal(
+    ligo_version: str,
+) -> None:
+    """Compiles Tezos side contracts using dockerized LIGO compiler."""
+
+    # TODO: remove code duplication (this fn doesn't require module to be provided):
+    # two options:
+    # 1. change contract so it will be a module too
+    # 2. keep this as separate fn
+    # 3. make some branching in the function
+    def compile_contract(
+        contract_path: str,
+        output_path: str,
+    ) -> None:
+        print(f'- Compiling {contract_path} contract')
+        cwd = os.path.join(os.getcwd(), 'tezos')
+        result = subprocess.run(
+            [
+                'docker',
+                'run',
+                '--rm',
+                '-v',
+                f'{cwd}:{cwd}',
+                '-w',
+                cwd,
+                f'ligolang/ligo:{ligo_version}',
+                'compile',
+                'contract',
+                contract_path,
+                '-o',
+                output_path,
+            ],
+            # check=True,
+            cwd=cwd,
+        )
+        if result.stdout:
+            print(result.stdout)
+        if result.stderr:
+            print(result.stderr)
+
+    compile_contract(
+        'contracts/fast-withdrawal/fast-withdrawal.mligo',
+        'build/fast-withdrawal.tz',
     )
     print('Done')

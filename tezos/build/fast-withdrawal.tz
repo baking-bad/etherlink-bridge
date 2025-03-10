@@ -87,7 +87,15 @@
            { UNPAIR 8 ;
              SWAP ;
              READ_TICKET ;
-             DROP ;
+             CDR ;
+             CDR ;
+             BYTES ;
+             DUP 7 ;
+             SWAP ;
+             COMPARE ;
+             EQ ;
+             NOT ;
+             IF { PUSH string "The prepaid amount is not valid" ; FAILWITH } {} ;
              DIG 6 ;
              DIG 6 ;
              DIG 5 ;

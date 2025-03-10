@@ -49,8 +49,13 @@ type return = operation list * storage
 [@entry]
 let payout_withdrawal ({withdrawal_id; ticket; target; timestamp; service_provider; payload; l2_caller; full_amount} : payout_entry) (storage: storage) : return =
   // TODO: check ticketer is an exchanger address, maybe check payload as well?
-  let (_ticketer, (_payload, _payout_amount)), ticket = Tezos.Next.Ticket.read ticket in
-  // TODO: check that payout_amount is the same as `Bytes.unpack payload`
+  let (_ticketer, (_payload, prepaid_amount)), ticket = Tezos.Next.Ticket.read ticket in
+  let prepaid_amount_bytes = bytes prepaid_amount in
+  // TODO: move asserts into separate functions
+  let is_valid_prepaid_amount = prepaid_amount_bytes = payload in
+  let _ = if not is_valid_prepaid_amount then
+    failwith "The prepaid amount is not valid"
+  else unit in
   let withdrawals_key = {withdrawal_id; full_amount; target; timestamp; payload; l2_caller} in
   let is_in_storage = Option.is_some (Big_map.find_opt withdrawals_key storage.withdrawals) in
   (* Ensure that the fast withdrawal was not already payed. *)

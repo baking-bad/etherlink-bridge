@@ -17,10 +17,12 @@ type withdrawals_key = {
 (*
   Fast Withdrawal contract storage:
   - exchanger: the address of the ticketer
+  - smart_rollup: the address of the Etherlink smart rollup
   - withdrawals: stores service_provider for each withdrawal key
 *)
 type storage = {
   exchanger: address;
+  smart_rollup : address;
   withdrawals : (withdrawals_key, address) big_map;
 }
 
@@ -73,6 +75,10 @@ let payout_withdrawal ({withdrawal_id; ticket; target; timestamp; service_provid
 [@entry]
 let default ({ withdrawal_id; ticket; timestamp; base_withdrawer; payload; l2_caller} : withdrawal_entry)  (storage: storage) : return =
   // TODO: check ticketer is an exchanger address, maybe check payload as well?
+  let is_sender_allowed = Tezos.get_sender () = storage.smart_rollup in
+  let _ = if not is_sender_allowed then
+    failwith "The sender is not allowed to call entrypoint"
+  else unit in
   let (_ticketer, (_payload, full_amount)), ticket = Tezos.Next.Ticket.read ticket in
   let withdrawals_key = {withdrawal_id; full_amount; target=base_withdrawer; timestamp; payload; l2_caller} in
   match Big_map.find_opt withdrawals_key storage.withdrawals with

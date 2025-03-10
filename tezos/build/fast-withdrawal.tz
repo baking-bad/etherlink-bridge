@@ -17,6 +17,7 @@
            (nat %full_amount))) ;
   storage
     (pair (address %exchanger)
+          (address %smart_rollup)
           (big_map %withdrawals
              (pair (nat %withdrawal_id)
                    (nat %full_amount)
@@ -28,6 +29,14 @@
   code { UNPAIR ;
          IF_LEFT
            { UNPAIR 6 ;
+             DUP 7 ;
+             GET 3 ;
+             SENDER ;
+             COMPARE ;
+             EQ ;
+             NOT ;
+             IF { PUSH string "The sender is not allowed to call entrypoint" ; FAILWITH }
+                {} ;
              SWAP ;
              READ_TICKET ;
              CDR ;
@@ -40,7 +49,7 @@
              DIG 6 ;
              PAIR 6 ;
              DUP 4 ;
-             CDR ;
+             GET 4 ;
              DUP 2 ;
              GET ;
              IF_NONE
@@ -64,11 +73,11 @@
                  DROP ;
                  DUP 4 ;
                  DIG 4 ;
-                 CDR ;
+                 GET 4 ;
                  NONE address ;
                  DIG 4 ;
                  UPDATE ;
-                 UPDATE 2 ;
+                 UPDATE 4 ;
                  DUP ;
                  CAR ;
                  CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;
@@ -104,19 +113,19 @@
              DIG 6 ;
              PAIR 6 ;
              DUP 5 ;
-             CDR ;
+             GET 4 ;
              DUP 2 ;
              GET ;
              IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
              NOT ;
              IF { DUP 5 ;
                   DIG 5 ;
-                  CDR ;
+                  GET 4 ;
                   DIG 5 ;
                   SOME ;
                   DIG 3 ;
                   UPDATE ;
-                  UPDATE 2 ;
+                  UPDATE 4 ;
                   DUP ;
                   CAR ;
                   CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;

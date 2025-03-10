@@ -3,9 +3,25 @@
 
 #include "./ticket-type.mligo"
 
+type withdrawals_key = {
+  withdrawal_id : nat;
+  // TODO: consider changing `full_amount` name
+  full_amount : nat;
+  target : address;
+  timestamp : timestamp;
+  // NOTE: the `payload` contains the `prepaid_amount` / `payment_amount`
+  payload: bytes;
+  l2_caller: bytes;
+}
+
+(*
+  Fast Withdrawal contract storage:
+  - exchanger: the address of the ticketer
+  - withdrawals: stores service_provider for each withdrawal key
+*)
 type storage = {
-  exchanger: address; (* the address of the ticketer *)
-  withdrawals : (nat, (nat * timestamp * address * bytes * bytes)) big_map; (* stores (quantity, timestamp, payer_address, payload, l2_caller) for each withdrawal id *)
+  exchanger: address;
+  withdrawals : (withdrawals_key, address) big_map;
 }
 
 type withdrawal_entry = {
@@ -25,18 +41,22 @@ type payout_entry = {
   service_provider : address;
   payload: bytes;
   l2_caller: bytes;
+  full_amount : nat;
 }
 
 type return = operation list * storage
 
 [@entry]
-let payout_withdrawal ({withdrawal_id; ticket; target; timestamp; service_provider; payload; l2_caller} : payout_entry) (storage: storage) : return =
-  let is_in_storage = Option.is_some (Big_map.find_opt withdrawal_id storage.withdrawals) in
+let payout_withdrawal ({withdrawal_id; ticket; target; timestamp; service_provider; payload; l2_caller; full_amount} : payout_entry) (storage: storage) : return =
+  // TODO: check ticketer is an exchanger address, maybe check payload as well?
+  let (_ticketer, (_payload, _payout_amount)), ticket = Tezos.Next.Ticket.read ticket in
+  // TODO: check that payout_amount is the same as `Bytes.unpack payload`
+  let withdrawals_key = {withdrawal_id; full_amount; target; timestamp; payload; l2_caller} in
+  let is_in_storage = Option.is_some (Big_map.find_opt withdrawals_key storage.withdrawals) in
   (* Ensure that the fast withdrawal was not already payed. *)
   if not is_in_storage then
     (* Update storage to record prepayment. *)
-    let (_, (_, amount)), ticket = Tezos.Next.Ticket.read ticket in
-    let updated_withdrawals = Big_map.add withdrawal_id (amount, timestamp, service_provider, payload, l2_caller) storage.withdrawals in
+    let updated_withdrawals = Big_map.add withdrawals_key service_provider storage.withdrawals in
     let storage = { storage with withdrawals = updated_withdrawals } in
     (match Tezos.get_entrypoint_opt "%burn" storage.exchanger with
       | None -> failwith "Invalid tez ticket contract"
@@ -47,25 +67,22 @@ let payout_withdrawal ({withdrawal_id; ticket; target; timestamp; service_provid
 
 [@entry]
 let default ({ withdrawal_id; ticket; timestamp; base_withdrawer; payload; l2_caller} : withdrawal_entry)  (storage: storage) : return =
-  match Big_map.find_opt withdrawal_id storage.withdrawals with
+  // TODO: check ticketer is an exchanger address, maybe check payload as well?
+  let (_ticketer, (_payload, full_amount)), ticket = Tezos.Next.Ticket.read ticket in
+  let withdrawals_key = {withdrawal_id; full_amount; target=base_withdrawer; timestamp; payload; l2_caller} in
+  match Big_map.find_opt withdrawals_key storage.withdrawals with
   | None ->
     (* No advance payment found, send to the withdrawer. *)
     (match Tezos.get_entrypoint_opt "%burn" storage.exchanger with
     | None -> failwith "Invalid tez ticket contract"
     | Some contract ->
       [Tezos.Next.Operation.transaction (base_withdrawer, ticket) 0mutez contract], storage)
-  | Some (prepaid_quantity, prepaid_timestamp, payer, stored_payload, stored_l2_caller) ->
-    (* Check if the provider has prepaid. *)
-    let (_, (_, amount)), ticket = Tezos.Next.Ticket.read ticket in
-    if prepaid_timestamp = timestamp && prepaid_quantity = amount
-       && stored_payload = payload && stored_l2_caller = l2_caller then
-      (* Everything matches, the withdrawal was payed, we send the amount
-         to the payer. *)
-      let updated_withdrawals  = Big_map.remove withdrawal_id storage.withdrawals in
-      let storage =  { storage with withdrawals = updated_withdrawals } in
-      (match Tezos.get_entrypoint_opt "%burn" storage.exchanger with
-      | None -> failwith "Invalid tez ticket contract"
-      | Some contract ->
-        [Tezos.Next.Operation.transaction (payer, ticket) 0mutez contract], storage)
-    else
-      failwith "Unexpected behavior"
+  | Some payer ->
+    (* If key found, then everything matches, the withdrawal was payed,
+       we send the amount to the payer. *)
+    let updated_withdrawals  = Big_map.remove withdrawals_key storage.withdrawals in
+    let storage =  { storage with withdrawals = updated_withdrawals } in
+    (match Tezos.get_entrypoint_opt "%burn" storage.exchanger with
+    | None -> failwith "Invalid tez ticket contract"
+    | Some contract ->
+      [Tezos.Next.Operation.transaction (payer, ticket) 0mutez contract], storage)

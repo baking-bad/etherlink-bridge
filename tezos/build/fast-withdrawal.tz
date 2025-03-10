@@ -13,22 +13,38 @@
            (timestamp %timestamp)
            (address %service_provider)
            (bytes %payload)
-           (bytes %l2_caller))) ;
+           (bytes %l2_caller)
+           (nat %full_amount))) ;
   storage
     (pair (address %exchanger)
-          (big_map %withdrawals nat (pair nat timestamp address bytes bytes))) ;
+          (big_map %withdrawals
+             (pair (nat %withdrawal_id)
+                   (nat %full_amount)
+                   (address %target)
+                   (timestamp %timestamp)
+                   (bytes %payload)
+                   (bytes %l2_caller))
+             address)) ;
   code { UNPAIR ;
          IF_LEFT
            { UNPAIR 6 ;
+             SWAP ;
+             READ_TICKET ;
+             CDR ;
+             CDR ;
+             DIG 6 ;
+             DIG 6 ;
+             DIG 5 ;
              DUP 7 ;
+             DIG 4 ;
+             DIG 6 ;
+             PAIR 6 ;
+             DUP 4 ;
              CDR ;
              DUP 2 ;
              GET ;
              IF_NONE
-               { DIG 2 ;
-                 DIG 4 ;
-                 DIG 5 ;
-                 DROP 4 ;
+               { DROP ;
                  DUP 3 ;
                  CAR ;
                  CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;
@@ -44,77 +60,53 @@
                      TRANSFER_TOKENS ;
                      CONS ;
                      PAIR } }
-               { DIG 4 ;
+               { DIG 3 ;
                  DROP ;
-                 UNPAIR 5 ;
-                 DIG 6 ;
-                 READ_TICKET ;
-                 CDR ;
-                 CDR ;
-                 DIG 10 ;
-                 DIG 7 ;
-                 COMPARE ;
-                 EQ ;
-                 DIG 9 ;
-                 DIG 7 ;
-                 COMPARE ;
-                 EQ ;
-                 DIG 2 ;
+                 DUP 4 ;
                  DIG 4 ;
-                 COMPARE ;
-                 EQ ;
-                 DIG 7 ;
-                 DIG 5 ;
-                 COMPARE ;
-                 EQ ;
-                 AND ;
-                 AND ;
-                 AND ;
-                 IF { DUP 4 ;
-                      DIG 4 ;
-                      CDR ;
-                      NONE (pair nat timestamp address bytes bytes) ;
-                      DIG 5 ;
-                      UPDATE ;
-                      UPDATE 2 ;
-                      DUP ;
-                      CAR ;
-                      CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;
-                      IF_NONE
-                        { DROP 3 ; PUSH string "Invalid tez ticket contract" ; FAILWITH }
-                        { SWAP ;
-                          NIL operation ;
-                          DIG 2 ;
-                          PUSH mutez 0 ;
-                          DIG 4 ;
-                          DIG 5 ;
-                          PAIR ;
-                          TRANSFER_TOKENS ;
-                          CONS ;
-                          PAIR } }
-                    { DROP 4 ; PUSH string "Unexpected behavior" ; FAILWITH } } }
-           { UNPAIR 7 ;
-             DUP 8 ;
+                 CDR ;
+                 NONE address ;
+                 DIG 4 ;
+                 UPDATE ;
+                 UPDATE 2 ;
+                 DUP ;
+                 CAR ;
+                 CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;
+                 IF_NONE
+                   { DROP 3 ; PUSH string "Invalid tez ticket contract" ; FAILWITH }
+                   { SWAP ;
+                     NIL operation ;
+                     DIG 2 ;
+                     PUSH mutez 0 ;
+                     DIG 5 ;
+                     DIG 5 ;
+                     PAIR ;
+                     TRANSFER_TOKENS ;
+                     CONS ;
+                     PAIR } } }
+           { UNPAIR 8 ;
+             SWAP ;
+             READ_TICKET ;
+             DROP ;
+             DIG 6 ;
+             DIG 6 ;
+             DIG 5 ;
+             DUP 6 ;
+             DIG 8 ;
+             DIG 6 ;
+             PAIR 6 ;
+             DUP 5 ;
              CDR ;
              DUP 2 ;
              GET ;
              IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
              NOT ;
-             IF { SWAP ;
-                  READ_TICKET ;
+             IF { DUP 5 ;
+                  DIG 5 ;
                   CDR ;
-                  CDR ;
-                  DUP 9 ;
-                  DIG 9 ;
-                  CDR ;
-                  DIG 9 ;
-                  DIG 9 ;
-                  DIG 9 ;
-                  DIG 9 ;
-                  DIG 6 ;
-                  PAIR 5 ;
+                  DIG 5 ;
                   SOME ;
-                  DIG 4 ;
+                  DIG 3 ;
                   UPDATE ;
                   UPDATE 2 ;
                   DUP ;
@@ -132,5 +124,5 @@
                       TRANSFER_TOKENS ;
                       CONS ;
                       PAIR } }
-                { DROP 8 ; PUSH string "The fast withdrawal was already payed" ; FAILWITH } } } }
+                { DROP 5 ; PUSH string "The fast withdrawal was already payed" ; FAILWITH } } } }
 

@@ -26,7 +26,15 @@
                    (bytes %payload)
                    (bytes %l2_caller))
              address)) ;
-  code { UNPAIR ;
+  code { LAMBDA
+           (pair address address)
+           unit
+           { UNPAIR ;
+             COMPARE ;
+             NEQ ;
+             IF { PUSH string "Wrong ticketer" ; FAILWITH } { UNIT } } ;
+         SWAP ;
+         UNPAIR ;
          IF_LEFT
            { UNPAIR 6 ;
              DUP 7 ;
@@ -39,8 +47,17 @@
                 {} ;
              SWAP ;
              READ_TICKET ;
+             UNPAIR ;
+             SWAP ;
              CDR ;
-             CDR ;
+             DUP 9 ;
+             CAR ;
+             DIG 2 ;
+             PAIR ;
+             DIG 9 ;
+             SWAP ;
+             EXEC ;
+             DROP ;
              DIG 6 ;
              DIG 6 ;
              DIG 5 ;
@@ -96,8 +113,17 @@
            { UNPAIR 8 ;
              SWAP ;
              READ_TICKET ;
+             UNPAIR ;
+             SWAP ;
              CDR ;
-             CDR ;
+             DUP 11 ;
+             CAR ;
+             DIG 2 ;
+             PAIR ;
+             DIG 11 ;
+             SWAP ;
+             EXEC ;
+             DROP ;
              BYTES ;
              DUP 7 ;
              SWAP ;

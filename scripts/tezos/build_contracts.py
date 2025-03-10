@@ -131,4 +131,8 @@ def build_fast_withdrawal(
         'contracts/fast-withdrawal/fast-withdrawal.mligo',
         'build/fast-withdrawal.tz',
     )
+    compile_contract(
+        'contracts/fast-withdrawal/service-provider.mligo',
+        'build/service-provider.tz',
+    )
     print('Done')

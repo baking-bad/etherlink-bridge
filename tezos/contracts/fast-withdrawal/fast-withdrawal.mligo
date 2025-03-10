@@ -54,6 +54,7 @@ let assert_ticketer_is_expected (ticketer : address) (exchanger : address) : uni
 
 [@entry]
 let payout_withdrawal ({withdrawal_id; ticket; target; timestamp; service_provider; payload; l2_caller; full_amount} : payout_entry) (storage: storage) : return =
+  // TODO: consider changing entrypoint name
   // TODO: disallow xtz payments to this entrypoint
   let (ticketer, (_, prepaid_amount)), ticket = Tezos.Next.Ticket.read ticket in
   // TODO: consider checking ticket payload as well?

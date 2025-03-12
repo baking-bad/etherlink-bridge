@@ -73,3 +73,65 @@
 - [x] test_should_redirect_ticket_to_the_ticketer_on_withdraw
     - check ticket will be redirected to the ticketer in the storage
     - check ticket will be redirected to the ticketer even its address differs from the stored ticketer address
+
+## FastWithdrawal tests [(code)](test_fast_withdrawal.py):
+
+- [x] test_should_create_withdrawal_record_when_funded
+    - check key is added to `withdrawals` big_map
+
+- [ ] test_should_correctly_encode_payloads_for_different_ticket_amounts
+    - check key is added for ticket amount = `1`
+    - check key is added for ticket amount = `17`
+    - check key is added for ticket amount = `2**256`
+
+- [ ] test_should_create_different_withdrawal_records
+    - check new key is added for transaction with different `timestamp`
+    - check new key is added for transaction with different `base_withdrawer`
+    - check new key is added for transaction with different `payload` and ticket amount
+    - check new key is added for transaction with different `l2_caller`
+
+- [ ] test_should_reject_duplicate_withdrawal
+    - check rejection when initiated by the same provider
+    - check rejection when initiated by a different provider
+
+- [ ] test_provider_receives_withdrawal_when_purchased
+    - check provider balance increases by full withdrawal amount
+    - check key is removed from `withdrawals` big_map after payout
+
+- [ ] test_user_receives_withdrawal_when_no_one_purchased
+    - check user balance increases by full withdrawal amount
+    - check key is removed from `withdrawals` big_map after payout
+
+- [ ] test_should_reject_purchase_with_wrong_ticketer_address
+
+- [ ] test_should_reject_purchase_with_wrong_ticket_payload
+    - [ ] TODO: Verify whether this test is necessary
+
+- [ ] test_should_reject_purchase_with_payload_and_ticket_amount_mismatch
+
+- [ ] test_should_reject_purchase_with_attached_xtz
+    - [ ] TODO: Verify whether this test is necessary
+
+- [ ] test_should_reject_settlement_with_attached_xtz
+    - [ ] TODO: Verify whether this test is necessary
+
+- [ ] test_should_reject_settlement_from_wrong_rollup_address
+
+- [ ] test_should_reject_settlement_with_wrong_ticketer_address
+
+- [ ] test_should_reject_settlement_with_wrong_ticket_payload
+    - [ ] TODO: Verify whether this test is necessary
+
+- [ ] test_should_pay_custom_provider_when_specified
+    - check specified alternative provider receives withdrawal payout
+    - check key is removed from `withdrawals` big_map after payout
+
+- [ ] test_should_reject_provider_purchase_due_to_expired_timestamp
+    - [ ] TODO: Verify whether this test is necessary
+
+- [ ] test_should_not_remove_key_when_settled_with_incorrect_amount
+
+- [ ] TODO: Consider adding tests for withdrawal record removal if this logic is introduced
+
+## ServiceProvider tests [(code)](test_service_provider.py):
+- [ ] test_should_mint_ticket_and_purchase_withdrawal

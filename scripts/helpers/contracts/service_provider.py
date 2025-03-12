@@ -40,7 +40,7 @@ class ServiceProvider(ContractHelper):
         filename = join(get_build_dir(), "service-provider.tz")
         return originate_from_file(filename, client, storage)
 
-    def payout_proxy(
+    def purchase_withdrawal_proxy(
         self,
         fast_withdrawal_contract: Addressable,
         exchanger: Addressable,

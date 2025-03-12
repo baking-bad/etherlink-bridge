@@ -79,10 +79,10 @@
 - [x] test_should_create_withdrawal_record_when_purchased
     - check key is added to `withdrawals` big_map
 
-- [ ] test_should_correctly_encode_payloads_for_different_ticket_amounts
+- [x] test_should_correctly_encode_payloads_for_different_ticket_amounts
     - check key is added for ticket amount = `1`
     - check key is added for ticket amount = `17`
-    - check key is added for ticket amount = `2**256`
+    - check key is added for ticket amount = `1_000_000_000_000`
 
 - [ ] test_should_create_different_withdrawal_records
     - check new key is added for transaction with different `timestamp`

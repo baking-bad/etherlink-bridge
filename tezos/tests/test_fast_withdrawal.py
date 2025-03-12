@@ -86,13 +86,14 @@ class FastWithdrawalTestCase(BaseTestCase):
             l2_caller=bytes(20),
         )
 
-        service_provider.payout_proxy(
+        provider = self.manager
+        service_provider.purchase_withdrawal_proxy(
             fast_withdrawal,
             exchanger,
             withdrawal.withdrawal_id,
             withdrawal.base_withdrawer,
             withdrawal.timestamp,
-            self.manager,
+            provider,
             withdrawal.payload,
             withdrawal.l2_caller,
             withdrawal.withdrawal_amount,
@@ -102,4 +103,43 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         withdrawals_bigmap = fast_withdrawal.contract.storage['withdrawals']
         stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
-        assert stored_address == get_address(self.manager)
+        assert stored_address == get_address(provider)
+
+    def test_should_correctly_encode_payloads_for_different_ticket_amounts(
+        self,
+    ) -> None:
+        alice, exchanger, fast_withdrawal, service_provider = (
+            self.fast_withdrawal_setup()
+        )
+
+        # NOTE: the manager account balance is 3.7 million xtz
+        amounts = [1, 17, 1_000_000_000_000]
+
+        for amount in amounts:
+            withdrawal = Withdrawal(
+                withdrawal_id=0,
+                withdrawal_amount=amount,
+                base_withdrawer=alice,
+                timestamp=0,
+                payload=pack(amount, 'nat'),
+                l2_caller=bytes(20),
+            )
+
+            provider = self.manager
+            service_provider.purchase_withdrawal_proxy(
+                fast_withdrawal,
+                exchanger,
+                withdrawal.withdrawal_id,
+                withdrawal.base_withdrawer,
+                withdrawal.timestamp,
+                provider,
+                withdrawal.payload,
+                withdrawal.l2_caller,
+                withdrawal.withdrawal_amount,
+                xtz_amount=withdrawal.withdrawal_amount,
+            ).send()
+            self.bake_block()
+
+            withdrawals_bigmap = fast_withdrawal.contract.storage['withdrawals']
+            stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+            assert stored_address == get_address(provider)

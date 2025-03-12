@@ -84,7 +84,7 @@
     - check key is added for ticket amount = `17`
     - check key is added for ticket amount = `1_000_000_000_000`
 
-- [ ] test_should_create_different_withdrawal_records
+- [x] test_should_create_different_withdrawal_records
     - check new key is added for transaction with different `timestamp`
     - check new key is added for transaction with different `base_withdrawer`
     - check new key is added for transaction with different `payload` and ticket amount
@@ -135,3 +135,4 @@
 
 ## ServiceProvider tests [(code)](test_service_provider.py):
 - [ ] test_should_mint_ticket_and_purchase_withdrawal
+- [ ] test_rejects_l2_caller_with_invalid_byte_count

@@ -11,6 +11,9 @@ from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
 from scripts.helpers.contracts.contract import ContractHelper
 from scripts.helpers.contracts.token_bridge_helper import TokenBridgeHelper
 from scripts.helpers.contracts.metadata_tracker import MetadataTracker
+from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal
+from scripts.helpers.contracts.service_provider import ServiceProvider
+from scripts.helpers.contracts.exchanger import Exchanger
 
 
 # Allowing reimporting from this module:
@@ -26,4 +29,7 @@ __all__ = [
     'TokenHelper',
     'ContractHelper',
     'MetadataTracker',
+    'FastWithdrawal',
+    'ServiceProvider',
+    'Exchanger',
 ]

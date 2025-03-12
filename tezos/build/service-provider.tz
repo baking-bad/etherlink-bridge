@@ -1,10 +1,10 @@
 { parameter
-    (or (ticket %payout (pair nat (option bytes)))
-        (pair %payout_proxy
+    (or (ticket %relay_ticket (pair nat (option bytes)))
+        (pair %purchase_withdrawal_proxy
            (address %fast_withdrawal_contract)
            (address %exchanger)
            (nat %withdrawal_id)
-           (address %target)
+           (address %base_withdrawer)
            (timestamp %timestamp)
            (address %service_provider)
            (bytes %payload)
@@ -14,7 +14,7 @@
     (pair (address %fast_withdrawal_contract)
           (address %exchanger)
           (nat %withdrawal_id)
-          (address %target)
+          (address %base_withdrawer)
           (timestamp %timestamp)
           (address %service_provider)
           (bytes %payload)
@@ -25,7 +25,7 @@
            { SWAP ;
              UNPAIR 9 ;
              DUP ;
-             CONTRACT %payout_withdrawal
+             CONTRACT %purchase_withdrawal
                (pair nat (ticket (pair nat (option bytes))) address timestamp address bytes bytes nat) ;
              IF_NONE
                { DROP 10 ; PUSH string "Invalid entrypoint" ; FAILWITH }
@@ -73,7 +73,7 @@
                   PUSH string "L2 caller's address size should be 20 bytes long" ;
                   FAILWITH }
                 { AMOUNT ;
-                  SELF %payout ;
+                  SELF %relay_ticket ;
                   ADDRESS ;
                   DUP 4 ;
                   CONTRACT %mint address ;

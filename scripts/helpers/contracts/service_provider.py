@@ -21,7 +21,7 @@ class ServiceProvider(ContractHelper):
             "fast_withdrawal_contract": dummy_address,
             "exchanger": dummy_address,
             "withdrawal_id": 0,
-            "target": dummy_address,
+            "base_withdrawer": dummy_address,
             "timestamp": 0,
             "service_provider": dummy_address,
             "payload": bytes(0),
@@ -45,7 +45,7 @@ class ServiceProvider(ContractHelper):
         fast_withdrawal_contract: Addressable,
         exchanger: Addressable,
         withdrawal_id: int,
-        target: Addressable,
+        base_withdrawer: Addressable,
         timestamp: int,
         service_provider: Addressable,
         payload: bytes,
@@ -56,11 +56,11 @@ class ServiceProvider(ContractHelper):
         """Creates an operation with call to the payout_proxy entrypoint"""
 
         return (
-            self.contract.payout_proxy(
+            self.contract.purchase_withdrawal_proxy(
                 get_address(fast_withdrawal_contract),
                 get_address(exchanger),
                 withdrawal_id,
-                get_address(target),
+                get_address(base_withdrawer),
                 timestamp,
                 get_address(service_provider),
                 payload,

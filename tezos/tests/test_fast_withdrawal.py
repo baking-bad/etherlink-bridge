@@ -9,12 +9,12 @@ from tezos.tests.base import BaseTestCase
 from scripts.helpers.addressable import Addressable, get_address
 
 
-# TODO: consider moving WithdrawalKey to helpers/contracts?
+# TODO: consider moving Withdrawal to helpers/contracts?
 @dataclass
-class WithdrawalKey:
+class Withdrawal:
     withdrawal_id: int
-    full_amount: int
-    target: Addressable
+    withdrawal_amount: int
+    base_withdrawer: Addressable
     timestamp: int
     payload: bytes
     l2_caller: bytes
@@ -23,8 +23,8 @@ class WithdrawalKey:
     def as_tuple(self) -> Tuple[int, int, str, int, bytes, bytes]:
         return (
             self.withdrawal_id,
-            self.full_amount,
-            get_address(self.target),
+            self.withdrawal_amount,
+            get_address(self.base_withdrawer),
             self.timestamp,
             self.payload,
             self.l2_caller,
@@ -77,10 +77,10 @@ class FastWithdrawalTestCase(BaseTestCase):
             self.fast_withdrawal_setup()
         )
 
-        withdrawal = WithdrawalKey(
+        withdrawal = Withdrawal(
             withdrawal_id=0,
-            full_amount=1_000_000,
-            target=alice,
+            withdrawal_amount=1_000_000,
+            base_withdrawer=alice,
             timestamp=0,
             payload=pack(1_000_000, 'nat'),
             l2_caller=bytes(20),
@@ -90,13 +90,13 @@ class FastWithdrawalTestCase(BaseTestCase):
             fast_withdrawal,
             exchanger,
             withdrawal.withdrawal_id,
-            withdrawal.target,
+            withdrawal.base_withdrawer,
             withdrawal.timestamp,
             self.manager,
             withdrawal.payload,
             withdrawal.l2_caller,
-            withdrawal.full_amount,
-            xtz_amount=withdrawal.full_amount,
+            withdrawal.withdrawal_amount,
+            xtz_amount=withdrawal.withdrawal_amount,
         ).send()
         self.bake_block()
 

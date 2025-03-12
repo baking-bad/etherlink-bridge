@@ -6,22 +6,22 @@
            (address %base_withdrawer)
            (bytes %payload)
            (bytes %l2_caller))
-        (pair %payout_withdrawal
+        (pair %purchase_withdrawal
            (nat %withdrawal_id)
            (ticket %ticket (pair nat (option bytes)))
-           (address %target)
+           (address %base_withdrawer)
            (timestamp %timestamp)
            (address %service_provider)
            (bytes %payload)
            (bytes %l2_caller)
-           (nat %full_amount))) ;
+           (nat %withdrawal_amount))) ;
   storage
     (pair (address %exchanger)
           (address %smart_rollup)
           (big_map %withdrawals
              (pair (nat %withdrawal_id)
-                   (nat %full_amount)
-                   (address %target)
+                   (nat %withdrawal_amount)
+                   (address %base_withdrawer)
                    (timestamp %timestamp)
                    (bytes %payload)
                    (bytes %l2_caller))

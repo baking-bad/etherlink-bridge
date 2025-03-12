@@ -124,7 +124,7 @@
              SWAP ;
              EXEC ;
              DROP ;
-             BYTES ;
+             PACK ;
              DUP 7 ;
              SWAP ;
              COMPARE ;

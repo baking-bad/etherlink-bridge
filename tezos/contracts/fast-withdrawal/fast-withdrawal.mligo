@@ -59,7 +59,8 @@ let payout_withdrawal ({withdrawal_id; ticket; target; timestamp; service_provid
   let (ticketer, (_, prepaid_amount)), ticket = Tezos.Next.Ticket.read ticket in
   // TODO: consider checking ticket payload as well?
   let _ = assert_ticketer_is_expected ticketer storage.exchanger in
-  let prepaid_amount_bytes = bytes prepaid_amount in
+  // TODO: consider converting to bytes without packing?
+  let prepaid_amount_bytes = Bytes.pack prepaid_amount in
   // TODO: move asserts into separate functions
   let is_valid_prepaid_amount = prepaid_amount_bytes = payload in
   let _ = if not is_valid_prepaid_amount then

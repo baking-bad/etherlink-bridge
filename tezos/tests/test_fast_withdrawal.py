@@ -72,7 +72,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         service_provider = self.deploy_service_provider()
         return alice, exchanger, fast_withdrawal, service_provider
 
-    def test_should_create_withdrawal_record_when_funded(self) -> None:
+    def test_should_create_withdrawal_record_when_purchased(self) -> None:
         alice, exchanger, fast_withdrawal, service_provider = (
             self.fast_withdrawal_setup()
         )

@@ -76,7 +76,7 @@
 
 ## FastWithdrawal tests [(code)](test_fast_withdrawal.py):
 
-- [x] test_should_create_withdrawal_record_when_funded
+- [x] test_should_create_withdrawal_record_when_purchased
     - check key is added to `withdrawals` big_map
 
 - [ ] test_should_correctly_encode_payloads_for_different_ticket_amounts

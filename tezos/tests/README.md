@@ -90,11 +90,11 @@
     - check new key is added for transaction with different `payload` and ticket amount
     - check new key is added for transaction with different `l2_caller`
 
-- [ ] test_should_reject_duplicate_withdrawal
+- [x] test_should_reject_duplicate_withdrawal
     - check rejection when initiated by the same provider
     - check rejection when initiated by a different provider
 
-- [ ] test_provider_receives_withdrawal_when_purchased
+- [x] test_provider_receives_withdrawal_when_purchased
     - check provider balance increases by full withdrawal amount
     - check key is removed from `withdrawals` big_map after payout
 

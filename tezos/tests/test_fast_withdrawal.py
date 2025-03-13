@@ -1,61 +1,16 @@
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from decimal import Decimal
+from typing import Optional
 from pytezos.client import PyTezosClient
 from pytezos.operation.group import OperationGroup
 from pytezos.rpc.errors import MichelsonError
 from scripts.helpers.contracts.exchanger import Exchanger
-from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal
+from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal, Withdrawal
 from scripts.helpers.contracts.service_provider import ServiceProvider
+from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
 from scripts.helpers.utility import pack
 from tezos.tests.base import BaseTestCase
 from scripts.helpers.addressable import Addressable, get_address
-
-
-# TODO: consider moving Withdrawal to helpers/contracts?
-@dataclass
-class Withdrawal:
-    withdrawal_id: int
-    withdrawal_amount: int
-    base_withdrawer: Addressable
-    timestamp: int
-    payload: bytes
-    l2_caller: bytes
-
-    # TODO: consider renaming to as_storage_key?
-    def as_tuple(self) -> Tuple[int, int, str, int, bytes, bytes]:
-        return (
-            self.withdrawal_id,
-            self.withdrawal_amount,
-            get_address(self.base_withdrawer),
-            self.timestamp,
-            self.payload,
-            self.l2_caller,
-        )
-
-    @classmethod
-    def default_with(
-        cls,
-        withdrawal_id: int = 0,
-        withdrawal_amount: int = 1_000_000,
-        base_withdrawer: Addressable = "tz1KqTpEZ7Yob7QbPE4Hy4Wo8fHG8LhKxZSx",
-        timestamp: int = 0,
-        payload: bytes = pack(1_000_000, 'nat'),
-        l2_caller: bytes = bytes(20),
-    ) -> 'Withdrawal':
-        """Creates a default Withdrawal object filled with default values"""
-
-        return cls(
-            withdrawal_id=withdrawal_id,
-            withdrawal_amount=withdrawal_amount,
-            base_withdrawer=base_withdrawer,
-            timestamp=timestamp,
-            payload=payload,
-            l2_caller=l2_caller,
-        )
-
-    @classmethod
-    def default(cls) -> 'Withdrawal':
-        return cls.default_with()
 
 
 @dataclass
@@ -65,6 +20,7 @@ class FastWithdrawalTestSetup:
     exchanger: Exchanger
     fast_withdrawal: FastWithdrawal
     service_provider: ServiceProvider
+    tester: TicketRouterTester
 
     def call_default_purchase_withdrawal_with(
         self,
@@ -132,14 +88,17 @@ class FastWithdrawalTestCase(BaseTestCase):
     ) -> FastWithdrawalTestSetup:
         alice = self.bootstrap_account()
         exchanger = self.deploy_exchanger()
-        fast_withdrawal = self.deploy_fast_withdrawal(exchanger, alice)
         service_provider = self.deploy_service_provider()
+        tester = self.deploy_ticket_router_tester()
+        fast_withdrawal = self.deploy_fast_withdrawal(exchanger, tester)
+
         return FastWithdrawalTestSetup(
             manager=self.manager,
             alice=alice,
             exchanger=exchanger,
             fast_withdrawal=fast_withdrawal,
             service_provider=service_provider,
+            tester=tester,
         )
 
     def test_should_create_withdrawal_record_when_purchased(self) -> None:
@@ -277,3 +236,47 @@ class FastWithdrawalTestCase(BaseTestCase):
                 service_provider=setup.alice,
             )
         assert "The fast withdrawal was already payed" in str(err.exception)
+
+    def test_provider_receives_withdrawal_when_purchased(self) -> None:
+        setup = self.fast_withdrawal_setup()
+
+        provider = setup.manager
+        withdrawal = Withdrawal.default_with(
+            withdrawal_amount=77,
+            payload=pack(77, 'nat'),
+        )
+        setup.call_default_purchase_withdrawal_with(
+            withdrawal=withdrawal,
+            service_provider=provider,
+        )
+        self.bake_block()
+
+        withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
+        stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        assert stored_address == get_address(provider)
+
+        # Creating wrapped xtz ticket for Alice:
+        setup.exchanger.contract.mint(get_address(setup.alice)).with_amount(77).send()
+        self.bake_block()
+        ticket = setup.exchanger.read_ticket(setup.alice)
+
+        # Recording providers balance:
+        provider_balance = provider.balance()
+
+        # Sending ticket to the fast withdrawal contract `default` entrypoint:
+        setup.alice.bulk(
+            setup.tester.set_settle_withdrawal(
+                target=setup.fast_withdrawal,
+                withdrawal=withdrawal,
+            ),
+            ticket.transfer(setup.tester),
+        ).send()
+        self.bake_block()
+
+        # Checking that there is no record in the fast withdrawal contract:
+        with self.assertRaises(KeyError):
+            withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
+            stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+
+        # Checking that the provider received the xtz:
+        assert provider.balance() == provider_balance + Decimal('0.000077')

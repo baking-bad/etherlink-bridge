@@ -7,18 +7,37 @@
                        (address %target)
                        (or %entrypoint
                           (unit %default)
-                          (or (address %routerWithdraw) (bytes %rollupDeposit)))
+                          (or (address %routerWithdraw)
+                              (or (bytes %rollupDeposit)
+                                  (pair %settleWithdrawal
+                                     (nat %withdrawal_id)
+                                     (nat %withdrawal_amount)
+                                     (timestamp %timestamp)
+                                     (address %base_withdrawer)
+                                     (bytes %payload)
+                                     (bytes %l2_caller)))))
                        (mutez %xtz_amount)))))) ;
   storage
     (pair (pair %internal_call
              (address %target)
              (or %entrypoint
                 (unit %default)
-                (or (address %routerWithdraw) (bytes %rollupDeposit)))
+                (or (address %routerWithdraw)
+                    (or (bytes %rollupDeposit)
+                        (pair %settleWithdrawal
+                           (nat %withdrawal_id)
+                           (nat %withdrawal_amount)
+                           (timestamp %timestamp)
+                           (address %base_withdrawer)
+                           (bytes %payload)
+                           (bytes %l2_caller)))))
              (mutez %xtz_amount))
           (big_map %metadata string bytes)) ;
   code { LAMBDA
-           (pair (ticket (pair nat (option bytes))) address (or unit (or address bytes)) mutez)
+           (pair (ticket (pair nat (option bytes)))
+                 address
+                 (or unit (or address (or bytes (pair nat nat timestamp address bytes bytes))))
+                 mutez)
            operation
            { UNPAIR ;
              SWAP ;
@@ -41,19 +60,38 @@
                      DIG 3 ;
                      PAIR ;
                      TRANSFER_TOKENS }
-                   { DIG 3 ;
-                     SWAP ;
-                     PAIR ;
-                     LEFT bytes ;
-                     LEFT bytes ;
-                     SWAP ;
-                     CONTRACT
-                       (or (or (pair %deposit (bytes %routing_info) (ticket %ticket (pair nat (option bytes))))
-                               (bytes %b))
-                           (bytes %c)) ;
-                     IF_NONE { PUSH string "ROLLUP_DEPOSIT_NOT_FOUND" ; FAILWITH } {} ;
-                     DUG 2 ;
-                     TRANSFER_TOKENS } } } ;
+                   { IF_LEFT
+                       { DIG 3 ;
+                         SWAP ;
+                         PAIR ;
+                         LEFT bytes ;
+                         LEFT bytes ;
+                         SWAP ;
+                         CONTRACT
+                           (or (or (pair %deposit (bytes %routing_info) (ticket %ticket (pair nat (option bytes))))
+                                   (bytes %b))
+                               (bytes %c)) ;
+                         IF_NONE { PUSH string "ROLLUP_DEPOSIT_NOT_FOUND" ; FAILWITH } {} ;
+                         DUG 2 ;
+                         TRANSFER_TOKENS }
+                       { SWAP ;
+                         CONTRACT
+                           (pair (nat %withdrawal_id)
+                                 (ticket %ticket (pair nat (option bytes)))
+                                 (timestamp %timestamp)
+                                 (address %base_withdrawer)
+                                 (bytes %payload)
+                                 (bytes %l2_caller)) ;
+                         IF_NONE { PUSH string "SETTLE_WITHDRAWAL_NOT_FOUND" ; FAILWITH } {} ;
+                         DUG 2 ;
+                         UNPAIR 6 ;
+                         SWAP ;
+                         DROP ;
+                         DUG 4 ;
+                         DIG 7 ;
+                         DIG 5 ;
+                         PAIR 6 ;
+                         TRANSFER_TOKENS } } } } ;
          SWAP ;
          UNPAIR ;
          IF_LEFT

@@ -1,5 +1,6 @@
 from scripts.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
+from scripts.helpers.contracts.fast_withdrawal import Withdrawal
 from scripts.helpers.utility import (
     get_build_dir,
     originate_from_file,
@@ -113,5 +114,31 @@ class TicketRouterTester(ContractHelper):
         return self.contract.set(
             target=get_address(target),
             entrypoint={'default': None},
+            xtz_amount=xtz_amount,
+        ).with_amount(xtz_amount)
+
+    def set_settle_withdrawal(
+        self,
+        target: Addressable,
+        withdrawal: Withdrawal,
+        xtz_amount: int = 0,
+    ) -> ContractCall:
+        """Sets the internal call parameters to `default` entrypoint of
+        the FastWithdrawal contract which have the following michelson signature:
+            pair %withdraw
+                (nat %withdrawal_id)
+                (ticket %ticket (pair nat (option bytes)))
+                (timestamp %timestamp)
+                (address %base_withdrawer)
+                (bytes %payload)
+                (bytes %l2_caller))
+
+        This is the entrypoint which should receive ticket from
+        TicketRouterTester at the next `mint`, `default` or `withdraw` calls.
+        """
+
+        return self.contract.set(
+            target=get_address(target),
+            entrypoint={'settleWithdrawal': withdrawal.as_tuple()},
             xtz_amount=xtz_amount,
         ).with_amount(xtz_amount)

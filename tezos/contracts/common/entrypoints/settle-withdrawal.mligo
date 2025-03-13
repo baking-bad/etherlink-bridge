@@ -1,4 +1,5 @@
 #import "../types/ticket.mligo" "Ticket"
+#import "../types/fast-withdrawal.mligo" "FastWithdrawal"
 #import "../errors.mligo" "Errors"
 
 
@@ -23,7 +24,7 @@ type t = {
 }
 
 let get (fast_withdrawal_contract : address) : t contract =
-    match Tezos.get_entrypoint_opt "%default" fast_withdrawal_contract with
+    match Tezos.get_contract_opt fast_withdrawal_contract with
     | None -> failwith(Errors.settle_withdrawal_entrypoint_not_found)
     | Some entry -> entry
 
@@ -33,3 +34,10 @@ let send
         : operation =
     let entry = get fast_withdrawal_contract in
     Tezos.transaction params 0mutez entry
+
+let from_key
+        (ticket : Ticket.t)
+        (key : FastWithdrawal.t)
+        : t =
+    let { withdrawal_id; withdrawal_amount = _; timestamp; base_withdrawer; payload; l2_caller } = key in
+    { withdrawal_id; ticket; timestamp; base_withdrawer; payload; l2_caller }

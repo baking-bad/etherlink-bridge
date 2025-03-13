@@ -4,16 +4,7 @@
 
 #import "../common/entrypoints/settle-withdrawal.mligo" "SettleWithdrawalEntry"
 #import "../common/types/ticket.mligo" "Ticket"
-
-// TODO: create module to manage withdrawals bigmap
-type withdrawal = {
-  withdrawal_id : nat;
-  withdrawal_amount : nat;
-  base_withdrawer : address;
-  timestamp : timestamp;
-  payload: bytes;
-  l2_caller: bytes;
-}
+#import "../common/types/fast-withdrawal.mligo" "FastWithdrawal"
 
 (*
   Fast Withdrawal contract storage:
@@ -24,13 +15,15 @@ type withdrawal = {
 type storage = {
   exchanger: address;
   smart_rollup : address;
-  withdrawals : (withdrawal, address) big_map;
+  // TODO: move withdrawals management functions to separate file
+  withdrawals : (FastWithdrawal.t, address) big_map;
 }
 
 // TODO: move to separate file:
 type purchase_withdrawal_entry = {
   withdrawal_id : nat;
   ticket : Ticket.t;
+  // TODO: change order to synchronize with SettleWithdrawalEntry
   base_withdrawer : address;
   timestamp : timestamp;
   service_provider : address;

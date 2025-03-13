@@ -21,8 +21,8 @@
           (big_map %withdrawals
              (pair (nat %withdrawal_id)
                    (nat %withdrawal_amount)
-                   (address %base_withdrawer)
                    (timestamp %timestamp)
+                   (address %base_withdrawer)
                    (bytes %payload)
                    (bytes %l2_caller))
              address)) ;
@@ -60,8 +60,8 @@
              DROP ;
              DIG 6 ;
              DIG 6 ;
-             DIG 5 ;
              DUP 7 ;
+             DIG 6 ;
              DIG 4 ;
              DIG 6 ;
              PAIR 6 ;
@@ -133,8 +133,8 @@
              IF { PUSH string "Invalid purchase amount." ; FAILWITH } {} ;
              DIG 6 ;
              DIG 6 ;
-             DIG 5 ;
-             DUP 6 ;
+             DUP 5 ;
+             DIG 6 ;
              DIG 8 ;
              DIG 6 ;
              PAIR 6 ;

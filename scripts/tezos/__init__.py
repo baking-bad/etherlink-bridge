@@ -7,6 +7,7 @@ from scripts.tezos.deposit import deposit
 from scripts.tezos.execute_outbox_message import execute_outbox_message
 from scripts.tezos.get_ticketer_params import get_ticketer_params
 from scripts.tezos.xtz_deposit import xtz_deposit
+from scripts.tezos.compile_contract import compile_contract
 
 
 # Allowing reimporting from this module:
@@ -20,4 +21,5 @@ __all__ = [
     'execute_outbox_message',
     'get_ticketer_params',
     'xtz_deposit',
+    'compile_contract',
 ]

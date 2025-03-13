@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, Tuple
 from pytezos.client import PyTezosClient
 from pytezos.operation.group import OperationGroup
+from pytezos.rpc.errors import MichelsonError
 from scripts.helpers.contracts.exchanger import Exchanger
 from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal
 from scripts.helpers.contracts.service_provider import ServiceProvider
@@ -259,3 +260,20 @@ class FastWithdrawalTestCase(BaseTestCase):
         withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
         stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
         assert stored_address == get_address(provider)
+
+    def test_should_reject_duplicate_withdrawal(self) -> None:
+        setup = self.fast_withdrawal_setup()
+
+        withdrawal = Withdrawal.default()
+        setup.call_default_purchase_withdrawal_with(
+            withdrawal=withdrawal,
+            service_provider=setup.manager,
+        )
+        self.bake_block()
+
+        with self.assertRaises(MichelsonError) as err:
+            setup.call_default_purchase_withdrawal_with(
+                withdrawal=withdrawal,
+                service_provider=setup.alice,
+            )
+        assert "The fast withdrawal was already payed" in str(err.exception)

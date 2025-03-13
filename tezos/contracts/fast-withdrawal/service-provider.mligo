@@ -2,8 +2,7 @@
 (* SPDX-CopyrightText 2025 Nomadic Labs <contact@nomadic-labs.com> *)
 // TODO: add copyright
 
-// TODO: reuse existing types
-#include "./ticket-type.mligo"
+#import "../common/types/ticket.mligo" "Ticket"
 
 // TODO: consider moving this contract to separate directory
 // TODO: consider renaming contract to the FastWithdrawalHelper? FastWithdrawalProxy?
@@ -41,7 +40,7 @@ let purchase_withdrawal_proxy ({fast_withdrawal_contract; exchanger; withdrawal_
     failwith "L2 caller's address size should be 20 bytes long"
   else
   let amount = Tezos.get_amount () in
-  let relay_entry = Tezos.address (Tezos.self("%relay_ticket"): tez_ticket contract) in
+  let relay_entry = Tezos.address (Tezos.self("%relay_ticket"): Ticket.t contract) in
   match Tezos.get_entrypoint_opt "%mint" exchanger with
   | None -> failwith "Invalid tez ticket contract"
   | Some contract ->
@@ -50,7 +49,7 @@ let purchase_withdrawal_proxy ({fast_withdrawal_contract; exchanger; withdrawal_
     [mint], payout_storage
 
 [@entry]
-let relay_ticket (ticket: tez_ticket) ({fast_withdrawal_contract; exchanger; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; full_amount}: storage) : return =
+let relay_ticket (ticket: Ticket.t) ({fast_withdrawal_contract; exchanger; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; full_amount}: storage) : return =
   match Tezos.get_entrypoint_opt "%purchase_withdrawal" fast_withdrawal_contract with
   | None -> failwith "Invalid entrypoint"
   | Some contract ->

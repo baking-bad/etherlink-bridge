@@ -2,8 +2,8 @@
 (* SPDX-CopyrightText 2025 Nomadic Labs <contact@nomadic-labs.com> *)
 // TODO: add copyright
 
-// TODO: reuse existing types instead
-#include "./ticket-type.mligo"
+#import "../common/entrypoints/settle-withdrawal.mligo" "SettleWithdrawalEntry"
+#import "../common/types/ticket.mligo" "Ticket"
 
 // TODO: create module to manage withdrawals bigmap
 type withdrawal = {
@@ -28,19 +28,9 @@ type storage = {
 }
 
 // TODO: move to separate file:
-type settle_withdrawal_entry = {
-  withdrawal_id : nat;
-  ticket : tez_ticket;
-  timestamp : timestamp;
-  base_withdrawer: address;
-  payload: bytes;
-  l2_caller: bytes;
-}
-
-// TODO: move to separate file:
 type purchase_withdrawal_entry = {
   withdrawal_id : nat;
-  ticket : tez_ticket;
+  ticket : Ticket.t;
   base_withdrawer : address;
   timestamp : timestamp;
   service_provider : address;
@@ -67,7 +57,7 @@ let purchase_withdrawal ({withdrawal_id; ticket; base_withdrawer; timestamp; ser
   // TODO: move asserts into separate functions
   let is_valid_prepaid_amount = prepaid_amount_bytes = payload in
   let _ = if not is_valid_prepaid_amount then
-    failwith "The prepaid amount is not valid"
+    failwith "Invalid purchase amount."
   else unit in
   let withdrawal = {withdrawal_id; withdrawal_amount; base_withdrawer; timestamp; payload; l2_caller} in
   let is_in_storage = Option.is_some (Big_map.find_opt withdrawal storage.withdrawals) in
@@ -84,11 +74,11 @@ let purchase_withdrawal ({withdrawal_id; ticket; base_withdrawer; timestamp; ser
     failwith "The fast withdrawal was already payed"
 
 [@entry]
-let default ({ withdrawal_id; ticket; timestamp; base_withdrawer; payload; l2_caller} : settle_withdrawal_entry)  (storage: storage) : return =
+let default ({ withdrawal_id; ticket; timestamp; base_withdrawer; payload; l2_caller} : SettleWithdrawalEntry.t)  (storage: storage) : return =
   // TODO: disallow xtz payments to this entrypoint (?)
   let is_sender_allowed = Tezos.get_sender () = storage.smart_rollup in
   let _ = if not is_sender_allowed then
-    failwith "The sender is not allowed to call entrypoint"
+    failwith "Sender is not allowed to call this entrypoint"
   else unit in
   let (ticketer, (_payload, withdrawal_amount)), ticket = Tezos.Next.Ticket.read ticket in
   // TODO: consider checking ticket payload as well?

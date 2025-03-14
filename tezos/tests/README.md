@@ -132,6 +132,6 @@
 
 - [ ] TODO: Consider adding tests for withdrawal record removal if this logic is introduced
 
-## ServiceProvider tests [(code)](test_service_provider.py):
+## PurchaseWithdrawalProxy tests [(code)](test_purchase_withdrawal_proxy.py):
 - [ ] test_should_mint_ticket_and_purchase_withdrawal
 - [ ] test_rejects_l2_caller_with_invalid_byte_count

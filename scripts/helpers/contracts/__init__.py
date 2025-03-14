@@ -12,7 +12,7 @@ from scripts.helpers.contracts.contract import ContractHelper
 from scripts.helpers.contracts.token_bridge_helper import TokenBridgeHelper
 from scripts.helpers.contracts.metadata_tracker import MetadataTracker
 from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal
-from scripts.helpers.contracts.service_provider import ServiceProvider
+from scripts.helpers.contracts.purchase_withdrawal_proxy import PurchaseWithdrawalProxy
 from scripts.helpers.contracts.exchanger import Exchanger
 
 
@@ -30,6 +30,6 @@ __all__ = [
     'ContractHelper',
     'MetadataTracker',
     'FastWithdrawal',
-    'ServiceProvider',
+    'PurchaseWithdrawalProxy',
     'Exchanger',
 ]

@@ -4,9 +4,6 @@
 
 #import "../common/types/ticket.mligo" "Ticket"
 
-// TODO: consider moving this contract to separate directory
-// TODO: consider renaming contract to the FastWithdrawalHelper? FastWithdrawalProxy?
-
 type storage = {
   fast_withdrawal_contract: address;
   exchanger : address;

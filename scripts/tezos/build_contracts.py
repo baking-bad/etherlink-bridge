@@ -67,7 +67,7 @@ def build_fast_withdrawal(
 
     compile_contract.callback(
         ligo_version,
-        'contracts/fast-withdrawal/service-provider.mligo',
+        'contracts/purchase-withdrawal-proxy/purchase-withdrawal-proxy.mligo',
     )  # type: ignore
 
     compile_contract.callback(

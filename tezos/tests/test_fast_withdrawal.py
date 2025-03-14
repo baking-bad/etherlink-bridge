@@ -6,7 +6,7 @@ from pytezos.operation.group import OperationGroup
 from pytezos.rpc.errors import MichelsonError
 from scripts.helpers.contracts.exchanger import Exchanger
 from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal, Withdrawal
-from scripts.helpers.contracts.service_provider import ServiceProvider
+from scripts.helpers.contracts.purchase_withdrawal_proxy import PurchaseWithdrawalProxy
 from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
 from scripts.helpers.utility import pack
 from tezos.tests.base import BaseTestCase
@@ -19,7 +19,7 @@ class FastWithdrawalTestSetup:
     alice: PyTezosClient
     exchanger: Exchanger
     fast_withdrawal: FastWithdrawal
-    service_provider: ServiceProvider
+    purchase_withdrawal_proxy: PurchaseWithdrawalProxy
     tester: TicketRouterTester
 
     def call_default_purchase_withdrawal_with(
@@ -34,11 +34,11 @@ class FastWithdrawalTestSetup:
 
         fast_withdrawal = fast_withdrawal or self.fast_withdrawal
         exchanger = exchanger or self.exchanger
-        service_provider = service_provider or self.service_provider
+        service_provider = service_provider or self.manager
         withdrawal = withdrawal or Withdrawal.default()
         xtz_amount = xtz_amount or withdrawal.withdrawal_amount
 
-        return self.service_provider.purchase_withdrawal_proxy(
+        return self.purchase_withdrawal_proxy.purchase_withdrawal_proxy(
             fast_withdrawal,
             exchanger,
             withdrawal.withdrawal_id,
@@ -65,14 +65,14 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
         return FastWithdrawal.from_opg(self.manager, opg)
 
-    def deploy_service_provider(
+    def deploy_purchase_withdrawal_proxy(
         self,
-    ) -> ServiceProvider:
-        """Deploys ServiceProvider contract with a dummy storage"""
+    ) -> PurchaseWithdrawalProxy:
+        """Deploys PurchaseWithdrawalProxy contract with a dummy storage"""
 
-        opg = ServiceProvider.originate(self.manager).send()
+        opg = PurchaseWithdrawalProxy.originate(self.manager).send()
         self.bake_block()
-        return ServiceProvider.from_opg(self.manager, opg)
+        return PurchaseWithdrawalProxy.from_opg(self.manager, opg)
 
     def deploy_exchanger(
         self,
@@ -88,7 +88,7 @@ class FastWithdrawalTestCase(BaseTestCase):
     ) -> FastWithdrawalTestSetup:
         alice = self.bootstrap_account()
         exchanger = self.deploy_exchanger()
-        service_provider = self.deploy_service_provider()
+        purchase_withdrawal_proxy = self.deploy_purchase_withdrawal_proxy()
         tester = self.deploy_ticket_router_tester()
         fast_withdrawal = self.deploy_fast_withdrawal(exchanger, tester)
 
@@ -97,7 +97,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             alice=alice,
             exchanger=exchanger,
             fast_withdrawal=fast_withdrawal,
-            service_provider=service_provider,
+            purchase_withdrawal_proxy=purchase_withdrawal_proxy,
             tester=tester,
         )
 

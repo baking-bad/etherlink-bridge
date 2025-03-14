@@ -10,12 +10,12 @@ from scripts.helpers.utility import get_build_dir
 from scripts.helpers.utility import originate_from_file
 
 
-class ServiceProvider(ContractHelper):
+class PurchaseWithdrawalProxy(ContractHelper):
     @staticmethod
     def make_storage(
         dummy_address: Addressable,
     ) -> dict[str, Any]:
-        """Creates a dummy storage for ServiceProvider"""
+        """Creates a dummy storage for PurchaseWithdrawalProxy contract"""
 
         return {
             "fast_withdrawal_contract": dummy_address,
@@ -34,10 +34,10 @@ class ServiceProvider(ContractHelper):
         cls,
         client: PyTezosClient,
     ) -> OperationGroup:
-        """Deploys ServiceProvider contract with a dummy storage"""
+        """Deploys PurchaseWithdrawalProxy contract with a dummy storage"""
 
         storage = cls.make_storage(get_address(client))
-        filename = join(get_build_dir(), "service-provider.tz")
+        filename = join(get_build_dir(), "purchase-withdrawal-proxy.tz")
         return originate_from_file(filename, client, storage)
 
     def purchase_withdrawal_proxy(

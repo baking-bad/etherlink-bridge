@@ -256,7 +256,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert stored_address == get_address(provider)
 
         # Creating wrapped xtz ticket for Alice:
-        setup.exchanger.contract.mint(get_address(setup.alice)).with_amount(77).send()
+        setup.exchanger.mint(setup.alice, 77).send()
         self.bake_block()
         ticket = setup.exchanger.read_ticket(setup.alice)
 
@@ -280,3 +280,32 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         # Checking that the provider received the xtz:
         assert provider.balance() == provider_balance + Decimal('0.000077')
+
+    def test_user_receives_withdrawal_when_no_one_purchased(self) -> None:
+        setup = self.fast_withdrawal_setup()
+        alice_balance = setup.alice.balance()
+
+        # Setting up withdrawal with Alice as a base withdrawer:
+        withdrawal = Withdrawal.default_with(
+            base_withdrawer=setup.alice,
+        )
+        self.bake_block()
+
+        # Creating wrapped xtz ticket:
+        setup.exchanger.mint(setup.manager, 333).send()
+        self.bake_block()
+        ticket = setup.exchanger.read_ticket(setup.manager)
+
+        # No one purchased the withdrawal,
+        # Sending ticket to the fast withdrawal contract `default` entrypoint:
+        setup.manager.bulk(
+            setup.tester.set_settle_withdrawal(
+                target=setup.fast_withdrawal,
+                withdrawal=withdrawal,
+            ),
+            ticket.transfer(setup.tester),
+        ).send()
+        self.bake_block()
+
+        # Checking that Alice received the xtz (full withdrawal amount):
+        assert setup.alice.balance() == alice_balance + Decimal('0.000333')

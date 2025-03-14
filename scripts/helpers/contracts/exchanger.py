@@ -4,7 +4,7 @@ from typing import Optional
 from pytezos.client import PyTezosClient
 from pytezos.operation.group import OperationGroup
 
-from scripts.helpers.addressable import Addressable
+from scripts.helpers.addressable import Addressable, get_address
 from scripts.helpers.contracts.contract import ContractHelper
 from scripts.helpers.ticket_content import TicketContent
 from scripts.helpers.ticket import Ticket
@@ -38,3 +38,12 @@ class Exchanger(ContractHelper):
             ticketer=self.address,
             content=TicketContent(0, None),
         )
+
+    def mint(
+        self,
+        target: Addressable,
+        mutez_amount: int,
+    ) -> OperationGroup:
+        """Mints ticket for the given owner"""
+
+        return self.contract.mint(get_address(target)).with_amount(mutez_amount).send()

@@ -98,9 +98,8 @@
     - check provider balance increases by full withdrawal amount
     - check key is removed from `withdrawals` big_map after payout
 
-- [ ] test_user_receives_withdrawal_when_no_one_purchased
+- [x] test_user_receives_withdrawal_when_no_one_purchased
     - check user balance increases by full withdrawal amount
-    - check key is removed from `withdrawals` big_map after payout
 
 - [ ] test_should_reject_purchase_with_wrong_ticketer_address
 

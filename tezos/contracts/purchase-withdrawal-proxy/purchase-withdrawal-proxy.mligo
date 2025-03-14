@@ -3,7 +3,9 @@
 // TODO: add copyright
 
 #import "../common/types/ticket.mligo" "Ticket"
+#import "../common/entrypoints/purchase-withdrawal.mligo" "PurchaseWithdrawalEntry"
 
+// TODO: consider reusing Withdrawal key and store it as a whole record in storage:
 type storage = {
   fast_withdrawal_contract: address;
   exchanger : address;
@@ -13,9 +15,15 @@ type storage = {
   service_provider : address;
   payload : bytes;
   l2_caller : bytes;
-  full_amount : nat;
+  withdrawal_amount : nat;
 }
 
+// TODO: move to storage.mligo OR purchase-withdrawal-entry.mligo
+let to_purchase_withdrawal (ticket : Ticket.t) (store : storage) : PurchaseWithdrawalEntry.t =
+  let {fast_withdrawal_contract = _; exchanger = _; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount} = store in
+  { withdrawal_id; ticket; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount }
+
+// TODO: sync order with PurchaseWithdrawalEntry.t
 type purchase_withdrawal_proxy_entry = {
   fast_withdrawal_contract: address;
   exchanger : address;
@@ -25,14 +33,14 @@ type purchase_withdrawal_proxy_entry = {
   service_provider : address;
   payload: bytes;
   l2_caller : bytes;
-  full_amount : nat;
+  withdrawal_amount : nat;
 }
 
 type return = operation list * storage
 
 
 [@entry]
-let purchase_withdrawal_proxy ({fast_withdrawal_contract; exchanger; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; full_amount} : purchase_withdrawal_proxy_entry) (_storage: storage) : return =
+let purchase_withdrawal_proxy ({fast_withdrawal_contract; exchanger; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount} : purchase_withdrawal_proxy_entry) (_storage: storage) : return =
   if not (Bytes.length l2_caller = 20n) then
     failwith "L2 caller's address size should be 20 bytes long"
   else
@@ -42,15 +50,11 @@ let purchase_withdrawal_proxy ({fast_withdrawal_contract; exchanger; withdrawal_
   | None -> failwith "Invalid tez ticket contract"
   | Some contract ->
     let mint = Tezos.Next.Operation.transaction relay_entry amount contract in
-    let payout_storage = {fast_withdrawal_contract; exchanger; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; full_amount} in
+    let payout_storage = {fast_withdrawal_contract; exchanger; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount} in
     [mint], payout_storage
 
 [@entry]
-let relay_ticket (ticket: Ticket.t) ({fast_withdrawal_contract; exchanger; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; full_amount}: storage) : return =
-  match Tezos.get_entrypoint_opt "%purchase_withdrawal" fast_withdrawal_contract with
-  | None -> failwith "Invalid entrypoint"
-  | Some contract ->
-      // TODO: this type is shared between Service Provider and Fast Withdrawal, need
-      //       to move it to some common space:
-      let full_payload = (withdrawal_id, (ticket, (base_withdrawer, (timestamp, (service_provider, (payload, (l2_caller, full_amount))))))) in
-      [Tezos.Next.Operation.transaction full_payload 0mutez contract], {fast_withdrawal_contract; exchanger; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; full_amount}
+let relay_ticket (ticket: Ticket.t) (store: storage) : return =
+  let purchase_params = to_purchase_withdrawal ticket store in
+  let purchase_op = PurchaseWithdrawalEntry.send store.fast_withdrawal_contract purchase_params in
+  [purchase_op], store

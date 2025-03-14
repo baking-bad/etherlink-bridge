@@ -9,7 +9,7 @@
            (address %service_provider)
            (bytes %payload)
            (bytes %l2_caller)
-           (nat %full_amount))) ;
+           (nat %withdrawal_amount))) ;
   storage
     (pair (address %fast_withdrawal_contract)
           (address %exchanger)
@@ -19,47 +19,35 @@
           (address %service_provider)
           (bytes %payload)
           (bytes %l2_caller)
-          (nat %full_amount)) ;
+          (nat %withdrawal_amount)) ;
   code { UNPAIR ;
          IF_LEFT
-           { SWAP ;
-             UNPAIR 9 ;
-             DUP ;
+           { DUP 2 ;
+             CAR ;
              CONTRACT %purchase_withdrawal
-               (pair nat (ticket (pair nat (option bytes))) address timestamp address bytes bytes nat) ;
-             IF_NONE
-               { DROP 10 ; PUSH string "Invalid entrypoint" ; FAILWITH }
-               { DUP 10 ;
-                 DUP 10 ;
-                 DUP 10 ;
-                 DUP 10 ;
-                 DUP 10 ;
-                 DUP 10 ;
-                 DUP 10 ;
-                 DIG 9 ;
-                 DIG 9 ;
-                 PAIR 9 ;
-                 NIL operation ;
-                 DIG 2 ;
-                 PUSH mutez 0 ;
-                 DIG 10 ;
-                 DIG 10 ;
-                 PAIR ;
-                 DIG 9 ;
-                 PAIR ;
-                 DIG 8 ;
-                 PAIR ;
-                 DIG 7 ;
-                 PAIR ;
-                 DIG 6 ;
-                 PAIR ;
-                 DIG 6 ;
-                 PAIR ;
-                 DIG 5 ;
-                 PAIR ;
-                 TRANSFER_TOKENS ;
-                 CONS ;
-                 PAIR } }
+               (pair (nat %withdrawal_id)
+                     (ticket %ticket (pair nat (option bytes)))
+                     (address %base_withdrawer)
+                     (timestamp %timestamp)
+                     (address %service_provider)
+                     (bytes %payload)
+                     (bytes %l2_caller)
+                     (nat %withdrawal_amount)) ;
+             IF_NONE { PUSH string "PURCHASE_WITHDRAWAL_NOT_FOUND" ; FAILWITH } {} ;
+             PUSH mutez 0 ;
+             DUP 4 ;
+             UNPAIR 9 ;
+             DROP 2 ;
+             DUG 6 ;
+             DIG 9 ;
+             DIG 7 ;
+             PAIR 8 ;
+             TRANSFER_TOKENS ;
+             SWAP ;
+             NIL operation ;
+             DIG 2 ;
+             CONS ;
+             PAIR }
            { SWAP ;
              DROP ;
              UNPAIR 9 ;

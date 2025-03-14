@@ -26,7 +26,7 @@ class PurchaseWithdrawalProxy(ContractHelper):
             "service_provider": dummy_address,
             "payload": bytes(0),
             "l2_caller": bytes(0),
-            "full_amount": 0,
+            "withdrawal_amount": 0,
         }
 
     @classmethod
@@ -50,7 +50,7 @@ class PurchaseWithdrawalProxy(ContractHelper):
         service_provider: Addressable,
         payload: bytes,
         l2_caller: bytes,
-        full_amount: int,
+        withdrawal_amount: int,
         xtz_amount: int = 0,
     ) -> OperationGroup:
         """Creates an operation with call to the payout_proxy entrypoint"""
@@ -65,7 +65,7 @@ class PurchaseWithdrawalProxy(ContractHelper):
                 get_address(service_provider),
                 payload,
                 l2_caller,
-                full_amount,
+                withdrawal_amount,
             )
             .with_amount(xtz_amount)
             .send()

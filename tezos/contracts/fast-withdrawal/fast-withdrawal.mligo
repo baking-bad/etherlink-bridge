@@ -3,6 +3,7 @@
 // TODO: add copyright
 
 #import "../common/entrypoints/settle-withdrawal.mligo" "SettleWithdrawalEntry"
+#import "../common/entrypoints/purchase-withdrawal.mligo" "PurchaseWithdrawalEntry"
 #import "../common/types/ticket.mligo" "Ticket"
 #import "../common/types/fast-withdrawal.mligo" "FastWithdrawal"
 
@@ -19,19 +20,6 @@ type storage = {
   withdrawals : (FastWithdrawal.t, address) big_map;
 }
 
-// TODO: move to separate file:
-type purchase_withdrawal_entry = {
-  withdrawal_id : nat;
-  ticket : Ticket.t;
-  // TODO: change order to synchronize with SettleWithdrawalEntry
-  base_withdrawer : address;
-  timestamp : timestamp;
-  service_provider : address;
-  payload: bytes;
-  l2_caller: bytes;
-  withdrawal_amount : nat;
-}
-
 type return = operation list * storage
 
 let assert_ticketer_is_expected (ticketer : address) (exchanger : address) : unit =
@@ -39,7 +27,7 @@ let assert_ticketer_is_expected (ticketer : address) (exchanger : address) : uni
     then failwith "Wrong ticketer"
 
 [@entry]
-let purchase_withdrawal ({withdrawal_id; ticket; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount} : purchase_withdrawal_entry) (storage: storage) : return =
+let purchase_withdrawal ({withdrawal_id; ticket; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount} : PurchaseWithdrawalEntry.t) (storage: storage) : return =
   // TODO: consider changing entrypoint name
   // TODO: disallow xtz payments to this entrypoint
   let (ticketer, (_, prepaid_amount)), ticket = Tezos.Next.Ticket.read ticket in

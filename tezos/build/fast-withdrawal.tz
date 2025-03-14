@@ -9,11 +9,11 @@
         (pair %purchase_withdrawal
            (nat %withdrawal_id)
            (ticket %ticket (pair nat (option bytes)))
-           (address %base_withdrawer)
            (timestamp %timestamp)
-           (address %service_provider)
+           (address %base_withdrawer)
            (bytes %payload)
            (bytes %l2_caller)
+           (address %service_provider)
            (nat %withdrawal_amount))) ;
   storage
     (pair (address %exchanger)
@@ -125,16 +125,16 @@
              EXEC ;
              DROP ;
              PACK ;
-             DUP 7 ;
+             DUP 6 ;
              SWAP ;
              COMPARE ;
              EQ ;
              NOT ;
              IF { PUSH string "Invalid purchase amount." ; FAILWITH } {} ;
-             DIG 6 ;
-             DIG 6 ;
-             DUP 5 ;
-             DIG 6 ;
+             DIG 5 ;
+             DIG 5 ;
+             DUP 6 ;
+             DIG 5 ;
              DIG 8 ;
              DIG 6 ;
              PAIR 6 ;

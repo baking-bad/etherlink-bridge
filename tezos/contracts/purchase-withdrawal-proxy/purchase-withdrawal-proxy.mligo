@@ -6,16 +6,18 @@
 #import "../common/entrypoints/purchase-withdrawal.mligo" "PurchaseWithdrawalEntry"
 
 // TODO: consider reusing Withdrawal key and store it as a whole record in storage:
+// TODO: consider renaming to PurchaseWithdrawalProxy entry? this is the same type
+// TODO: is this order in sync with other types?
 type storage = {
-  fast_withdrawal_contract: address;
-  exchanger : address;
   withdrawal_id : nat;
-  base_withdrawer : address;
+  withdrawal_amount : nat;
   timestamp : timestamp;
-  service_provider : address;
+  base_withdrawer : address;
   payload : bytes;
   l2_caller : bytes;
-  withdrawal_amount : nat;
+  service_provider : address;
+  fast_withdrawal_contract: address;
+  exchanger : address;
 }
 
 // TODO: move to storage.mligo OR purchase-withdrawal-entry.mligo
@@ -23,24 +25,12 @@ let to_purchase_withdrawal (ticket : Ticket.t) (store : storage) : PurchaseWithd
   let {fast_withdrawal_contract = _; exchanger = _; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount} = store in
   { withdrawal_id; ticket; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount }
 
-// TODO: sync order with PurchaseWithdrawalEntry.t
-type purchase_withdrawal_proxy_entry = {
-  fast_withdrawal_contract: address;
-  exchanger : address;
-  withdrawal_id : nat;
-  base_withdrawer : address;
-  timestamp : timestamp;
-  service_provider : address;
-  payload: bytes;
-  l2_caller : bytes;
-  withdrawal_amount : nat;
-}
-
 type return = operation list * storage
 
 
 [@entry]
-let purchase_withdrawal_proxy ({fast_withdrawal_contract; exchanger; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount} : purchase_withdrawal_proxy_entry) (_storage: storage) : return =
+let purchase_withdrawal_proxy (params : storage) (_storage : storage) : return =
+  let {fast_withdrawal_contract; exchanger; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount} = params in
   if not (Bytes.length l2_caller = 20n) then
     failwith "L2 caller's address size should be 20 bytes long"
   else

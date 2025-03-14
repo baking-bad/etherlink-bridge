@@ -4,15 +4,14 @@
 
 // TODO: add docstring
 type t = {
-  withdrawal_id : nat;
-  ticket : Ticket.t;
-  // TODO: change order to synchronize with SettleWithdrawalEntry
-  base_withdrawer : address;
-  timestamp : timestamp;
-  service_provider : address;
-  payload: bytes;
-  l2_caller: bytes;
-  withdrawal_amount : nat;
+    withdrawal_id : nat;
+    ticket : Ticket.t;
+    timestamp : timestamp;
+    base_withdrawer : address;
+    payload: bytes;
+    l2_caller: bytes;
+    service_provider : address;
+    withdrawal_amount : nat;
 }
 
 

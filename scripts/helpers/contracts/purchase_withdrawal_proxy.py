@@ -18,15 +18,15 @@ class PurchaseWithdrawalProxy(ContractHelper):
         """Creates a dummy storage for PurchaseWithdrawalProxy contract"""
 
         return {
-            "fast_withdrawal_contract": dummy_address,
-            "exchanger": dummy_address,
             "withdrawal_id": 0,
-            "base_withdrawer": dummy_address,
+            "withdrawal_amount": 0,
             "timestamp": 0,
-            "service_provider": dummy_address,
+            "base_withdrawer": dummy_address,
             "payload": bytes(0),
             "l2_caller": bytes(0),
-            "withdrawal_amount": 0,
+            "service_provider": dummy_address,
+            "fast_withdrawal_contract": dummy_address,
+            "exchanger": dummy_address,
         }
 
     @classmethod
@@ -42,30 +42,30 @@ class PurchaseWithdrawalProxy(ContractHelper):
 
     def purchase_withdrawal_proxy(
         self,
-        fast_withdrawal_contract: Addressable,
-        exchanger: Addressable,
         withdrawal_id: int,
-        base_withdrawer: Addressable,
+        withdrawal_amount: int,
         timestamp: int,
-        service_provider: Addressable,
+        base_withdrawer: Addressable,
         payload: bytes,
         l2_caller: bytes,
-        withdrawal_amount: int,
+        service_provider: Addressable,
+        fast_withdrawal_contract: Addressable,
+        exchanger: Addressable,
         xtz_amount: int = 0,
     ) -> OperationGroup:
         """Creates an operation with call to the payout_proxy entrypoint"""
 
         return (
             self.contract.purchase_withdrawal_proxy(
-                get_address(fast_withdrawal_contract),
-                get_address(exchanger),
                 withdrawal_id,
-                get_address(base_withdrawer),
+                withdrawal_amount,
                 timestamp,
-                get_address(service_provider),
+                get_address(base_withdrawer),
                 payload,
                 l2_caller,
-                withdrawal_amount,
+                get_address(service_provider),
+                get_address(fast_withdrawal_contract),
+                get_address(exchanger),
             )
             .with_amount(xtz_amount)
             .send()

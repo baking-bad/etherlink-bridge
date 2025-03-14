@@ -1,44 +1,51 @@
 { parameter
     (or (ticket %relay_ticket (pair nat (option bytes)))
         (pair %purchase_withdrawal_proxy
-           (address %fast_withdrawal_contract)
-           (address %exchanger)
            (nat %withdrawal_id)
-           (address %base_withdrawer)
+           (nat %withdrawal_amount)
            (timestamp %timestamp)
-           (address %service_provider)
+           (address %base_withdrawer)
            (bytes %payload)
            (bytes %l2_caller)
-           (nat %withdrawal_amount))) ;
+           (address %service_provider)
+           (address %fast_withdrawal_contract)
+           (address %exchanger))) ;
   storage
-    (pair (address %fast_withdrawal_contract)
-          (address %exchanger)
-          (nat %withdrawal_id)
-          (address %base_withdrawer)
+    (pair (nat %withdrawal_id)
+          (nat %withdrawal_amount)
           (timestamp %timestamp)
-          (address %service_provider)
+          (address %base_withdrawer)
           (bytes %payload)
           (bytes %l2_caller)
-          (nat %withdrawal_amount)) ;
+          (address %service_provider)
+          (address %fast_withdrawal_contract)
+          (address %exchanger)) ;
   code { UNPAIR ;
          IF_LEFT
            { DUP 2 ;
-             CAR ;
+             GET 15 ;
              CONTRACT %purchase_withdrawal
                (pair (nat %withdrawal_id)
                      (ticket %ticket (pair nat (option bytes)))
-                     (address %base_withdrawer)
                      (timestamp %timestamp)
-                     (address %service_provider)
+                     (address %base_withdrawer)
                      (bytes %payload)
                      (bytes %l2_caller)
+                     (address %service_provider)
                      (nat %withdrawal_amount)) ;
              IF_NONE { PUSH string "PURCHASE_WITHDRAWAL_NOT_FOUND" ; FAILWITH } {} ;
              PUSH mutez 0 ;
              DUP 4 ;
              UNPAIR 9 ;
+             DIG 7 ;
+             DIG 8 ;
              DROP 2 ;
-             DUG 6 ;
+             SWAP ;
+             DIG 6 ;
+             DIG 6 ;
+             DIG 6 ;
+             DIG 6 ;
+             DIG 6 ;
              DIG 9 ;
              DIG 7 ;
              PAIR 8 ;
@@ -52,7 +59,7 @@
              DROP ;
              UNPAIR 9 ;
              PUSH nat 20 ;
-             DUP 9 ;
+             DUP 7 ;
              SIZE ;
              COMPARE ;
              EQ ;
@@ -63,7 +70,7 @@
                 { AMOUNT ;
                   SELF %relay_ticket ;
                   ADDRESS ;
-                  DUP 4 ;
+                  DUP 11 ;
                   CONTRACT %mint address ;
                   IF_NONE
                     { DROP 11 ; PUSH string "Invalid tez ticket contract" ; FAILWITH }

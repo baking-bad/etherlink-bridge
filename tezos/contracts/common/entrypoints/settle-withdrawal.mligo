@@ -30,14 +30,44 @@ let get (fast_withdrawal_contract : address) : t contract =
 
 let send
         (fast_withdrawal_contract : address)
-        (params : t)
-        : operation =
+        (params : t) : operation =
     let entry = get fast_withdrawal_contract in
     Tezos.Next.Operation.transaction params 0mutez entry
 
 let from_key
         (ticket : Ticket.t)
-        (key : FastWithdrawal.t)
-        : t =
-    let { withdrawal_id; withdrawal_amount = _; timestamp; base_withdrawer; payload; l2_caller } = key in
-    { withdrawal_id; ticket; timestamp; base_withdrawer; payload; l2_caller }
+        (key : FastWithdrawal.t) : t =
+    let {
+        withdrawal_id;
+        withdrawal_amount = _;
+        timestamp;
+        base_withdrawer;
+        payload;
+        l2_caller
+    } = key in {
+        withdrawal_id;
+        ticket;
+        timestamp;
+        base_withdrawer;
+        payload;
+        l2_caller
+    }
+
+let to_key_and_ticket (params : t) : Ticket.t * FastWithdrawal.t =
+    let {
+        withdrawal_id;
+        ticket;
+        timestamp;
+        base_withdrawer;
+        payload;
+        l2_caller
+    } = params in
+    let (_ticketer, (_payload, withdrawal_amount)), ticket = Tezos.Next.Ticket.read ticket in
+    let key = {
+        withdrawal_id;
+        withdrawal_amount;
+        timestamp;
+        base_withdrawer;
+        payload;
+        l2_caller
+    } in (ticket, key)

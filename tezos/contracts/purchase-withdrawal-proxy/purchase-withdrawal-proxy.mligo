@@ -13,18 +13,18 @@ type return = operation list * storage
 
 [@inline]
 let assert_l2_caller_length_20n (l2_caller : bytes) : unit =
-    if Bytes.length l2_caller <> 20n
-    then failwith "L2 caller's address size should be 20 bytes long"
+    if Bytes.length l2_caller <> 20n then
+        failwith "L2 caller's address size should be 20 bytes long"
 
 // TODO: consider renaming to just `purchase`?
 [@entry]
 let purchase_withdrawal_proxy
         (params : PurchaseParams.t)
-        (_storage : storage)
-        : return =
+        (_storage : storage) : return =
     (* TODO: add docstring *)
 
     let _ = assert_l2_caller_length_20n params.withdrawal.l2_caller in
+
     let amount = Tezos.get_amount () in
     let relay_entry = Tezos.address (Tezos.self ("%relay_ticket") : Ticket.t contract) in
     let mint_op = ExchangerMintEntry.send params.exchanger amount relay_entry in
@@ -34,8 +34,7 @@ let purchase_withdrawal_proxy
 [@entry]
 let relay_ticket
         (ticket: Ticket.t)
-        (store: storage)
-        : return =
+        (store: storage) : return =
     (* TODO: add docstring *)
 
     let purchase_params = PurchaseParams.to_purchase_withdrawal ticket store in

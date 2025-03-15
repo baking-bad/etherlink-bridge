@@ -7,87 +7,71 @@
 #import "../common/entrypoints/exchanger-burn.mligo" "ExchangerBurnEntry"
 #import "../common/types/ticket.mligo" "Ticket"
 #import "../common/types/fast-withdrawal.mligo" "FastWithdrawal"
+#import "./storage.mligo" "Storage"
 
-(*
-    Fast Withdrawal contract storage:
-    - exchanger: the address of the ticketer
-    - smart_rollup: the address of the Etherlink smart rollup
-    - withdrawals: stores service_provider for each withdrawal key
-*)
-type storage = {
-    exchanger: address;
-    smart_rollup : address;
-    // TODO: move withdrawals management functions to separate file
-    withdrawals : (FastWithdrawal.t, address) big_map;
-}
 
-type return = operation list * storage
+type return = operation list * Storage.t
 
 [@inline]
-let assert_ticketer_is_expected (ticketer : address) (exchanger : address) : unit =
-    if ticketer <> exchanger
-    then failwith "Wrong ticketer"
+let assert_ticket_is_correct
+        (ticket : Ticket.t)
+        (exchanger : address) : Ticket.t =
+    // TODO: consider checking ticket payload as well?
+    let (ticketer, (_, _)), ticket = Tezos.Next.Ticket.read ticket in
+    if ticketer <> exchanger then failwith "Wrong ticketer" else ticket
 
 [@inline]
 let assert_sender_is_allowed (smart_rollup : address) : unit =
-    if Tezos.get_sender () <> smart_rollup
-    then failwith "Sender is not allowed to call this entrypoint"
+    if Tezos.get_sender () <> smart_rollup then
+        failwith "Sender is not allowed to call this entrypoint"
+
+[@inline]
+let assert_payload_is_valid
+        (withdrawal : FastWithdrawal.t)
+        (ticket : Ticket.t) : Ticket.t =
+    // TODO: consider converting to bytes without packing?
+    let (_, (_, discounted_amount)), ticket = Tezos.Next.Ticket.read ticket in
+    if Bytes.pack discounted_amount <> withdrawal.payload then
+        failwith "Invalid discounted amount or payload."
+    else ticket
 
 [@entry]
 let purchase_withdrawal
         (params : PurchaseWithdrawalEntry.t)
-        (storage: storage)
-        : return =
+        (storage: Storage.t) : return =
+    (* TODO: add docstring *)
+
     let { withdrawal; ticket; service_provider } = params in
     // TODO: disallow xtz payments to this entrypoint
-    let (ticketer, (_, prepaid_amount)), ticket = Tezos.Next.Ticket.read ticket in
-    // TODO: consider checking ticket payload as well?
-    let _ = assert_ticketer_is_expected ticketer storage.exchanger in
-    // TODO: consider converting to bytes without packing?
-    let prepaid_amount_bytes = Bytes.pack prepaid_amount in
+    let ticket = assert_ticket_is_correct ticket storage.exchanger in
+    // TODO: check if timestamp expired:
+    //       - if it is, assert_full_amount_is_paid
+    //       - if it is, assert_payload_is_valid
+    let ticket = assert_payload_is_valid withdrawal ticket in
+    let _ = Storage.assert_withdrawal_was_not_paid_before withdrawal storage in
 
-    // TODO: check if timestamp expired and if it is, then valid amount should equal withdrawal_amount
-    // TODO: move asserts into separate functions
-    let is_valid_prepaid_amount = prepaid_amount_bytes = withdrawal.payload in
-    let _ = if not is_valid_prepaid_amount then
-        failwith "Invalid purchase amount."
-    else unit in
-
-    // TODO: Storage.get withdrawal storage ?
-    let is_in_storage = Option.is_some (Big_map.find_opt withdrawal storage.withdrawals) in
-    (* Ensure that the fast withdrawal was not already payed. *)
-    if not is_in_storage then
-        (* Update storage to record prepayment. *)
-        // TODO: Storage.add withdrawal storage ?
-        let updated_withdrawals = Big_map.add withdrawal service_provider storage.withdrawals in
-        let storage = { storage with withdrawals = updated_withdrawals } in
-        // TODO: `ticket_burn_op = ExchangerBurnEntry.send storage.exchanger (base_withdrawer, ticket)`
-        (match Tezos.get_entrypoint_opt "%burn" storage.exchanger with
-          | None -> failwith "Invalid tez ticket contract"
-          | Some contract ->
-              [Tezos.Next.Operation.transaction (withdrawal.base_withdrawer, ticket) 0mutez contract], storage)
-    else
-        failwith "The fast withdrawal was already payed"
+    let updated_storage = Storage.add_withdrawal withdrawal service_provider storage in
+    let burn_op = ExchangerBurnEntry.send storage.exchanger (withdrawal.base_withdrawer, ticket) in
+    [burn_op], updated_storage
 
 [@entry]
-let default ({ withdrawal_id; ticket; timestamp; base_withdrawer; payload; l2_caller} : SettleWithdrawalEntry.t)  (storage: storage) : return =
+let default
+        (params : SettleWithdrawalEntry.t)
+        (storage: Storage.t) : return =
+    (* TODO: add docstring *)
+
+    let (ticket, withdrawal) = SettleWithdrawalEntry.to_key_and_ticket params in
     // TODO: disallow xtz payments to this entrypoint (?)
-    let (ticketer, (_payload, withdrawal_amount)), ticket = Tezos.Next.Ticket.read ticket in
     let _ = assert_sender_is_allowed storage.smart_rollup in
-    let _ = assert_ticketer_is_expected ticketer storage.exchanger in
-    // TODO: consider checking ticket payload as well?
-    // TODO: SettleWithdrawalEntry.to_key ?
-    let withdrawal = {withdrawal_id; withdrawal_amount; base_withdrawer; timestamp; payload; l2_caller} in
-    // TODO: Storage.get withdrawal storage ?
-    match Big_map.find_opt withdrawal storage.withdrawals with
-    | None ->
-        (* No advance payment found, send to the withdrawer. *)
-        let ticket_burn_op = ExchangerBurnEntry.send storage.exchanger (base_withdrawer, ticket) in
-        [ticket_burn_op], storage
-    | Some payer ->
-        (* If key found, then everything matches, the withdrawal was payed,
-           we send the amount to the payer. *)
-        let updated_withdrawals  = Big_map.remove withdrawal storage.withdrawals in
-        let storage = { storage with withdrawals = updated_withdrawals } in
-        let ticket_burn_op = ExchangerBurnEntry.send storage.exchanger (payer, ticket) in
-        [ticket_burn_op], storage
+    let ticket = assert_ticket_is_correct ticket storage.exchanger in
+
+    (* If no advance payment found, send to the withdrawer. *)
+    (* If key found, then everything matches, the withdrawal was payed,
+       we send the amount to the payer. *)
+    let payer_opt, upd_withdrawals = Big_map.get_and_update withdrawal None storage.withdrawals in
+    let receiver = match payer_opt with
+    | None -> withdrawal.base_withdrawer
+    | Some service_provider -> service_provider in
+    let burn_op = ExchangerBurnEntry.send storage.exchanger (receiver, ticket) in
+
+    [burn_op], { storage with withdrawals = upd_withdrawals }

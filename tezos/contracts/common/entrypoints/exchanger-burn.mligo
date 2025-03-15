@@ -12,7 +12,6 @@ let get (exchanger : address) : t contract =
 
 let send
         (exchanger : address)
-        (receiver_and_ticket : t)
-        : operation =
+        (receiver_and_ticket : t) : operation =
     let entry = get exchanger in
     Tezos.Next.Operation.transaction receiver_and_ticket 0mutez entry

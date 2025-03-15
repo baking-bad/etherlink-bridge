@@ -125,8 +125,9 @@
     - check specified alternative provider receives withdrawal payout
     - check key is removed from `withdrawals` big_map after payout
 
-- [ ] test_should_reject_provider_purchase_due_to_expired_timestamp
-    - [ ] TODO: Verify whether this test is necessary
+- [ ] test_should_allow_purchase_at_full_price_after_timestamp_expired
+
+- [ ] test_should_reject_purchase_at_discounted_price_after_timestamp_expired
 
 - [ ] test_should_not_remove_key_when_settled_with_incorrect_amount
 

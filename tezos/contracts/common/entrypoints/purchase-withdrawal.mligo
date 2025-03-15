@@ -17,7 +17,6 @@ let get (fast_withdrawal_contract : address) : t contract =
 
 let send
         (fast_withdrawal_contract : address)
-        (params : t)
-        : operation =
+        (params : t) : operation =
     let entry = get fast_withdrawal_contract in
     Tezos.Next.Operation.transaction params 0mutez entry

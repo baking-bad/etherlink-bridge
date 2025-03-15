@@ -5,7 +5,7 @@ from scripts.tezos.compile_contract import compile_contract
 @click.command()
 @click.option(
     '--ligo-version',
-    default='1.3.0',
+    default='1.9.2',
     help='LIGO compiler version used to compile Tezos side contracts, default: 1.3.0',
 )
 def build_contracts(

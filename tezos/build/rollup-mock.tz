@@ -87,7 +87,7 @@
                { DIG 3 ;
                  PAIR ;
                  JOIN_TICKETS ;
-                 IF_NONE { PUSH string "option is None" ; FAILWITH } {} } ;
+                 IF_NONE { PUSH string "TKT_JOIN_ERROR" ; FAILWITH } {} } ;
              SOME ;
              DIG 2 ;
              UPDATE ;

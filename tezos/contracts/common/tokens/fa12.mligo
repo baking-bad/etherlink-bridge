@@ -21,7 +21,7 @@ let send_transfer
         : operation =
     let params = { from_; to_; value } in
     let entry = get_transfer token_address in
-    Tezos.transaction params 0mutez entry
+    Tezos.Next.Operation.transaction params 0mutez entry
 
 type approve_params = [@layout:comb] {
     spender: address;
@@ -40,4 +40,4 @@ let send_approve
         : operation =
     let params = { spender; value } in
     let entry = get_approve contract_address in
-    Tezos.transaction params 0mutez entry
+    Tezos.Next.Operation.transaction params 0mutez entry

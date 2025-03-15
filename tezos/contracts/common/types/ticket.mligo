@@ -12,7 +12,7 @@ let create
         (content : content_t)
         (amount : nat)
         : t =
-    match Tezos.create_ticket content amount with
+    match Tezos.Next.Ticket.create content amount with
     | None -> failwith Errors.ticket_creation_failed
     | Some t -> t
 
@@ -28,11 +28,11 @@ let split
         (split_amount : nat)
         : t * t =
     (* Splits ticket into two tickets with given amounts *)
-    let (_, (_, amount)), ticket = Tezos.read_ticket ticket in
+    let (_, (_, amount)), ticket = Tezos.Next.Ticket.read ticket in
     let keep_amount =
         if amount >= split_amount then abs(amount - split_amount)
         else failwith Errors.insufficient_amount in
-    match Tezos.split_ticket ticket (split_amount, keep_amount) with
+    match Tezos.Next.Ticket.split ticket (split_amount, keep_amount) with
     | Some split_tickets -> split_tickets
     | None -> failwith Errors.irreducible_amount
 
@@ -41,4 +41,4 @@ let send
         (receiver : address)
         : operation =
     let receiver_contract = get receiver in
-    Tezos.transaction ticket 0mutez receiver_contract
+    Tezos.Next.Operation.transaction ticket 0mutez receiver_contract

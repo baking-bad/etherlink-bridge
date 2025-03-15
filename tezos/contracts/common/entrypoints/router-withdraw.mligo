@@ -24,4 +24,4 @@ let send
         (params : t)
         : operation =
     let entry = get router in
-    Tezos.transaction params 0mutez entry
+    Tezos.Next.Operation.transaction params 0mutez entry

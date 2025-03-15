@@ -33,7 +33,7 @@ let send
         (params : t)
         : operation =
     let entry = get fast_withdrawal_contract in
-    Tezos.transaction params 0mutez entry
+    Tezos.Next.Operation.transaction params 0mutez entry
 
 let from_key
         (ticket : Ticket.t)

@@ -4,47 +4,40 @@
 
 #import "../common/types/ticket.mligo" "Ticket"
 #import "../common/entrypoints/purchase-withdrawal.mligo" "PurchaseWithdrawalEntry"
+#import "../common/entrypoints/exchanger-mint.mligo" "ExchangerMintEntry"
+#import "./purchase-params.mligo" "PurchaseParams"
 
-// TODO: consider reusing Withdrawal key and store it as a whole record in storage:
-// TODO: consider renaming to PurchaseWithdrawalProxy entry? this is the same type
-// TODO: is this order in sync with other types?
-type storage = {
-  withdrawal_id : nat;
-  withdrawal_amount : nat;
-  timestamp : timestamp;
-  base_withdrawer : address;
-  payload : bytes;
-  l2_caller : bytes;
-  service_provider : address;
-  fast_withdrawal_contract: address;
-  exchanger : address;
-}
 
-// TODO: move to storage.mligo OR purchase-withdrawal-entry.mligo
-let to_purchase_withdrawal (ticket : Ticket.t) (store : storage) : PurchaseWithdrawalEntry.t =
-  let {fast_withdrawal_contract = _; exchanger = _; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount} = store in
-  { withdrawal_id; ticket; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount }
-
+type storage = PurchaseParams.t
 type return = operation list * storage
 
+[@inline]
+let assert_l2_caller_length_20n (l2_caller : bytes) : unit =
+    if Bytes.length l2_caller <> 20n
+    then failwith "L2 caller's address size should be 20 bytes long"
+
+// TODO: consider renaming to just `purchase`?
+[@entry]
+let purchase_withdrawal_proxy
+        (params : PurchaseParams.t)
+        (_storage : storage)
+        : return =
+    (* TODO: add docstring *)
+
+    let _ = assert_l2_caller_length_20n params.l2_caller in
+    let amount = Tezos.get_amount () in
+    let relay_entry = Tezos.address (Tezos.self ("%relay_ticket") : Ticket.t contract) in
+    let mint_op = ExchangerMintEntry.send params.exchanger amount relay_entry in
+    let new_storage = params in
+    [mint_op], new_storage
 
 [@entry]
-let purchase_withdrawal_proxy (params : storage) (_storage : storage) : return =
-  let {fast_withdrawal_contract; exchanger; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount} = params in
-  if not (Bytes.length l2_caller = 20n) then
-    failwith "L2 caller's address size should be 20 bytes long"
-  else
-  let amount = Tezos.get_amount () in
-  let relay_entry = Tezos.address (Tezos.self("%relay_ticket"): Ticket.t contract) in
-  match Tezos.get_entrypoint_opt "%mint" exchanger with
-  | None -> failwith "Invalid tez ticket contract"
-  | Some contract ->
-    let mint = Tezos.Next.Operation.transaction relay_entry amount contract in
-    let payout_storage = {fast_withdrawal_contract; exchanger; withdrawal_id; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount} in
-    [mint], payout_storage
+let relay_ticket
+        (ticket: Ticket.t)
+        (store: storage)
+        : return =
+    (* TODO: add docstring *)
 
-[@entry]
-let relay_ticket (ticket: Ticket.t) (store: storage) : return =
-  let purchase_params = to_purchase_withdrawal ticket store in
-  let purchase_op = PurchaseWithdrawalEntry.send store.fast_withdrawal_contract purchase_params in
-  [purchase_op], store
+    let purchase_params = PurchaseParams.to_purchase_withdrawal ticket store in
+    let purchase_op = PurchaseWithdrawalEntry.send store.fast_withdrawal_contract purchase_params in
+    [purchase_op], store

@@ -8,12 +8,11 @@ type t = {
     ticket : Ticket.t;
     timestamp : timestamp;
     base_withdrawer : address;
-    payload: bytes;
-    l2_caller: bytes;
+    payload : bytes;
+    l2_caller : bytes;
     service_provider : address;
     withdrawal_amount : nat;
 }
-
 
 let get (fast_withdrawal_contract : address) : t contract =
     match Tezos.get_entrypoint_opt "%purchase_withdrawal" fast_withdrawal_contract with

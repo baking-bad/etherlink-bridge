@@ -49,37 +49,29 @@
              DIG 9 ;
              DIG 7 ;
              PAIR 8 ;
-             TRANSFER_TOKENS ;
-             SWAP ;
-             NIL operation ;
-             DIG 2 ;
-             CONS ;
-             PAIR }
+             TRANSFER_TOKENS }
            { SWAP ;
              DROP ;
-             UNPAIR 9 ;
              PUSH nat 20 ;
-             DUP 7 ;
+             DUP 2 ;
+             GET 11 ;
              SIZE ;
              COMPARE ;
-             EQ ;
-             NOT ;
-             IF { DROP 9 ;
-                  PUSH string "L2 caller's address size should be 20 bytes long" ;
-                  FAILWITH }
-                { AMOUNT ;
-                  SELF %relay_ticket ;
-                  ADDRESS ;
-                  DUP 11 ;
-                  CONTRACT %mint address ;
-                  IF_NONE
-                    { DROP 11 ; PUSH string "Invalid tez ticket contract" ; FAILWITH }
-                    { DUG 2 ;
-                      TRANSFER_TOKENS ;
-                      DUG 9 ;
-                      PAIR 9 ;
-                      NIL operation ;
-                      DIG 2 ;
-                      CONS ;
-                      PAIR } } } } }
+             NEQ ;
+             IF { PUSH string "L2 caller's address size should be 20 bytes long" ; FAILWITH }
+                {} ;
+             AMOUNT ;
+             SELF %relay_ticket ;
+             ADDRESS ;
+             DUP 3 ;
+             GET 16 ;
+             CONTRACT %mint address ;
+             IF_NONE { PUSH string "Invalid tez ticket contract" ; FAILWITH } {} ;
+             DUG 2 ;
+             TRANSFER_TOKENS } ;
+         SWAP ;
+         NIL operation ;
+         DIG 2 ;
+         CONS ;
+         PAIR } }
 

@@ -27,37 +27,36 @@
                    (bytes %l2_caller))
              address)) ;
   code { LAMBDA
-           (pair address address)
-           unit
+           (pair address address (ticket (pair nat (option bytes))))
+           operation
            { UNPAIR ;
-             COMPARE ;
-             NEQ ;
-             IF { PUSH string "Wrong ticketer" ; FAILWITH } { UNIT } } ;
+             CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;
+             IF_NONE { PUSH string "Invalid tez ticket contract" ; FAILWITH } {} ;
+             PUSH mutez 0 ;
+             DIG 2 ;
+             TRANSFER_TOKENS } ;
          SWAP ;
          UNPAIR ;
          IF_LEFT
            { UNPAIR 6 ;
-             DUP 7 ;
-             GET 3 ;
-             SENDER ;
-             COMPARE ;
-             EQ ;
-             NOT ;
-             IF { PUSH string "Sender is not allowed to call this entrypoint" ; FAILWITH }
-                {} ;
              SWAP ;
              READ_TICKET ;
              UNPAIR ;
              SWAP ;
              CDR ;
              DUP 9 ;
+             GET 3 ;
+             SENDER ;
+             COMPARE ;
+             NEQ ;
+             IF { PUSH string "Sender is not allowed to call this entrypoint" ; FAILWITH }
+                {} ;
+             DUP 9 ;
              CAR ;
              DIG 2 ;
-             PAIR ;
-             DIG 9 ;
-             SWAP ;
-             EXEC ;
-             DROP ;
+             COMPARE ;
+             NEQ ;
+             IF { PUSH string "Wrong ticketer" ; FAILWITH } {} ;
              DIG 6 ;
              DIG 6 ;
              DUP 7 ;
@@ -70,22 +69,7 @@
              DUP 2 ;
              GET ;
              IF_NONE
-               { DROP ;
-                 DUP 3 ;
-                 CAR ;
-                 CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;
-                 IF_NONE
-                   { DROP 3 ; PUSH string "Invalid tez ticket contract" ; FAILWITH }
-                   { DIG 3 ;
-                     NIL operation ;
-                     DIG 2 ;
-                     PUSH mutez 0 ;
-                     DIG 4 ;
-                     DIG 5 ;
-                     PAIR ;
-                     TRANSFER_TOKENS ;
-                     CONS ;
-                     PAIR } }
+               { DROP ; SWAP ; PAIR ; DUP 2 ; CAR ; PAIR ; DIG 2 ; SWAP ; EXEC }
                { DIG 3 ;
                  DROP ;
                  DUP 4 ;
@@ -95,22 +79,22 @@
                  DIG 4 ;
                  UPDATE ;
                  UPDATE 4 ;
-                 DUP ;
+                 DUG 2 ;
+                 PAIR ;
+                 DUP 2 ;
                  CAR ;
-                 CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;
-                 IF_NONE
-                   { DROP 3 ; PUSH string "Invalid tez ticket contract" ; FAILWITH }
-                   { SWAP ;
-                     NIL operation ;
-                     DIG 2 ;
-                     PUSH mutez 0 ;
-                     DIG 5 ;
-                     DIG 5 ;
-                     PAIR ;
-                     TRANSFER_TOKENS ;
-                     CONS ;
-                     PAIR } } }
-           { UNPAIR 8 ;
+                 PAIR ;
+                 DIG 2 ;
+                 SWAP ;
+                 EXEC } ;
+             SWAP ;
+             NIL operation ;
+             DIG 2 ;
+             CONS ;
+             PAIR }
+           { DIG 2 ;
+             DROP ;
+             UNPAIR 8 ;
              SWAP ;
              READ_TICKET ;
              UNPAIR ;
@@ -119,11 +103,9 @@
              DUP 11 ;
              CAR ;
              DIG 2 ;
-             PAIR ;
-             DIG 11 ;
-             SWAP ;
-             EXEC ;
-             DROP ;
+             COMPARE ;
+             NEQ ;
+             IF { PUSH string "Wrong ticketer" ; FAILWITH } {} ;
              PACK ;
              DUP 6 ;
              SWAP ;

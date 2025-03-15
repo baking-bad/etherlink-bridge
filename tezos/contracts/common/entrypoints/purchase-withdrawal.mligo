@@ -1,17 +1,13 @@
 #import "../types/ticket.mligo" "Ticket"
+#import "../types/fast-withdrawal.mligo" "FastWithdrawal"
 #import "../errors.mligo" "Errors"
 
 
 // TODO: add docstring
 type t = {
-    withdrawal_id : nat;
-    ticket : Ticket.t;
-    timestamp : timestamp;
-    base_withdrawer : address;
-    payload : bytes;
-    l2_caller : bytes;
+    withdrawal : FastWithdrawal.t;
     service_provider : address;
-    withdrawal_amount : nat;
+    ticket : Ticket.t;
 }
 
 let get (fast_withdrawal_contract : address) : t contract =

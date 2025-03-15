@@ -11,6 +11,7 @@ from scripts.helpers.utility import get_build_dir, pack
 from scripts.helpers.utility import originate_from_file
 
 
+# TODO: consider moving to a separate file?
 @dataclass
 class Withdrawal:
     withdrawal_id: int

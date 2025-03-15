@@ -34,7 +34,11 @@ let assert_sender_is_allowed (smart_rollup : address) : unit =
     then failwith "Sender is not allowed to call this entrypoint"
 
 [@entry]
-let purchase_withdrawal ({withdrawal_id; ticket; base_withdrawer; timestamp; service_provider; payload; l2_caller; withdrawal_amount} : PurchaseWithdrawalEntry.t) (storage: storage) : return =
+let purchase_withdrawal
+        (params : PurchaseWithdrawalEntry.t)
+        (storage: storage)
+        : return =
+    let { withdrawal; ticket; service_provider } = params in
     // TODO: disallow xtz payments to this entrypoint
     let (ticketer, (_, prepaid_amount)), ticket = Tezos.Next.Ticket.read ticket in
     // TODO: consider checking ticket payload as well?
@@ -44,12 +48,10 @@ let purchase_withdrawal ({withdrawal_id; ticket; base_withdrawer; timestamp; ser
 
     // TODO: check if timestamp expired and if it is, then valid amount should equal withdrawal_amount
     // TODO: move asserts into separate functions
-    let is_valid_prepaid_amount = prepaid_amount_bytes = payload in
+    let is_valid_prepaid_amount = prepaid_amount_bytes = withdrawal.payload in
     let _ = if not is_valid_prepaid_amount then
         failwith "Invalid purchase amount."
     else unit in
-    // TODO: PurchaseWithdrawalEntry.to_key ?
-    let withdrawal = {withdrawal_id; withdrawal_amount; base_withdrawer; timestamp; payload; l2_caller} in
 
     // TODO: Storage.get withdrawal storage ?
     let is_in_storage = Option.is_some (Big_map.find_opt withdrawal storage.withdrawals) in
@@ -59,10 +61,11 @@ let purchase_withdrawal ({withdrawal_id; ticket; base_withdrawer; timestamp; ser
         // TODO: Storage.add withdrawal storage ?
         let updated_withdrawals = Big_map.add withdrawal service_provider storage.withdrawals in
         let storage = { storage with withdrawals = updated_withdrawals } in
+        // TODO: `ticket_burn_op = ExchangerBurnEntry.send storage.exchanger (base_withdrawer, ticket)`
         (match Tezos.get_entrypoint_opt "%burn" storage.exchanger with
           | None -> failwith "Invalid tez ticket contract"
           | Some contract ->
-              [Tezos.Next.Operation.transaction (base_withdrawer, ticket) 0mutez contract], storage)
+              [Tezos.Next.Operation.transaction (withdrawal.base_withdrawer, ticket) 0mutez contract], storage)
     else
         failwith "The fast withdrawal was already payed"
 

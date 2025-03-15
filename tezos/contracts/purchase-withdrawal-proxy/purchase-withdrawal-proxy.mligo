@@ -24,7 +24,7 @@ let purchase_withdrawal_proxy
         : return =
     (* TODO: add docstring *)
 
-    let _ = assert_l2_caller_length_20n params.l2_caller in
+    let _ = assert_l2_caller_length_20n params.withdrawal.l2_caller in
     let amount = Tezos.get_amount () in
     let relay_entry = Tezos.address (Tezos.self ("%relay_ticket") : Ticket.t contract) in
     let mint_op = ExchangerMintEntry.send params.exchanger amount relay_entry in

@@ -1,60 +1,58 @@
 { parameter
     (or (ticket %relay_ticket (pair nat (option bytes)))
         (pair %purchase_withdrawal_proxy
-           (nat %withdrawal_id)
-           (nat %withdrawal_amount)
-           (timestamp %timestamp)
-           (address %base_withdrawer)
-           (bytes %payload)
-           (bytes %l2_caller)
+           (pair %withdrawal
+              (nat %withdrawal_id)
+              (nat %withdrawal_amount)
+              (timestamp %timestamp)
+              (address %base_withdrawer)
+              (bytes %payload)
+              (bytes %l2_caller))
            (address %service_provider)
            (address %fast_withdrawal_contract)
            (address %exchanger))) ;
   storage
-    (pair (nat %withdrawal_id)
-          (nat %withdrawal_amount)
-          (timestamp %timestamp)
-          (address %base_withdrawer)
-          (bytes %payload)
-          (bytes %l2_caller)
+    (pair (pair %withdrawal
+             (nat %withdrawal_id)
+             (nat %withdrawal_amount)
+             (timestamp %timestamp)
+             (address %base_withdrawer)
+             (bytes %payload)
+             (bytes %l2_caller))
           (address %service_provider)
           (address %fast_withdrawal_contract)
           (address %exchanger)) ;
   code { UNPAIR ;
          IF_LEFT
            { DUP 2 ;
-             GET 15 ;
+             GET 5 ;
              CONTRACT %purchase_withdrawal
-               (pair (nat %withdrawal_id)
-                     (ticket %ticket (pair nat (option bytes)))
-                     (timestamp %timestamp)
-                     (address %base_withdrawer)
-                     (bytes %payload)
-                     (bytes %l2_caller)
+               (pair (pair %withdrawal
+                        (nat %withdrawal_id)
+                        (nat %withdrawal_amount)
+                        (timestamp %timestamp)
+                        (address %base_withdrawer)
+                        (bytes %payload)
+                        (bytes %l2_caller))
                      (address %service_provider)
-                     (nat %withdrawal_amount)) ;
+                     (ticket %ticket (pair nat (option bytes)))) ;
              IF_NONE { PUSH string "PURCHASE_WITHDRAWAL_NOT_FOUND" ; FAILWITH } {} ;
              PUSH mutez 0 ;
              DUP 4 ;
-             UNPAIR 9 ;
-             DIG 7 ;
-             DIG 8 ;
+             UNPAIR 4 ;
+             DIG 2 ;
+             DIG 3 ;
              DROP 2 ;
-             SWAP ;
-             DIG 6 ;
-             DIG 6 ;
-             DIG 6 ;
-             DIG 6 ;
-             DIG 6 ;
-             DIG 9 ;
-             DIG 7 ;
-             PAIR 8 ;
+             DIG 4 ;
+             DUG 2 ;
+             PAIR 3 ;
              TRANSFER_TOKENS }
            { SWAP ;
              DROP ;
              PUSH nat 20 ;
              DUP 2 ;
-             GET 11 ;
+             CAR ;
+             GET 10 ;
              SIZE ;
              COMPARE ;
              NEQ ;
@@ -64,7 +62,7 @@
              SELF %relay_ticket ;
              ADDRESS ;
              DUP 3 ;
-             GET 16 ;
+             GET 6 ;
              CONTRACT %mint address ;
              IF_NONE { PUSH string "Invalid tez ticket contract" ; FAILWITH } {} ;
              DUG 2 ;

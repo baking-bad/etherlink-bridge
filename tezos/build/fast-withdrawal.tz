@@ -7,14 +7,15 @@
            (bytes %payload)
            (bytes %l2_caller))
         (pair %purchase_withdrawal
-           (nat %withdrawal_id)
-           (ticket %ticket (pair nat (option bytes)))
-           (timestamp %timestamp)
-           (address %base_withdrawer)
-           (bytes %payload)
-           (bytes %l2_caller)
+           (pair %withdrawal
+              (nat %withdrawal_id)
+              (nat %withdrawal_amount)
+              (timestamp %timestamp)
+              (address %base_withdrawer)
+              (bytes %payload)
+              (bytes %l2_caller))
            (address %service_provider)
-           (nat %withdrawal_amount))) ;
+           (ticket %ticket (pair nat (option bytes))))) ;
   storage
     (pair (address %exchanger)
           (address %smart_rollup)
@@ -94,44 +95,38 @@
              PAIR }
            { DIG 2 ;
              DROP ;
-             UNPAIR 8 ;
-             SWAP ;
+             UNPAIR 3 ;
+             DIG 2 ;
              READ_TICKET ;
              UNPAIR ;
              SWAP ;
              CDR ;
-             DUP 11 ;
+             DUP 6 ;
              CAR ;
              DIG 2 ;
              COMPARE ;
              NEQ ;
              IF { PUSH string "Wrong ticketer" ; FAILWITH } {} ;
              PACK ;
-             DUP 6 ;
+             DUP 3 ;
+             GET 9 ;
              SWAP ;
              COMPARE ;
              EQ ;
              NOT ;
              IF { PUSH string "Invalid purchase amount." ; FAILWITH } {} ;
-             DIG 5 ;
-             DIG 5 ;
-             DUP 6 ;
-             DIG 5 ;
-             DIG 8 ;
-             DIG 6 ;
-             PAIR 6 ;
-             DUP 5 ;
+             DUP 4 ;
              GET 4 ;
-             DUP 2 ;
+             DUP 3 ;
              GET ;
              IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
              NOT ;
-             IF { DUP 5 ;
-                  DIG 5 ;
+             IF { DUP 4 ;
+                  DIG 4 ;
                   GET 4 ;
-                  DIG 5 ;
+                  DIG 4 ;
                   SOME ;
-                  DIG 3 ;
+                  DUP 5 ;
                   UPDATE ;
                   UPDATE 4 ;
                   DUP ;
@@ -145,9 +140,10 @@
                       PUSH mutez 0 ;
                       DIG 4 ;
                       DIG 5 ;
+                      GET 7 ;
                       PAIR ;
                       TRANSFER_TOKENS ;
                       CONS ;
                       PAIR } }
-                { DROP 5 ; PUSH string "The fast withdrawal was already payed" ; FAILWITH } } } }
+                { DROP 4 ; PUSH string "The fast withdrawal was already payed" ; FAILWITH } } } }
 

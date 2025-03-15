@@ -6,6 +6,7 @@ from pytezos.operation.group import OperationGroup
 
 from scripts.helpers.addressable import Addressable, get_address
 from scripts.helpers.contracts.contract import ContractHelper
+from scripts.helpers.contracts.fast_withdrawal import Withdrawal
 from scripts.helpers.utility import get_build_dir
 from scripts.helpers.utility import originate_from_file
 
@@ -18,12 +19,14 @@ class PurchaseWithdrawalProxy(ContractHelper):
         """Creates a dummy storage for PurchaseWithdrawalProxy contract"""
 
         return {
-            "withdrawal_id": 0,
-            "withdrawal_amount": 0,
-            "timestamp": 0,
-            "base_withdrawer": dummy_address,
-            "payload": bytes(0),
-            "l2_caller": bytes(0),
+            "withdrawal": {
+                "withdrawal_id": 0,
+                "withdrawal_amount": 0,
+                "timestamp": 0,
+                "base_withdrawer": dummy_address,
+                "payload": bytes(0),
+                "l2_caller": bytes(0),
+            },
             "service_provider": dummy_address,
             "fast_withdrawal_contract": dummy_address,
             "exchanger": dummy_address,
@@ -42,12 +45,7 @@ class PurchaseWithdrawalProxy(ContractHelper):
 
     def purchase_withdrawal_proxy(
         self,
-        withdrawal_id: int,
-        withdrawal_amount: int,
-        timestamp: int,
-        base_withdrawer: Addressable,
-        payload: bytes,
-        l2_caller: bytes,
+        withdrawal: Withdrawal,
         service_provider: Addressable,
         fast_withdrawal_contract: Addressable,
         exchanger: Addressable,
@@ -57,12 +55,7 @@ class PurchaseWithdrawalProxy(ContractHelper):
 
         return (
             self.contract.purchase_withdrawal_proxy(
-                withdrawal_id,
-                withdrawal_amount,
-                timestamp,
-                get_address(base_withdrawer),
-                payload,
-                l2_caller,
+                withdrawal.as_tuple(),
                 get_address(service_provider),
                 get_address(fast_withdrawal_contract),
                 get_address(exchanger),

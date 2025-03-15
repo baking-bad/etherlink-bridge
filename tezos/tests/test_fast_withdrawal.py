@@ -39,12 +39,7 @@ class FastWithdrawalTestSetup:
         xtz_amount = xtz_amount or withdrawal.withdrawal_amount
 
         return self.purchase_withdrawal_proxy.purchase_withdrawal_proxy(
-            withdrawal.withdrawal_id,
-            withdrawal.withdrawal_amount,
-            withdrawal.timestamp,
-            withdrawal.base_withdrawer,
-            withdrawal.payload,
-            withdrawal.l2_caller,
+            withdrawal,
             service_provider,
             fast_withdrawal,
             exchanger,

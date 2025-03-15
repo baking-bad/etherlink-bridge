@@ -21,7 +21,7 @@ class PurchaseWithdrawalProxy(ContractHelper):
         return {
             "withdrawal": {
                 "withdrawal_id": 0,
-                "withdrawal_amount": 0,
+                "full_amount": 0,
                 "timestamp": 0,
                 "base_withdrawer": dummy_address,
                 "payload": bytes(0),

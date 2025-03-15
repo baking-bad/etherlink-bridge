@@ -36,7 +36,7 @@ class FastWithdrawalTestSetup:
         exchanger = exchanger or self.exchanger
         service_provider = service_provider or self.manager
         withdrawal = withdrawal or Withdrawal.default()
-        xtz_amount = xtz_amount or withdrawal.withdrawal_amount
+        xtz_amount = xtz_amount or withdrawal.full_amount
 
         return self.purchase_withdrawal_proxy.purchase_withdrawal_proxy(
             withdrawal,
@@ -123,7 +123,7 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         for amount in amounts:
             withdrawal = Withdrawal.default_with(
-                withdrawal_amount=amount,
+                full_amount=amount,
                 base_withdrawer=setup.alice,
                 payload=pack(amount, 'nat'),
             )
@@ -145,7 +145,7 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         withdrawal = Withdrawal(
             withdrawal_id=1000,
-            withdrawal_amount=1_000_000,
+            full_amount=1_000_000,
             base_withdrawer=setup.alice,
             timestamp=0,
             payload=pack(999_500, 'nat'),
@@ -237,7 +237,7 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         provider = setup.manager
         withdrawal = Withdrawal.default_with(
-            withdrawal_amount=77,
+            full_amount=77,
             payload=pack(77, 'nat'),
         )
         setup.call_default_purchase_withdrawal_with(

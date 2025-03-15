@@ -15,7 +15,7 @@ from scripts.helpers.utility import originate_from_file
 @dataclass
 class Withdrawal:
     withdrawal_id: int
-    withdrawal_amount: int
+    full_amount: int
     timestamp: int
     base_withdrawer: Addressable
     payload: bytes
@@ -25,7 +25,7 @@ class Withdrawal:
     def as_tuple(self) -> Tuple[int, int, int, str, bytes, bytes]:
         return (
             self.withdrawal_id,
-            self.withdrawal_amount,
+            self.full_amount,
             self.timestamp,
             get_address(self.base_withdrawer),
             self.payload,
@@ -36,7 +36,7 @@ class Withdrawal:
     def default_with(
         cls,
         withdrawal_id: int = 0,
-        withdrawal_amount: int = 1_000_000,
+        full_amount: int = 1_000_000,
         base_withdrawer: Addressable = "tz1KqTpEZ7Yob7QbPE4Hy4Wo8fHG8LhKxZSx",
         timestamp: int = 0,
         payload: bytes = pack(1_000_000, 'nat'),
@@ -46,7 +46,7 @@ class Withdrawal:
 
         return cls(
             withdrawal_id=withdrawal_id,
-            withdrawal_amount=withdrawal_amount,
+            full_amount=full_amount,
             base_withdrawer=base_withdrawer,
             timestamp=timestamp,
             payload=payload,

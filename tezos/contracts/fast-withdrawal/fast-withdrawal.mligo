@@ -73,5 +73,4 @@ let default
     | None -> withdrawal.base_withdrawer
     | Some service_provider -> service_provider in
     let burn_op = ExchangerBurnEntry.send storage.exchanger (receiver, ticket) in
-
     [burn_op], { storage with withdrawals = upd_withdrawals }

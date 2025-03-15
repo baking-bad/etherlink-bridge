@@ -3,9 +3,9 @@
 *)
 type t = {
     withdrawal_id : nat;
-    withdrawal_amount : nat;
+    full_amount : nat;
     timestamp : timestamp;
     base_withdrawer : address;
-    payload: bytes;
-    l2_caller: bytes;
+    payload : bytes;
+    l2_caller : bytes;
 }

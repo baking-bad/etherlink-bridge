@@ -9,7 +9,7 @@
         (pair %purchase_withdrawal
            (pair %withdrawal
               (nat %withdrawal_id)
-              (nat %withdrawal_amount)
+              (nat %full_amount)
               (timestamp %timestamp)
               (address %base_withdrawer)
               (bytes %payload)
@@ -21,7 +21,7 @@
           (address %smart_rollup)
           (big_map %withdrawals
              (pair (nat %withdrawal_id)
-                   (nat %withdrawal_amount)
+                   (nat %full_amount)
                    (timestamp %timestamp)
                    (address %base_withdrawer)
                    (bytes %payload)

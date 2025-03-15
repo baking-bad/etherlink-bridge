@@ -3,7 +3,7 @@
         (pair %purchase_withdrawal_proxy
            (pair %withdrawal
               (nat %withdrawal_id)
-              (nat %withdrawal_amount)
+              (nat %full_amount)
               (timestamp %timestamp)
               (address %base_withdrawer)
               (bytes %payload)
@@ -14,7 +14,7 @@
   storage
     (pair (pair %withdrawal
              (nat %withdrawal_id)
-             (nat %withdrawal_amount)
+             (nat %full_amount)
              (timestamp %timestamp)
              (address %base_withdrawer)
              (bytes %payload)
@@ -29,7 +29,7 @@
              CONTRACT %purchase_withdrawal
                (pair (pair %withdrawal
                         (nat %withdrawal_id)
-                        (nat %withdrawal_amount)
+                        (nat %full_amount)
                         (timestamp %timestamp)
                         (address %base_withdrawer)
                         (bytes %payload)

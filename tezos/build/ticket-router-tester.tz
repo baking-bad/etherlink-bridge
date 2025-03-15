@@ -11,7 +11,7 @@
                               (or (bytes %rollupDeposit)
                                   (pair %settleWithdrawal
                                      (nat %withdrawal_id)
-                                     (nat %withdrawal_amount)
+                                     (nat %full_amount)
                                      (timestamp %timestamp)
                                      (address %base_withdrawer)
                                      (bytes %payload)
@@ -26,7 +26,7 @@
                     (or (bytes %rollupDeposit)
                         (pair %settleWithdrawal
                            (nat %withdrawal_id)
-                           (nat %withdrawal_amount)
+                           (nat %full_amount)
                            (timestamp %timestamp)
                            (address %base_withdrawer)
                            (bytes %payload)

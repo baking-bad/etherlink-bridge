@@ -47,6 +47,7 @@ from scripts.defaults import (
     XTZ_WITHDRAWAL_PRECOMPILE,
     ETHERLINK_ROLLUP_NODE_URL,
     PRINT_DEBUG_LOG,
+    EXCHANGER_ADDRESS,
 )
 
 

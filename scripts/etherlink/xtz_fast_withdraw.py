@@ -147,6 +147,7 @@ def xtz_fast_withdraw(
 
     tx_hash: HexBytes = receipt.transactionHash  # type: ignore
     click.echo(
-        'Successfully initiated FA withdrawal, tx hash: ' + wrap(accent(tx_hash.hex()))
+        'Successfully initiated XTZ Fast Withdrawal, tx hash: '
+        + wrap(accent(tx_hash.hex()))
     )
     return tx_hash.hex()

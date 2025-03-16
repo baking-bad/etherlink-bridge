@@ -48,6 +48,8 @@ class PurchaseWithdrawalProxy(ContractHelper):
         withdrawal: Withdrawal,
         service_provider: Addressable,
         fast_withdrawal_contract: Addressable,
+        # TODO: consider making exchanger optional,
+        #       it can be acquired from the fast_withdrawal_contract
         exchanger: Addressable,
         xtz_amount: int = 0,
     ) -> OperationGroup:

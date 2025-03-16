@@ -8,6 +8,10 @@ from scripts.tezos.execute_outbox_message import execute_outbox_message
 from scripts.tezos.get_ticketer_params import get_ticketer_params
 from scripts.tezos.xtz_deposit import xtz_deposit
 from scripts.tezos.compile_contract import compile_contract
+from scripts.tezos.deploy_fast_withdrawal import deploy_fast_withdrawal
+from scripts.tezos.deploy_purchase_withdrawal_proxy import (
+    deploy_purchase_withdrawal_proxy,
+)
 
 
 # Allowing reimporting from this module:
@@ -22,4 +26,6 @@ __all__ = [
     'get_ticketer_params',
     'xtz_deposit',
     'compile_contract',
+    'deploy_fast_withdrawal',
+    'deploy_purchase_withdrawal_proxy',
 ]

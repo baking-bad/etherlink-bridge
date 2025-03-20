@@ -4,6 +4,8 @@
            (pair %withdrawal
               (nat %withdrawal_id)
               (nat %full_amount)
+              (address %ticketer)
+              (pair %content nat (option bytes))
               (timestamp %timestamp)
               (address %base_withdrawer)
               (bytes %payload)
@@ -15,6 +17,8 @@
     (pair (pair %withdrawal
              (nat %withdrawal_id)
              (nat %full_amount)
+             (address %ticketer)
+             (pair %content nat (option bytes))
              (timestamp %timestamp)
              (address %base_withdrawer)
              (bytes %payload)
@@ -30,6 +34,8 @@
                (pair (pair %withdrawal
                         (nat %withdrawal_id)
                         (nat %full_amount)
+                        (address %ticketer)
+                        (pair %content nat (option bytes))
                         (timestamp %timestamp)
                         (address %base_withdrawer)
                         (bytes %payload)
@@ -52,7 +58,7 @@
              PUSH nat 20 ;
              DUP 2 ;
              CAR ;
-             GET 10 ;
+             GET 14 ;
              SIZE ;
              COMPARE ;
              NEQ ;

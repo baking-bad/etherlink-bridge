@@ -40,6 +40,8 @@ let from_key
     let {
         withdrawal_id;
         full_amount = _;
+        ticketer = _;
+        content = _;
         timestamp;
         base_withdrawer;
         payload;
@@ -62,10 +64,12 @@ let to_key_and_ticket (params : t) : Ticket.t * FastWithdrawal.t =
         payload;
         l2_caller
     } = params in
-    let (_ticketer, (_payload, full_amount)), ticket = Tezos.Next.Ticket.read ticket in
+    let (ticketer, (content, full_amount)), ticket = Tezos.Next.Ticket.read ticket in
     let key = {
         withdrawal_id;
         full_amount;
+        ticketer;
+        content;
         timestamp;
         base_withdrawer;
         payload;

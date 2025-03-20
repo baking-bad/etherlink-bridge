@@ -1,13 +1,11 @@
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Optional
 from pytezos.client import PyTezosClient
-from pytezos.operation.group import OperationGroup
 from pytezos.rpc.errors import MichelsonError
 from scripts.helpers.contracts.exchanger import Exchanger
 from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal, Withdrawal
-from scripts.helpers.contracts.purchase_withdrawal_proxy import PurchaseWithdrawalProxy
 from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
+from scripts.helpers.ticket_content import TicketContent
 from scripts.helpers.utility import pack
 from tezos.tests.base import BaseTestCase
 from scripts.helpers.addressable import Addressable, get_address
@@ -19,32 +17,7 @@ class FastWithdrawalTestSetup:
     alice: PyTezosClient
     exchanger: Exchanger
     fast_withdrawal: FastWithdrawal
-    purchase_withdrawal_proxy: PurchaseWithdrawalProxy
     tester: TicketRouterTester
-
-    def call_default_purchase_withdrawal_with(
-        self,
-        fast_withdrawal: Optional[FastWithdrawal] = None,
-        exchanger: Optional[Exchanger] = None,
-        service_provider: Optional[Addressable] = None,
-        withdrawal: Optional[Withdrawal] = None,
-        xtz_amount: Optional[int] = None,
-    ) -> OperationGroup:
-        """Calls purchase_withdrawal_proxy with default values"""
-
-        fast_withdrawal = fast_withdrawal or self.fast_withdrawal
-        exchanger = exchanger or self.exchanger
-        service_provider = service_provider or self.manager
-        withdrawal = withdrawal or Withdrawal.default()
-        xtz_amount = xtz_amount or withdrawal.full_amount
-
-        return self.purchase_withdrawal_proxy.purchase_withdrawal_proxy(
-            withdrawal,
-            service_provider,
-            fast_withdrawal,
-            exchanger,
-            xtz_amount=xtz_amount,
-        )
 
 
 class FastWithdrawalTestCase(BaseTestCase):
@@ -60,15 +33,6 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
         return FastWithdrawal.from_opg(self.manager, opg)
 
-    def deploy_purchase_withdrawal_proxy(
-        self,
-    ) -> PurchaseWithdrawalProxy:
-        """Deploys PurchaseWithdrawalProxy contract with a dummy storage"""
-
-        opg = PurchaseWithdrawalProxy.originate(self.manager).send()
-        self.bake_block()
-        return PurchaseWithdrawalProxy.from_opg(self.manager, opg)
-
     def deploy_exchanger(
         self,
     ) -> Exchanger:
@@ -83,7 +47,6 @@ class FastWithdrawalTestCase(BaseTestCase):
     ) -> FastWithdrawalTestSetup:
         alice = self.bootstrap_account()
         exchanger = self.deploy_exchanger()
-        purchase_withdrawal_proxy = self.deploy_purchase_withdrawal_proxy()
         tester = self.deploy_ticket_router_tester()
         fast_withdrawal = self.deploy_fast_withdrawal(exchanger, tester)
 
@@ -92,7 +55,6 @@ class FastWithdrawalTestCase(BaseTestCase):
             alice=alice,
             exchanger=exchanger,
             fast_withdrawal=fast_withdrawal,
-            purchase_withdrawal_proxy=purchase_withdrawal_proxy,
             tester=tester,
         )
 
@@ -101,11 +63,15 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         withdrawal = Withdrawal.default_with(
             base_withdrawer=setup.alice,
+            payload=pack(1_000_000, 'nat'),
+            ticketer=setup.exchanger,
+            content=TicketContent(0, None),
         )
         provider = self.manager
-        setup.call_default_purchase_withdrawal_with(
-            service_provider=provider,
+        setup.fast_withdrawal.payout_withdrawal(
             withdrawal=withdrawal,
+            service_provider=provider,
+            xtz_amount=1_000_000,
         )
         self.bake_block()
 
@@ -124,14 +90,17 @@ class FastWithdrawalTestCase(BaseTestCase):
         for amount in amounts:
             withdrawal = Withdrawal.default_with(
                 full_amount=amount,
+                ticketer=setup.exchanger,
+                content=TicketContent(0, None),
                 base_withdrawer=setup.alice,
                 payload=pack(amount, 'nat'),
             )
 
             provider = self.manager
-            setup.call_default_purchase_withdrawal_with(
-                service_provider=provider,
+            setup.fast_withdrawal.payout_withdrawal(
                 withdrawal=withdrawal,
+                service_provider=provider,
+                xtz_amount=amount,
             )
             self.bake_block()
 
@@ -146,13 +115,15 @@ class FastWithdrawalTestCase(BaseTestCase):
         withdrawal = Withdrawal(
             withdrawal_id=1000,
             full_amount=1_000_000,
+            ticketer=setup.exchanger,
+            content=TicketContent(0, None),
             base_withdrawer=setup.alice,
             timestamp=0,
             payload=pack(999_500, 'nat'),
             l2_caller=bytes(20),
         )
 
-        setup.call_default_purchase_withdrawal_with(
+        setup.fast_withdrawal.payout_withdrawal(
             withdrawal=withdrawal,
             service_provider=provider,
             xtz_amount=999_500,
@@ -165,7 +136,7 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         # Changing timestamp:
         withdrawal.timestamp = 12345
-        setup.call_default_purchase_withdrawal_with(
+        setup.fast_withdrawal.payout_withdrawal(
             service_provider=provider,
             withdrawal=withdrawal,
             xtz_amount=999_500,
@@ -178,7 +149,7 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         # Changing base_withdrawer:
         withdrawal.base_withdrawer = self.bootstrap_account()
-        setup.call_default_purchase_withdrawal_with(
+        setup.fast_withdrawal.payout_withdrawal(
             service_provider=provider,
             withdrawal=withdrawal,
             xtz_amount=999_500,
@@ -191,7 +162,7 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         # Changing payload:
         withdrawal.payload = pack(777_000, 'nat')
-        setup.call_default_purchase_withdrawal_with(
+        setup.fast_withdrawal.payout_withdrawal(
             service_provider=provider,
             withdrawal=withdrawal,
             xtz_amount=777_000,
@@ -204,7 +175,7 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         # Changing l2_caller:
         withdrawal.l2_caller = bytes.fromhex('ab' * 20)
-        setup.call_default_purchase_withdrawal_with(
+        setup.fast_withdrawal.payout_withdrawal(
             service_provider=provider,
             withdrawal=withdrawal,
             xtz_amount=777_000,
@@ -218,17 +189,23 @@ class FastWithdrawalTestCase(BaseTestCase):
     def test_should_reject_duplicate_withdrawal(self) -> None:
         setup = self.fast_withdrawal_setup()
 
-        withdrawal = Withdrawal.default()
-        setup.call_default_purchase_withdrawal_with(
+        withdrawal = Withdrawal.default_with(
+            ticketer=setup.exchanger,
+            content=TicketContent(0, None),
+            payload=pack(1_000_000, 'nat'),
+        )
+        setup.fast_withdrawal.payout_withdrawal(
             withdrawal=withdrawal,
             service_provider=setup.manager,
+            xtz_amount=1_000_000,
         )
         self.bake_block()
 
         with self.assertRaises(MichelsonError) as err:
-            setup.call_default_purchase_withdrawal_with(
+            setup.fast_withdrawal.payout_withdrawal(
                 withdrawal=withdrawal,
                 service_provider=setup.alice,
+                xtz_amount=1_000_000,
             )
         assert "The fast withdrawal was already payed" in str(err.exception)
 
@@ -238,11 +215,14 @@ class FastWithdrawalTestCase(BaseTestCase):
         provider = setup.manager
         withdrawal = Withdrawal.default_with(
             full_amount=77,
+            ticketer=setup.exchanger,
+            content=TicketContent(0, None),
             payload=pack(77, 'nat'),
         )
-        setup.call_default_purchase_withdrawal_with(
+        setup.fast_withdrawal.payout_withdrawal(
             withdrawal=withdrawal,
             service_provider=provider,
+            xtz_amount=77,
         )
         self.bake_block()
 
@@ -283,6 +263,8 @@ class FastWithdrawalTestCase(BaseTestCase):
         # Setting up withdrawal with Alice as a base withdrawer:
         withdrawal = Withdrawal.default_with(
             base_withdrawer=setup.alice,
+            ticketer=setup.exchanger,
+            content=TicketContent(0, None),
         )
         self.bake_block()
 

@@ -12,6 +12,8 @@
                                   (pair %settleWithdrawal
                                      (nat %withdrawal_id)
                                      (nat %full_amount)
+                                     (address %ticketer)
+                                     (pair %content nat (option bytes))
                                      (timestamp %timestamp)
                                      (address %base_withdrawer)
                                      (bytes %payload)
@@ -27,6 +29,8 @@
                         (pair %settleWithdrawal
                            (nat %withdrawal_id)
                            (nat %full_amount)
+                           (address %ticketer)
+                           (pair %content nat (option bytes))
                            (timestamp %timestamp)
                            (address %base_withdrawer)
                            (bytes %payload)
@@ -36,7 +40,10 @@
   code { LAMBDA
            (pair (ticket (pair nat (option bytes)))
                  address
-                 (or unit (or address (or bytes (pair nat nat timestamp address bytes bytes))))
+                 (or unit
+                     (or address
+                         (or bytes
+                             (pair nat nat address (pair nat (option bytes)) timestamp address bytes bytes))))
                  mutez)
            operation
            { UNPAIR ;
@@ -84,9 +91,11 @@
                                  (bytes %l2_caller)) ;
                          IF_NONE { PUSH string "SETTLE_WITHDRAWAL_NOT_FOUND" ; FAILWITH } {} ;
                          DUG 2 ;
-                         UNPAIR 6 ;
+                         UNPAIR 8 ;
                          SWAP ;
-                         DROP ;
+                         DIG 2 ;
+                         DIG 3 ;
+                         DROP 3 ;
                          DUG 4 ;
                          DIG 7 ;
                          DIG 5 ;

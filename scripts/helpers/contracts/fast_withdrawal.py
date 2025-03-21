@@ -3,6 +3,7 @@ from os.path import join
 from typing import Any, Optional, Tuple
 
 from pytezos.client import PyTezosClient
+from pytezos.contract.call import ContractCall
 from pytezos.operation.group import OperationGroup
 
 from scripts.helpers.addressable import Addressable, get_address
@@ -103,14 +104,10 @@ class FastWithdrawal(ContractHelper):
         withdrawal: Withdrawal,
         service_provider: Addressable,
         xtz_amount: int = 0,
-    ) -> OperationGroup:
+    ) -> ContractCall:
         """Creates an operation with call to the payout_withdrawal entrypoint"""
 
-        return (
-            self.contract.payout_withdrawal(
-                withdrawal.as_tuple(),
-                get_address(service_provider),
-            )
-            .with_amount(xtz_amount)
-            .send()
-        )
+        return self.contract.payout_withdrawal(
+            withdrawal.as_tuple(),
+            get_address(service_provider),
+        ).with_amount(xtz_amount)

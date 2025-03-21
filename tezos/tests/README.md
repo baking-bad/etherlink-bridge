@@ -75,6 +75,7 @@
     - check ticket will be redirected to the ticketer even its address differs from the stored ticketer address
 
 ## FastWithdrawal tests [(code)](test_fast_withdrawal.py):
+- [ ] TODO: rename the XTZ-related tests accordingly
 
 - [x] test_should_create_withdrawal_record_when_purchased
     - check key is added to `withdrawals` big_map
@@ -100,6 +101,11 @@
 
 - [x] test_user_receives_withdrawal_when_no_one_purchased
     - check user balance increases by full withdrawal amount
+
+- [x] test_provider_receives_withdrawal_when_purchased_fa2
+- [ ] test_user_receives_withdrawal_when_no_one_purchased_fa2
+- [ ] test_provider_receives_withdrawal_when_purchased_fa12
+- [ ] test_user_receives_withdrawal_when_no_one_purchased_fa12
 
 - [ ] test_should_reject_purchase_with_wrong_ticketer_address
 

@@ -260,6 +260,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert provider.balance() == provider_balance + Decimal('0.000077')
 
     def test_user_receives_withdrawal_when_no_one_purchased(self) -> None:
+        # TODO: add smart_rollup role
         setup = self.fast_withdrawal_setup()
         alice_balance = setup.alice.balance()
 
@@ -354,4 +355,44 @@ class FastWithdrawalTestCase(BaseTestCase):
 
     # TODO: test_user_receives_withdrawal_when_no_one_purchased_fa2
     # TODO: test_provider_receives_withdrawal_when_purchased_fa12
-    # TODO: def test_user_receives_withdrawal_when_no_one_purchased_fa12
+
+    def test_user_receives_withdrawal_when_no_one_purchased_fa12(self) -> None:
+        setup = self.fast_withdrawal_setup()
+        alice = setup.alice
+        smart_rollup = self.bootstrap_account()
+
+        token: TokenHelper = self.deploy_fa12(
+            balances={smart_rollup: 100},
+        )
+        ticketer = self.deploy_ticketer(token, {})
+
+        # Setting up withdrawal with Alice as a base withdrawer:
+        withdrawal = Withdrawal.default_with(
+            base_withdrawer=alice,
+            ticketer=ticketer,
+            content=TicketContent(0, None),
+        )
+        self.bake_block()
+
+        # Creating wrapped token (ticket) for smart_rollup:
+        smart_rollup.bulk(
+            token.allow(smart_rollup, ticketer),
+            ticketer.deposit(3),
+        ).send()
+        self.bake_block()
+        ticket = ticketer.read_ticket(smart_rollup)
+        assert token.get_balance(smart_rollup) == 100 - 3
+
+        # No one purchased the withdrawal,
+        # Sending ticket to the fast withdrawal contract `default` entrypoint:
+        smart_rollup.bulk(
+            setup.tester.set_settle_withdrawal(
+                target=setup.fast_withdrawal,
+                withdrawal=withdrawal,
+            ),
+            ticket.transfer(setup.tester),
+        ).send()
+        self.bake_block()
+
+        # Checking that Alice received the token (full withdrawal amount):
+        assert token.get_balance(alice) == 3

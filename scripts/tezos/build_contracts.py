@@ -67,11 +67,6 @@ def build_fast_withdrawal(
 
     compile_contract.callback(
         ligo_version,
-        'contracts/purchase-withdrawal-proxy/purchase-withdrawal-proxy.mligo',
-    )  # type: ignore
-
-    compile_contract.callback(
-        ligo_version,
         'contracts/ticket-router-tester/ticket-router-tester.mligo',
         'TicketRouterTester',
     )  # type: ignore

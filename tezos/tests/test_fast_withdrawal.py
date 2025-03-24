@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import cast
 from pytezos.client import PyTezosClient
+from pytezos.operation.group import OperationGroup
 from pytezos.rpc.errors import MichelsonError
 from scripts.helpers.contracts.exchanger import Exchanger
 from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal, Withdrawal
@@ -50,12 +52,27 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
         return Exchanger.from_opg(self.manager, opg)
 
+    def bootstrap_non_baker_account(
+        self, mutez_balance: int = 1_000_000_000
+    ) -> PyTezosClient:
+        key = self.manager.key.generate(export=False)
+        account = self.manager.using(key=key)
+        transaction = self.manager.transaction(
+            destination=get_address(account), amount=mutez_balance
+        )
+        transaction = cast(OperationGroup, transaction)
+        transaction.send()
+        self.bake_block()
+
+        cast(OperationGroup, account.reveal()).send()
+        return account  # type: ignore
+
     def fast_withdrawal_setup(
         self,
     ) -> FastWithdrawalTestSetup:
-        withdrawer = self.bootstrap_account()
-        service_provider = self.bootstrap_account()
-        smart_rollup = self.bootstrap_account()
+        withdrawer = self.bootstrap_non_baker_account()
+        service_provider = self.bootstrap_non_baker_account()
+        smart_rollup = self.bootstrap_non_baker_account()
         self.bake_block()
 
         exchanger = self.deploy_exchanger()

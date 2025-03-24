@@ -91,7 +91,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             fast_withdrawal=fast_withdrawal,
             tester=tester,
             valid_timestamp=self.manager.now(),
-            expired_timestamp=self.manager.now() - one_day,
+            expired_timestamp=self.manager.now() - one_day - 1,
         )
 
     def test_should_create_withdrawal_record_after_xtz_withdrawal_purchased(
@@ -434,3 +434,47 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         # Checking that withdrawer received the token (full withdrawal amount):
         assert token.get_balance(setup.withdrawer) == 3
+
+    def test_should_allow_xtz_withdrawal_purchase_at_full_price_after_timestamp_expired(
+        self,
+    ) -> None:
+        setup = self.fast_withdrawal_setup()
+        withdrawer_balance = setup.withdrawer.balance()
+
+        withdrawal = Withdrawal.default_with(
+            base_withdrawer=setup.withdrawer,
+            full_amount=1_000,
+            ticketer=setup.exchanger,
+            content=TicketContent(0, None),
+            payload=pack(990, 'nat'),
+            timestamp=setup.expired_timestamp,
+        )
+        setup.fast_withdrawal.payout_withdrawal(
+            withdrawal=withdrawal,
+            service_provider=setup.service_provider,
+            xtz_amount=1_000,
+        ).send()
+        self.bake_block()
+
+        withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
+        stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        assert stored_address == get_address(setup.service_provider)
+        assert setup.withdrawer.balance() == withdrawer_balance + Decimal('0.001000')
+
+        # Creating wrapped xtz ticket for Smart Rollup:
+        setup.exchanger.mint(setup.smart_rollup, 1000).send()
+        self.bake_block()
+        ticket = setup.exchanger.read_ticket(setup.smart_rollup)
+
+        provider_balance = setup.service_provider.balance()
+        setup.smart_rollup.bulk(
+            setup.tester.set_settle_withdrawal(
+                target=setup.fast_withdrawal,
+                withdrawal=withdrawal,
+            ),
+            ticket.transfer(setup.tester),
+        ).send()
+        self.bake_block()
+
+        updated_balance = setup.service_provider.balance()
+        assert updated_balance == provider_balance + Decimal('0.001000')

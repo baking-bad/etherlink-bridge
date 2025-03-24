@@ -75,8 +75,6 @@
     - check ticket will be redirected to the ticketer even its address differs from the stored ticketer address
 
 ## FastWithdrawal tests [(code)](test_fast_withdrawal.py):
-- [ ] TODO: rename the XTZ-related tests accordingly
-
 - [x] test_should_create_withdrawal_record_after_xtz_withdrawal_purchased
     - check key is added to `withdrawals` big_map
     - check ticketer content is `(0, None)`
@@ -137,11 +135,13 @@
     - check key is removed from `withdrawals` big_map after payout
     - check for XTZ, FA1.2 and FA2
 
-- [ ] test_should_allow_purchase_at_full_price_after_timestamp_expired
-    - check for XTZ, FA1.2 and FA2
+- [x] test_should_allow_xtz_withdrawal_purchase_at_full_price_after_timestamp_expired
+- [ ] test_should_allow_fa12_withdrawal_purchase_at_full_price_after_timestamp_expired
+- [ ] test_should_allow_fa2_withdrawal_purchase_at_full_price_after_timestamp_expired
 
-- [ ] test_should_reject_purchase_at_discounted_price_after_timestamp_expired
-    - check for XTZ, FA1.2 and FA2
+- [ ] test_should_reject_xtz_withdrawal_purchase_at_discounted_price_after_timestamp_expired
+- [ ] test_should_reject_fa12_withdrawal_purchase_at_discounted_price_after_timestamp_expired
+- [ ] test_should_reject_fa2_withdrawal_purchase_at_discounted_price_after_timestamp_expired
 
 - [ ] TODO: Consider adding tests for withdrawal record removal if this logic is introduced
 - [ ] TODO: Consider adding tests for events if this logic is introduced

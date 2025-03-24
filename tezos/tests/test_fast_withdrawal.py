@@ -478,3 +478,24 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         updated_balance = setup.service_provider.balance()
         assert updated_balance == provider_balance + Decimal('0.001000')
+
+    def test_rejects_xtz_withdrawal_purchase_at_discounted_price_if_expired(
+        self,
+    ) -> None:
+        setup = self.fast_withdrawal_setup()
+
+        withdrawal = Withdrawal.default_with(
+            base_withdrawer=setup.withdrawer,
+            full_amount=1_000,
+            ticketer=setup.exchanger,
+            content=TicketContent(0, None),
+            payload=pack(990, 'nat'),
+            timestamp=setup.expired_timestamp,
+        )
+        with self.assertRaises(MichelsonError) as err:
+            setup.fast_withdrawal.payout_withdrawal(
+                withdrawal=withdrawal,
+                service_provider=setup.service_provider,
+                xtz_amount=990,
+            ).send()
+        assert "Tezos amount is not valid" in str(err.exception)

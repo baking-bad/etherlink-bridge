@@ -122,12 +122,12 @@
 - [ ] test_user_receives_fa2_withdrawal_when_no_purchase_made
     - check user FA2 token balance increases by full withdrawal amount
 
-- [ ] test_should_reject_purchase_with_payload_and_ticket_amount_mismatch
+- [ ] test_should_reject_xtz_withdrawal_purchase_with_wrong_xtz_amount
+    - check transaction rejected if provided xtz amount is not equal amount in payout (and withdrawal is not expired yet)
 
-- [ ] test_should_reject_xtz_purchase_with_attached_xtz
-
+- [ ] test_should_reject_fa12_withdrawal_purchase_with_attached_xtz
+- [ ] test_should_reject_fa2_withdrawal_purchase_with_attached_xtz
 - [ ] test_should_reject_settlement_with_attached_xtz
-
 - [ ] test_should_reject_settlement_from_wrong_rollup_address
 
 - [ ] test_should_pay_custom_provider_when_specified
@@ -139,9 +139,9 @@
 - [ ] test_should_allow_fa12_withdrawal_purchase_at_full_price_after_timestamp_expired
 - [ ] test_should_allow_fa2_withdrawal_purchase_at_full_price_after_timestamp_expired
 
-- [ ] test_should_reject_xtz_withdrawal_purchase_at_discounted_price_after_timestamp_expired
-- [ ] test_should_reject_fa12_withdrawal_purchase_at_discounted_price_after_timestamp_expired
-- [ ] test_should_reject_fa2_withdrawal_purchase_at_discounted_price_after_timestamp_expired
+- [x] test_rejects_xtz_withdrawal_purchase_at_discounted_price_if_expired
+- [ ] test_rejects_fa12_withdrawal_purchase_at_discounted_price_if_expired
+- [ ] test_rejects_fa2_withdrawal_purchase_at_discounted_price_if_expired
 
 - [ ] TODO: Consider adding tests for withdrawal record removal if this logic is introduced
 - [ ] TODO: Consider adding tests for events if this logic is introduced

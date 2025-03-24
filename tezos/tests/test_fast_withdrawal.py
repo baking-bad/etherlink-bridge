@@ -15,10 +15,9 @@ from scripts.helpers.addressable import Addressable, get_address
 @dataclass
 class FastWithdrawalTestSetup:
     manager: PyTezosClient
-    # TODO: consider renaming alice to withdrawer
-    alice: PyTezosClient
-    # TODO: add smart_rollup role
-    # TODO: add service_provider role
+    withdrawer: PyTezosClient
+    smart_rollup: PyTezosClient
+    service_provider: PyTezosClient
     exchanger: Exchanger
     fast_withdrawal: FastWithdrawal
     tester: TicketRouterTester
@@ -54,7 +53,11 @@ class FastWithdrawalTestCase(BaseTestCase):
     def fast_withdrawal_setup(
         self,
     ) -> FastWithdrawalTestSetup:
-        alice = self.bootstrap_account()
+        withdrawer = self.bootstrap_account()
+        service_provider = self.bootstrap_account()
+        smart_rollup = self.bootstrap_account()
+        self.bake_block()
+
         exchanger = self.deploy_exchanger()
         tester = self.deploy_ticket_router_tester()
         one_day = 24 * 60 * 60
@@ -64,12 +67,14 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         return FastWithdrawalTestSetup(
             manager=self.manager,
-            alice=alice,
+            withdrawer=withdrawer,
+            service_provider=service_provider,
+            smart_rollup=smart_rollup,
             exchanger=exchanger,
             fast_withdrawal=fast_withdrawal,
             tester=tester,
-            valid_timestamp=alice.now(),
-            expired_timestamp=alice.now() - one_day,
+            valid_timestamp=self.manager.now(),
+            expired_timestamp=self.manager.now() - one_day,
         )
 
     def test_should_create_withdrawal_record_after_xtz_withdrawal_purchased(
@@ -78,23 +83,22 @@ class FastWithdrawalTestCase(BaseTestCase):
         setup = self.fast_withdrawal_setup()
 
         withdrawal = Withdrawal.default_with(
-            base_withdrawer=setup.alice,
+            base_withdrawer=setup.withdrawer,
             payload=pack(1_000_000, 'nat'),
             ticketer=setup.exchanger,
             content=TicketContent(0, None),
             timestamp=setup.valid_timestamp,
         )
-        provider = self.manager
         setup.fast_withdrawal.payout_withdrawal(
             withdrawal=withdrawal,
-            service_provider=provider,
+            service_provider=setup.service_provider,
             xtz_amount=1_000_000,
         ).send()
         self.bake_block()
 
         withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
         stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
-        assert stored_address == get_address(provider)
+        assert stored_address == get_address(setup.service_provider)
 
         # TODO: check ticketer content is (0, None)
 
@@ -111,33 +115,31 @@ class FastWithdrawalTestCase(BaseTestCase):
                 full_amount=amount,
                 ticketer=setup.exchanger,
                 content=TicketContent(0, None),
-                base_withdrawer=setup.alice,
+                base_withdrawer=setup.withdrawer,
                 payload=pack(amount, 'nat'),
                 timestamp=setup.valid_timestamp,
             )
 
-            provider = self.manager
             setup.fast_withdrawal.payout_withdrawal(
                 withdrawal=withdrawal,
-                service_provider=provider,
+                service_provider=setup.service_provider,
                 xtz_amount=amount,
             ).send()
             self.bake_block()
 
             withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
             stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
-            assert stored_address == get_address(provider)
+            assert stored_address == get_address(setup.service_provider)
 
     def test_should_create_different_withdrawal_records(self) -> None:
         setup = self.fast_withdrawal_setup()
-        provider = self.manager
 
         withdrawal = Withdrawal(
             withdrawal_id=1000,
             full_amount=1_000_000,
             ticketer=setup.exchanger,
             content=TicketContent(0, None),
-            base_withdrawer=setup.alice,
+            base_withdrawer=setup.withdrawer,
             timestamp=setup.valid_timestamp,
             payload=pack(999_500, 'nat'),
             l2_caller=bytes(20),
@@ -145,19 +147,19 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         setup.fast_withdrawal.payout_withdrawal(
             withdrawal=withdrawal,
-            service_provider=provider,
+            service_provider=setup.service_provider,
             xtz_amount=999_500,
         ).send()
         self.bake_block()
 
         withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
         stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
-        assert stored_address == get_address(provider)
+        assert stored_address == get_address(setup.service_provider)
 
         # Changing timestamp:
         withdrawal.timestamp = setup.valid_timestamp + 1
         setup.fast_withdrawal.payout_withdrawal(
-            service_provider=provider,
+            service_provider=setup.service_provider,
             withdrawal=withdrawal,
             xtz_amount=999_500,
         ).send()
@@ -165,12 +167,12 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
         stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
-        assert stored_address == get_address(provider)
+        assert stored_address == get_address(setup.service_provider)
 
         # Changing base_withdrawer:
         withdrawal.base_withdrawer = self.bootstrap_account()
         setup.fast_withdrawal.payout_withdrawal(
-            service_provider=provider,
+            service_provider=setup.service_provider,
             withdrawal=withdrawal,
             xtz_amount=999_500,
         ).send()
@@ -178,12 +180,12 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
         stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
-        assert stored_address == get_address(provider)
+        assert stored_address == get_address(setup.service_provider)
 
         # Changing payload:
         withdrawal.payload = pack(777_000, 'nat')
         setup.fast_withdrawal.payout_withdrawal(
-            service_provider=provider,
+            service_provider=setup.service_provider,
             withdrawal=withdrawal,
             xtz_amount=777_000,
         ).send()
@@ -191,12 +193,12 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
         stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
-        assert stored_address == get_address(provider)
+        assert stored_address == get_address(setup.service_provider)
 
         # Changing l2_caller:
         withdrawal.l2_caller = bytes.fromhex('ab' * 20)
         setup.fast_withdrawal.payout_withdrawal(
-            service_provider=provider,
+            service_provider=setup.service_provider,
             withdrawal=withdrawal,
             xtz_amount=777_000,
         ).send()
@@ -204,7 +206,7 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
         stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
-        assert stored_address == get_address(provider)
+        assert stored_address == get_address(setup.service_provider)
 
         # TODO:
         # - check new key is added for transaction with different `ticketer`
@@ -221,15 +223,16 @@ class FastWithdrawalTestCase(BaseTestCase):
         )
         setup.fast_withdrawal.payout_withdrawal(
             withdrawal=withdrawal,
-            service_provider=setup.manager,
+            service_provider=setup.service_provider,
             xtz_amount=1_000_000,
         ).send()
         self.bake_block()
 
+        another_provider = self.bootstrap_account()
         with self.assertRaises(MichelsonError) as err:
             setup.fast_withdrawal.payout_withdrawal(
                 withdrawal=withdrawal,
-                service_provider=setup.alice,
+                service_provider=another_provider,
                 xtz_amount=1_000_000,
             ).send()
         assert "The fast withdrawal was already payed" in str(err.exception)
@@ -237,10 +240,8 @@ class FastWithdrawalTestCase(BaseTestCase):
         # TODO: the same check for same provider (setup.manager)
 
     def test_provider_receives_xtz_withdrawal_after_purchase(self) -> None:
-        # TODO: add smart_rollup role
         setup = self.fast_withdrawal_setup()
 
-        provider = setup.manager
         withdrawal = Withdrawal.default_with(
             full_amount=77,
             ticketer=setup.exchanger,
@@ -250,26 +251,26 @@ class FastWithdrawalTestCase(BaseTestCase):
         )
         setup.fast_withdrawal.payout_withdrawal(
             withdrawal=withdrawal,
-            service_provider=provider,
+            service_provider=setup.service_provider,
             xtz_amount=77,
         ).send()
         self.bake_block()
 
         withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
         stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
-        assert stored_address == get_address(provider)
+        assert stored_address == get_address(setup.service_provider)
 
-        # Creating wrapped xtz ticket for Alice:
-        setup.exchanger.mint(setup.alice, 77).send()
+        # Creating wrapped xtz ticket for Smart Rollup:
+        setup.exchanger.mint(setup.smart_rollup, 77).send()
         self.bake_block()
-        ticket = setup.exchanger.read_ticket(setup.alice)
+        ticket = setup.exchanger.read_ticket(setup.smart_rollup)
 
         # Recording providers balance:
-        provider_balance = provider.balance()
+        provider_balance = setup.service_provider.balance()
 
         # Settle withdrawal: (sending ticket to the fast withdrawal
         # contract `default` entrypoint):
-        setup.alice.bulk(
+        setup.smart_rollup.bulk(
             setup.tester.set_settle_withdrawal(
                 target=setup.fast_withdrawal,
                 withdrawal=withdrawal,
@@ -284,16 +285,15 @@ class FastWithdrawalTestCase(BaseTestCase):
             stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
 
         # Checking that the provider received the xtz:
-        assert provider.balance() == provider_balance + Decimal('0.000077')
+        updated_balance = setup.service_provider.balance()
+        assert updated_balance == provider_balance + Decimal('0.000077')
 
     def test_user_receives_xtz_withdrawal_when_no_purchase_made(self) -> None:
-        # TODO: add smart_rollup role
         setup = self.fast_withdrawal_setup()
-        alice_balance = setup.alice.balance()
+        withdrawer_balance = setup.withdrawer.balance()
 
-        # Setting up withdrawal with Alice as a base withdrawer:
         withdrawal = Withdrawal.default_with(
-            base_withdrawer=setup.alice,
+            base_withdrawer=setup.withdrawer,
             ticketer=setup.exchanger,
             content=TicketContent(0, None),
             timestamp=setup.valid_timestamp,
@@ -301,13 +301,13 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         # Creating wrapped xtz ticket:
-        setup.exchanger.using(setup.manager).mint(setup.manager, 333).send()
+        setup.exchanger.mint(setup.service_provider, 333).send()
         self.bake_block()
-        ticket = setup.exchanger.read_ticket(setup.manager)
+        ticket = setup.exchanger.read_ticket(setup.service_provider)
 
         # No one purchased the withdrawal,
         # Sending ticket to the fast withdrawal contract `default` entrypoint:
-        setup.manager.bulk(
+        setup.service_provider.bulk(
             setup.tester.set_settle_withdrawal(
                 target=setup.fast_withdrawal,
                 withdrawal=withdrawal,
@@ -316,17 +316,14 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        # Checking that Alice received the xtz (full withdrawal amount):
-        assert setup.alice.balance() == alice_balance + Decimal('0.000333')
+        # Checking that withdrawer received the xtz (full withdrawal amount):
+        assert setup.withdrawer.balance() == withdrawer_balance + Decimal('0.000333')
 
     def test_provider_receives_fa2_withdrawal_after_purchase(self) -> None:
         setup = self.fast_withdrawal_setup()
-        alice = setup.alice
-        smart_rollup = self.bootstrap_account()
-        provider = setup.manager
 
         token: TokenHelper = self.deploy_fa2(
-            balances={provider: 1_000, smart_rollup: 1_000},
+            balances={setup.service_provider: 1_000, setup.smart_rollup: 1_000},
             token_id=33,
         )
         ticketer = self.deploy_ticketer(token, {})
@@ -335,37 +332,37 @@ class FastWithdrawalTestCase(BaseTestCase):
             full_amount=50,
             ticketer=ticketer,
             content=ticketer.read_content(),
-            base_withdrawer=alice,
+            base_withdrawer=setup.withdrawer,
             payload=pack(30, 'nat'),
             timestamp=setup.valid_timestamp,
         )
-        provider.bulk(
-            token.allow(provider, setup.fast_withdrawal),
+        setup.service_provider.bulk(
+            token.allow(setup.service_provider, setup.fast_withdrawal),
             setup.fast_withdrawal.payout_withdrawal(
                 withdrawal=withdrawal,
-                service_provider=provider,
+                service_provider=setup.service_provider,
             ),
         ).send()
         self.bake_block()
-        assert token.get_balance(provider) == 1000 - 30
-        assert token.get_balance(alice) == 30
+        assert token.get_balance(setup.service_provider) == 1000 - 30
+        assert token.get_balance(setup.withdrawer) == 30
 
         withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
         stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
-        assert stored_address == get_address(provider)
+        assert stored_address == get_address(setup.service_provider)
 
         # Creating wrapped token (ticket) for smart_rollup:
-        smart_rollup.bulk(
-            token.allow(smart_rollup, ticketer),
+        setup.smart_rollup.bulk(
+            token.allow(setup.smart_rollup, ticketer),
             ticketer.deposit(50),
         ).send()
         self.bake_block()
-        ticket = ticketer.read_ticket(smart_rollup)
-        assert token.get_balance(smart_rollup) == 1000 - 50
+        ticket = ticketer.read_ticket(setup.smart_rollup)
+        assert token.get_balance(setup.smart_rollup) == 1000 - 50
 
         # Settle withdrawal: (sending ticket to the fast withdrawal
         # contract `default` entrypoint):
-        smart_rollup.bulk(
+        setup.smart_rollup.bulk(
             setup.tester.set_settle_withdrawal(
                 target=setup.fast_withdrawal,
                 withdrawal=withdrawal,
@@ -380,21 +377,18 @@ class FastWithdrawalTestCase(BaseTestCase):
             stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
 
         # Checking that the Provider received the token:
-        assert token.get_balance(provider) == 1000 - 30 + 50
+        assert token.get_balance(setup.service_provider) == 1000 - 30 + 50
 
     def test_user_receives_fa12_withdrawal_when_no_purchase_made(self) -> None:
         setup = self.fast_withdrawal_setup()
-        alice = setup.alice
-        smart_rollup = self.bootstrap_account()
 
         token: TokenHelper = self.deploy_fa12(
-            balances={smart_rollup: 100},
+            balances={setup.smart_rollup: 100},
         )
         ticketer = self.deploy_ticketer(token, {})
 
-        # Setting up withdrawal with Alice as a base withdrawer:
         withdrawal = Withdrawal.default_with(
-            base_withdrawer=alice,
+            base_withdrawer=setup.withdrawer,
             ticketer=ticketer,
             content=TicketContent(0, None),
             timestamp=setup.valid_timestamp,
@@ -402,17 +396,17 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         # Creating wrapped token (ticket) for smart_rollup:
-        smart_rollup.bulk(
-            token.allow(smart_rollup, ticketer),
+        setup.smart_rollup.bulk(
+            token.allow(setup.smart_rollup, ticketer),
             ticketer.deposit(3),
         ).send()
         self.bake_block()
-        ticket = ticketer.read_ticket(smart_rollup)
-        assert token.get_balance(smart_rollup) == 100 - 3
+        ticket = ticketer.read_ticket(setup.smart_rollup)
+        assert token.get_balance(setup.smart_rollup) == 100 - 3
 
         # No one purchased the withdrawal,
         # Sending ticket to the fast withdrawal contract `default` entrypoint:
-        smart_rollup.bulk(
+        setup.smart_rollup.bulk(
             setup.tester.set_settle_withdrawal(
                 target=setup.fast_withdrawal,
                 withdrawal=withdrawal,
@@ -421,5 +415,5 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        # Checking that Alice received the token (full withdrawal amount):
-        assert token.get_balance(alice) == 3
+        # Checking that withdrawer received the token (full withdrawal amount):
+        assert token.get_balance(setup.withdrawer) == 3

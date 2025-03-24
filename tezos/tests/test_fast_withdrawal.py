@@ -15,10 +15,15 @@ from scripts.helpers.addressable import Addressable, get_address
 @dataclass
 class FastWithdrawalTestSetup:
     manager: PyTezosClient
+    # TODO: consider renaming alice to withdrawer
     alice: PyTezosClient
+    # TODO: add smart_rollup role
+    # TODO: add service_provider role
     exchanger: Exchanger
     fast_withdrawal: FastWithdrawal
     tester: TicketRouterTester
+    valid_timestamp: int
+    expired_timestamp: int
 
 
 class FastWithdrawalTestCase(BaseTestCase):
@@ -26,11 +31,14 @@ class FastWithdrawalTestCase(BaseTestCase):
         self,
         exchanger: Addressable,
         smart_rollup: Addressable,
+        expiration_seconds: int,
     ) -> FastWithdrawal:
         """Deploys FastWithdrawal contract for the specified exchanger and
         smart_rollup addresses"""
 
-        opg = FastWithdrawal.originate(self.manager, exchanger, smart_rollup).send()
+        opg = FastWithdrawal.originate(
+            self.manager, exchanger, smart_rollup, expiration_seconds
+        ).send()
         self.bake_block()
         return FastWithdrawal.from_opg(self.manager, opg)
 
@@ -49,7 +57,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         alice = self.bootstrap_account()
         exchanger = self.deploy_exchanger()
         tester = self.deploy_ticket_router_tester()
-        fast_withdrawal = self.deploy_fast_withdrawal(exchanger, tester)
+        one_day = 24 * 60 * 60
+        fast_withdrawal = self.deploy_fast_withdrawal(
+            exchanger, tester, expiration_seconds=one_day
+        )
 
         return FastWithdrawalTestSetup(
             manager=self.manager,
@@ -57,6 +68,8 @@ class FastWithdrawalTestCase(BaseTestCase):
             exchanger=exchanger,
             fast_withdrawal=fast_withdrawal,
             tester=tester,
+            valid_timestamp=alice.now(),
+            expired_timestamp=alice.now() - one_day,
         )
 
     def test_should_create_withdrawal_record_after_xtz_withdrawal_purchased(
@@ -69,6 +82,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             payload=pack(1_000_000, 'nat'),
             ticketer=setup.exchanger,
             content=TicketContent(0, None),
+            timestamp=setup.valid_timestamp,
         )
         provider = self.manager
         setup.fast_withdrawal.payout_withdrawal(
@@ -99,6 +113,7 @@ class FastWithdrawalTestCase(BaseTestCase):
                 content=TicketContent(0, None),
                 base_withdrawer=setup.alice,
                 payload=pack(amount, 'nat'),
+                timestamp=setup.valid_timestamp,
             )
 
             provider = self.manager
@@ -123,7 +138,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             ticketer=setup.exchanger,
             content=TicketContent(0, None),
             base_withdrawer=setup.alice,
-            timestamp=0,
+            timestamp=setup.valid_timestamp,
             payload=pack(999_500, 'nat'),
             l2_caller=bytes(20),
         )
@@ -140,7 +155,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert stored_address == get_address(provider)
 
         # Changing timestamp:
-        withdrawal.timestamp = 12345
+        withdrawal.timestamp = setup.valid_timestamp + 1
         setup.fast_withdrawal.payout_withdrawal(
             service_provider=provider,
             withdrawal=withdrawal,
@@ -202,6 +217,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             ticketer=setup.exchanger,
             content=TicketContent(0, None),
             payload=pack(1_000_000, 'nat'),
+            timestamp=setup.valid_timestamp,
         )
         setup.fast_withdrawal.payout_withdrawal(
             withdrawal=withdrawal,
@@ -230,6 +246,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             ticketer=setup.exchanger,
             content=TicketContent(0, None),
             payload=pack(77, 'nat'),
+            timestamp=setup.valid_timestamp,
         )
         setup.fast_withdrawal.payout_withdrawal(
             withdrawal=withdrawal,
@@ -279,11 +296,12 @@ class FastWithdrawalTestCase(BaseTestCase):
             base_withdrawer=setup.alice,
             ticketer=setup.exchanger,
             content=TicketContent(0, None),
+            timestamp=setup.valid_timestamp,
         )
         self.bake_block()
 
         # Creating wrapped xtz ticket:
-        setup.exchanger.mint(setup.manager, 333).send()
+        setup.exchanger.using(setup.manager).mint(setup.manager, 333).send()
         self.bake_block()
         ticket = setup.exchanger.read_ticket(setup.manager)
 
@@ -319,6 +337,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             content=ticketer.read_content(),
             base_withdrawer=alice,
             payload=pack(30, 'nat'),
+            timestamp=setup.valid_timestamp,
         )
         provider.bulk(
             token.allow(provider, setup.fast_withdrawal),
@@ -378,6 +397,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             base_withdrawer=alice,
             ticketer=ticketer,
             content=TicketContent(0, None),
+            timestamp=setup.valid_timestamp,
         )
         self.bake_block()
 

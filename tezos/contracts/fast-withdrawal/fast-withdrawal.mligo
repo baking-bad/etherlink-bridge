@@ -36,6 +36,18 @@ let get_token (ticketer : address) : Tokens.t =
     | Some (token) -> token
     | None -> failwith "Error in get_token view call"
 
+[@inline]
+let is_withdrawal_expired (withdrawal : FastWithdrawal.t) (expiration_seconds : int) : bool =
+    Tezos.get_now() > withdrawal.timestamp + expiration_seconds
+
+[@inline]
+let get_payout_amount (withdrawal : FastWithdrawal.t) (expiration_seconds : int) : nat =
+    if not is_withdrawal_expired withdrawal expiration_seconds then
+        let discounted_amount = unpack_payload withdrawal.payload in
+        discounted_amount
+    else
+        withdrawal.full_amount
+
 [@entry]
 let payout_withdrawal
         (params : payout_withdrawal_params)
@@ -44,11 +56,7 @@ let payout_withdrawal
 
     let { withdrawal; service_provider } = params in
     let _ = Storage.assert_withdrawal_was_not_paid_before withdrawal storage in
-    let discounted_amount = unpack_payload withdrawal.payload in
-    // TODO: check if timestamp expired:
-    //       - if it is, payout_amount = discounted_amount
-    //       - if it is, payout_amount = withdrawal.full_amount
-    let payout_amount = discounted_amount in
+    let payout_amount = get_payout_amount withdrawal storage.expiration_seconds in
     let transfer_op = if withdrawal.ticketer = storage.exchanger then
         // TODO: assert ticket content in None
         let entry = Tezos.get_contract withdrawal.base_withdrawer in

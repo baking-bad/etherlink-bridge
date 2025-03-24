@@ -29,7 +29,8 @@
                    (address %base_withdrawer)
                    (bytes %payload)
                    (bytes %l2_caller))
-             address)) ;
+             address)
+          (int %expiration_seconds)) ;
   code { UNPAIR ;
          IF_LEFT
            { UNPAIR 6 ;
@@ -56,7 +57,7 @@
              IF { PUSH string "Sender is not allowed to call this entrypoint" ; FAILWITH }
                 {} ;
              DUP 3 ;
-             GET 4 ;
+             GET 5 ;
              NONE address ;
              DUP 4 ;
              GET_AND_UPDATE ;
@@ -88,18 +89,28 @@
                   PAIR ;
                   TRANSFER_TOKENS } ;
              DUG 2 ;
-             UPDATE 4 }
+             UPDATE 5 }
            { UNPAIR ;
              DUP 3 ;
-             GET 4 ;
+             GET 5 ;
              DUP 2 ;
              GET ;
              IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
              IF { PUSH string "The fast withdrawal was already payed" ; FAILWITH } {} ;
-             DUP ;
-             GET 13 ;
-             UNPACK nat ;
-             IF_NONE { PUSH string "Error during payload unpack" ; FAILWITH } {} ;
+             DUP 3 ;
+             GET 6 ;
+             DUP 2 ;
+             GET 9 ;
+             ADD ;
+             NOW ;
+             COMPARE ;
+             GT ;
+             NOT ;
+             IF { DUP ;
+                  GET 13 ;
+                  UNPACK nat ;
+                  IF_NONE { PUSH string "Error during payload unpack" ; FAILWITH } {} }
+                { DUP ; GET 3 } ;
              DUP 4 ;
              CAR ;
              DUP 3 ;
@@ -151,12 +162,12 @@
                       TRANSFER_TOKENS } } ;
              DUP 4 ;
              DIG 4 ;
-             GET 4 ;
+             GET 5 ;
              DIG 4 ;
              SOME ;
              DIG 4 ;
              UPDATE ;
-             UPDATE 4 } ;
+             UPDATE 5 } ;
          NIL operation ;
          DIG 2 ;
          CONS ;

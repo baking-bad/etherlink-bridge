@@ -124,6 +124,11 @@
                   PUSH mutez 1 ;
                   DIG 2 ;
                   MUL ;
+                  DUP ;
+                  AMOUNT ;
+                  COMPARE ;
+                  NEQ ;
+                  IF { PUSH string "Tezos amount is not valid" ; FAILWITH } {} ;
                   UNIT ;
                   TRANSFER_TOKENS }
                 { DUP 2 ;

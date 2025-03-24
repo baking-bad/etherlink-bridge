@@ -48,6 +48,13 @@ let get_payout_amount (withdrawal : FastWithdrawal.t) (expiration_seconds : int)
     else
         withdrawal.full_amount
 
+[@inline]
+let assert_attached_amount_is_valid (valid_amount : tez) : unit =
+    if Tezos.get_amount () <> valid_amount then
+        failwith "Tezos amount is not valid"
+    else
+        unit
+
 [@entry]
 let payout_withdrawal
         (params : payout_withdrawal_params)
@@ -61,6 +68,7 @@ let payout_withdrawal
         // TODO: assert ticket content in None
         let entry = Tezos.get_contract withdrawal.base_withdrawer in
         let payout_amount_tez = payout_amount * 1mutez in
+        let _ = assert_attached_amount_is_valid payout_amount_tez in
         Tezos.Next.Operation.transaction unit payout_amount_tez entry
     else
         // TODO: assert no xtz added to this entrypoint

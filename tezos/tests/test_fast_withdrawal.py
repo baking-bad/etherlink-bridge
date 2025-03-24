@@ -59,7 +59,9 @@ class FastWithdrawalTestCase(BaseTestCase):
             tester=tester,
         )
 
-    def test_should_create_withdrawal_record_when_purchased(self) -> None:
+    def test_should_create_withdrawal_record_after_xtz_withdrawal_purchased(
+        self,
+    ) -> None:
         setup = self.fast_withdrawal_setup()
 
         withdrawal = Withdrawal.default_with(
@@ -79,6 +81,8 @@ class FastWithdrawalTestCase(BaseTestCase):
         withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
         stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
         assert stored_address == get_address(provider)
+
+        # TODO: check ticketer content is (0, None)
 
     def test_should_correctly_encode_payloads_for_different_ticket_amounts(
         self,
@@ -187,6 +191,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
         assert stored_address == get_address(provider)
 
+        # TODO:
+        # - check new key is added for transaction with different `ticketer`
+        # - check new key is added for transaction with different ticket `content`
+
     def test_should_reject_duplicate_withdrawal(self) -> None:
         setup = self.fast_withdrawal_setup()
 
@@ -210,7 +218,9 @@ class FastWithdrawalTestCase(BaseTestCase):
             ).send()
         assert "The fast withdrawal was already payed" in str(err.exception)
 
-    def test_provider_receives_withdrawal_when_purchased(self) -> None:
+        # TODO: the same check for same provider (setup.manager)
+
+    def test_provider_receives_xtz_withdrawal_after_purchase(self) -> None:
         # TODO: add smart_rollup role
         setup = self.fast_withdrawal_setup()
 
@@ -259,7 +269,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         # Checking that the provider received the xtz:
         assert provider.balance() == provider_balance + Decimal('0.000077')
 
-    def test_user_receives_withdrawal_when_no_one_purchased(self) -> None:
+    def test_user_receives_xtz_withdrawal_when_no_purchase_made(self) -> None:
         # TODO: add smart_rollup role
         setup = self.fast_withdrawal_setup()
         alice_balance = setup.alice.balance()
@@ -291,7 +301,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         # Checking that Alice received the xtz (full withdrawal amount):
         assert setup.alice.balance() == alice_balance + Decimal('0.000333')
 
-    def test_provider_receives_withdrawal_when_purchased_fa2(self) -> None:
+    def test_provider_receives_fa2_withdrawal_after_purchase(self) -> None:
         setup = self.fast_withdrawal_setup()
         alice = setup.alice
         smart_rollup = self.bootstrap_account()
@@ -353,10 +363,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         # Checking that the Provider received the token:
         assert token.get_balance(provider) == 1000 - 30 + 50
 
-    # TODO: test_user_receives_withdrawal_when_no_one_purchased_fa2
-    # TODO: test_provider_receives_withdrawal_when_purchased_fa12
-
-    def test_user_receives_withdrawal_when_no_one_purchased_fa12(self) -> None:
+    def test_user_receives_fa12_withdrawal_when_no_purchase_made(self) -> None:
         setup = self.fast_withdrawal_setup()
         alice = setup.alice
         smart_rollup = self.bootstrap_account()

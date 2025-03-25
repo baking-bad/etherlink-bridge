@@ -499,3 +499,36 @@ class FastWithdrawalTestCase(BaseTestCase):
                 xtz_amount=990,
             ).send()
         assert "Tezos amount is not valid" in str(err.exception)
+
+    def test_rejects_xtz_withdrawal_purchase_with_wrong_ticket_content(self) -> None:
+        setup = self.fast_withdrawal_setup()
+        wrong_token_id_content = TicketContent(42, None)
+        wrong_payload_content = TicketContent(0, bytes(10))
+
+        with self.assertRaises(MichelsonError) as err:
+            withdrawal = Withdrawal.default_with(
+                full_amount=1,
+                ticketer=setup.xtz_ticketer,
+                content=wrong_token_id_content,
+                payload=pack(1, 'nat'),
+            )
+            setup.fast_withdrawal.payout_withdrawal(
+                withdrawal=withdrawal,
+                service_provider=setup.service_provider,
+                xtz_amount=1,
+            ).send()
+        assert "Wrong ticket content for xtz ticketer" in str(err.exception)
+
+        with self.assertRaises(MichelsonError) as err:
+            withdrawal = Withdrawal.default_with(
+                full_amount=1,
+                ticketer=setup.xtz_ticketer,
+                content=wrong_payload_content,
+                payload=pack(1, 'nat'),
+            )
+            setup.fast_withdrawal.payout_withdrawal(
+                withdrawal=withdrawal,
+                service_provider=setup.service_provider,
+                xtz_amount=1,
+            ).send()
+        assert "Wrong ticket content for xtz ticketer" in str(err.exception)

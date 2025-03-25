@@ -532,3 +532,22 @@ class FastWithdrawalTestCase(BaseTestCase):
                 xtz_amount=1,
             ).send()
         assert "Wrong ticket content for xtz ticketer" in str(err.exception)
+
+    def test_should_reject_settlement_with_attached_xtz(self) -> None:
+        setup = self.fast_withdrawal_setup()
+
+        setup.xtz_ticketer.mint(setup.smart_rollup, 99).send()
+        self.bake_block()
+        ticket = setup.xtz_ticketer.read_ticket(setup.smart_rollup)
+
+        with self.assertRaises(MichelsonError) as err:
+            setup.smart_rollup.bulk(
+                setup.tester.set_settle_withdrawal(
+                    target=setup.fast_withdrawal,
+                    withdrawal=Withdrawal.default(),
+                    xtz_amount=99,
+                ),
+                ticket.transfer(setup.tester),
+            ).send()
+            self.bake_block()
+        assert "XTZ_DEPOSIT_DISALLOWED" in str(err.exception)

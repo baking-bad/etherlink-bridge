@@ -31,7 +31,9 @@
                    (bytes %l2_caller))
              address)
           (int %expiration_seconds)) ;
-  code { UNPAIR ;
+  code { PUSH string "XTZ_DEPOSIT_DISALLOWED" ;
+         SWAP ;
+         UNPAIR ;
          IF_LEFT
            { UNPAIR 6 ;
              SWAP ;
@@ -49,6 +51,11 @@
              DIG 8 ;
              PAIR 8 ;
              SWAP ;
+             PUSH mutez 0 ;
+             AMOUNT ;
+             COMPARE ;
+             GT ;
+             IF { DIG 3 ; FAILWITH } { DIG 3 ; DROP } ;
              DUP 3 ;
              GET 3 ;
              SENDER ;
@@ -117,7 +124,9 @@
              GET 5 ;
              COMPARE ;
              EQ ;
-             IF { NONE bytes ;
+             IF { DIG 4 ;
+                  DROP ;
+                  NONE bytes ;
                   PUSH nat 0 ;
                   PAIR ;
                   DUP 3 ;
@@ -139,7 +148,12 @@
                   IF { PUSH string "Tezos amount is not valid" ; FAILWITH } {} ;
                   UNIT ;
                   TRANSFER_TOKENS }
-                { DUP 2 ;
+                { PUSH mutez 0 ;
+                  AMOUNT ;
+                  COMPARE ;
+                  GT ;
+                  IF { DIG 4 ; FAILWITH } { DIG 4 ; DROP } ;
+                  DUP 2 ;
                   GET 5 ;
                   UNIT ;
                   VIEW "get_token" (or (address %fa12) (pair %fa2 address nat)) ;

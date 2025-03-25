@@ -8,6 +8,7 @@
 #import "../common/types/ticket.mligo" "Ticket"
 #import "../common/tokens/tokens.mligo" "Tokens"
 #import "../common/types/fast-withdrawal.mligo" "FastWithdrawal"
+#import "../common/errors.mligo" "Errors"
 #import "./storage.mligo" "Storage"
 
 
@@ -63,6 +64,14 @@ let assert_content_is_valid_for_xtz (content : Ticket.content_t) : unit =
     else
         unit
 
+// TODO: consider reusing Assertions.no_xtz_deposit (but it is not inlined)
+[@inline]
+let assert_no_xtz_deposit
+        (unit : unit)
+        : unit =
+    if Tezos.get_amount () > 0mutez
+    then failwith Errors.xtz_deposit_disallowed else unit
+
 [@entry]
 let payout_withdrawal
         (params : payout_withdrawal_params)
@@ -81,7 +90,7 @@ let payout_withdrawal
         Tezos.Next.Operation.transaction unit payout_amount_tez entry
     else
         (* This is the case when the service provider pays out an FA withdrawal *)
-        // TODO: assert no xtz added to this entrypoint
+        let _ = assert_no_xtz_deposit () in
         let token = get_token withdrawal.ticketer in
         let sender = Tezos.get_sender () in
         // TODO: assert ticket.content the same as withdrawal.ticketer.get_content
@@ -97,7 +106,7 @@ let default
     (* TODO: add docstring *)
 
     let (ticket, withdrawal) = SettleWithdrawalEntry.to_key_and_ticket params in
-    // TODO: disallow xtz payments to this entrypoint (?)
+    let _ = assert_no_xtz_deposit () in
     let _ = assert_sender_is_allowed storage.smart_rollup in
 
     (* If no advance payment found, send to the withdrawer. *)

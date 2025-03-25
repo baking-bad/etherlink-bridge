@@ -80,8 +80,8 @@ let payout_withdrawal
 
     let { withdrawal; service_provider } = params in
     let _ = Storage.assert_withdrawal_was_not_paid_before withdrawal storage in
-    let payout_amount = get_payout_amount withdrawal storage.expiration_seconds in
-    let transfer_op = if withdrawal.ticketer = storage.xtz_ticketer then
+    let payout_amount = get_payout_amount withdrawal storage.config.expiration_seconds in
+    let transfer_op = if withdrawal.ticketer = storage.config.xtz_ticketer then
         (* This is the case when the service provider pays out an XTZ withdrawal *)
         let _ = assert_content_is_valid_for_xtz withdrawal.content in
         let entry = Tezos.get_contract withdrawal.base_withdrawer in
@@ -107,7 +107,7 @@ let default
 
     let (ticket, withdrawal) = SettleWithdrawalEntry.to_key_and_ticket params in
     let _ = assert_no_xtz_deposit () in
-    let _ = assert_sender_is_allowed storage.smart_rollup in
+    let _ = assert_sender_is_allowed storage.config.smart_rollup in
 
     (* If no advance payment found, send to the withdrawer. *)
     (* If key found, then everything matches, the withdrawal was payed,
@@ -118,13 +118,17 @@ let default
     | Some service_provider -> service_provider in
 
     let (ticketer, (_, _)), ticket = Tezos.Next.Ticket.read ticket in
-    let withdraw_op = if ticketer = storage.xtz_ticketer then
+    let withdraw_op = if ticketer = storage.config.xtz_ticketer then
         // TODO: sync parameter with RouterWithdrawEntry (make record) ?
-        XtzTicketerBurnEntry.send storage.xtz_ticketer (receiver, ticket)
+        XtzTicketerBurnEntry.send storage.config.xtz_ticketer (receiver, ticket)
     else
         RouterWithdrawEntry.send ticketer { receiver; ticket } in
     [withdraw_op], { storage with withdrawals = upd_withdrawals }
 
 [@view]
-let get_service_provider (withdrawal : FastWithdrawal.t) (store : Storage.t) : address option =
-    Big_map.find_opt withdrawal store.withdrawals
+let get_service_provider (withdrawal : FastWithdrawal.t) (storage : Storage.t) : address option =
+    Big_map.find_opt withdrawal storage.withdrawals
+
+[@view]
+let get_config (() : unit) (storage : Storage.t) : Storage.config =
+    storage.config

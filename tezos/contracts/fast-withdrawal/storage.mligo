@@ -4,17 +4,25 @@
 type withdrawals = (FastWithdrawal.t, address) big_map
 
 (*
-    Fast Withdrawal contract storage:
+    Fast Withdrawal contract configuration:
     - xtz_ticketer: address of the native XTZ ticketer (exchanger)
     - smart_rollup: address of the Etherlink smart rollup
-    - withdrawals: maps each withdrawal key to a service provider
     - expiration_seconds: number of seconds during which a withdrawal can be purchased at a discount
 *)
-type t = {
+type config = {
     xtz_ticketer : address;
     smart_rollup : address;
-    withdrawals : withdrawals;
     expiration_seconds : int;
+}
+
+(*
+    Fast Withdrawal contract storage:
+    - withdrawals: maps each withdrawal key to a service provider
+    - config: fast withdrawal contract configuration
+*)
+type t = {
+    withdrawals : withdrawals;
+    config : config;
 }
 
 let add_withdrawal

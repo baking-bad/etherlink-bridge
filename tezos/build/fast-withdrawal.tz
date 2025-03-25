@@ -18,9 +18,7 @@
               (bytes %l2_caller))
            (address %service_provider))) ;
   storage
-    (pair (address %xtz_ticketer)
-          (address %smart_rollup)
-          (big_map %withdrawals
+    (pair (big_map %withdrawals
              (pair (nat %withdrawal_id)
                    (nat %full_amount)
                    (address %ticketer)
@@ -30,7 +28,10 @@
                    (bytes %payload)
                    (bytes %l2_caller))
              address)
-          (int %expiration_seconds)) ;
+          (pair %config
+             (address %xtz_ticketer)
+             (address %smart_rollup)
+             (int %expiration_seconds))) ;
   code { PUSH string "XTZ_DEPOSIT_DISALLOWED" ;
          SWAP ;
          UNPAIR ;
@@ -57,6 +58,7 @@
              GT ;
              IF { DIG 3 ; FAILWITH } { DIG 3 ; DROP } ;
              DUP 3 ;
+             CDR ;
              GET 3 ;
              SENDER ;
              COMPARE ;
@@ -64,7 +66,7 @@
              IF { PUSH string "Sender is not allowed to call this entrypoint" ; FAILWITH }
                 {} ;
              DUP 3 ;
-             GET 5 ;
+             CAR ;
              NONE address ;
              DUP 4 ;
              GET_AND_UPDATE ;
@@ -73,12 +75,14 @@
              READ_TICKET ;
              CAR ;
              DUP 5 ;
+             CDR ;
              CAR ;
              DUP 2 ;
              COMPARE ;
              EQ ;
              IF { DROP ;
                   DUP 4 ;
+                  CDR ;
                   CAR ;
                   CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;
                   IF_NONE { PUSH string "INVALID_XTZ_TKTR" ; FAILWITH } {} ;
@@ -96,16 +100,17 @@
                   PAIR ;
                   TRANSFER_TOKENS } ;
              DUG 2 ;
-             UPDATE 5 }
+             UPDATE 1 }
            { UNPAIR ;
              DUP 3 ;
-             GET 5 ;
+             CAR ;
              DUP 2 ;
              GET ;
              IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
              IF { PUSH string "The fast withdrawal was already payed" ; FAILWITH } {} ;
              DUP 3 ;
-             GET 6 ;
+             CDR ;
+             GET 4 ;
              DUP 2 ;
              GET 9 ;
              ADD ;
@@ -119,6 +124,7 @@
                   IF_NONE { PUSH string "Error during payload unpack" ; FAILWITH } {} }
                 { DUP ; GET 3 } ;
              DUP 4 ;
+             CDR ;
              CAR ;
              DUP 3 ;
              GET 5 ;
@@ -189,12 +195,12 @@
                       TRANSFER_TOKENS } } ;
              DUP 4 ;
              DIG 4 ;
-             GET 5 ;
+             CAR ;
              DIG 4 ;
              SOME ;
              DIG 4 ;
              UPDATE ;
-             UPDATE 5 } ;
+             UPDATE 1 } ;
          NIL operation ;
          DIG 2 ;
          CONS ;
@@ -209,5 +215,9 @@
              (bytes %payload)
              (bytes %l2_caller))
        (option address)
-       { UNPAIR ; SWAP ; GET 5 ; SWAP ; GET } }
+       { UNPAIR ; SWAP ; CAR ; SWAP ; GET } ;
+  view "get_config"
+       unit
+       (pair (address %xtz_ticketer) (address %smart_rollup) (int %expiration_seconds))
+       { CDR ; CDR } }
 

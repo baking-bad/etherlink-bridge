@@ -81,9 +81,11 @@ class FastWithdrawal(ContractHelper):
         withdrawals bigmap"""
 
         return {
-            "xtz_ticketer": get_address(xtz_ticketer),
-            "smart_rollup": get_address(smart_rollup),
-            "expiration_seconds": expiration_seconds,
+            "config": {
+                "xtz_ticketer": get_address(xtz_ticketer),
+                "smart_rollup": get_address(smart_rollup),
+                "expiration_seconds": expiration_seconds,
+            },
             "withdrawals": {},
         }
 
@@ -120,3 +122,8 @@ class FastWithdrawal(ContractHelper):
         if it exists, otherwise returns None"""
 
         return self.contract.get_service_provider(withdrawal.as_tuple()).run_view()  # type: ignore
+
+    def get_config_view(self) -> dict[str, Any]:
+        """Returns FastWithdrawal contract configuration"""
+
+        return self.contract.get_config().run_view()  # type: ignore

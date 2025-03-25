@@ -537,3 +537,20 @@ class FastWithdrawalTestCase(BaseTestCase):
             ).send()
             self.bake_block()
         assert "XTZ_DEPOSIT_DISALLOWED" in str(err.exception)
+
+    def test_should_return_config_on_get_config_view(self) -> None:
+        xtz_ticketer = self.bootstrap_account()
+        smart_rollup = self.bootstrap_account()
+        one_day = 24 * 60 * 60
+
+        fast_withdrawal = self.deploy_fast_withdrawal(
+            xtz_ticketer=xtz_ticketer,
+            smart_rollup=smart_rollup,
+            expiration_seconds=one_day,
+        )
+
+        config = fast_withdrawal.get_config_view()
+        assert config['expiration_seconds'] == one_day
+        assert config['smart_rollup'] == get_address(smart_rollup)
+        assert config['xtz_ticketer'] == get_address(xtz_ticketer)
+        # TODO: add other config parameters checks if added

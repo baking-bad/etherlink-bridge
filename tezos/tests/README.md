@@ -143,6 +143,12 @@
 - [ ] test_rejects_fa12_withdrawal_purchase_at_discounted_price_if_expired
 - [ ] test_rejects_fa2_withdrawal_purchase_at_discounted_price_if_expired
 
+- [ ] test_rejects_xtz_withdrawal_purchase_with_wrong_ticket_content
+    - check `token_id` wrong
+    - check `payload` is Some(bytes)
+- [ ] test_rejects_fa12_withdrawal_purchase_with_wrong_ticket_content
+- [ ] test_rejects_fa2_withdrawal_purchase_with_wrong_ticket_content
+
 - [ ] TODO: Consider adding tests for withdrawal record removal if this logic is introduced
 - [ ] TODO: Consider adding tests for events if this logic is introduced
 - [ ] TODO: Consider adding tests for views after this logic added

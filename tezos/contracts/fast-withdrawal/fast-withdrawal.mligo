@@ -55,6 +55,14 @@ let assert_attached_amount_is_valid (valid_amount : tez) : unit =
     else
         unit
 
+[@inline]
+let assert_content_is_valid_for_xtz (content : Ticket.content_t) : unit =
+    let valid_xtz_content : Ticket.content_t = (0n, None) in
+    if content <> valid_xtz_content then
+        failwith "Wrong ticket content for xtz ticketer"
+    else
+        unit
+
 [@entry]
 let payout_withdrawal
         (params : payout_withdrawal_params)
@@ -65,7 +73,8 @@ let payout_withdrawal
     let _ = Storage.assert_withdrawal_was_not_paid_before withdrawal storage in
     let payout_amount = get_payout_amount withdrawal storage.expiration_seconds in
     let transfer_op = if withdrawal.ticketer = storage.xtz_ticketer then
-        // TODO: assert ticket content in None
+        (* This is the case when the service provider pays out an XTZ withdrawal *)
+        let _ = assert_content_is_valid_for_xtz withdrawal.content in
         let entry = Tezos.get_contract withdrawal.base_withdrawer in
         let payout_amount_tez = payout_amount * 1mutez in
         let _ = assert_attached_amount_is_valid payout_amount_tez in

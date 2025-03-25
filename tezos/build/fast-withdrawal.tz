@@ -117,7 +117,15 @@
              GET 5 ;
              COMPARE ;
              EQ ;
-             IF { DUP 2 ;
+             IF { NONE bytes ;
+                  PUSH nat 0 ;
+                  PAIR ;
+                  DUP 3 ;
+                  GET 7 ;
+                  COMPARE ;
+                  NEQ ;
+                  IF { PUSH string "Wrong ticket content for xtz ticketer" ; FAILWITH } {} ;
+                  DUP 2 ;
                   GET 11 ;
                   CONTRACT unit ;
                   IF_NONE { PUSH string "bad address for get_contract" ; FAILWITH } {} ;

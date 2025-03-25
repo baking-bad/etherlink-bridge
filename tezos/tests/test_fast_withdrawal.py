@@ -113,11 +113,8 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
-        stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
         assert stored_address == get_address(setup.service_provider)
-
-        # TODO: check ticketer content is (0, None)
 
     def test_should_correctly_encode_payloads_for_different_ticket_amounts(
         self,
@@ -144,8 +141,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             ).send()
             self.bake_block()
 
-            withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
-            stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+            stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
             assert stored_address == get_address(setup.service_provider)
 
     def test_should_create_different_withdrawal_records(self) -> None:
@@ -169,8 +165,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
-        stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
         assert stored_address == get_address(setup.service_provider)
 
         # Changing timestamp:
@@ -182,8 +177,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
-        stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
         assert stored_address == get_address(setup.service_provider)
 
         # Changing base_withdrawer:
@@ -195,8 +189,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
-        stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
         assert stored_address == get_address(setup.service_provider)
 
         # Changing payload:
@@ -208,8 +201,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
-        stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
         assert stored_address == get_address(setup.service_provider)
 
         # Changing l2_caller:
@@ -221,8 +213,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
-        stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
         assert stored_address == get_address(setup.service_provider)
 
         # TODO:
@@ -273,8 +264,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
-        stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
         assert stored_address == get_address(setup.service_provider)
 
         # Creating wrapped xtz ticket for Smart Rollup:
@@ -297,9 +287,8 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         # Checking that there is no record in the fast withdrawal contract:
-        with self.assertRaises(KeyError):
-            withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
-            stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert stored_address is None
 
         # Checking that the provider received the xtz:
         updated_balance = setup.service_provider.balance()
@@ -364,8 +353,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert token.get_balance(setup.service_provider) == 1000 - 30
         assert token.get_balance(setup.withdrawer) == 30
 
-        withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
-        stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
         assert stored_address == get_address(setup.service_provider)
 
         # Creating wrapped token (ticket) for smart_rollup:
@@ -389,9 +377,8 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         # Checking that there is no record in the fast withdrawal contract:
-        with self.assertRaises(KeyError):
-            withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
-            stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert stored_address is None
 
         # Checking that the Provider received the token:
         assert token.get_balance(setup.service_provider) == 1000 - 30 + 50
@@ -456,8 +443,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        withdrawals_bigmap = setup.fast_withdrawal.contract.storage['withdrawals']
-        stored_address = withdrawals_bigmap[withdrawal.as_tuple()]()  # type: ignore
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
         assert stored_address == get_address(setup.service_provider)
         assert setup.withdrawer.balance() == withdrawer_balance + Decimal('0.001000')
 

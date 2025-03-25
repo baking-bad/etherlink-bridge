@@ -198,5 +198,16 @@
          NIL operation ;
          DIG 2 ;
          CONS ;
-         PAIR } }
+         PAIR } ;
+  view "get_service_provider"
+       (pair (nat %withdrawal_id)
+             (nat %full_amount)
+             (address %ticketer)
+             (pair %content nat (option bytes))
+             (timestamp %timestamp)
+             (address %base_withdrawer)
+             (bytes %payload)
+             (bytes %l2_caller))
+       (option address)
+       { UNPAIR ; SWAP ; GET 5 ; SWAP ; GET } }
 

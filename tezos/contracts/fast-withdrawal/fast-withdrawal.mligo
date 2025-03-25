@@ -124,3 +124,7 @@ let default
     else
         RouterWithdrawEntry.send ticketer { receiver; ticket } in
     [withdraw_op], { storage with withdrawals = upd_withdrawals }
+
+[@view]
+let get_service_provider (withdrawal : FastWithdrawal.t) (store : Storage.t) : address option =
+    Big_map.find_opt withdrawal store.withdrawals

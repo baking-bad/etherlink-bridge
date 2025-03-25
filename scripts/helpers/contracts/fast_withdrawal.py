@@ -114,3 +114,9 @@ class FastWithdrawal(ContractHelper):
             withdrawal.as_tuple(),
             get_address(service_provider),
         ).with_amount(xtz_amount)
+
+    def get_service_provider_view(self, withdrawal: Withdrawal) -> Optional[str]:
+        """Returns service provider address for the specified withdrawal,
+        if it exists, otherwise returns None"""
+
+        return self.contract.get_service_provider(withdrawal.as_tuple()).run_view()  # type: ignore

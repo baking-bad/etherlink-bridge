@@ -13,15 +13,15 @@ from scripts.helpers.utility import get_build_dir
 from scripts.helpers.utility import originate_from_file
 
 
-class Exchanger(ContractHelper):
+class XtzTicketer(ContractHelper):
     @classmethod
     def originate(
         cls,
         client: PyTezosClient,
     ) -> OperationGroup:
-        """Deploys Exchanger (native xtz ticketer) contract"""
+        """Deploys XtzTicketer (exchanger) contract"""
 
-        filename = join(get_build_dir(), "exchanger.tz")
+        filename = join(get_build_dir(), "xtz-ticketer.tz")
         storage: dict = {}
         return originate_from_file(filename, client, storage)
 
@@ -29,7 +29,7 @@ class Exchanger(ContractHelper):
         self,
         owner: Optional[Addressable] = None,
     ) -> Ticket:
-        """Returns ticket with Exchanger's content that can be used in
+        """Returns ticket with XtzTicketer's content that can be used in
         `ticket_transfer` call. Amount is set to the client's balance."""
 
         owner = owner or self.client

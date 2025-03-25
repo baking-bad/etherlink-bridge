@@ -4,7 +4,7 @@ from typing import cast
 from pytezos.client import PyTezosClient
 from pytezos.operation.group import OperationGroup
 from pytezos.rpc.errors import MichelsonError
-from scripts.helpers.contracts.exchanger import Exchanger
+from scripts.helpers.contracts.xtz_ticketer import XtzTicketer
 from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal, Withdrawal
 from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
 from scripts.helpers.contracts.tokens.token import TokenHelper
@@ -20,7 +20,7 @@ class FastWithdrawalTestSetup:
     withdrawer: PyTezosClient
     smart_rollup: PyTezosClient
     service_provider: PyTezosClient
-    exchanger: Exchanger
+    xtz_ticketer: XtzTicketer
     fast_withdrawal: FastWithdrawal
     tester: TicketRouterTester
     valid_timestamp: int
@@ -30,27 +30,27 @@ class FastWithdrawalTestSetup:
 class FastWithdrawalTestCase(BaseTestCase):
     def deploy_fast_withdrawal(
         self,
-        exchanger: Addressable,
+        xtz_ticketer: Addressable,
         smart_rollup: Addressable,
         expiration_seconds: int,
     ) -> FastWithdrawal:
-        """Deploys FastWithdrawal contract for the specified exchanger and
+        """Deploys FastWithdrawal contract for the specified xtz_ticketer and
         smart_rollup addresses"""
 
         opg = FastWithdrawal.originate(
-            self.manager, exchanger, smart_rollup, expiration_seconds
+            self.manager, xtz_ticketer, smart_rollup, expiration_seconds
         ).send()
         self.bake_block()
         return FastWithdrawal.from_opg(self.manager, opg)
 
-    def deploy_exchanger(
+    def deploy_xtz_ticketer(
         self,
-    ) -> Exchanger:
-        """Deploys Exchanger (native xtz ticketer) contract"""
+    ) -> XtzTicketer:
+        """Deploys XtzTicketer (exchanger) contract"""
 
-        opg = Exchanger.originate(self.manager).send()
+        opg = XtzTicketer.originate(self.manager).send()
         self.bake_block()
-        return Exchanger.from_opg(self.manager, opg)
+        return XtzTicketer.from_opg(self.manager, opg)
 
     def bootstrap_non_baker_account(
         self, mutez_balance: int = 1_000_000_000
@@ -75,11 +75,11 @@ class FastWithdrawalTestCase(BaseTestCase):
         smart_rollup = self.bootstrap_non_baker_account()
         self.bake_block()
 
-        exchanger = self.deploy_exchanger()
+        xtz_ticketer = self.deploy_xtz_ticketer()
         tester = self.deploy_ticket_router_tester()
         one_day = 24 * 60 * 60
         fast_withdrawal = self.deploy_fast_withdrawal(
-            exchanger, tester, expiration_seconds=one_day
+            xtz_ticketer, tester, expiration_seconds=one_day
         )
 
         return FastWithdrawalTestSetup(
@@ -87,7 +87,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             withdrawer=withdrawer,
             service_provider=service_provider,
             smart_rollup=smart_rollup,
-            exchanger=exchanger,
+            xtz_ticketer=xtz_ticketer,
             fast_withdrawal=fast_withdrawal,
             tester=tester,
             valid_timestamp=self.manager.now(),
@@ -102,7 +102,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         withdrawal = Withdrawal.default_with(
             base_withdrawer=setup.withdrawer,
             payload=pack(1_000_000, 'nat'),
-            ticketer=setup.exchanger,
+            ticketer=setup.xtz_ticketer,
             content=TicketContent(0, None),
             timestamp=setup.valid_timestamp,
         )
@@ -130,7 +130,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         for amount in amounts:
             withdrawal = Withdrawal.default_with(
                 full_amount=amount,
-                ticketer=setup.exchanger,
+                ticketer=setup.xtz_ticketer,
                 content=TicketContent(0, None),
                 base_withdrawer=setup.withdrawer,
                 payload=pack(amount, 'nat'),
@@ -154,7 +154,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         withdrawal = Withdrawal(
             withdrawal_id=1000,
             full_amount=1_000_000,
-            ticketer=setup.exchanger,
+            ticketer=setup.xtz_ticketer,
             content=TicketContent(0, None),
             base_withdrawer=setup.withdrawer,
             timestamp=setup.valid_timestamp,
@@ -233,7 +233,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         setup = self.fast_withdrawal_setup()
 
         withdrawal = Withdrawal.default_with(
-            ticketer=setup.exchanger,
+            ticketer=setup.xtz_ticketer,
             content=TicketContent(0, None),
             payload=pack(1_000_000, 'nat'),
             timestamp=setup.valid_timestamp,
@@ -261,7 +261,7 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         withdrawal = Withdrawal.default_with(
             full_amount=77,
-            ticketer=setup.exchanger,
+            ticketer=setup.xtz_ticketer,
             content=TicketContent(0, None),
             payload=pack(77, 'nat'),
             timestamp=setup.valid_timestamp,
@@ -278,9 +278,9 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert stored_address == get_address(setup.service_provider)
 
         # Creating wrapped xtz ticket for Smart Rollup:
-        setup.exchanger.mint(setup.smart_rollup, 77).send()
+        setup.xtz_ticketer.mint(setup.smart_rollup, 77).send()
         self.bake_block()
-        ticket = setup.exchanger.read_ticket(setup.smart_rollup)
+        ticket = setup.xtz_ticketer.read_ticket(setup.smart_rollup)
 
         # Recording providers balance:
         provider_balance = setup.service_provider.balance()
@@ -311,16 +311,16 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         withdrawal = Withdrawal.default_with(
             base_withdrawer=setup.withdrawer,
-            ticketer=setup.exchanger,
+            ticketer=setup.xtz_ticketer,
             content=TicketContent(0, None),
             timestamp=setup.valid_timestamp,
         )
         self.bake_block()
 
         # Creating wrapped xtz ticket:
-        setup.exchanger.mint(setup.service_provider, 333).send()
+        setup.xtz_ticketer.mint(setup.service_provider, 333).send()
         self.bake_block()
-        ticket = setup.exchanger.read_ticket(setup.service_provider)
+        ticket = setup.xtz_ticketer.read_ticket(setup.service_provider)
 
         # No one purchased the withdrawal,
         # Sending ticket to the fast withdrawal contract `default` entrypoint:
@@ -444,7 +444,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         withdrawal = Withdrawal.default_with(
             base_withdrawer=setup.withdrawer,
             full_amount=1_000,
-            ticketer=setup.exchanger,
+            ticketer=setup.xtz_ticketer,
             content=TicketContent(0, None),
             payload=pack(990, 'nat'),
             timestamp=setup.expired_timestamp,
@@ -462,9 +462,9 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert setup.withdrawer.balance() == withdrawer_balance + Decimal('0.001000')
 
         # Creating wrapped xtz ticket for Smart Rollup:
-        setup.exchanger.mint(setup.smart_rollup, 1000).send()
+        setup.xtz_ticketer.mint(setup.smart_rollup, 1000).send()
         self.bake_block()
-        ticket = setup.exchanger.read_ticket(setup.smart_rollup)
+        ticket = setup.xtz_ticketer.read_ticket(setup.smart_rollup)
 
         provider_balance = setup.service_provider.balance()
         setup.smart_rollup.bulk(
@@ -487,7 +487,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         withdrawal = Withdrawal.default_with(
             base_withdrawer=setup.withdrawer,
             full_amount=1_000,
-            ticketer=setup.exchanger,
+            ticketer=setup.xtz_ticketer,
             content=TicketContent(0, None),
             payload=pack(990, 'nat'),
             timestamp=setup.expired_timestamp,

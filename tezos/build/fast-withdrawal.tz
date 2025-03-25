@@ -18,7 +18,7 @@
               (bytes %l2_caller))
            (address %service_provider))) ;
   storage
-    (pair (address %exchanger)
+    (pair (address %xtz_ticketer)
           (address %smart_rollup)
           (big_map %withdrawals
              (pair (nat %withdrawal_id)
@@ -74,7 +74,7 @@
                   DUP 4 ;
                   CAR ;
                   CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;
-                  IF_NONE { PUSH string "Invalid tez ticket contract" ; FAILWITH } {} ;
+                  IF_NONE { PUSH string "INVALID_XTZ_TKTR" ; FAILWITH } {} ;
                   PUSH mutez 0 ;
                   DIG 2 ;
                   DIG 3 ;

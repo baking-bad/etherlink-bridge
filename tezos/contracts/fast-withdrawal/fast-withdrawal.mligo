@@ -3,7 +3,7 @@
 // TODO: add copyright
 
 #import "../common/entrypoints/settle-withdrawal.mligo" "SettleWithdrawalEntry"
-#import "../common/entrypoints/exchanger-burn.mligo" "ExchangerBurnEntry"
+#import "../common/entrypoints/xtz-ticketer-burn.mligo" "XtzTicketerBurnEntry"
 #import "../common/entrypoints/router-withdraw.mligo" "RouterWithdrawEntry"
 #import "../common/types/ticket.mligo" "Ticket"
 #import "../common/tokens/tokens.mligo" "Tokens"
@@ -64,13 +64,14 @@ let payout_withdrawal
     let { withdrawal; service_provider } = params in
     let _ = Storage.assert_withdrawal_was_not_paid_before withdrawal storage in
     let payout_amount = get_payout_amount withdrawal storage.expiration_seconds in
-    let transfer_op = if withdrawal.ticketer = storage.exchanger then
+    let transfer_op = if withdrawal.ticketer = storage.xtz_ticketer then
         // TODO: assert ticket content in None
         let entry = Tezos.get_contract withdrawal.base_withdrawer in
         let payout_amount_tez = payout_amount * 1mutez in
         let _ = assert_attached_amount_is_valid payout_amount_tez in
         Tezos.Next.Operation.transaction unit payout_amount_tez entry
     else
+        (* This is the case when the service provider pays out an FA withdrawal *)
         // TODO: assert no xtz added to this entrypoint
         let token = get_token withdrawal.ticketer in
         let sender = Tezos.get_sender () in
@@ -99,9 +100,9 @@ let default
     | Some service_provider -> service_provider in
 
     let (ticketer, (_, _)), ticket = Tezos.Next.Ticket.read ticket in
-    let withdraw_op = if ticketer = storage.exchanger then
+    let withdraw_op = if ticketer = storage.xtz_ticketer then
         // TODO: sync parameter with RouterWithdrawEntry (make record) ?
-        ExchangerBurnEntry.send storage.exchanger (receiver, ticket)
+        XtzTicketerBurnEntry.send storage.xtz_ticketer (receiver, ticket)
     else
         RouterWithdrawEntry.send ticketer { receiver; ticket } in
     [withdraw_op], { storage with withdrawals = upd_withdrawals }

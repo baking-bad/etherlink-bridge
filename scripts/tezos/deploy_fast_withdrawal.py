@@ -1,5 +1,5 @@
 import click
-from scripts.defaults import EXCHANGER_ADDRESS
+from scripts.defaults import XTZ_TICKETER_ADDRESS
 from scripts.helpers.contracts import FastWithdrawal
 from scripts.helpers.utility import get_tezos_client
 from scripts.helpers.formatting import (
@@ -12,28 +12,29 @@ from scripts import cli_options
 
 @click.command()
 @click.option(
-    '--exchanger-address',
-    default=EXCHANGER_ADDRESS,
-    envvar='EXCHANGER_ADDRESS',
+    '--xtz-ticketer-address',
+    default=XTZ_TICKETER_ADDRESS,
+    envvar='XTZ_TICKETER_ADDRESS',
     required=True,
-    prompt='Exchanger contract (native XTZ ticketer) address',
-    help='The address of the Exchanger contract that wraps XTZ on Tezos side.',
+    prompt='Native XTZ Ticketer contract (exchanger) address',
+    help='The address of the Native XTZ Ticketer contract that wraps XTZ on Tezos side.',
     show_default=True,
 )
+# TODO: add expiration_seconds parameter
 @cli_options.smart_rollup_address
 @cli_options.tezos_private_key
 @cli_options.tezos_rpc_url
 @cli_options.skip_confirm
 @cli_options.silent
 def deploy_fast_withdrawal(
-    exchanger_address: str,
+    xtz_ticketer_address: str,
     smart_rollup_address: str,
     tezos_private_key: str,
     tezos_rpc_url: str,
     skip_confirm: bool = True,
     silent: bool = True,
 ) -> FastWithdrawal:
-    """Deploys `fast_withdrawal` contract for provided Exchanger"""
+    """Deploys `fast_withdrawal` contract"""
 
     manager = get_tezos_client(tezos_rpc_url, tezos_private_key)
 
@@ -42,14 +43,16 @@ def deploy_fast_withdrawal(
         echo_variable('  - ', 'Deployer', manager.key.public_key_hash())
         echo_variable('  - ', 'Tezos RPC node', tezos_rpc_url)
         click.echo('  - Params:')
-        echo_variable('      * ', 'Exchanger address', exchanger_address)
+        echo_variable('      * ', 'Native XTZ Ticketer address', xtz_ticketer_address)
         echo_variable('      * ', 'Smart Rollup address', smart_rollup_address)
     if not skip_confirm:
         click.confirm('Do you want to proceed?', abort=True, default=True)
 
     opg = FastWithdrawal.originate(
         client=manager,
-        exchanger=exchanger_address,
+        xtz_ticketer=xtz_ticketer_address,
+        # TODO: expiration seconds to the parameter:
+        expiration_seconds=60 * 60 * 24,
         smart_rollup=smart_rollup_address,
     ).send()
     manager.wait(opg)

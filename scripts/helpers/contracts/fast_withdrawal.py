@@ -73,7 +73,7 @@ class Withdrawal:
 class FastWithdrawal(ContractHelper):
     @staticmethod
     def make_storage(
-        exchanger: Addressable,
+        xtz_ticketer: Addressable,
         smart_rollup: Addressable,
         expiration_seconds: int,
     ) -> dict[str, Any]:
@@ -81,7 +81,7 @@ class FastWithdrawal(ContractHelper):
         withdrawals bigmap"""
 
         return {
-            "exchanger": get_address(exchanger),
+            "xtz_ticketer": get_address(xtz_ticketer),
             "smart_rollup": get_address(smart_rollup),
             "expiration_seconds": expiration_seconds,
             "withdrawals": {},
@@ -91,14 +91,14 @@ class FastWithdrawal(ContractHelper):
     def originate(
         cls,
         client: PyTezosClient,
-        exchanger: Addressable,
+        xtz_ticketer: Addressable,
         smart_rollup: Addressable,
         expiration_seconds: int,
     ) -> OperationGroup:
-        """Deploys FastWithdrawal for the specified exchanger and smart_rollup
+        """Deploys FastWithdrawal for the specified xtz_ticketer and smart_rollup
         addresses"""
 
-        storage = cls.make_storage(exchanger, smart_rollup, expiration_seconds)
+        storage = cls.make_storage(xtz_ticketer, smart_rollup, expiration_seconds)
         filename = join(get_build_dir(), "fast-withdrawal.tz")
         return originate_from_file(filename, client, storage)
 

@@ -1,6 +1,6 @@
 (* SPDX-CopyrightText 2025 Functori <contact@functori.com> *)
 (* SPDX-CopyrightText 2025 Nomadic Labs <contact@nomadic-labs.com> *)
-// TODO: add copyright
+(* SPDX-CopyrightText 2025 Baking Bad <hello@baking-bad.org> *)
 
 #import "../common/entrypoints/settle-withdrawal.mligo" "SettleWithdrawalEntry"
 #import "../common/entrypoints/xtz-ticketer-burn.mligo" "XtzTicketerBurnEntry"

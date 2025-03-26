@@ -42,6 +42,13 @@ let is_withdrawal_expired (withdrawal : FastWithdrawal.t) (expiration_seconds : 
     Tezos.get_now() > withdrawal.timestamp + expiration_seconds
 
 [@inline]
+let assert_withdrawal_not_in_future (withdrawal : FastWithdrawal.t) : unit =
+    if Tezos.get_now() < withdrawal.timestamp then
+        failwith "Withdrawal must not have a future timestamp"
+    else
+        unit
+
+[@inline]
 let get_payout_amount (withdrawal : FastWithdrawal.t) (expiration_seconds : int) : nat =
     if not is_withdrawal_expired withdrawal expiration_seconds then
         let discounted_amount = unpack_payload withdrawal.payload in
@@ -80,6 +87,7 @@ let payout_withdrawal
 
     let { withdrawal; service_provider } = params in
     let _ = Storage.assert_withdrawal_was_not_paid_before withdrawal storage in
+    let _ = assert_withdrawal_not_in_future withdrawal in
     let payout_amount = get_payout_amount withdrawal storage.config.expiration_seconds in
     let transfer_op = if withdrawal.ticketer = storage.config.xtz_ticketer then
         (* This is the case when the service provider pays out an XTZ withdrawal *)

@@ -108,6 +108,13 @@
              GET ;
              IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
              IF { PUSH string "The fast withdrawal was already payed" ; FAILWITH } {} ;
+             DUP ;
+             GET 9 ;
+             NOW ;
+             COMPARE ;
+             LT ;
+             IF { PUSH string "Withdrawal must not have a future timestamp" ; FAILWITH }
+                {} ;
              DUP 3 ;
              CDR ;
              GET 4 ;

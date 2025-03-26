@@ -151,9 +151,7 @@
 - [x] test_rejects_future_timestamp
 - [x] test_should_return_config_on_get_config_view
 
-- [ ] test_should_emit_events_on_payout_withdrawal_and_finalization
+- [x] test_should_emit_events_on_payout_withdrawal_and_finalization
     - check that `payout_withdrawal` emits the correct event
     - check that `default` (finalization) emits the correct event for a paid withdrawal
     - check that `default` (finalization) emits the correct event for an unpaid withdrawal
-
-- [ ] TODO: Consider adding tests for withdrawal record removal if this logic is introduced

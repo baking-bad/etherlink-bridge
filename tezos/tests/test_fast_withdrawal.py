@@ -719,7 +719,15 @@ class FastWithdrawalTestCase(BaseTestCase):
             xtz_amount=414,
         ).send()
         self.bake_block()
-        # TODO: check the event (which is not emitted yet)
+
+        # Getting event from the last internal operation:
+        result = self.find_call_result(opg)
+        event_operation = result.operations[-1]  # type: ignore
+        event = decode_event(event_operation)
+        assert tuple(event['withdrawal'].values()) == withdrawal.as_tuple()
+        assert event['service_provider'] == get_address(setup.service_provider)
+        assert event['payout_amount'] == 414
+        assert event_operation['tag'] == 'payout_withdrawal'
 
         # Checking that finalization for paid withdrawal emits the correct event:
         setup.xtz_ticketer.mint(setup.smart_rollup, 414).send()

@@ -115,10 +115,7 @@
                      (address %receiver)) ;
              DIG 3 ;
              DIG 3 ;
-             UPDATE 1 ;
-             NIL operation ;
-             DIG 2 ;
-             CONS }
+             UPDATE 1 }
            { UNPAIR ;
              DUP 3 ;
              CAR ;
@@ -170,7 +167,7 @@
                   CONTRACT unit ;
                   IF_NONE { PUSH string "bad address for get_contract" ; FAILWITH } {} ;
                   PUSH mutez 1 ;
-                  DIG 2 ;
+                  DUP 3 ;
                   MUL ;
                   DUP ;
                   AMOUNT ;
@@ -197,7 +194,7 @@
                     { CONTRACT %transfer (pair (address %from) (address %to) (nat %value)) ;
                       IF_NONE { PUSH string "INVALID_FA12" ; FAILWITH } {} ;
                       PUSH mutez 0 ;
-                      DIG 4 ;
+                      DUP 5 ;
                       DIG 3 ;
                       DIG 4 ;
                       PAIR 3 ;
@@ -209,7 +206,7 @@
                       PUSH mutez 0 ;
                       NIL (pair address (list (pair address nat nat))) ;
                       NIL (pair address nat nat) ;
-                      DIG 7 ;
+                      DUP 8 ;
                       DIG 5 ;
                       DIG 6 ;
                       PAIR 3 ;
@@ -218,15 +215,33 @@
                       PAIR ;
                       CONS ;
                       TRANSFER_TOKENS } } ;
+             SWAP ;
              DUP 4 ;
-             DIG 4 ;
+             DUP 4 ;
+             PAIR 3 ;
+             EMIT %payout_withdrawal
+               (pair (pair %withdrawal
+                        (nat %withdrawal_id)
+                        (nat %full_amount)
+                        (address %ticketer)
+                        (pair %content nat (option bytes))
+                        (timestamp %timestamp)
+                        (address %base_withdrawer)
+                        (bytes %payload)
+                        (bytes %l2_caller))
+                     (address %service_provider)
+                     (nat %payout_amount)) ;
+             DUP 5 ;
+             DIG 5 ;
              CAR ;
-             DIG 4 ;
+             DIG 5 ;
              SOME ;
-             DIG 4 ;
+             DIG 5 ;
              UPDATE ;
-             UPDATE 1 ;
-             NIL operation } ;
+             UPDATE 1 } ;
+         NIL operation ;
+         DIG 2 ;
+         CONS ;
          DIG 2 ;
          CONS ;
          PAIR } ;

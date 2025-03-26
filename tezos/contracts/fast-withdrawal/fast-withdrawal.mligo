@@ -106,7 +106,8 @@ let payout_withdrawal
         Tokens.send_transfer token payout_amount sender withdrawal.base_withdrawer in
 
     let updated_storage = Storage.add_withdrawal withdrawal service_provider storage in
-    [transfer_op], updated_storage
+    let payout_event = Events.payout_withdrawal { withdrawal; service_provider; payout_amount } in
+    [transfer_op; payout_event], updated_storage
 
 [@entry]
 let default

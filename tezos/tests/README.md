@@ -122,7 +122,7 @@
 - [ ] test_user_receives_fa2_withdrawal_when_no_purchase_made
     - check user FA2 token balance increases by full withdrawal amount
 
-- [ ] test_should_reject_xtz_withdrawal_purchase_with_wrong_xtz_amount
+- [x] test_should_reject_xtz_withdrawal_purchase_with_wrong_xtz_amount
     - check transaction rejected if provided xtz amount is not equal amount in payout (and withdrawal is not expired yet)
 
 - [ ] test_should_reject_fa12_withdrawal_purchase_with_attached_xtz

@@ -248,6 +248,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert "The fast withdrawal was already payed" in str(err.exception)
 
         # TODO: the same check for same provider (setup.manager)
+        # TODO: finalize withdrawal and check that it can't be paid again
 
     def test_provider_receives_xtz_withdrawal_after_purchase(self) -> None:
         setup = self.fast_withdrawal_setup()
@@ -488,11 +489,30 @@ class FastWithdrawalTestCase(BaseTestCase):
             ).send()
         assert "Tezos amount is not valid" in str(err.exception)
 
+    def test_should_reject_xtz_withdrawal_purchase_with_wrong_xtz_amount(self) -> None:
+        setup = self.fast_withdrawal_setup()
+
+        withdrawal = Withdrawal.default_with(
+            base_withdrawer=setup.withdrawer,
+            full_amount=10_000,
+            ticketer=setup.xtz_ticketer,
+            content=TicketContent(0, None),
+            payload=pack(9_900, 'nat'),
+            timestamp=setup.valid_timestamp,
+        )
+        with self.assertRaises(MichelsonError) as err:
+            setup.fast_withdrawal.payout_withdrawal(
+                withdrawal=withdrawal,
+                service_provider=setup.service_provider,
+                xtz_amount=10_000,
+            ).send()
+        assert "Tezos amount is not valid" in str(err.exception)
+
     def test_rejects_xtz_withdrawal_purchase_with_wrong_ticket_content(self) -> None:
         setup = self.fast_withdrawal_setup()
-        wrong_token_id_content = TicketContent(42, None)
-        wrong_payload_content = TicketContent(0, bytes(10))
 
+        # Wrong `token_id` but correct `token_info` case:
+        wrong_token_id_content = TicketContent(42, None)
         with self.assertRaises(MichelsonError) as err:
             withdrawal = Withdrawal.default_with(
                 full_amount=1,
@@ -507,6 +527,8 @@ class FastWithdrawalTestCase(BaseTestCase):
             ).send()
         assert "Wrong ticket content for xtz ticketer" in str(err.exception)
 
+        # Wrong `token_info` but correct `token_id` case:
+        wrong_payload_content = TicketContent(0, bytes(10))
         with self.assertRaises(MichelsonError) as err:
             withdrawal = Withdrawal.default_with(
                 full_amount=1,

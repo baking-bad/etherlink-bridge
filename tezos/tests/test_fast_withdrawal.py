@@ -218,9 +218,23 @@ class FastWithdrawalTestCase(BaseTestCase):
         stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
         assert stored_address == get_address(setup.service_provider)
 
-        # TODO:
-        # - check new key is added for transaction with different `ticketer`
-        # - check new key is added for transaction with different ticket `content`
+        # Changing ticketer and content:
+        token = self.deploy_fa12(balances={setup.service_provider: 1_000_000})
+        ticketer = self.deploy_ticketer(token, {})
+        withdrawal.ticketer = ticketer
+        withdrawal.content = ticketer.read_content()
+
+        setup.service_provider.bulk(
+            token.allow(setup.service_provider, setup.fast_withdrawal),
+            setup.fast_withdrawal.payout_withdrawal(
+                service_provider=setup.service_provider,
+                withdrawal=withdrawal,
+            ),
+        ).send()
+        self.bake_block()
+
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert stored_address == get_address(setup.service_provider)
 
     def test_should_reject_duplicate_withdrawal(self) -> None:
         setup = self.fast_withdrawal_setup()
@@ -238,6 +252,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
+        # Checking that the same withdrawal can't be paid again by another provider:
         another_provider = self.bootstrap_account()
         with self.assertRaises(MichelsonError) as err:
             setup.fast_withdrawal.payout_withdrawal(
@@ -247,8 +262,39 @@ class FastWithdrawalTestCase(BaseTestCase):
             ).send()
         assert "The fast withdrawal was already payed" in str(err.exception)
 
-        # TODO: the same check for same provider (setup.manager)
-        # TODO: finalize withdrawal and check that it can't be paid again
+        # Checking that the same withdrawal can't be paid again by the same provider:
+        with self.assertRaises(MichelsonError) as err:
+            setup.fast_withdrawal.payout_withdrawal(
+                withdrawal=withdrawal,
+                service_provider=setup.service_provider,
+                xtz_amount=1_000_000,
+            ).send()
+        assert "The fast withdrawal was already payed" in str(err.exception)
+
+        # Check that the same withdrawal can't be paid again after it was finalized
+        setup.xtz_ticketer.mint(setup.smart_rollup, 1_000_000).send()
+        self.bake_block()
+        ticket = setup.xtz_ticketer.read_ticket(setup.smart_rollup)
+
+        setup.smart_rollup.bulk(
+            setup.tester.set_settle_withdrawal(
+                target=setup.fast_withdrawal,
+                withdrawal=withdrawal,
+            ),
+            ticket.transfer(setup.tester),
+        ).send()
+        self.bake_block()
+
+        # TODO: this check is failing now, need to change the contract logic:
+        '''
+        with self.assertRaises(MichelsonError) as err:
+            setup.fast_withdrawal.payout_withdrawal(
+                withdrawal=withdrawal,
+                service_provider=another_provider,
+                xtz_amount=1_000_000,
+            ).send()
+        assert "The fast withdrawal was already payed" in str(err.exception)
+        '''
 
     def test_provider_receives_xtz_withdrawal_after_purchase(self) -> None:
         setup = self.fast_withdrawal_setup()

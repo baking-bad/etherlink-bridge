@@ -78,7 +78,21 @@ class Finished(TypedDict):
     finished: None
 
 
-Status = Optional[Union[Claimed, Finished]]
+class Status:
+    def __init__(self, status: Optional[Union[Claimed, Finished]]):
+        self.status = status
+
+    def get_service_provider(self) -> str:
+        if self.status is None:
+            raise AssertionError("Expected a claimed status but got None")
+        if "claimed" not in self.status:
+            raise AssertionError("Status is not claimed")
+        return self.status["claimed"]
+
+    def is_finished(self) -> bool:
+        if self.status is None:
+            return False
+        return "finished" in self.status
 
 
 class FastWithdrawal(ContractHelper):
@@ -132,7 +146,8 @@ class FastWithdrawal(ContractHelper):
         """Returns status for the specified withdrawal, if it exists,
         otherwise returns None"""
 
-        return self.contract.get_service_provider(withdrawal.as_tuple()).run_view()  # type: ignore
+        status = self.contract.get_service_provider(withdrawal.as_tuple()).run_view()  # type: ignore
+        return Status(status)
 
     def get_config_view(self) -> dict[str, Any]:
         """Returns FastWithdrawal contract configuration"""

@@ -562,6 +562,26 @@ class FastWithdrawalTestCase(BaseTestCase):
             self.bake_block()
         assert "XTZ_DEPOSIT_DISALLOWED" in str(err.exception)
 
+    def test_should_reject_settlement_from_wrong_rollup_address(self) -> None:
+        setup = self.fast_withdrawal_setup()
+        unauthorized_tester = self.deploy_ticket_router_tester()
+        wrong_sender = self.bootstrap_account()
+
+        setup.xtz_ticketer.mint(wrong_sender, 99).send()
+        self.bake_block()
+        ticket = setup.xtz_ticketer.read_ticket(wrong_sender)
+
+        with self.assertRaises(MichelsonError) as err:
+            wrong_sender.bulk(
+                unauthorized_tester.set_settle_withdrawal(
+                    target=setup.fast_withdrawal,
+                    withdrawal=Withdrawal.default(),
+                ),
+                ticket.transfer(unauthorized_tester),
+            ).send()
+            self.bake_block()
+        assert "Sender is not allowed to call this entrypoint" in str(err.exception)
+
     def test_should_return_config_on_get_config_view(self) -> None:
         xtz_ticketer = self.bootstrap_account()
         smart_rollup = self.bootstrap_account()

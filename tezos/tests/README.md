@@ -127,8 +127,8 @@
 
 - [ ] test_should_reject_fa12_withdrawal_purchase_with_attached_xtz
 - [ ] test_should_reject_fa2_withdrawal_purchase_with_attached_xtz
-- [ ] test_should_reject_settlement_with_attached_xtz
-- [ ] test_should_reject_settlement_from_wrong_rollup_address
+- [x] test_should_reject_settlement_with_attached_xtz
+- [x] test_should_reject_settlement_from_wrong_rollup_address
 
 - [ ] test_should_pay_custom_provider_when_specified
     - check specified alternative provider receives withdrawal payout

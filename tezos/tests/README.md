@@ -130,7 +130,7 @@
 - [x] test_should_reject_settlement_with_attached_xtz
 - [x] test_should_reject_settlement_from_wrong_rollup_address
 
-- [ ] test_should_pay_custom_provider_when_specified
+- [x] test_should_pay_custom_provider_when_specified
     - check specified alternative provider receives withdrawal payout
     - check key is removed from `withdrawals` big_map after payout
     - check for XTZ, FA1.2 and FA2
@@ -149,7 +149,7 @@
 - [ ] test_rejects_fa12_withdrawal_purchase_with_wrong_ticket_content
 - [ ] test_rejects_fa2_withdrawal_purchase_with_wrong_ticket_content
 - [x] test_rejects_future_timestamp
+- [x] test_should_return_config_on_get_config_view
 
 - [ ] TODO: Consider adding tests for withdrawal record removal if this logic is introduced
 - [ ] TODO: Consider adding tests for events if this logic is introduced
-- [ ] TODO: Consider adding tests for views after this logic added

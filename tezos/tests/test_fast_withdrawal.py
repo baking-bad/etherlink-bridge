@@ -582,6 +582,48 @@ class FastWithdrawalTestCase(BaseTestCase):
             self.bake_block()
         assert "Sender is not allowed to call this entrypoint" in str(err.exception)
 
+    def test_should_pay_custom_provider_when_specified(self) -> None:
+        setup = self.fast_withdrawal_setup()
+        custom_provider = self.bootstrap_non_baker_account()
+        withdrawal = Withdrawal.default_with(
+            base_withdrawer=setup.withdrawer,
+            full_amount=123,
+            ticketer=setup.xtz_ticketer,
+            content=TicketContent(0, None),
+            payload=pack(123, 'nat'),
+            timestamp=setup.valid_timestamp,
+        )
+
+        # Calling payout_withdrawal from the service provider for the custom provider:
+        setup.fast_withdrawal.using(setup.service_provider).payout_withdrawal(
+            withdrawal=withdrawal,
+            service_provider=custom_provider,
+            xtz_amount=123,
+        ).send()
+        self.bake_block()
+
+        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert stored_address == get_address(custom_provider)
+
+        setup.xtz_ticketer.mint(setup.smart_rollup, 123).send()
+        self.bake_block()
+        ticket = setup.xtz_ticketer.read_ticket(setup.smart_rollup)
+
+        custom_provider_balance = custom_provider.balance()
+        setup.smart_rollup.bulk(
+            setup.tester.set_settle_withdrawal(
+                target=setup.fast_withdrawal,
+                withdrawal=withdrawal,
+            ),
+            ticket.transfer(setup.tester),
+        ).send()
+        self.bake_block()
+
+        updated_balance = custom_provider.balance()
+        assert updated_balance == custom_provider_balance + Decimal('0.000123')
+
+        # TODO: consider making this test for FA cases
+
     def test_should_return_config_on_get_config_view(self) -> None:
         xtz_ticketer = self.bootstrap_account()
         smart_rollup = self.bootstrap_account()

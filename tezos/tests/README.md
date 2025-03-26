@@ -148,6 +148,7 @@
     - check `payload` is Some(bytes)
 - [ ] test_rejects_fa12_withdrawal_purchase_with_wrong_ticket_content
 - [ ] test_rejects_fa2_withdrawal_purchase_with_wrong_ticket_content
+- [x] test_rejects_future_timestamp
 
 - [ ] TODO: Consider adding tests for withdrawal record removal if this logic is introduced
 - [ ] TODO: Consider adding tests for events if this logic is introduced

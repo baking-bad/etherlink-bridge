@@ -25,6 +25,7 @@ class FastWithdrawalTestSetup:
     tester: TicketRouterTester
     valid_timestamp: int
     expired_timestamp: int
+    future_timestamp: int
 
 
 class FastWithdrawalTestCase(BaseTestCase):
@@ -92,6 +93,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             tester=tester,
             valid_timestamp=self.manager.now(),
             expired_timestamp=self.manager.now() - one_day - 1,
+            future_timestamp=self.manager.now() + one_day,
         )
 
     def test_should_create_withdrawal_record_after_xtz_withdrawal_purchased(
@@ -554,3 +556,16 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert config['smart_rollup'] == get_address(smart_rollup)
         assert config['xtz_ticketer'] == get_address(xtz_ticketer)
         # TODO: add other config parameters checks if added
+
+    def test_rejects_future_timestamp(self) -> None:
+        setup = self.fast_withdrawal_setup()
+
+        with self.assertRaises(MichelsonError) as err:
+            withdrawal = Withdrawal.default_with(
+                timestamp=setup.future_timestamp,
+            )
+            setup.fast_withdrawal.payout_withdrawal(
+                withdrawal=withdrawal,
+                service_provider=setup.service_provider,
+            ).send()
+        assert "Withdrawal must not have a future timestamp" in str(err.exception)

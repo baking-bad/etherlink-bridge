@@ -70,25 +70,25 @@
              NONE address ;
              DUP 4 ;
              GET_AND_UPDATE ;
-             IF_NONE { DIG 2 ; GET 11 } { DIG 3 ; DROP } ;
+             IF_NONE { DUP 3 ; GET 11 } {} ;
              DIG 2 ;
              READ_TICKET ;
              CAR ;
-             DUP 5 ;
+             DUP 6 ;
              CDR ;
              CAR ;
              DUP 2 ;
              COMPARE ;
              EQ ;
              IF { DROP ;
-                  DUP 4 ;
+                  DUP 5 ;
                   CDR ;
                   CAR ;
                   CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;
                   IF_NONE { PUSH string "INVALID_XTZ_TKTR" ; FAILWITH } {} ;
                   PUSH mutez 0 ;
                   DIG 2 ;
-                  DIG 3 ;
+                  DUP 4 ;
                   PAIR ;
                   TRANSFER_TOKENS }
                 { CONTRACT %withdraw
@@ -96,11 +96,29 @@
                   IF_NONE { PUSH string "ROUTER_ENTRYPOINT_NOT_FOUND" ; FAILWITH } {} ;
                   PUSH mutez 0 ;
                   DIG 2 ;
-                  DIG 3 ;
+                  DUP 4 ;
                   PAIR ;
                   TRANSFER_TOKENS } ;
-             DUG 2 ;
-             UPDATE 1 }
+             SWAP ;
+             DIG 3 ;
+             PAIR ;
+             EMIT %settle_withdrawal
+               (pair (pair %withdrawal
+                        (nat %withdrawal_id)
+                        (nat %full_amount)
+                        (address %ticketer)
+                        (pair %content nat (option bytes))
+                        (timestamp %timestamp)
+                        (address %base_withdrawer)
+                        (bytes %payload)
+                        (bytes %l2_caller))
+                     (address %receiver)) ;
+             DIG 3 ;
+             DIG 3 ;
+             UPDATE 1 ;
+             NIL operation ;
+             DIG 2 ;
+             CONS }
            { UNPAIR ;
              DUP 3 ;
              CAR ;
@@ -207,8 +225,8 @@
              SOME ;
              DIG 4 ;
              UPDATE ;
-             UPDATE 1 } ;
-         NIL operation ;
+             UPDATE 1 ;
+             NIL operation } ;
          DIG 2 ;
          CONS ;
          PAIR } ;

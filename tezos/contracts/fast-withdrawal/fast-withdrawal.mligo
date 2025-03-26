@@ -10,6 +10,7 @@
 #import "../common/types/fast-withdrawal.mligo" "FastWithdrawal"
 #import "../common/errors.mligo" "Errors"
 #import "./storage.mligo" "Storage"
+#import "./events.mligo" "Events"
 
 
 // TODO: add docstring
@@ -131,7 +132,8 @@ let default
         XtzTicketerBurnEntry.send storage.config.xtz_ticketer (receiver, ticket)
     else
         RouterWithdrawEntry.send ticketer { receiver; ticket } in
-    [withdraw_op], { storage with withdrawals = upd_withdrawals }
+    let finalize_event = Events.settle_withdrawal { withdrawal; receiver } in
+    [withdraw_op; finalize_event], { storage with withdrawals = upd_withdrawals }
 
 [@view]
 let get_service_provider (withdrawal : FastWithdrawal.t) (storage : Storage.t) : address option =

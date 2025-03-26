@@ -12,6 +12,7 @@ from scripts.helpers.ticket_content import TicketContent
 from scripts.helpers.utility import pack
 from tezos.tests.base import BaseTestCase
 from scripts.helpers.addressable import Addressable, get_address
+from scripts.helpers.utility import decode_event
 
 
 @dataclass
@@ -699,3 +700,70 @@ class FastWithdrawalTestCase(BaseTestCase):
                 service_provider=setup.service_provider,
             ).send()
         assert "Withdrawal must not have a future timestamp" in str(err.exception)
+
+    def test_should_emit_events_on_payout_withdrawal_and_finalization(self) -> None:
+        setup = self.fast_withdrawal_setup()
+        withdrawal = Withdrawal.default_with(
+            base_withdrawer=setup.withdrawer,
+            full_amount=414,
+            ticketer=setup.xtz_ticketer,
+            content=TicketContent(0, None),
+            payload=pack(414, 'nat'),
+            timestamp=setup.valid_timestamp,
+        )
+
+        # Checking that the payout_withdrawal entrypoint emits the correct event:
+        opg = setup.fast_withdrawal.payout_withdrawal(
+            withdrawal=withdrawal,
+            service_provider=setup.service_provider,
+            xtz_amount=414,
+        ).send()
+        self.bake_block()
+        # TODO: check the event (which is not emitted yet)
+
+        # Checking that finalization for paid withdrawal emits the correct event:
+        setup.xtz_ticketer.mint(setup.smart_rollup, 414).send()
+        self.bake_block()
+        ticket = setup.xtz_ticketer.read_ticket(setup.smart_rollup)
+
+        opg = setup.smart_rollup.bulk(
+            setup.tester.set_settle_withdrawal(
+                target=setup.fast_withdrawal,
+                withdrawal=withdrawal,
+            ),
+            ticket.transfer(setup.tester),
+        ).send()
+        self.bake_block()
+
+        # Getting event from the ticket transfer last internal operation:
+        result = self.find_call_result(opg, 1)
+        internal_operations = result['metadata']['internal_operation_results']  # type: ignore
+        event = decode_event(internal_operations[-1])
+        assert tuple(event['withdrawal'].values()) == withdrawal.as_tuple()
+        assert event['receiver'] == get_address(setup.service_provider)
+        assert internal_operations[-1]['tag'] == 'settle_withdrawal'
+
+        # Checking that finalization for not paid withdrawal emits the correct event:
+        withdrawal.full_amount = 333
+        withdrawal.payload = pack(333, 'nat')
+        setup.xtz_ticketer.mint(setup.smart_rollup, 333).send()
+
+        self.bake_block()
+        ticket = setup.xtz_ticketer.read_ticket(setup.smart_rollup)
+
+        opg = setup.smart_rollup.bulk(
+            setup.tester.set_settle_withdrawal(
+                target=setup.fast_withdrawal,
+                withdrawal=withdrawal,
+            ),
+            ticket.transfer(setup.tester),
+        ).send()
+        self.bake_block()
+
+        # Getting event from the ticket transfer last internal operation:
+        result = self.find_call_result(opg, 1)
+        internal_operations = result['metadata']['internal_operation_results']  # type: ignore
+        event = decode_event(internal_operations[-1])
+        assert tuple(event['withdrawal'].values()) == withdrawal.as_tuple()
+        assert event['receiver'] == get_address(setup.withdrawer)
+        assert internal_operations[-1]['tag'] == 'settle_withdrawal'

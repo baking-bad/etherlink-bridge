@@ -128,3 +128,13 @@ def get_etherlink_account(web3: Web3, private_key: str) -> LocalAccount:
     # TODO: validate balance
 
     return account
+
+
+def decode_event(event: dict) -> dict:
+    """Decodes event data from given event dict"""
+
+    assert event['kind'] == 'event', 'not an event'
+    michelson_type = MichelsonType.match(event['type'])
+    value = michelson_type.from_micheline_value(event['payload'])
+
+    return value.to_python_object()

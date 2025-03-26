@@ -13,7 +13,8 @@
 #import "./events.mligo" "Events"
 
 
-// TODO: add docstring
+// TODO: add docstring for the whole contract
+// TODO: add docstring for type
 type payout_withdrawal_params = {
     withdrawal : FastWithdrawal.t;
     service_provider : address;
@@ -29,13 +30,13 @@ let assert_sender_is_allowed (smart_rollup : address) : unit =
 [@inline]
 let unpack_payload (payload : bytes) : nat =
     match Bytes.unpack payload with
-    | Some (amount) -> amount
+    | Some amount -> amount
     | None -> failwith "Error during payload unpack"
 
 [@inline]
 let get_token (ticketer : address) : Tokens.t =
     match Tezos.Next.View.call "get_token" unit ticketer with
-    | Some (token) -> token
+    | Some token -> token
     | None -> failwith "Error in get_token view call"
 
 [@inline]
@@ -51,6 +52,10 @@ let assert_withdrawal_not_in_future (withdrawal : FastWithdrawal.t) : unit =
 
 [@inline]
 let resolve_payout_amount (withdrawal : FastWithdrawal.t) (expiration_seconds : int) : nat =
+    (*
+        Checks if the withdrawal has expired: if so, it should be paid in full,
+        otherwise, it should be paid at a discounted amount, which is encoded in the payload.
+    *)
     if not is_withdrawal_expired withdrawal expiration_seconds then
         let discounted_amount = unpack_payload withdrawal.payload in
         discounted_amount
@@ -58,14 +63,14 @@ let resolve_payout_amount (withdrawal : FastWithdrawal.t) (expiration_seconds : 
         withdrawal.full_amount
 
 [@inline]
-let assert_attached_amount_is_valid (valid_amount : tez) : unit =
-    if Tezos.get_amount () <> valid_amount then
+let assert_attached_amount_is_valid (valid_amount : nat) : unit =
+    if Tezos.get_amount () <> valid_amount * 1mutez then
         failwith "Tezos amount is not valid"
     else
         unit
 
 [@inline]
-let assert_content_is_valid_for_xtz (content : Ticket.content_t) : unit =
+let assert_ticket_content_is_valid_for_xtz (content : Ticket.content_t) : unit =
     let valid_xtz_content : Ticket.content_t = (0n, None) in
     if content <> valid_xtz_content then
         failwith "Wrong ticket content for xtz ticketer"
@@ -74,19 +79,33 @@ let assert_content_is_valid_for_xtz (content : Ticket.content_t) : unit =
 
 // TODO: consider reusing Assertions.no_xtz_deposit (but it is not inlined)
 [@inline]
-let assert_no_xtz_deposit
-        (unit : unit)
-        : unit =
+let assert_no_xtz_deposit (unit : unit) : unit =
     if Tezos.get_amount () > 0mutez
     then failwith Errors.xtz_deposit_disallowed else unit
 
 [@inline]
-let get_service_provider (status : Storage.status) : address =
-    match status with
-    | Claimed service_provider -> service_provider
-    // NOTE: This case with a `Finished` withdrawal should be impossible,
-    // as each withdrawal has a unique ID:
-    | Finished -> failwith "Wrong state: withdrawal already finished"
+let send_ticket
+        (withdrawal : FastWithdrawal.t)
+        (storage : Storage.t) : XtzTicketerBurnEntry.t -> operation =
+    (*
+        Determines the ticketer type and sends it to the contract.
+        Both FA (RouterWithdrawEntry) and XTZ ticketers share the same type
+        but have different entrypoint names.
+    *)
+    if Storage.is_xtz_ticketer withdrawal storage then
+        XtzTicketerBurnEntry.send withdrawal.ticketer
+    else
+        RouterWithdrawEntry.send withdrawal.ticketer
+
+[@inline]
+let send_xtz_op (amount : nat) (receiver : address) : operation =
+    let entry = Tezos.get_contract receiver in
+    Tezos.Next.Operation.transaction unit (amount * 1mutez) entry
+
+[@inline]
+let send_tokens_op (token: Tokens.t) (amount : nat) (receiver : address) : operation =
+    let sender = Tezos.get_sender () in
+    Tokens.send_transfer token amount sender receiver
 
 [@entry]
 let payout_withdrawal
@@ -95,58 +114,48 @@ let payout_withdrawal
     (* TODO: add docstring *)
 
     let { withdrawal; service_provider } = params in
+    let expiration_seconds = storage.config.expiration_seconds in
+    let receiver = withdrawal.base_withdrawer in
     let _ = Storage.assert_withdrawal_was_not_paid_before withdrawal storage in
     let _ = assert_withdrawal_not_in_future withdrawal in
-    let payout_amount = resolve_payout_amount withdrawal storage.config.expiration_seconds in
-    let transfer_op = if withdrawal.ticketer = storage.config.xtz_ticketer then
+
+    let payout_amount = resolve_payout_amount withdrawal expiration_seconds in
+    let payout_operation = if Storage.is_xtz_ticketer withdrawal storage then
         (* This is the case when the service provider pays out an XTZ withdrawal *)
-        let _ = assert_content_is_valid_for_xtz withdrawal.content in
-        let entry = Tezos.get_contract withdrawal.base_withdrawer in
-        let payout_amount_tez = payout_amount * 1mutez in
-        let _ = assert_attached_amount_is_valid payout_amount_tez in
-        Tezos.Next.Operation.transaction unit payout_amount_tez entry
+        let _ = assert_ticket_content_is_valid_for_xtz withdrawal.content in
+        let _ = assert_attached_amount_is_valid payout_amount in
+        send_xtz_op payout_amount receiver
     else
         (* This is the case when the service provider pays out an FA withdrawal *)
+        // TODO: assert ticket.content the same as withdrawal.ticketer.get_content
         let _ = assert_no_xtz_deposit () in
         let token = get_token withdrawal.ticketer in
-        let sender = Tezos.get_sender () in
-        // TODO: assert ticket.content the same as withdrawal.ticketer.get_content
-        Tokens.send_transfer token payout_amount sender withdrawal.base_withdrawer in
+        send_tokens_op token payout_amount receiver in
 
     let updated_storage = Storage.add_withdrawal withdrawal service_provider storage in
     let payout_event = Events.payout_withdrawal { withdrawal; service_provider; payout_amount } in
-    [transfer_op; payout_event], updated_storage
+    [payout_operation; payout_event], updated_storage
 
 [@entry]
 let default
         (params : SettleWithdrawalEntry.t)
         (storage: Storage.t) : return =
     (* TODO: add docstring *)
+    (* If no advance payment found, send to the withdrawer. *)
+    (* If key with claim found, the withdrawal was payed, send to the provider. *)
 
     let (ticket, withdrawal) = SettleWithdrawalEntry.to_key_and_ticket params in
     let _ = assert_no_xtz_deposit () in
     let _ = assert_sender_is_allowed storage.config.smart_rollup in
 
-    (* If no advance payment found, send to the withdrawer. *)
-    (* If key found, then everything matches, the withdrawal was payed,
-       we send the amount to the payer. *)
-    let status_opt = Big_map.find_opt withdrawal storage.withdrawals in
-    let receiver = match status_opt with
+    let provider_opt = Storage.get_provider_opt withdrawal storage in
+    let receiver = match provider_opt with
     | None -> withdrawal.base_withdrawer
-    | Some status -> get_service_provider status in
-    let upd_withdrawals = if Option.is_some status_opt then
-        Big_map.update withdrawal (Some Finished) storage.withdrawals
-    else
-        storage.withdrawals in
-
-    let (ticketer, (_, _)), ticket = Tezos.Next.Ticket.read ticket in
-    let withdraw_op = if ticketer = storage.config.xtz_ticketer then
-        // TODO: sync parameter with RouterWithdrawEntry (make record) ?
-        XtzTicketerBurnEntry.send storage.config.xtz_ticketer (receiver, ticket)
-    else
-        RouterWithdrawEntry.send ticketer { receiver; ticket } in
+    | Some provider -> provider in
+    let finalize_operation = send_ticket withdrawal storage { receiver; ticket } in
     let finalize_event = Events.settle_withdrawal { withdrawal; receiver } in
-    [withdraw_op; finalize_event], { storage with withdrawals = upd_withdrawals }
+    let updated_storage = Storage.finalize_withdrawal withdrawal provider_opt storage in
+    [finalize_operation; finalize_event], updated_storage
 
 [@view]
 let get_service_provider

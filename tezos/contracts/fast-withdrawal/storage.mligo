@@ -28,6 +28,7 @@ type t = {
     config : config;
 }
 
+[@inline]
 let add_withdrawal
         (withdrawal : FastWithdrawal.t)
         (service_provider : address)
@@ -37,8 +38,39 @@ let add_withdrawal
     { storage with withdrawals = updated_withdrawals }
 
 [@inline]
+let finalize_withdrawal
+        (withdrawal : FastWithdrawal.t)
+        (provider_opt : address option)
+        (storage : t) : t =
+    (* Update the ledger only if it was claimed by the provider, otherwise, ignore it: *)
+    let status = if Option.is_some provider_opt then Some Finished else None in
+    let updated_withdrawals = Big_map.update withdrawal status storage.withdrawals in
+    { storage with withdrawals = updated_withdrawals }
+
+[@inline]
 let assert_withdrawal_was_not_paid_before
         (withdrawal : FastWithdrawal.t)
         (storage : t) : unit =
     if Option.is_some (Big_map.find_opt withdrawal storage.withdrawals) then
         failwith "The fast withdrawal was already payed"
+
+[@inline]
+let unwrap_provider_opt (status : status) : address option =
+    match status with
+    | Claimed service_provider -> Some service_provider
+    | Finished -> None
+
+[@inline]
+let get_provider_opt
+        (withdrawal : FastWithdrawal.t)
+        (storage : t) : address option =
+    let status_opt = Big_map.find_opt withdrawal storage.withdrawals in
+    match status_opt with
+    | Some status -> unwrap_provider_opt status
+    | None -> None
+
+[@inline]
+let is_xtz_ticketer
+        (withdrawal : FastWithdrawal.t)
+        (storage : t) : bool =
+    withdrawal.ticketer = storage.config.xtz_ticketer

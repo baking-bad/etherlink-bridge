@@ -2,16 +2,27 @@
 #import "../types/ticket.mligo" "Ticket"
 
 
-// TODO: add docstring
-type t = address * Ticket.t
+(*
+    `xtz-ticketer-burn` is an exchanger interface that allows burning a wrapped XTZ
+    ticket and unlocking XTZ for the receiver:
 
-let get (xtz_ticketer : address) : t contract =
+    - receiver: an address that will receive the unlocked Tezos.
+    - ticket: provided wrapped XTZ ticket to be burned.
+*)
+type t = [@layout:comb] {
+    receiver: address;
+    ticket: Ticket.t;
+}
+type t_without_annotations = address * Ticket.t
+
+let get (xtz_ticketer : address) : t_without_annotations contract =
     match Tezos.get_entrypoint_opt "%burn" xtz_ticketer with
     | None -> failwith(Errors.invalid_xtz_ticketer)
     | Some entry -> entry
 
 let send
         (xtz_ticketer : address)
-        (receiver_and_ticket : t) : operation =
+        (params : t) : operation =
     let entry = get xtz_ticketer in
-    Tezos.Next.Operation.transaction receiver_and_ticket 0mutez entry
+    let { receiver; ticket } = params in
+    Tezos.Next.Operation.transaction (receiver, ticket) 0mutez entry

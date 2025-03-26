@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from os.path import join
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Union, TypedDict
 
 from pytezos.client import PyTezosClient
 from pytezos.contract.call import ContractCall
@@ -70,6 +70,17 @@ class Withdrawal:
         return cls.default_with()
 
 
+class Claimed(TypedDict):
+    claimed: str
+
+
+class Finished(TypedDict):
+    finished: None
+
+
+Status = Optional[Union[Claimed, Finished]]
+
+
 class FastWithdrawal(ContractHelper):
     @staticmethod
     def make_storage(
@@ -117,9 +128,9 @@ class FastWithdrawal(ContractHelper):
             get_address(service_provider),
         ).with_amount(xtz_amount)
 
-    def get_service_provider_view(self, withdrawal: Withdrawal) -> Optional[str]:
-        """Returns service provider address for the specified withdrawal,
-        if it exists, otherwise returns None"""
+    def get_service_provider_view(self, withdrawal: Withdrawal) -> Status:
+        """Returns status for the specified withdrawal, if it exists,
+        otherwise returns None"""
 
         return self.contract.get_service_provider(withdrawal.as_tuple()).run_view()  # type: ignore
 

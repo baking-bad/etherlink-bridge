@@ -27,7 +27,7 @@
                    (address %base_withdrawer)
                    (bytes %payload)
                    (bytes %l2_caller))
-             address)
+             (or (address %claimed) (unit %finished)))
           (pair %config
              (address %xtz_ticketer)
              (address %smart_rollup)
@@ -67,10 +67,18 @@
                 {} ;
              DUP 3 ;
              CAR ;
-             NONE address ;
-             DUP 4 ;
-             GET_AND_UPDATE ;
-             IF_NONE { DUP 3 ; GET 11 } {} ;
+             DUP 3 ;
+             GET ;
+             DUP ;
+             IF_NONE
+               { DUP 3 ; GET 11 }
+               { IF_LEFT
+                   {}
+                   { DROP ; PUSH string "Wrong state: withdrawal already finished" ; FAILWITH } } ;
+             SWAP ;
+             IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
+             IF { DUP 4 ; CAR ; UNIT ; RIGHT address ; SOME ; DUP 5 ; UPDATE }
+                { DUP 4 ; CAR } ;
              DIG 2 ;
              READ_TICKET ;
              CAR ;
@@ -88,7 +96,7 @@
                   IF_NONE { PUSH string "INVALID_XTZ_TKTR" ; FAILWITH } {} ;
                   PUSH mutez 0 ;
                   DIG 2 ;
-                  DUP 4 ;
+                  DUP 5 ;
                   PAIR ;
                   TRANSFER_TOKENS }
                 { CONTRACT %withdraw
@@ -96,10 +104,10 @@
                   IF_NONE { PUSH string "ROUTER_ENTRYPOINT_NOT_FOUND" ; FAILWITH } {} ;
                   PUSH mutez 0 ;
                   DIG 2 ;
-                  DUP 4 ;
+                  DUP 5 ;
                   PAIR ;
                   TRANSFER_TOKENS } ;
-             SWAP ;
+             DIG 2 ;
              DIG 3 ;
              PAIR ;
              EMIT %settle_withdrawal
@@ -215,9 +223,11 @@
                       PAIR ;
                       CONS ;
                       TRANSFER_TOKENS } } ;
-             SWAP ;
              DUP 4 ;
-             DUP 4 ;
+             LEFT unit ;
+             DIG 2 ;
+             DIG 4 ;
+             DUP 5 ;
              PAIR 3 ;
              EMIT %payout_withdrawal
                (pair (pair %withdrawal
@@ -234,7 +244,7 @@
              DUP 5 ;
              DIG 5 ;
              CAR ;
-             DIG 5 ;
+             DIG 3 ;
              SOME ;
              DIG 5 ;
              UPDATE ;
@@ -254,7 +264,7 @@
              (address %base_withdrawer)
              (bytes %payload)
              (bytes %l2_caller))
-       (option address)
+       (option (or (address %claimed) (unit %finished)))
        { UNPAIR ; SWAP ; CAR ; SWAP ; GET } ;
   view "get_config"
        unit

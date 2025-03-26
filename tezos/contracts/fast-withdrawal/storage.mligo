@@ -1,7 +1,10 @@
 #import "../common/types/fast-withdrawal.mligo" "FastWithdrawal"
 
 
-type withdrawals = (FastWithdrawal.t, address) big_map
+type status =
+    | Claimed of address
+    | Finished
+type withdrawals = (FastWithdrawal.t, status) big_map
 
 (*
     Fast Withdrawal contract configuration:
@@ -29,7 +32,8 @@ let add_withdrawal
         (withdrawal : FastWithdrawal.t)
         (service_provider : address)
         (storage : t) : t =
-    let updated_withdrawals = Big_map.add withdrawal service_provider storage.withdrawals in
+    let status = Claimed service_provider in
+    let updated_withdrawals = Big_map.add withdrawal status storage.withdrawals in
     { storage with withdrawals = updated_withdrawals }
 
 [@inline]

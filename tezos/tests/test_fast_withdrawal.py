@@ -116,8 +116,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address == get_address(setup.service_provider)
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'claimed' in status
+        assert status['claimed'] == get_address(setup.service_provider)
 
     def test_should_correctly_encode_payloads_for_different_ticket_amounts(
         self,
@@ -144,8 +146,10 @@ class FastWithdrawalTestCase(BaseTestCase):
             ).send()
             self.bake_block()
 
-            stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-            assert stored_address == get_address(setup.service_provider)
+            status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+            assert status is not None
+            assert 'claimed' in status
+            assert status['claimed'] == get_address(setup.service_provider)
 
     def test_should_create_different_withdrawal_records(self) -> None:
         setup = self.fast_withdrawal_setup()
@@ -168,8 +172,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address == get_address(setup.service_provider)
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'claimed' in status
+        assert status['claimed'] == get_address(setup.service_provider)
 
         # Changing timestamp:
         withdrawal.timestamp = setup.valid_timestamp + 1
@@ -180,8 +186,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address == get_address(setup.service_provider)
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'claimed' in status
+        assert status['claimed'] == get_address(setup.service_provider)
 
         # Changing base_withdrawer:
         withdrawal.base_withdrawer = self.bootstrap_account()
@@ -192,8 +200,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address == get_address(setup.service_provider)
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'claimed' in status
+        assert status['claimed'] == get_address(setup.service_provider)
 
         # Changing payload:
         withdrawal.payload = pack(777_000, 'nat')
@@ -204,8 +214,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address == get_address(setup.service_provider)
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'claimed' in status
+        assert status['claimed'] == get_address(setup.service_provider)
 
         # Changing l2_caller:
         withdrawal.l2_caller = bytes.fromhex('ab' * 20)
@@ -216,8 +228,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address == get_address(setup.service_provider)
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'claimed' in status
+        assert status['claimed'] == get_address(setup.service_provider)
 
         # Changing ticketer and content:
         token = self.deploy_fa12(balances={setup.service_provider: 1_000_000})
@@ -234,8 +248,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address == get_address(setup.service_provider)
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'claimed' in status
+        assert status['claimed'] == get_address(setup.service_provider)
 
     def test_should_reject_duplicate_withdrawal(self) -> None:
         setup = self.fast_withdrawal_setup()
@@ -286,8 +302,6 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        # TODO: this check is failing now, need to change the contract logic:
-        '''
         with self.assertRaises(MichelsonError) as err:
             setup.fast_withdrawal.payout_withdrawal(
                 withdrawal=withdrawal,
@@ -295,7 +309,6 @@ class FastWithdrawalTestCase(BaseTestCase):
                 xtz_amount=1_000_000,
             ).send()
         assert "The fast withdrawal was already payed" in str(err.exception)
-        '''
 
     def test_provider_receives_xtz_withdrawal_after_purchase(self) -> None:
         setup = self.fast_withdrawal_setup()
@@ -314,8 +327,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address == get_address(setup.service_provider)
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'claimed' in status
+        assert status['claimed'] == get_address(setup.service_provider)
 
         # Creating wrapped xtz ticket for Smart Rollup:
         setup.xtz_ticketer.mint(setup.smart_rollup, 77).send()
@@ -336,9 +351,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        # Checking that there is no record in the fast withdrawal contract:
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address is None
+        # Checking that status is now Finished:
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'finished' in status
 
         # Checking that the provider received the xtz:
         updated_balance = setup.service_provider.balance()
@@ -403,8 +419,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert token.get_balance(setup.service_provider) == 1000 - 30
         assert token.get_balance(setup.withdrawer) == 30
 
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address == get_address(setup.service_provider)
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'claimed' in status
+        assert status['claimed'] == get_address(setup.service_provider)
 
         # Creating wrapped token (ticket) for smart_rollup:
         setup.smart_rollup.bulk(
@@ -426,9 +444,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        # Checking that there is no record in the fast withdrawal contract:
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address is None
+        # Checking that status is now Finished:
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'finished' in status
 
         # Checking that the Provider received the token:
         assert token.get_balance(setup.service_provider) == 1000 - 30 + 50
@@ -493,8 +512,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address == get_address(setup.service_provider)
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'claimed' in status
+        assert status['claimed'] == get_address(setup.service_provider)
         assert setup.withdrawer.balance() == withdrawer_balance + Decimal('0.001000')
 
         # Creating wrapped xtz ticket for Smart Rollup:
@@ -649,8 +670,10 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        stored_address = setup.fast_withdrawal.get_service_provider_view(withdrawal)
-        assert stored_address == get_address(custom_provider)
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'claimed' in status
+        assert status['claimed'] == get_address(custom_provider)
 
         setup.xtz_ticketer.mint(setup.smart_rollup, 123).send()
         self.bake_block()
@@ -668,6 +691,9 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         updated_balance = custom_provider.balance()
         assert updated_balance == custom_provider_balance + Decimal('0.000123')
+        status = setup.fast_withdrawal.get_service_provider_view(withdrawal)
+        assert status is not None
+        assert 'finished' in status
 
         # TODO: consider making this test for FA cases
 

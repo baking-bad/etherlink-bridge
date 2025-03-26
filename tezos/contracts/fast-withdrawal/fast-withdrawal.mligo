@@ -80,6 +80,14 @@ let assert_no_xtz_deposit
     if Tezos.get_amount () > 0mutez
     then failwith Errors.xtz_deposit_disallowed else unit
 
+[@inline]
+let get_service_provider (status : Storage.status) : address =
+    match status with
+    | Claimed service_provider -> service_provider
+    // NOTE: This case with a `Finished` withdrawal should be impossible,
+    // as each withdrawal has a unique ID:
+    | Finished -> failwith "Wrong state: withdrawal already finished"
+
 [@entry]
 let payout_withdrawal
         (params : payout_withdrawal_params)
@@ -122,10 +130,14 @@ let default
     (* If no advance payment found, send to the withdrawer. *)
     (* If key found, then everything matches, the withdrawal was payed,
        we send the amount to the payer. *)
-    let payer_opt, upd_withdrawals = Big_map.get_and_update withdrawal None storage.withdrawals in
-    let receiver = match payer_opt with
+    let status_opt = Big_map.find_opt withdrawal storage.withdrawals in
+    let receiver = match status_opt with
     | None -> withdrawal.base_withdrawer
-    | Some service_provider -> service_provider in
+    | Some status -> get_service_provider status in
+    let upd_withdrawals = if Option.is_some status_opt then
+        Big_map.update withdrawal (Some Finished) storage.withdrawals
+    else
+        storage.withdrawals in
 
     let (ticketer, (_, _)), ticket = Tezos.Next.Ticket.read ticket in
     let withdraw_op = if ticketer = storage.config.xtz_ticketer then
@@ -137,7 +149,9 @@ let default
     [withdraw_op; finalize_event], { storage with withdrawals = upd_withdrawals }
 
 [@view]
-let get_service_provider (withdrawal : FastWithdrawal.t) (storage : Storage.t) : address option =
+let get_service_provider
+        (withdrawal : FastWithdrawal.t)
+        (storage : Storage.t) : Storage.status option =
     Big_map.find_opt withdrawal storage.withdrawals
 
 [@view]

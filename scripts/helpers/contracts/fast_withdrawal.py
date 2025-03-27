@@ -8,6 +8,7 @@ from pytezos.operation.group import OperationGroup
 
 from scripts.helpers.addressable import Addressable, get_address
 from scripts.helpers.contracts.contract import ContractHelper
+from scripts.helpers.metadata import Metadata
 from scripts.helpers.utility import get_build_dir, pack
 from scripts.helpers.utility import originate_from_file
 from scripts.helpers.ticket_content import TicketContent
@@ -105,6 +106,12 @@ class FastWithdrawal(ContractHelper):
         """Creates storage for the FastWithdrawal contract with empty
         withdrawals bigmap"""
 
+        metadata = Metadata.make_default(
+            name="Fast Withdrawal",
+            description="Fast Withdrawal is a component of the Etherlink Bridge that allows service providers to make fast payouts for user withdrawals and receive funds from Etherlink after outbox message settlement.",
+            version='0.1.0',
+        )
+
         return {
             "config": {
                 "xtz_ticketer": get_address(xtz_ticketer),
@@ -112,6 +119,7 @@ class FastWithdrawal(ContractHelper):
                 "expiration_seconds": expiration_seconds,
             },
             "withdrawals": {},
+            "metadata": metadata,
         }
 
     @classmethod

@@ -22,10 +22,12 @@ type config = {
     Fast Withdrawal contract storage:
     - withdrawals: maps each withdrawal key to a service provider
     - config: fast withdrawal contract configuration
+    - metadata: a big_map containing the metadata of the contract (TZIP-016), immutable
 *)
 type t = {
     withdrawals : withdrawals;
     config : config;
+    metadata : (string, bytes) big_map;
 }
 
 [@inline]

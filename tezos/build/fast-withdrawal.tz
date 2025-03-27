@@ -31,7 +31,8 @@
           (pair %config
              (address %xtz_ticketer)
              (address %smart_rollup)
-             (int %expiration_seconds))) ;
+             (int %expiration_seconds))
+          (big_map %metadata string bytes)) ;
   code { PUSH string "XTZ_DEPOSIT_DISALLOWED" ;
          SWAP ;
          UNPAIR ;
@@ -58,7 +59,7 @@
              GT ;
              IF { DIG 3 ; FAILWITH } { DIG 3 ; DROP } ;
              DUP 3 ;
-             CDR ;
+             GET 3 ;
              GET 3 ;
              SENDER ;
              COMPARE ;
@@ -78,7 +79,7 @@
              DUP 2 ;
              PAIR ;
              DUP 5 ;
-             CDR ;
+             GET 3 ;
              CAR ;
              DUP 5 ;
              GET 5 ;
@@ -159,7 +160,7 @@
              IF { PUSH string "Withdrawal must not have a future timestamp" ; FAILWITH }
                 {} ;
              DUP 4 ;
-             CDR ;
+             GET 3 ;
              GET 4 ;
              DUP 3 ;
              GET 9 ;
@@ -174,7 +175,7 @@
                   IF_NONE { PUSH string "Error during payload unpack" ; FAILWITH } {} }
                 { DUP 2 ; GET 3 } ;
              DUP 5 ;
-             CDR ;
+             GET 3 ;
              CAR ;
              DUP 4 ;
              GET 5 ;
@@ -288,5 +289,5 @@
   view "get_config"
        unit
        (pair (address %xtz_ticketer) (address %smart_rollup) (int %expiration_seconds))
-       { CDR ; CDR } }
+       { CDR ; GET 3 } }
 

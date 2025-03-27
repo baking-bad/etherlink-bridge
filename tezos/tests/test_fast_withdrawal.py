@@ -232,8 +232,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         status = fast_withdrawal.get_service_provider_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
-    # TODO: consider changing name to should_accept_different_payloads
-    def test_should_correctly_encode_payloads_for_different_ticket_amounts(
+    def test_should_accept_different_payloads_for_different_ticket_amounts(
         self,
     ) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
@@ -243,8 +242,6 @@ class FastWithdrawalTestCase(BaseTestCase):
         # NOTE: the manager account balance is 3.7 million xtz
         amounts = [1, 17, 1_000_000_000_000]
 
-        # TODO: consider making N random withdrawals and send them in bulk?
-        #       and then assert in the end
         for amount in amounts:
             withdrawal = test_env.xtz_withdrawal.override(
                 full_amount=amount,
@@ -261,14 +258,12 @@ class FastWithdrawalTestCase(BaseTestCase):
         provider = test_env.service_provider
         discounted_amount = 999_500
         fast_withdrawal = test_env.fast_withdrawal
-
-        # TODO: consider making multiple withdrawals with all parameter changes
-        #       and then send them in a bulk and make all assertions in the end
         withdrawal = test_env.xtz_withdrawal.override(
             full_amount=1_000_000,
             payload=pack(999_500, 'nat'),
         )
 
+        # Creating the first withdrawal record:
         fast_withdrawal.payout_withdrawal(
             withdrawal, provider, discounted_amount
         ).send()
@@ -277,7 +272,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         status = fast_withdrawal.get_service_provider_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
-        # Changing timestamp:
+        # Changing timestamp and paying the second withdrawal:
         withdrawal.timestamp = test_env.valid_timestamp + 1
         fast_withdrawal.payout_withdrawal(
             withdrawal, provider, discounted_amount
@@ -287,7 +282,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         status = fast_withdrawal.get_service_provider_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
-        # Changing base_withdrawer:
+        # Changing base_withdrawer and paying the third withdrawal:
         withdrawal.base_withdrawer = self.bootstrap_account()
         fast_withdrawal.payout_withdrawal(
             withdrawal, provider, discounted_amount
@@ -297,7 +292,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         status = fast_withdrawal.get_service_provider_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
-        # Changing payload:
+        # Changing payload and paying the fourth withdrawal:
         discounted_amount = 777_000
         withdrawal.payload = pack(discounted_amount, 'nat')
         fast_withdrawal.payout_withdrawal(
@@ -308,7 +303,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         status = fast_withdrawal.get_service_provider_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
-        # Changing l2_caller:
+        # Changing l2_caller and paying the fifth withdrawal:
         withdrawal.l2_caller = bytes.fromhex('ab' * 20)
         fast_withdrawal.payout_withdrawal(
             withdrawal, provider, discounted_amount
@@ -318,7 +313,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         status = fast_withdrawal.get_service_provider_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
-        # Changing ticketer and content:
+        # Changing ticketer and content and paying the sixth withdrawal:
         withdrawal.ticketer = test_env.fa12_withdrawal.ticketer
         withdrawal.content = test_env.fa12_withdrawal.content
 
@@ -656,7 +651,6 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert "Withdrawal must not have a future timestamp" in str(err.exception)
 
     def test_should_emit_events_on_payout_withdrawal_and_finalization(self) -> None:
-        # TODO: consider splitting to three tests
         test_env = self.setup_fast_withdrawal_test_environment()
         provider = test_env.service_provider
         fast_withdrawal = test_env.fast_withdrawal

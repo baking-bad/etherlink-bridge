@@ -84,7 +84,7 @@
     - check ticketer content is correct
     - check both for FA1.2 and FA2 cases
 
-- [x] test_should_correctly_encode_payloads_for_different_ticket_amounts
+- [x] test_should_accept_different_payloads_for_different_ticket_amounts
     - check key is added for ticket amount = `1`
     - check key is added for ticket amount = `17`
     - check key is added for ticket amount = `1_000_000_000_000`

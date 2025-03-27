@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from os.path import join
-from typing import Any, Optional, Tuple, Union, TypedDict
+from typing import Any, Optional, Tuple, Union
 
 from pytezos.client import PyTezosClient
 from pytezos.contract.call import ContractCall
@@ -9,7 +9,7 @@ from pytezos.operation.group import OperationGroup
 from scripts.helpers.addressable import Addressable, get_address
 from scripts.helpers.contracts.contract import ContractHelper
 from scripts.helpers.metadata import Metadata
-from scripts.helpers.utility import get_build_dir, pack
+from scripts.helpers.utility import get_build_dir
 from scripts.helpers.utility import originate_from_file
 from scripts.helpers.ticket_content import TicketContent
 
@@ -41,34 +41,8 @@ class Withdrawal:
             self.l2_caller,
         )
 
-    @classmethod
-    def default_with(
-        cls,
-        withdrawal_id: int = 0,
-        full_amount: int = 1_000_000,
-        ticketer: Addressable = "tz1KqTpEZ7Yob7QbPE4Hy4Wo8fHG8LhKxZSx",
-        content: TicketContent = TicketContent(0, None),
-        base_withdrawer: Addressable = "tz1KqTpEZ7Yob7QbPE4Hy4Wo8fHG8LhKxZSx",
-        timestamp: int = 0,
-        payload: bytes = pack(1_000_000, 'nat'),
-        l2_caller: bytes = bytes(20),
-    ) -> 'Withdrawal':
-        """Creates a default Withdrawal object filled with default values"""
-
-        return cls(
-            withdrawal_id=withdrawal_id,
-            full_amount=full_amount,
-            ticketer=ticketer,
-            content=content,
-            base_withdrawer=base_withdrawer,
-            timestamp=timestamp,
-            payload=payload,
-            l2_caller=l2_caller,
-        )
-
-    @classmethod
-    def default(cls) -> 'Withdrawal':
-        return cls.default_with()
+    def override(self, **kwargs: Any) -> "Withdrawal":
+        return replace(self, **kwargs)
 
 
 @dataclass
@@ -117,6 +91,7 @@ class FastWithdrawal(ContractHelper):
         metadata = Metadata.make_default(
             name="Fast Withdrawal",
             description="Fast Withdrawal is a component of the Etherlink Bridge that allows service providers to make fast payouts for user withdrawals and receive funds from Etherlink after outbox message settlement.",
+            # TODO: don't forget to update the version
             version='0.1.0',
         )
 

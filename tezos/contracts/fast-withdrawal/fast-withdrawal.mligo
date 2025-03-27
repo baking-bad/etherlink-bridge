@@ -13,8 +13,32 @@
 #import "./events.mligo" "Events"
 
 
-// TODO: add docstring for the whole contract
-// TODO: add docstring for type
+(*
+    Fast Withdrawal is a contract allowing service providers to promptly
+    finalize user withdrawals and later receive funds from Etherlink after
+    outbox message settlement.
+
+    Supported withdrawal types:
+    - XTZ withdrawals (requires exchanger to implement the `burn` entrypoint)
+    - FA bridge withdrawals (requires ticketer to implement the `withdraw`
+      entrypoint and `get_token` and `get_content` views)
+
+    Workflow:
+    1. Providers initiate withdrawal claims by calling `payout_withdrawal`.
+    2. For native withdrawals, providers must attach the required XTZ amount.
+       For FA withdrawals, providers must approve the required tokens.
+    3. The payout amount is determined based on withdrawal expiration:
+        - If the withdrawal has not expired, a discounted amount (encoded in
+          the payload as Michelson nat) applies.
+        - If the withdrawal has expired, the full amount must be paid.
+    4. After successful validation, funds are transferred to the user, and the
+        provider's address is recorded in the `withdrawals` ledger as a claim.
+    5. Withdrawal settlement occurs via the `default` entrypoint triggered by
+        an outbox message from the smart rollup:
+        - If claimed, the provider receives the unwrapped ticket as payout.
+        - Otherwise, the ticket is unwrapped for the `base_withdrawer`.
+*)
+
 type payout_withdrawal_params = {
     withdrawal : FastWithdrawal.t;
     service_provider : address;
@@ -111,7 +135,19 @@ let send_tokens_op (token: Tokens.t) (amount : nat) (receiver : address) : opera
 let payout_withdrawal
         (params : payout_withdrawal_params)
         (storage: Storage.t) : return =
-    (* TODO: add docstring *)
+    (*
+        `payout_withdrawal` allows a service provider to finalize a user's
+        withdrawal early, creating a claim for future settlement.
+
+        Parameters:
+        @param withdrawal: details of the user's requested withdrawal.
+        @param service_provider: address eligible to receive reimbursement.
+
+        Effects:
+        - records the withdrawal claim in the `withdrawals` ledger.
+        - transfers funds immediately to the withdrawer.
+        - emits the `payout_withdrawal` event.
+    *)
 
     let { withdrawal; service_provider } = params in
     let expiration_seconds = storage.config.expiration_seconds in
@@ -140,9 +176,27 @@ let payout_withdrawal
 let default
         (params : SettleWithdrawalEntry.t)
         (storage: Storage.t) : return =
-    (* TODO: add docstring *)
-    (* If no advance payment found, send to the withdrawer. *)
-    (* If key with claim found, the withdrawal was payed, send to the provider. *)
+    (*
+        `default` is an entrypoint that receives tickets from the Etherlink
+        smart rollup after the corresponding outbox withdrawal message has been
+        executed. It finalizes previously claimed withdrawal or, if no claim
+        was recorded, unwraps the ticket directly to the withdrawer.
+
+        Parameters:
+        @param withdrawal_id: unique identifier of the withdrawal.
+        @param ticket: ticket provided with withdrawal (XTZ or FA).
+        @param timestamp: time when the withdrawal was applied on Etherlink.
+        @param base_withdrawer: original withdrawal receiver address.
+        @param payload: fast withdrawal conditions packed into bytes.
+        @param l2_caller: original sender address from the Etherlink side.
+
+        Effects:
+        - updates the `withdrawals` ledger state from `Claimed` to `Finished`
+          if a claim existed.
+        - unwraps the provided ticket to either the service provider (if advance
+          payment found) or to the original withdrawer.
+        - emits the `settle_withdrawal` event.
+    *)
 
     let (ticket, withdrawal) = SettleWithdrawalEntry.to_key_and_ticket params in
     let _ = assert_no_xtz_deposit () in

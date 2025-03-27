@@ -10,7 +10,8 @@ type withdrawals = (FastWithdrawal.t, status) big_map
     Fast Withdrawal contract configuration:
     - xtz_ticketer: address of the native XTZ ticketer (exchanger)
     - smart_rollup: address of the Etherlink smart rollup
-    - expiration_seconds: number of seconds during which a withdrawal can be purchased at a discount
+    - expiration_seconds: number of seconds during which a withdrawal can be
+      purchased at a discount
 *)
 type config = {
     xtz_ticketer : address;
@@ -22,7 +23,7 @@ type config = {
     Fast Withdrawal contract storage:
     - withdrawals: maps each withdrawal key to a service provider
     - config: fast withdrawal contract configuration
-    - metadata: a big_map containing the metadata of the contract (TZIP-016), immutable
+    - metadata: the metadata of the contract (TZIP-016), immutable
 *)
 type t = {
     withdrawals : withdrawals;

@@ -71,29 +71,37 @@ class Withdrawal:
         return cls.default_with()
 
 
-class Claimed(TypedDict):
-    claimed: str
+@dataclass
+class Claimed:
+    provider: str
+
+    def __init__(self, provider: Addressable):
+        self.provider = get_address(provider)
 
 
-class Finished(TypedDict):
-    finished: None
+@dataclass(frozen=True)
+class Finished:
+    pass
 
 
+@dataclass
 class Status:
-    def __init__(self, status: Optional[Union[Claimed, Finished]]):
-        self.status = status
+    value: Optional[Union[Claimed, Finished]]
 
-    def get_service_provider(self) -> str:
-        if self.status is None:
-            raise AssertionError("Expected a claimed status but got None")
-        if "claimed" not in self.status:
-            raise AssertionError("Status is not claimed")
-        return self.status["claimed"]
+    def unwrap(self) -> Union[Claimed, Finished]:
+        if self.value is None:
+            raise AssertionError("Expected a status but got None")
+        return self.value
 
-    def is_finished(self) -> bool:
-        if self.status is None:
-            return False
-        return "finished" in self.status
+    @classmethod
+    def from_dict(cls, data: Optional[dict]) -> "Status":
+        if data is None:
+            return cls(value=None)
+        if "claimed" in data:
+            return cls(value=Claimed(provider=data["claimed"]))
+        if "finished" in data:
+            return cls(value=Finished())
+        raise ValueError("Invalid status data: expected a claimed or finished object.")
 
 
 class FastWithdrawal(ContractHelper):
@@ -155,7 +163,7 @@ class FastWithdrawal(ContractHelper):
         otherwise returns None"""
 
         status = self.contract.get_service_provider(withdrawal.as_tuple()).run_view()  # type: ignore
-        return Status(status)
+        return Status.from_dict(status)
 
     def get_config_view(self) -> dict[str, Any]:
         """Returns FastWithdrawal contract configuration"""

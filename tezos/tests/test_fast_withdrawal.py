@@ -7,7 +7,7 @@ from pytezos.rpc.errors import MichelsonError
 from scripts.helpers.contracts.ticketer import Ticketer
 from scripts.helpers.contracts.xtz_ticketer import XtzTicketer
 from scripts.helpers.contracts.fast_withdrawal import (
-    Claimed,
+    PaidOut,
     FastWithdrawal,
     Cemented,
     Withdrawal,
@@ -230,7 +230,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Claimed(provider)
+        assert status.unwrap() == PaidOut(provider)
 
     def test_should_accept_different_payloads_for_different_ticket_amounts(
         self,
@@ -251,7 +251,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             self.bake_block()
 
             status = fast_withdrawal.get_status_view(withdrawal)
-            assert status.unwrap() == Claimed(provider)
+            assert status.unwrap() == PaidOut(provider)
 
     def test_should_create_different_withdrawal_records(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
@@ -270,7 +270,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Claimed(provider)
+        assert status.unwrap() == PaidOut(provider)
 
         # Changing timestamp and paying the second withdrawal:
         withdrawal.timestamp = test_env.valid_timestamp + 1
@@ -280,7 +280,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Claimed(provider)
+        assert status.unwrap() == PaidOut(provider)
 
         # Changing base_withdrawer and paying the third withdrawal:
         withdrawal.base_withdrawer = self.bootstrap_account()
@@ -290,7 +290,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Claimed(provider)
+        assert status.unwrap() == PaidOut(provider)
 
         # Changing payload and paying the fourth withdrawal:
         discounted_amount = 777_000
@@ -301,7 +301,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Claimed(provider)
+        assert status.unwrap() == PaidOut(provider)
 
         # Changing l2_caller and paying the fifth withdrawal:
         withdrawal.l2_caller = bytes.fromhex('ab' * 20)
@@ -311,7 +311,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Claimed(provider)
+        assert status.unwrap() == PaidOut(provider)
 
         # Changing ticketer and content and paying the sixth withdrawal:
         withdrawal.ticketer = test_env.fa12_withdrawal.ticketer
@@ -324,7 +324,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         status = test_env.fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Claimed(provider)
+        assert status.unwrap() == PaidOut(provider)
 
     def test_should_reject_duplicate_withdrawal(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
@@ -381,7 +381,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Claimed(provider)
+        assert status.unwrap() == PaidOut(provider)
 
         # Recording the provider's balance before the withdrawal finalization:
         provider_balance = provider.balance()
@@ -427,7 +427,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert token.get_balance(withdrawer) == 30
 
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Claimed(provider)
+        assert status.unwrap() == PaidOut(provider)
 
         # Creating wrapped token (ticket) for smart_rollup:
         ticket = self.make_fa2_ticket(test_env, 50)
@@ -476,7 +476,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Claimed(provider)
+        assert status.unwrap() == PaidOut(provider)
         assert withdrawer.balance() == withdrawer_balance + Decimal('0.001000')
 
         # Creating wrapped xtz ticket for Smart Rollup:
@@ -608,7 +608,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Claimed(custom_provider)
+        assert status.unwrap() == PaidOut(custom_provider)
 
         # Recording the custom provider's balance before the withdrawal finalization:
         ticket = self.make_xtz_ticket(test_env, 123)

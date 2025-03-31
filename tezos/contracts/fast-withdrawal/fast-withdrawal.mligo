@@ -35,7 +35,7 @@
         provider's address is recorded in the `withdrawals` ledger as a claim.
     5. Withdrawal settlement occurs via the `default` entrypoint triggered by
         an outbox message from the smart rollup:
-        - If claimed, the provider receives the unwrapped ticket as payout.
+        - If paid out, the provider receives the unwrapped ticket as payout.
         - Otherwise, the ticket is unwrapped for the `base_withdrawer`.
 *)
 
@@ -179,7 +179,7 @@ let default
     (*
         `default` is an entrypoint that receives tickets from the Etherlink
         smart rollup after the corresponding outbox withdrawal message has been
-        executed. It finalizes previously claimed withdrawal or, if no claim
+        executed. It finalizes previously paid out withdrawal or, if no claim
         was recorded, unwraps the ticket directly to the withdrawer.
 
         Parameters:
@@ -191,7 +191,7 @@ let default
         @param l2_caller: original sender address from the Etherlink side.
 
         Effects:
-        - updates the `withdrawals` ledger state from `Claimed` to `Cemented`
+        - updates the `withdrawals` ledger state from `Paid_out` to `Cemented`
           if a claim existed.
         - unwraps the provided ticket to either the service provider (if advance
           payment found) or to the original withdrawer.

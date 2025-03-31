@@ -1,8 +1,13 @@
 #import "../common/types/fast-withdrawal.mligo" "FastWithdrawal"
 
 
+(*
+    Fast Withdrawal status:
+    - Paid_out: user received payout, claim registered for the provider
+    - Cemented: claim finalized, provider received funds from the smart rollup
+*)
 type status =
-    | Claimed of address
+    | Paid_out of address
     | Cemented
 type withdrawals = (FastWithdrawal.t, status) big_map
 
@@ -36,7 +41,7 @@ let add_withdrawal
         (withdrawal : FastWithdrawal.t)
         (service_provider : address)
         (storage : t) : t =
-    let status = Claimed service_provider in
+    let status = Paid_out service_provider in
     let updated_withdrawals = Big_map.add withdrawal status storage.withdrawals in
     { storage with withdrawals = updated_withdrawals }
 
@@ -45,7 +50,7 @@ let finalize_withdrawal
         (withdrawal : FastWithdrawal.t)
         (provider_opt : address option)
         (storage : t) : t =
-    (* Update the ledger only if it was claimed by the provider, otherwise, ignore it: *)
+    (* Update the ledger only if it was paid out by the provider, otherwise, ignore it: *)
     let status = if Option.is_some provider_opt then Some Cemented else None in
     let updated_withdrawals = Big_map.update withdrawal status storage.withdrawals in
     { storage with withdrawals = updated_withdrawals }
@@ -60,7 +65,7 @@ let assert_withdrawal_was_not_paid_before
 [@inline]
 let unwrap_provider_opt (status : status) : address option =
     match status with
-    | Claimed service_provider -> Some service_provider
+    | Paid_out service_provider -> Some service_provider
     | Cemented -> None
 
 [@inline]

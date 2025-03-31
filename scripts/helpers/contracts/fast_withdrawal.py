@@ -46,7 +46,7 @@ class Withdrawal:
 
 
 @dataclass
-class Claimed:
+class PaidOut:
     provider: str
 
     def __init__(self, provider: Addressable):
@@ -60,9 +60,9 @@ class Cemented:
 
 @dataclass
 class Status:
-    value: Optional[Union[Claimed, Cemented]]
+    value: Optional[Union[PaidOut, Cemented]]
 
-    def unwrap(self) -> Union[Claimed, Cemented]:
+    def unwrap(self) -> Union[PaidOut, Cemented]:
         if self.value is None:
             raise AssertionError("Expected a status but got None")
         return self.value
@@ -71,11 +71,13 @@ class Status:
     def from_dict(cls, data: Optional[dict]) -> "Status":
         if data is None:
             return cls(value=None)
-        if "claimed" in data:
-            return cls(value=Claimed(provider=data["claimed"]))
+        if "paid_out" in data:
+            return cls(value=PaidOut(provider=data["paid_out"]))
         if "cemented" in data:
             return cls(value=Cemented())
-        raise ValueError("Invalid status data: expected a claimed or cemented object.")
+        raise ValueError(
+            "Invalid status data: expected a 'paid_out' or 'cemented' object."
+        )
 
 
 class FastWithdrawal(ContractHelper):

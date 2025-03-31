@@ -9,7 +9,7 @@ from scripts.helpers.contracts.xtz_ticketer import XtzTicketer
 from scripts.helpers.contracts.fast_withdrawal import (
     Claimed,
     FastWithdrawal,
-    Finished,
+    Cemented,
     Withdrawal,
 )
 from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
@@ -388,9 +388,9 @@ class FastWithdrawalTestCase(BaseTestCase):
         ticket = self.make_xtz_ticket(test_env, 77)
         self.finalize_withdrawal(test_env, withdrawal, ticket)
 
-        # Checking that status is now Finished:
+        # Checking that status is now Cemented:
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Finished()
+        assert status.unwrap() == Cemented()
 
         # Checking that the provider received the xtz:
         assert provider.balance() == provider_balance + Decimal('0.000077')
@@ -433,9 +433,9 @@ class FastWithdrawalTestCase(BaseTestCase):
         ticket = self.make_fa2_ticket(test_env, 50)
         self.finalize_withdrawal(test_env, withdrawal, ticket)
 
-        # Checking that status is now Finished:
+        # Checking that status is now Cemented:
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Finished()
+        assert status.unwrap() == Cemented()
 
         # Checking that the provider received the token:
         assert token.get_balance(provider) == provider_balance - 30 + 50
@@ -618,7 +618,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         updated_balance = custom_provider.balance()
         assert updated_balance == custom_provider_balance + Decimal('0.000123')
         status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Finished()
+        assert status.unwrap() == Cemented()
 
         # TODO: consider making this test for FA cases
 

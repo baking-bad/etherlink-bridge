@@ -27,7 +27,7 @@
                    (address %base_withdrawer)
                    (bytes %payload)
                    (bytes %l2_caller))
-             (or (address %claimed) (unit %finished)))
+             (or (address %claimed) (unit %cemented)))
           (pair %config
              (address %xtz_ticketer)
              (address %smart_rollup)
@@ -284,7 +284,7 @@
              (address %base_withdrawer)
              (bytes %payload)
              (bytes %l2_caller))
-       (option (or (address %claimed) (unit %finished)))
+       (option (or (address %claimed) (unit %cemented)))
        { UNPAIR ; SWAP ; CAR ; SWAP ; GET } ;
   view "get_config"
        unit

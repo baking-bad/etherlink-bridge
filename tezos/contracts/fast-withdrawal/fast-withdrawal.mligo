@@ -191,7 +191,7 @@ let default
         @param l2_caller: original sender address from the Etherlink side.
 
         Effects:
-        - updates the `withdrawals` ledger state from `Claimed` to `Finished`
+        - updates the `withdrawals` ledger state from `Claimed` to `Cemented`
           if a claim existed.
         - unwraps the provided ticket to either the service provider (if advance
           payment found) or to the original withdrawer.

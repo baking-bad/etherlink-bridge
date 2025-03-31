@@ -3,7 +3,7 @@
 
 type status =
     | Claimed of address
-    | Finished
+    | Cemented
 type withdrawals = (FastWithdrawal.t, status) big_map
 
 (*
@@ -46,7 +46,7 @@ let finalize_withdrawal
         (provider_opt : address option)
         (storage : t) : t =
     (* Update the ledger only if it was claimed by the provider, otherwise, ignore it: *)
-    let status = if Option.is_some provider_opt then Some Finished else None in
+    let status = if Option.is_some provider_opt then Some Cemented else None in
     let updated_withdrawals = Big_map.update withdrawal status storage.withdrawals in
     { storage with withdrawals = updated_withdrawals }
 
@@ -61,7 +61,7 @@ let assert_withdrawal_was_not_paid_before
 let unwrap_provider_opt (status : status) : address option =
     match status with
     | Claimed service_provider -> Some service_provider
-    | Finished -> None
+    | Cemented -> None
 
 [@inline]
 let get_provider_opt

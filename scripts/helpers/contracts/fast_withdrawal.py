@@ -54,15 +54,15 @@ class Claimed:
 
 
 @dataclass(frozen=True)
-class Finished:
+class Cemented:
     pass
 
 
 @dataclass
 class Status:
-    value: Optional[Union[Claimed, Finished]]
+    value: Optional[Union[Claimed, Cemented]]
 
-    def unwrap(self) -> Union[Claimed, Finished]:
+    def unwrap(self) -> Union[Claimed, Cemented]:
         if self.value is None:
             raise AssertionError("Expected a status but got None")
         return self.value
@@ -73,9 +73,9 @@ class Status:
             return cls(value=None)
         if "claimed" in data:
             return cls(value=Claimed(provider=data["claimed"]))
-        if "finished" in data:
-            return cls(value=Finished())
-        raise ValueError("Invalid status data: expected a claimed or finished object.")
+        if "cemented" in data:
+            return cls(value=Cemented())
+        raise ValueError("Invalid status data: expected a claimed or cemented object.")
 
 
 class FastWithdrawal(ContractHelper):

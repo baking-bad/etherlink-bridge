@@ -103,15 +103,15 @@
 
 - [x] test_provider_receives_xtz_withdrawal_after_purchase
     - check provider balance increases by full withdrawal amount
-    - check withdrawal status is `Finished` after payout
+    - check withdrawal status is `Cemented` after payout
 
 - [ ] test_provider_receives_fa12_withdrawal_after_purchase
     - check provider FA1.2 token balance increases by full withdrawal amount
-    - check withdrawal status is `Finished` after payout
+    - check withdrawal status is `Cemented` after payout
 
 - [x] test_provider_receives_fa2_withdrawal_after_purchase
     - check provider FA2 token balance increases by full withdrawal amount
-    - check withdrawal status is `Finished` after payout
+    - check withdrawal status is `Cemented` after payout
 
 - [x] test_user_receives_xtz_withdrawal_when_no_purchase_made
     - check user balance increases by full withdrawal amount
@@ -132,7 +132,7 @@
 
 - [x] test_should_pay_custom_provider_when_specified
     - check specified alternative provider receives withdrawal payout
-    - check withdrawal status is `Finished` after payout
+    - check withdrawal status is `Cemented` after payout
     - check for XTZ, FA1.2 and FA2
 
 - [x] test_should_allow_xtz_withdrawal_purchase_at_full_price_after_timestamp_expired

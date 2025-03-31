@@ -81,7 +81,6 @@
 
 - [ ] test_should_create_withdrawal_record_after_fa_withdrawal_purchased
     - check key is added to `withdrawals` big_map
-    - check ticketer content is correct
     - check both for FA1.2 and FA2 cases
 
 - [x] test_should_accept_different_payloads_for_different_ticket_amounts

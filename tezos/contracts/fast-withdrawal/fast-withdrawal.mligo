@@ -64,6 +64,12 @@ let get_token (ticketer : address) : Tokens.t =
     | None -> failwith "Error in get_token view call"
 
 [@inline]
+let get_content (ticketer : address) : Ticket.content_t =
+    match Tezos.Next.View.call "get_content" unit ticketer with
+    | Some token -> token
+    | None -> failwith "Error in get_content view call"
+
+[@inline]
 let is_withdrawal_expired (withdrawal : FastWithdrawal.t) (expiration_seconds : int) : bool =
     Tezos.get_now() > withdrawal.timestamp + expiration_seconds
 
@@ -101,7 +107,14 @@ let assert_ticket_content_is_valid_for_xtz (content : Ticket.content_t) : unit =
     else
         unit
 
-// TODO: consider reusing Assertions.no_xtz_deposit (but it is not inlined)
+[@inline]
+let assert_ticket_content_is_valid_for_fa (withdrawal : FastWithdrawal.t) : unit =
+    let valid_content = get_content withdrawal.ticketer in
+    if valid_content <> withdrawal.content then
+        failwith "Wrong ticket content for FA ticketer"
+    else
+        unit
+
 [@inline]
 let assert_no_xtz_deposit (unit : unit) : unit =
     if Tezos.get_amount () > 0mutez
@@ -163,7 +176,7 @@ let payout_withdrawal
         send_xtz_op payout_amount receiver
     else
         (* This is the case when the service provider pays out an FA withdrawal *)
-        // TODO: assert ticket.content the same as withdrawal.ticketer.get_content
+        let _ = assert_ticket_content_is_valid_for_fa withdrawal in
         let _ = assert_no_xtz_deposit () in
         let token = get_token withdrawal.ticketer in
         send_tokens_op token payout_amount receiver in

@@ -206,7 +206,18 @@
                   MUL ;
                   UNIT ;
                   TRANSFER_TOKENS }
-                { PUSH mutez 0 ;
+                { DUP 3 ;
+                  GET 5 ;
+                  UNIT ;
+                  VIEW "get_content" (pair nat (option bytes)) ;
+                  IF_NONE { PUSH string "Error in get_content view call" ; FAILWITH } {} ;
+                  DUP 4 ;
+                  GET 7 ;
+                  SWAP ;
+                  COMPARE ;
+                  NEQ ;
+                  IF { PUSH string "Wrong ticket content for FA ticketer" ; FAILWITH } {} ;
+                  PUSH mutez 0 ;
                   AMOUNT ;
                   COMPARE ;
                   GT ;

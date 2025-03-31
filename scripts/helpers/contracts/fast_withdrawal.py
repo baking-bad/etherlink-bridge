@@ -133,11 +133,11 @@ class FastWithdrawal(ContractHelper):
             get_address(service_provider),
         ).with_amount(xtz_amount)
 
-    def get_service_provider_view(self, withdrawal: Withdrawal) -> Status:
+    def get_status_view(self, withdrawal: Withdrawal) -> Status:
         """Returns status for the specified withdrawal, if it exists,
         otherwise returns None"""
 
-        status = self.contract.get_service_provider(withdrawal.as_tuple()).run_view()  # type: ignore
+        status = self.contract.get_status(withdrawal.as_tuple()).run_view()  # type: ignore
         return Status.from_dict(status)
 
     def get_config_view(self) -> dict[str, Any]:

@@ -275,7 +275,7 @@
          DIG 2 ;
          CONS ;
          PAIR } ;
-  view "get_service_provider"
+  view "get_status"
        (pair (nat %withdrawal_id)
              (nat %full_amount)
              (address %ticketer)

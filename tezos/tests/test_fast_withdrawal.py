@@ -229,7 +229,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         fast_withdrawal.payout_withdrawal(withdrawal, provider, xtz_amount).send()
         self.bake_block()
 
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
     def test_should_accept_different_payloads_for_different_ticket_amounts(
@@ -250,7 +250,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             fast_withdrawal.payout_withdrawal(withdrawal, provider, amount).send()
             self.bake_block()
 
-            status = fast_withdrawal.get_service_provider_view(withdrawal)
+            status = fast_withdrawal.get_status_view(withdrawal)
             assert status.unwrap() == Claimed(provider)
 
     def test_should_create_different_withdrawal_records(self) -> None:
@@ -269,7 +269,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
         # Changing timestamp and paying the second withdrawal:
@@ -279,7 +279,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
         # Changing base_withdrawer and paying the third withdrawal:
@@ -289,7 +289,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
         # Changing payload and paying the fourth withdrawal:
@@ -300,7 +300,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
         # Changing l2_caller and paying the fifth withdrawal:
@@ -310,7 +310,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
         # Changing ticketer and content and paying the sixth withdrawal:
@@ -323,7 +323,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        status = test_env.fast_withdrawal.get_service_provider_view(withdrawal)
+        status = test_env.fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
     def test_should_reject_duplicate_withdrawal(self) -> None:
@@ -380,7 +380,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
         # Recording the provider's balance before the withdrawal finalization:
@@ -389,7 +389,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.finalize_withdrawal(test_env, withdrawal, ticket)
 
         # Checking that status is now Finished:
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Finished()
 
         # Checking that the provider received the xtz:
@@ -426,7 +426,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert token.get_balance(provider) == provider_balance - 30
         assert token.get_balance(withdrawer) == 30
 
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
 
         # Creating wrapped token (ticket) for smart_rollup:
@@ -434,7 +434,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.finalize_withdrawal(test_env, withdrawal, ticket)
 
         # Checking that status is now Finished:
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Finished()
 
         # Checking that the provider received the token:
@@ -475,7 +475,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Claimed(provider)
         assert withdrawer.balance() == withdrawer_balance + Decimal('0.001000')
 
@@ -607,7 +607,7 @@ class FastWithdrawalTestCase(BaseTestCase):
         ).send()
         self.bake_block()
 
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Claimed(custom_provider)
 
         # Recording the custom provider's balance before the withdrawal finalization:
@@ -617,7 +617,7 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         updated_balance = custom_provider.balance()
         assert updated_balance == custom_provider_balance + Decimal('0.000123')
-        status = fast_withdrawal.get_service_provider_view(withdrawal)
+        status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == Finished()
 
         # TODO: consider making this test for FA cases

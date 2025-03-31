@@ -212,7 +212,7 @@ let default
     [finalize_operation; finalize_event], updated_storage
 
 [@view]
-let get_service_provider
+let get_status
         (withdrawal : FastWithdrawal.t)
         (storage : Storage.t) : Storage.status option =
     Big_map.find_opt withdrawal storage.withdrawals

@@ -1,0 +1,10 @@
+let sender_is_not_allowed = "SENDER_NOT_ALLOWED"
+let payload_unpack_failed = "PAYLOAD_UNPACK_FAILED"
+let get_token_view_failed = "GET_TOKEN_VIEW_FAILED"
+let get_content_view_failed = "GET_CONTENT_VIEW_FAILED"
+let timestamp_in_future = "TIMESTAMP_IN_FUTURE"
+let invalid_xtz_amount = "INVALID_XTZ_AMOUNT"
+let wrong_xtz_content = "WRONG_XTZ_CONTENT"
+let wrong_fa_content = "WRONG_FA_CONTENT"
+let duplicate_withdrawal_payout = "DUPLICATE_WITHDRAWAL_PAYOUT"
+

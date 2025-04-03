@@ -345,12 +345,12 @@ class FastWithdrawalTestCase(BaseTestCase):
             fast_withdrawal.payout_withdrawal(
                 withdrawal, another_provider, xtz_amount
             ).send()
-        assert "The fast withdrawal was already payed" in str(err.exception)
+        assert "DUPLICATE_WITHDRAWAL_PAYOUT" in str(err.exception)
 
         # Checking that the same withdrawal can't be paid again by the same provider:
         with self.assertRaises(MichelsonError) as err:
             fast_withdrawal.payout_withdrawal(withdrawal, provider, xtz_amount).send()
-        assert "The fast withdrawal was already payed" in str(err.exception)
+        assert "DUPLICATE_WITHDRAWAL_PAYOUT" in str(err.exception)
 
         # Check that the same withdrawal can't be paid again after it was finalized
         ticket = self.make_xtz_ticket(test_env, xtz_amount)
@@ -362,7 +362,7 @@ class FastWithdrawalTestCase(BaseTestCase):
                 service_provider=another_provider,
                 xtz_amount=xtz_amount,
             ).send()
-        assert "The fast withdrawal was already payed" in str(err.exception)
+        assert "DUPLICATE_WITHDRAWAL_PAYOUT" in str(err.exception)
 
     def test_provider_receives_xtz_withdrawal_after_purchase(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
@@ -504,7 +504,7 @@ class FastWithdrawalTestCase(BaseTestCase):
                 provider,
                 xtz_amount=990,
             ).send()
-        assert "Tezos amount is not valid" in str(err.exception)
+        assert "INVALID_XTZ_AMOUNT" in str(err.exception)
 
     def test_should_reject_xtz_withdrawal_purchase_with_wrong_xtz_amount(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
@@ -521,7 +521,7 @@ class FastWithdrawalTestCase(BaseTestCase):
                 provider,
                 xtz_amount=10_000,
             ).send()
-        assert "Tezos amount is not valid" in str(err.exception)
+        assert "INVALID_XTZ_AMOUNT" in str(err.exception)
 
     def test_rejects_xtz_withdrawal_purchase_with_wrong_ticket_content(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
@@ -543,7 +543,7 @@ class FastWithdrawalTestCase(BaseTestCase):
                 service_provider=provider,
                 xtz_amount=1,
             ).send()
-        assert "Wrong ticket content for xtz ticketer" in str(err.exception)
+        assert "WRONG_XTZ_CONTENT" in str(err.exception)
 
         # Wrong `token_info` but correct `token_id` case:
         with self.assertRaises(MichelsonError) as err:
@@ -552,7 +552,7 @@ class FastWithdrawalTestCase(BaseTestCase):
                 service_provider=provider,
                 xtz_amount=1,
             ).send()
-        assert "Wrong ticket content for xtz ticketer" in str(err.exception)
+        assert "WRONG_XTZ_CONTENT" in str(err.exception)
 
     def test_should_reject_settlement_with_attached_xtz(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
@@ -587,7 +587,7 @@ class FastWithdrawalTestCase(BaseTestCase):
                 ticket.transfer(unauthorized_tester),
             ).send()
             self.bake_block()
-        assert "Sender is not allowed to call this entrypoint" in str(err.exception)
+        assert "SENDER_NOT_ALLOWED" in str(err.exception)
 
     def test_should_pay_custom_provider_when_specified(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
@@ -648,7 +648,7 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         with self.assertRaises(MichelsonError) as err:
             fast_withdrawal.payout_withdrawal(withdrawal, provider).send()
-        assert "Withdrawal must not have a future timestamp" in str(err.exception)
+        assert "TIMESTAMP_IN_FUTURE" in str(err.exception)
 
     def test_should_emit_events_on_payout_withdrawal_and_finalization(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()

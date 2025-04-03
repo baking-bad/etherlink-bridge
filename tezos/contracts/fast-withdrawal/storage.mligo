@@ -1,4 +1,5 @@
 #import "../common/types/fast-withdrawal.mligo" "FastWithdrawal"
+#import "./errors.mligo" "Errors"
 
 
 (*
@@ -60,7 +61,7 @@ let assert_withdrawal_was_not_paid_before
         (withdrawal : FastWithdrawal.t)
         (storage : t) : unit =
     if Option.is_some (Big_map.find_opt withdrawal storage.withdrawals) then
-        failwith "The fast withdrawal was already payed"
+        failwith Errors.duplicate_withdrawal_payout
 
 [@inline]
 let unwrap_provider_opt (status : status) : address option =

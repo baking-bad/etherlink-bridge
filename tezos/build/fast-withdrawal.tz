@@ -64,8 +64,7 @@
              SENDER ;
              COMPARE ;
              NEQ ;
-             IF { PUSH string "Sender is not allowed to call this entrypoint" ; FAILWITH }
-                {} ;
+             IF { PUSH string "SENDER_NOT_ALLOWED" ; FAILWITH } {} ;
              DUP 3 ;
              CAR ;
              DUP 3 ;
@@ -151,14 +150,13 @@
              DUP 3 ;
              GET ;
              IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
-             IF { PUSH string "The fast withdrawal was already payed" ; FAILWITH } {} ;
+             IF { PUSH string "DUPLICATE_WITHDRAWAL_PAYOUT" ; FAILWITH } {} ;
              DUP 2 ;
              GET 9 ;
              NOW ;
              COMPARE ;
              LT ;
-             IF { PUSH string "Withdrawal must not have a future timestamp" ; FAILWITH }
-                {} ;
+             IF { PUSH string "TIMESTAMP_IN_FUTURE" ; FAILWITH } {} ;
              DUP 4 ;
              GET 3 ;
              GET 4 ;
@@ -172,7 +170,7 @@
              IF { DUP 2 ;
                   GET 13 ;
                   UNPACK nat ;
-                  IF_NONE { PUSH string "Error during payload unpack" ; FAILWITH } {} }
+                  IF_NONE { PUSH string "PAYLOAD_UNPACK_FAILED" ; FAILWITH } {} }
                 { DUP 2 ; GET 3 } ;
              DUP 5 ;
              GET 3 ;
@@ -190,14 +188,14 @@
                   GET 7 ;
                   COMPARE ;
                   NEQ ;
-                  IF { PUSH string "Wrong ticket content for xtz ticketer" ; FAILWITH } {} ;
+                  IF { PUSH string "WRONG_XTZ_CONTENT" ; FAILWITH } {} ;
                   PUSH mutez 1 ;
                   DUP 2 ;
                   MUL ;
                   AMOUNT ;
                   COMPARE ;
                   NEQ ;
-                  IF { PUSH string "Tezos amount is not valid" ; FAILWITH } {} ;
+                  IF { PUSH string "INVALID_XTZ_AMOUNT" ; FAILWITH } {} ;
                   SWAP ;
                   CONTRACT unit ;
                   IF_NONE { PUSH string "bad address for get_contract" ; FAILWITH } {} ;
@@ -210,13 +208,13 @@
                   GET 5 ;
                   UNIT ;
                   VIEW "get_content" (pair nat (option bytes)) ;
-                  IF_NONE { PUSH string "Error in get_content view call" ; FAILWITH } {} ;
+                  IF_NONE { PUSH string "GET_CONTENT_VIEW_FAILED" ; FAILWITH } {} ;
                   DUP 4 ;
                   GET 7 ;
                   SWAP ;
                   COMPARE ;
                   NEQ ;
-                  IF { PUSH string "Wrong ticket content for FA ticketer" ; FAILWITH } {} ;
+                  IF { PUSH string "WRONG_FA_CONTENT" ; FAILWITH } {} ;
                   PUSH mutez 0 ;
                   AMOUNT ;
                   COMPARE ;
@@ -226,7 +224,7 @@
                   GET 5 ;
                   UNIT ;
                   VIEW "get_token" (or (address %fa12) (pair %fa2 address nat)) ;
-                  IF_NONE { PUSH string "Error in get_token view call" ; FAILWITH } {} ;
+                  IF_NONE { PUSH string "GET_TOKEN_VIEW_FAILED" ; FAILWITH } {} ;
                   SENDER ;
                   SWAP ;
                   IF_LEFT

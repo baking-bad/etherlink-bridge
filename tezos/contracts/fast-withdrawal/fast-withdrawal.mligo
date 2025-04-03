@@ -8,9 +8,10 @@
 #import "../common/types/ticket.mligo" "Ticket"
 #import "../common/tokens/tokens.mligo" "Tokens"
 #import "../common/types/fast-withdrawal.mligo" "FastWithdrawal"
-#import "../common/errors.mligo" "Errors"
+#import "../common/errors.mligo" "CommonErrors"
 #import "./storage.mligo" "Storage"
 #import "./events.mligo" "Events"
+#import "./errors.mligo" "Errors"
 
 
 (*
@@ -49,25 +50,25 @@ type return = operation list * Storage.t
 [@inline]
 let assert_sender_is_allowed (smart_rollup : address) : unit =
     if Tezos.get_sender () <> smart_rollup then
-        failwith "Sender is not allowed to call this entrypoint"
+        failwith Errors.sender_is_not_allowed
 
 [@inline]
 let unpack_payload (payload : bytes) : nat =
     match Bytes.unpack payload with
     | Some amount -> amount
-    | None -> failwith "Error during payload unpack"
+    | None -> failwith Errors.payload_unpack_failed
 
 [@inline]
 let get_token (ticketer : address) : Tokens.t =
     match Tezos.Next.View.call "get_token" unit ticketer with
     | Some token -> token
-    | None -> failwith "Error in get_token view call"
+    | None -> failwith Errors.get_token_view_failed
 
 [@inline]
 let get_content (ticketer : address) : Ticket.content_t =
     match Tezos.Next.View.call "get_content" unit ticketer with
     | Some token -> token
-    | None -> failwith "Error in get_content view call"
+    | None -> failwith Errors.get_content_view_failed
 
 [@inline]
 let is_withdrawal_expired (withdrawal : FastWithdrawal.t) (expiration_seconds : int) : bool =
@@ -76,7 +77,7 @@ let is_withdrawal_expired (withdrawal : FastWithdrawal.t) (expiration_seconds : 
 [@inline]
 let assert_withdrawal_not_in_future (withdrawal : FastWithdrawal.t) : unit =
     if Tezos.get_now() < withdrawal.timestamp then
-        failwith "Withdrawal must not have a future timestamp"
+        failwith Errors.timestamp_in_future
     else
         unit
 
@@ -95,7 +96,7 @@ let resolve_payout_amount (withdrawal : FastWithdrawal.t) (expiration_seconds : 
 [@inline]
 let assert_attached_amount_is_valid (valid_amount : nat) : unit =
     if Tezos.get_amount () <> valid_amount * 1mutez then
-        failwith "Tezos amount is not valid"
+        failwith Errors.invalid_xtz_amount
     else
         unit
 
@@ -103,7 +104,7 @@ let assert_attached_amount_is_valid (valid_amount : nat) : unit =
 let assert_ticket_content_is_valid_for_xtz (content : Ticket.content_t) : unit =
     let valid_xtz_content : Ticket.content_t = (0n, None) in
     if content <> valid_xtz_content then
-        failwith "Wrong ticket content for xtz ticketer"
+        failwith Errors.wrong_xtz_content
     else
         unit
 
@@ -111,14 +112,14 @@ let assert_ticket_content_is_valid_for_xtz (content : Ticket.content_t) : unit =
 let assert_ticket_content_is_valid_for_fa (withdrawal : FastWithdrawal.t) : unit =
     let valid_content = get_content withdrawal.ticketer in
     if valid_content <> withdrawal.content then
-        failwith "Wrong ticket content for FA ticketer"
+        failwith Errors.wrong_fa_content
     else
         unit
 
 [@inline]
-let assert_no_xtz_deposit (unit : unit) : unit =
+let assert_no_xtz_deposit (_ : unit) : unit =
     if Tezos.get_amount () > 0mutez
-    then failwith Errors.xtz_deposit_disallowed else unit
+    then failwith CommonErrors.xtz_deposit_disallowed else unit
 
 [@inline]
 let send_ticket
@@ -231,5 +232,5 @@ let get_status
     Big_map.find_opt withdrawal storage.withdrawals
 
 [@view]
-let get_config (() : unit) (storage : Storage.t) : Storage.config =
+let get_config (_ : unit) (storage : Storage.t) : Storage.config =
     storage.config

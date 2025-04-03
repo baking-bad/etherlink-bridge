@@ -1,11 +1,9 @@
-from typing import Union, Type, TYPE_CHECKING
+from typing import Union
 from pytezos.client import PyTezosClient
 from eth_account.signers.local import LocalAccount
 from scripts.helpers.etherlink import EvmContractHelper
 from scripts.helpers.utility import pack
-
-if TYPE_CHECKING:
-    from scripts.helpers.contracts.contract import ContractHelper
+from scripts.helpers.contracts.contract import ContractHelper
 
 
 # TODO: consider renaming to TezosAddressable?

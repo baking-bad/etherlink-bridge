@@ -28,7 +28,9 @@ class TicketerRouterTesterTestCase(BaseTestCase):
         self.bake_block()
         assert ticketer.read_ticket(rollup_mock).amount == 100
 
-    def test_should_redirect_ticket_to_receiver_when_called_on_withdraw_entry(self) -> None:
+    def test_should_redirect_ticket_to_receiver_when_called_on_withdraw_entry(
+        self,
+    ) -> None:
         alice = self.bootstrap_account()
         bonita = self.bootstrap_account()
         tester = self.deploy_ticket_router_tester()

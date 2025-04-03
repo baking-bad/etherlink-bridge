@@ -18,10 +18,8 @@ from scripts.helpers.addressable import (
     make_deposit_routing_info,
 )
 from scripts.helpers.ticket import Ticket
-from scripts.helpers.contracts import (
-    Ticketer,
-    TicketRouterTester,
-)
+from scripts.helpers.contracts.ticketer import Ticketer
+from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
 from web3.types import TxParams

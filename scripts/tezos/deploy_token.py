@@ -1,5 +1,5 @@
 import click
-from scripts.helpers.contracts import TokenHelper
+from scripts.helpers.contracts.tokens.token import TokenHelper
 from scripts.helpers.utility import get_tezos_client
 from scripts.helpers.formatting import (
     accent,

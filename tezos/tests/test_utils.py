@@ -1,5 +1,6 @@
 import unittest
-from scripts.helpers.contracts.tokens import CtezToken, FxhashToken
+from scripts.helpers.contracts.tokens.fa12 import CtezToken
+from scripts.helpers.contracts.tokens.fa2 import FxhashToken
 from scripts.helpers.ticket_content import TicketContent
 from unittest.mock import Mock
 

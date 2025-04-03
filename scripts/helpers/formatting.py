@@ -1,5 +1,5 @@
 import click
-from scripts.helpers.contracts import TokenHelper
+from scripts.helpers.contracts.tokens.token import TokenHelper
 
 
 def accent(msg: str) -> str:
@@ -7,7 +7,7 @@ def accent(msg: str) -> str:
 
 
 def wrap(msg: str, symbol: str = '`') -> str:
-    return '`' + msg + '`'
+    return symbol + msg + symbol
 
 
 def echo_variable(prefix: str, name: str, value: str) -> None:

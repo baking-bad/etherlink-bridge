@@ -1,5 +1,5 @@
 import click
-from scripts.helpers.contracts import Ticketer
+from scripts.helpers.contracts.ticketer import Ticketer
 from scripts.helpers.utility import (
     get_tezos_client,
     make_address_bytes,

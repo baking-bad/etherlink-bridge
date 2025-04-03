@@ -1,6 +1,6 @@
 import click
 from scripts.defaults import XTZ_TICKETER_ADDRESS
-from scripts.helpers.contracts import FastWithdrawal
+from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal
 from scripts.helpers.utility import get_tezos_client
 from scripts.helpers.formatting import (
     accent,

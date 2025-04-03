@@ -1,5 +1,5 @@
 from pytezos.client import PyTezosClient
-from scripts.helpers.contracts import TicketRouterTester
+from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
 
 
 # TODO: consider making CLI for this function

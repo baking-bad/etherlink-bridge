@@ -3,18 +3,16 @@ from pytezos.operation.group import OperationGroup
 from pytezos.sandbox.node import SandboxedNodeTestCase
 from pytezos.contract.result import ContractCallResult
 from pytezos.operation.result import OperationResult
-from scripts.helpers.contracts import (
-    Ticketer,
-    RollupMock,
-    CtezToken,
-    FxhashToken,
-    FA2,
-    FA12,
-    TokenHelper,
-    TicketRouterTester,
-    TokenBridgeHelper,
-)
-from scripts.helpers.contracts.tokens import TokenInfo
+from scripts.helpers.contracts.ticketer import Ticketer
+from scripts.helpers.contracts.rollup_mock import RollupMock
+from scripts.helpers.contracts.tokens.fa12 import CtezToken
+from scripts.helpers.contracts.tokens.fa2 import FxhashToken
+from scripts.helpers.contracts.tokens.fa2 import FA2
+from scripts.helpers.contracts.tokens.fa12 import FA12
+from scripts.helpers.contracts.tokens.token import TokenHelper
+from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
+from scripts.helpers.contracts.token_bridge_helper import TokenBridgeHelper
+from scripts.helpers.contracts.tokens.token import TokenInfo
 from typing import Optional
 from scripts.helpers.addressable import Addressable
 

@@ -4,11 +4,10 @@ from typing import Any
 from scripts.helpers.ticket_content import TicketContent
 from scripts.helpers.ticket import get_ticket_balance
 from pytezos.client import PyTezosClient
-from scripts.helpers.contracts import (
-    TokenBridgeHelper,
-    RollupMock,
-    TicketRouterTester,
-)
+
+from scripts.helpers.contracts.token_bridge_helper import TokenBridgeHelper
+from scripts.helpers.contracts.rollup_mock import RollupMock
+from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
 from scripts.helpers.ticket import Ticket
 
 

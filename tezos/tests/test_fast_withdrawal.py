@@ -620,6 +620,30 @@ class FastWithdrawalTestCase(BaseTestCase):
             ).send()
         assert "WRONG_XTZ_CONTENT" in str(err.exception)
 
+    def test_should_reject_fa12_withdrawal_purchase_with_attached_xtz(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+
+        with self.assertRaises(MichelsonError) as err:
+            test_env.fast_withdrawal.payout_withdrawal(
+                withdrawal=test_env.fa12_withdrawal,
+                service_provider=test_env.service_provider,
+                xtz_amount=1,
+            ).send()
+            self.bake_block()
+        assert "XTZ_DEPOSIT_DISALLOWED" in str(err.exception)
+
+    def test_should_reject_fa2_withdrawal_purchase_with_attached_xtz(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+
+        with self.assertRaises(MichelsonError) as err:
+            test_env.fast_withdrawal.payout_withdrawal(
+                withdrawal=test_env.fa2_withdrawal,
+                service_provider=test_env.service_provider,
+                xtz_amount=1,
+            ).send()
+            self.bake_block()
+        assert "XTZ_DEPOSIT_DISALLOWED" in str(err.exception)
+
     def test_should_reject_settlement_with_attached_xtz(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
         smart_rollup = test_env.smart_rollup

@@ -79,7 +79,7 @@
     - check key is added to `withdrawals` big_map
     - check ticketer content is `(0, None)`
 
-- [ ] test_should_create_withdrawal_record_after_fa_withdrawal_purchased
+- [x] test_should_create_withdrawal_record_after_fa_withdrawal_purchased
     - check key is added to `withdrawals` big_map
     - check both for FA1.2 and FA2 cases
 

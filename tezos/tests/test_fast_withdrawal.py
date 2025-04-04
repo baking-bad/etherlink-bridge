@@ -232,6 +232,28 @@ class FastWithdrawalTestCase(BaseTestCase):
         status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == PaidOut(provider)
 
+    def test_should_create_withdrawal_record_after_fa_withdrawal_purchased(
+        self,
+    ) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        provider = test_env.service_provider
+        fast_withdrawal = test_env.fast_withdrawal
+        fa12_withdrawal = test_env.fa12_withdrawal
+        fa2_withdrawal = test_env.fa2_withdrawal
+
+        provider.bulk(
+            test_env.fa12_token.allow(provider, fast_withdrawal),
+            test_env.fa2_token.allow(provider, fast_withdrawal),
+            fast_withdrawal.payout_withdrawal(fa12_withdrawal, provider),
+            fast_withdrawal.payout_withdrawal(fa2_withdrawal, provider),
+        ).send()
+        self.bake_block()
+
+        fa12_status = fast_withdrawal.get_status_view(fa12_withdrawal)
+        fa2_status = fast_withdrawal.get_status_view(fa2_withdrawal)
+        assert fa12_status.unwrap() == PaidOut(provider)
+        assert fa2_status.unwrap() == PaidOut(provider)
+
     def test_should_accept_different_payloads_for_different_ticket_amounts(
         self,
     ) -> None:

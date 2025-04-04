@@ -144,8 +144,8 @@
 - [x] test_rejects_xtz_withdrawal_purchase_with_wrong_ticket_content
     - check `token_id` wrong
     - check `payload` is Some(bytes)
-- [ ] test_rejects_fa12_withdrawal_purchase_with_wrong_ticket_content
-- [ ] test_rejects_fa2_withdrawal_purchase_with_wrong_ticket_content
+- [x] test_rejects_fa12_withdrawal_purchase_with_wrong_ticket_content
+- [x] test_rejects_fa2_withdrawal_purchase_with_wrong_ticket_content
 - [x] test_rejects_future_timestamp
 - [x] test_should_return_config_on_get_config_view
 

@@ -672,6 +672,36 @@ class FastWithdrawalTestCase(BaseTestCase):
             ).send()
         assert "WRONG_XTZ_CONTENT" in str(err.exception)
 
+    def test_rejects_fa12_withdrawal_purchase_with_wrong_ticket_content(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        provider = test_env.service_provider
+        fast_withdrawal = test_env.fast_withdrawal
+        wrong_content_withdrawal = test_env.fa12_withdrawal.override(
+            content=TicketContent(42, None),
+        )
+
+        with self.assertRaises(MichelsonError) as err:
+            fast_withdrawal.payout_withdrawal(
+                withdrawal=wrong_content_withdrawal,
+                service_provider=provider,
+            ).send()
+        assert "WRONG_FA_CONTENT" in str(err.exception)
+
+    def test_rejects_fa2_withdrawal_purchase_with_wrong_ticket_content(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        provider = test_env.service_provider
+        fast_withdrawal = test_env.fast_withdrawal
+        wrong_content_withdrawal = test_env.fa2_withdrawal.override(
+            content=TicketContent(0, bytes(5)),
+        )
+
+        with self.assertRaises(MichelsonError) as err:
+            fast_withdrawal.payout_withdrawal(
+                withdrawal=wrong_content_withdrawal,
+                service_provider=provider,
+            ).send()
+        assert "WRONG_FA_CONTENT" in str(err.exception)
+
     def test_should_reject_fa12_withdrawal_purchase_with_attached_xtz(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
 

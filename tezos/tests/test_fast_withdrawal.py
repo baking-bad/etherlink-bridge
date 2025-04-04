@@ -723,3 +723,21 @@ class FastWithdrawalTestCase(BaseTestCase):
             ).send()
             self.bake_block()
         assert "WRONG_L2_CALLER_LENGTH" in str(err.exception)
+
+    def test_rejects_invalid_payload(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        provider = test_env.service_provider
+        fast_withdrawal = test_env.fast_withdrawal
+        withdrawal = test_env.xtz_withdrawal.override(
+            full_amount=1_000,
+            payload=pack('wrong-payload', 'string'),
+        )
+
+        with self.assertRaises(MichelsonError) as err:
+            fast_withdrawal.payout_withdrawal(
+                withdrawal,
+                provider,
+                xtz_amount=1_000,
+            ).send()
+            self.bake_block()
+        assert "PAYLOAD_UNPACK_FAILED" in str(err.exception)

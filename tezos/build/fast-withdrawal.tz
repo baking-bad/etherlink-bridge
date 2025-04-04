@@ -154,6 +154,13 @@
              COMPARE ;
              LT ;
              IF { PUSH string "TIMESTAMP_IN_FUTURE" ; FAILWITH } {} ;
+             PUSH nat 20 ;
+             DUP 3 ;
+             GET 14 ;
+             SIZE ;
+             COMPARE ;
+             NEQ ;
+             IF { PUSH string "WRONG_L2_CALLER_LENGTH" ; FAILWITH } {} ;
              DUP 4 ;
              GET 3 ;
              GET 4 ;

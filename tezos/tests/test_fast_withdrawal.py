@@ -704,3 +704,22 @@ class FastWithdrawalTestCase(BaseTestCase):
         assert tuple(event['withdrawal'].values()) == withdrawal.as_tuple()
         assert event['receiver'] == get_address(withdrawer)
         assert internal_operations[-1]['tag'] == 'settle_withdrawal'
+
+    def test_rejects_if_l2_caller_is_not_20_bytes_long(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        provider = test_env.service_provider
+        fast_withdrawal = test_env.fast_withdrawal
+        withdrawal = test_env.xtz_withdrawal.override(
+            full_amount=1_000,
+            payload=pack(1_000, 'nat'),
+            l2_caller=bytes(10),
+        )
+
+        with self.assertRaises(MichelsonError) as err:
+            fast_withdrawal.payout_withdrawal(
+                withdrawal,
+                provider,
+                xtz_amount=1_000,
+            ).send()
+            self.bake_block()
+        assert "WRONG_L2_CALLER_LENGTH" in str(err.exception)

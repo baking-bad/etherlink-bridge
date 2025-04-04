@@ -88,6 +88,13 @@ let assert_withdrawal_not_in_future
     else unit
 
 [@inline]
+let assert_l2_caller_is_20_bytes_long
+        (l2_caller : bytes) : unit =
+    if Bytes.length l2_caller <> 20n
+    then failwith Errors.wrong_l2_caller_length
+    else unit
+
+[@inline]
 let assert_attached_amount_is_valid
         (valid_amount : nat) : unit =
     if Tezos.get_amount () <> valid_amount * 1mutez
@@ -169,6 +176,7 @@ let payout_withdrawal
     let receiver = withdrawal.base_withdrawer in
     let _ = Storage.assert_withdrawal_was_not_paid_before withdrawal storage in
     let _ = assert_withdrawal_not_in_future withdrawal in
+    let _ = assert_l2_caller_is_20_bytes_long withdrawal.l2_caller in
 
     (* If expired, pay full; else pay discounted amount from payload. *)
     let payout_amount =

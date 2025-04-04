@@ -48,81 +48,77 @@ type payout_withdrawal_params = {
 type return = operation list * Storage.t
 
 [@inline]
-let assert_sender_is_allowed (smart_rollup : address) : unit =
+let assert_sender_is_allowed
+        (smart_rollup : address) : unit =
     if Tezos.get_sender () <> smart_rollup then
         failwith Errors.sender_is_not_allowed
 
 [@inline]
-let unpack_payload (payload : bytes) : nat =
+let unpack_payload
+        (payload : bytes) : nat =
     match Bytes.unpack payload with
     | Some amount -> amount
     | None -> failwith Errors.payload_unpack_failed
 
 [@inline]
-let get_token (ticketer : address) : Tokens.t =
+let get_token_view
+        (ticketer : address) : Tokens.t =
     match Tezos.Next.View.call "get_token" unit ticketer with
     | Some token -> token
     | None -> failwith Errors.get_token_view_failed
 
 [@inline]
-let get_content (ticketer : address) : Ticket.content_t =
+let get_content_view
+        (ticketer : address) : Ticket.content_t =
     match Tezos.Next.View.call "get_content" unit ticketer with
     | Some token -> token
     | None -> failwith Errors.get_content_view_failed
 
 [@inline]
-let is_withdrawal_expired (withdrawal : FastWithdrawal.t) (expiration_seconds : int) : bool =
+let is_withdrawal_expired
+        (withdrawal : FastWithdrawal.t)
+        (expiration_seconds : int) : bool =
     Tezos.get_now() > withdrawal.timestamp + expiration_seconds
 
 [@inline]
-let assert_withdrawal_not_in_future (withdrawal : FastWithdrawal.t) : unit =
-    if Tezos.get_now() < withdrawal.timestamp then
-        failwith Errors.timestamp_in_future
-    else
-        unit
+let assert_withdrawal_not_in_future
+        (withdrawal : FastWithdrawal.t) : unit =
+    if Tezos.get_now() < withdrawal.timestamp
+    then failwith Errors.timestamp_in_future
+    else unit
 
 [@inline]
-let resolve_payout_amount (withdrawal : FastWithdrawal.t) (expiration_seconds : int) : nat =
-    (*
-        Checks if the withdrawal has expired: if so, it should be paid in full,
-        otherwise, it should be paid at a discounted amount, which is encoded in the payload.
-    *)
-    if not is_withdrawal_expired withdrawal expiration_seconds then
-        let discounted_amount = unpack_payload withdrawal.payload in
-        discounted_amount
-    else
-        withdrawal.full_amount
+let assert_attached_amount_is_valid
+        (valid_amount : nat) : unit =
+    if Tezos.get_amount () <> valid_amount * 1mutez
+    then failwith Errors.invalid_xtz_amount
+    else unit
 
 [@inline]
-let assert_attached_amount_is_valid (valid_amount : nat) : unit =
-    if Tezos.get_amount () <> valid_amount * 1mutez then
-        failwith Errors.invalid_xtz_amount
-    else
-        unit
-
-[@inline]
-let assert_ticket_content_is_valid_for_xtz (content : Ticket.content_t) : unit =
+let assert_ticket_content_is_valid_for_xtz
+        (withdrawal : FastWithdrawal.t) : unit =
     let valid_xtz_content : Ticket.content_t = (0n, None) in
-    if content <> valid_xtz_content then
-        failwith Errors.wrong_xtz_content
-    else
-        unit
+    if withdrawal.content <> valid_xtz_content
+    then failwith Errors.wrong_xtz_content
+    else unit
 
 [@inline]
-let assert_ticket_content_is_valid_for_fa (withdrawal : FastWithdrawal.t) : unit =
-    let valid_content = get_content withdrawal.ticketer in
-    if valid_content <> withdrawal.content then
-        failwith Errors.wrong_fa_content
-    else
-        unit
+let assert_ticket_content_is_valid_for_fa
+        (withdrawal : FastWithdrawal.t) : unit =
+    let valid_content = get_content_view withdrawal.ticketer in
+    if valid_content <> withdrawal.content
+    then failwith Errors.wrong_fa_content
+    else unit
 
 [@inline]
-let assert_no_xtz_deposit (_ : unit) : unit =
+let assert_no_xtz_deposit
+        (_ : unit) : unit =
     if Tezos.get_amount () > 0mutez
-    then failwith CommonErrors.xtz_deposit_disallowed else unit
+    then failwith CommonErrors.xtz_deposit_disallowed
+    else unit
 
 [@inline]
-let send_ticket
+let get_ticketer_dispatch_func
         (withdrawal : FastWithdrawal.t)
         (storage : Storage.t) : XtzTicketerBurnEntry.t -> operation =
     (*
@@ -136,12 +132,17 @@ let send_ticket
         RouterWithdrawEntry.send withdrawal.ticketer
 
 [@inline]
-let send_xtz_op (amount : nat) (receiver : address) : operation =
+let send_xtz_op
+        (amount : nat)
+        (receiver : address) : operation =
     let entry = Tezos.get_contract receiver in
     Tezos.Next.Operation.transaction unit (amount * 1mutez) entry
 
 [@inline]
-let send_tokens_op (token: Tokens.t) (amount : nat) (receiver : address) : operation =
+let send_tokens_op
+        (token: Tokens.t)
+        (amount : nat)
+        (receiver : address) : operation =
     let sender = Tezos.get_sender () in
     Tokens.send_transfer token amount sender receiver
 
@@ -169,22 +170,27 @@ let payout_withdrawal
     let _ = Storage.assert_withdrawal_was_not_paid_before withdrawal storage in
     let _ = assert_withdrawal_not_in_future withdrawal in
 
-    let payout_amount = resolve_payout_amount withdrawal expiration_seconds in
+    (* If expired, pay full; else pay discounted amount from payload. *)
+    let payout_amount =
+        if is_withdrawal_expired withdrawal expiration_seconds
+        then withdrawal.full_amount
+        else unpack_payload withdrawal.payload in
     let payout_operation = if Storage.is_xtz_ticketer withdrawal storage then
-        (* This is the case when the service provider pays out an XTZ withdrawal *)
-        let _ = assert_ticket_content_is_valid_for_xtz withdrawal.content in
+        (* Service provider payout of an XTZ withdrawal. *)
+        let _ = assert_ticket_content_is_valid_for_xtz withdrawal in
         let _ = assert_attached_amount_is_valid payout_amount in
         send_xtz_op payout_amount receiver
     else
-        (* This is the case when the service provider pays out an FA withdrawal *)
+        (* Service provider payout of an FA withdrawal. *)
         let _ = assert_ticket_content_is_valid_for_fa withdrawal in
         let _ = assert_no_xtz_deposit () in
-        let token = get_token withdrawal.ticketer in
+        let token = get_token_view withdrawal.ticketer in
         send_tokens_op token payout_amount receiver in
 
-    let updated_storage = Storage.add_withdrawal withdrawal service_provider storage in
-    let payout_event = Events.payout_withdrawal { withdrawal; service_provider; payout_amount } in
-    [payout_operation; payout_event], updated_storage
+    let storage = Storage.add_withdrawal withdrawal service_provider storage in
+    let event_params = { withdrawal; service_provider; payout_amount } in
+    let payout_event = Events.payout_withdrawal event_params in
+    [payout_operation; payout_event], storage
 
 [@entry]
 let default
@@ -205,10 +211,8 @@ let default
         @param l2_caller: original sender address from the Etherlink side.
 
         Effects:
-        - updates the `withdrawals` ledger state from `Paid_out` to `Cemented`
-          if a claim existed.
-        - unwraps the provided ticket to either the service provider (if advance
-          payment found) or to the original withdrawer.
+        - updates `withdrawals` from `Paid_out` to `Cemented` if payout existed.
+        - unwraps ticket to provider (if prepaid) or original withdrawer.
         - emits the `settle_withdrawal` event.
     *)
 
@@ -220,10 +224,11 @@ let default
     let receiver = match provider_opt with
     | None -> withdrawal.base_withdrawer
     | Some provider -> provider in
-    let finalize_operation = send_ticket withdrawal storage { receiver; ticket } in
+    let make_ticket_transfer = get_ticketer_dispatch_func withdrawal storage in
+    let finalize_operation = make_ticket_transfer { receiver; ticket } in
     let finalize_event = Events.settle_withdrawal { withdrawal; receiver } in
-    let updated_storage = Storage.finalize_withdrawal withdrawal provider_opt storage in
-    [finalize_operation; finalize_event], updated_storage
+    let storage = Storage.finalize_withdrawal withdrawal provider_opt storage in
+    [finalize_operation; finalize_event], storage
 
 [@view]
 let get_status

@@ -7,4 +7,3 @@ let invalid_xtz_amount = "INVALID_XTZ_AMOUNT"
 let wrong_xtz_content = "WRONG_XTZ_CONTENT"
 let wrong_fa_content = "WRONG_FA_CONTENT"
 let duplicate_withdrawal_payout = "DUPLICATE_WITHDRAWAL_PAYOUT"
-

@@ -43,28 +43,30 @@ let add_withdrawal
         (service_provider : address)
         (storage : t) : t =
     let status = Paid_out service_provider in
-    let updated_withdrawals = Big_map.add withdrawal status storage.withdrawals in
-    { storage with withdrawals = updated_withdrawals }
+    let withdrawals = Big_map.add withdrawal status storage.withdrawals in
+    { storage with withdrawals }
 
 [@inline]
 let finalize_withdrawal
         (withdrawal : FastWithdrawal.t)
         (provider_opt : address option)
         (storage : t) : t =
-    (* Update the ledger only if it was paid out by the provider, otherwise, ignore it: *)
-    let status = if Option.is_some provider_opt then Some Cemented else None in
-    let updated_withdrawals = Big_map.update withdrawal status storage.withdrawals in
-    { storage with withdrawals = updated_withdrawals }
+    (* Update ledger only if paid out by provider, otherwise ignore. *)
+    let withdrawals = match provider_opt with
+    | Some _ -> Big_map.update withdrawal (Some Cemented) storage.withdrawals
+    | None -> storage.withdrawals in
+    { storage with withdrawals }
 
 [@inline]
 let assert_withdrawal_was_not_paid_before
         (withdrawal : FastWithdrawal.t)
         (storage : t) : unit =
-    if Option.is_some (Big_map.find_opt withdrawal storage.withdrawals) then
-        failwith Errors.duplicate_withdrawal_payout
+    if Option.is_some (Big_map.find_opt withdrawal storage.withdrawals)
+    then failwith Errors.duplicate_withdrawal_payout
 
 [@inline]
-let unwrap_provider_opt (status : status) : address option =
+let unwrap_provider_opt
+        (status : status) : address option =
     match status with
     | Paid_out service_provider -> Some service_provider
     | Cemented -> None

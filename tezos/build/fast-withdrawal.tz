@@ -133,14 +133,11 @@
                         (bytes %l2_caller))
                      (address %receiver)) ;
              DIG 2 ;
-             IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
-             IF { UNIT ; RIGHT address ; SOME } { NONE (or address unit) } ;
-             DUP 5 ;
-             DIG 5 ;
-             CAR ;
-             DIG 2 ;
-             DIG 5 ;
-             UPDATE ;
+             IF_NONE
+               { DIG 2 ; DROP ; DUP 3 ; CAR }
+               { DROP ; DUP 4 ; CAR ; UNIT ; RIGHT address ; SOME ; DIG 4 ; UPDATE } ;
+             DIG 3 ;
+             SWAP ;
              UPDATE 1 }
            { UNPAIR ;
              DUP ;
@@ -166,12 +163,11 @@
              NOW ;
              COMPARE ;
              GT ;
-             NOT ;
-             IF { DUP 2 ;
+             IF { DUP 2 ; GET 3 }
+                { DUP 2 ;
                   GET 13 ;
                   UNPACK nat ;
-                  IF_NONE { PUSH string "PAYLOAD_UNPACK_FAILED" ; FAILWITH } {} }
-                { DUP 2 ; GET 3 } ;
+                  IF_NONE { PUSH string "PAYLOAD_UNPACK_FAILED" ; FAILWITH } {} } ;
              DUP 5 ;
              GET 3 ;
              CAR ;

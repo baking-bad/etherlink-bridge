@@ -7,7 +7,8 @@ type settle_withdrawal_event = {
 }
 
 [@inline]
-let settle_withdrawal (event : settle_withdrawal_event) : operation =
+let settle_withdrawal
+        (event : settle_withdrawal_event) : operation =
     Tezos.Next.Operation.emit "%settle_withdrawal" event
 
 type payout_withdrawal_event = {
@@ -17,5 +18,6 @@ type payout_withdrawal_event = {
 }
 
 [@inline]
-let payout_withdrawal (event : payout_withdrawal_event) : operation =
+let payout_withdrawal
+        (event : payout_withdrawal_event) : operation =
     Tezos.Next.Operation.emit "%payout_withdrawal" event

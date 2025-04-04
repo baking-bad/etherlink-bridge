@@ -136,8 +136,8 @@
     - check for XTZ, FA1.2 and FA2
 
 - [x] test_should_allow_xtz_withdrawal_purchase_at_full_price_after_timestamp_expired
-- [ ] test_should_allow_fa12_withdrawal_purchase_at_full_price_after_timestamp_expired
-- [ ] test_should_allow_fa2_withdrawal_purchase_at_full_price_after_timestamp_expired
+- [x] test_should_allow_fa12_withdrawal_purchase_at_full_price_after_timestamp_expired
+- [x] test_should_allow_fa2_withdrawal_purchase_at_full_price_after_timestamp_expired
 
 - [x] test_rejects_xtz_withdrawal_purchase_at_discounted_price_if_expired
 - [ ] test_rejects_fa12_withdrawal_purchase_at_discounted_price_if_expired

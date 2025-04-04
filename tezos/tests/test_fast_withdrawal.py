@@ -552,6 +552,58 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         assert provider.balance() == provider_balance + Decimal('0.001000')
 
+    def test_should_allow_fa12_withdrawal_purchase_at_full_price_after_timestamp_expired(
+        self,
+    ) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        provider = test_env.service_provider
+        fast_withdrawal = test_env.fast_withdrawal
+        provider_balance = test_env.fa12_token.get_balance(provider)
+
+        withdrawal = test_env.fa12_withdrawal.override(
+            full_amount=333_777,
+            payload=pack(300_000, 'nat'),
+            timestamp=test_env.expired_timestamp,
+        )
+
+        provider.bulk(
+            test_env.fa12_token.allow(provider, fast_withdrawal),
+            fast_withdrawal.payout_withdrawal(withdrawal, provider),
+        ).send()
+        self.bake_block()
+
+        status = fast_withdrawal.get_status_view(withdrawal)
+        assert status.unwrap() == PaidOut(provider)
+
+        # Provider paid expired withdrawal - contract withdraws full_amount:
+        assert test_env.fa12_token.get_balance(provider) == provider_balance - 333_777
+
+    def test_should_allow_fa2_withdrawal_purchase_at_full_price_after_timestamp_expired(
+        self,
+    ) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        provider = test_env.service_provider
+        fast_withdrawal = test_env.fast_withdrawal
+        provider_balance = test_env.fa2_token.get_balance(provider)
+
+        withdrawal = test_env.fa2_withdrawal.override(
+            full_amount=2,
+            payload=pack(1, 'nat'),
+            timestamp=test_env.expired_timestamp,
+        )
+
+        provider.bulk(
+            test_env.fa2_token.allow(provider, fast_withdrawal),
+            fast_withdrawal.payout_withdrawal(withdrawal, provider),
+        ).send()
+        self.bake_block()
+
+        status = fast_withdrawal.get_status_view(withdrawal)
+        assert status.unwrap() == PaidOut(provider)
+
+        # Provider paid expired withdrawal - contract withdraws full_amount:
+        assert test_env.fa2_token.get_balance(provider) == provider_balance - 2
+
     def test_rejects_xtz_withdrawal_purchase_at_discounted_price_if_expired(
         self,
     ) -> None:

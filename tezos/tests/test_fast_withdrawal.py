@@ -736,33 +736,68 @@ class FastWithdrawalTestCase(BaseTestCase):
         custom_provider = self.bootstrap_non_baker_account()
         fast_withdrawal = test_env.fast_withdrawal
         provider = test_env.service_provider
-        withdrawal = test_env.xtz_withdrawal.override(
+
+        xtz_withdrawal = test_env.xtz_withdrawal.override(
             full_amount=123,
             payload=pack(123, 'nat'),
         )
+        fa12_withdrawal = test_env.fa12_withdrawal.override(
+            full_amount=300,
+            payload=pack(270, 'nat'),
+        )
+        fa2_withdrawal = test_env.fa2_withdrawal.override(
+            full_amount=500,
+            payload=pack(450, 'nat'),
+        )
 
         # Calling payout_withdrawal from the service provider for the custom provider:
-        fast_withdrawal.using(provider).payout_withdrawal(
-            withdrawal=withdrawal,
-            service_provider=custom_provider,
-            xtz_amount=123,
+        provider.bulk(
+            test_env.fa12_token.allow(provider, fast_withdrawal),
+            test_env.fa2_token.allow(provider, fast_withdrawal),
+            fast_withdrawal.payout_withdrawal(
+                withdrawal=fa12_withdrawal,
+                service_provider=custom_provider,
+            ),
+            fast_withdrawal.payout_withdrawal(
+                withdrawal=fa2_withdrawal,
+                service_provider=custom_provider,
+            ),
+            fast_withdrawal.payout_withdrawal(
+                withdrawal=xtz_withdrawal,
+                service_provider=custom_provider,
+                xtz_amount=123,
+            ),
         ).send()
         self.bake_block()
 
-        status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == PaidOut(custom_provider)
+        xtz_status = fast_withdrawal.get_status_view(xtz_withdrawal)
+        fa12_status = fast_withdrawal.get_status_view(fa12_withdrawal)
+        fa2_status = fast_withdrawal.get_status_view(fa2_withdrawal)
 
-        # Recording the custom provider's balance before the withdrawal finalization:
+        assert xtz_status.unwrap() == PaidOut(custom_provider)
+        assert fa12_status.unwrap() == PaidOut(custom_provider)
+        assert fa2_status.unwrap() == PaidOut(custom_provider)
+
+        # Finalizing the xtz withdrawal:
         ticket = self.make_xtz_ticket(test_env, 123)
         custom_provider_balance = custom_provider.balance()
-        self.finalize_withdrawal(test_env, withdrawal, ticket)
+        self.finalize_withdrawal(test_env, xtz_withdrawal, ticket)
 
         updated_balance = custom_provider.balance()
         assert updated_balance == custom_provider_balance + Decimal('0.000123')
-        status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Cemented()
+        assert fast_withdrawal.get_status_view(xtz_withdrawal).unwrap() == Cemented()
 
-        # TODO: consider making this test for FA cases
+        # Finalizing the FA1.2 withdrawal:
+        ticket = self.make_fa12_ticket(test_env, 300)
+        self.finalize_withdrawal(test_env, fa12_withdrawal, ticket)
+        assert test_env.fa12_token.get_balance(custom_provider) == 300
+        assert fast_withdrawal.get_status_view(fa12_withdrawal).unwrap() == Cemented()
+
+        # Finalizing the FA2 withdrawal:
+        ticket = self.make_fa2_ticket(test_env, 500)
+        self.finalize_withdrawal(test_env, fa2_withdrawal, ticket)
+        assert test_env.fa2_token.get_balance(custom_provider) == 500
+        assert fast_withdrawal.get_status_view(fa2_withdrawal).unwrap() == Cemented()
 
     def test_should_return_config_on_get_config_view(self) -> None:
         xtz_ticketer = self.bootstrap_account()

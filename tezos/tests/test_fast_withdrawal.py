@@ -462,6 +462,50 @@ class FastWithdrawalTestCase(BaseTestCase):
         # Checking that the provider received the token:
         assert token.get_balance(provider) == provider_balance - 30 + 50
 
+    def test_user_receives_fa2_withdrawal_when_no_purchase_made(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        withdrawer = test_env.withdrawer
+
+        ticket = self.make_fa2_ticket(test_env, 73)
+        self.finalize_withdrawal(test_env, test_env.fa2_withdrawal, ticket)
+
+        # Checking that withdrawer received the token (full withdrawal amount):
+        assert test_env.fa2_token.get_balance(withdrawer) == 73
+
+    def test_provider_receives_fa12_withdrawal_after_purchase(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        fast_withdrawal = test_env.fast_withdrawal
+        provider = test_env.service_provider
+        withdrawer = test_env.withdrawer
+        token = test_env.fa12_token
+        provider_balance = token.get_balance(provider)
+
+        withdrawal = test_env.fa12_withdrawal.override(
+            full_amount=500_000,
+            payload=pack(400_000, 'nat'),
+        )
+        provider.bulk(
+            token.allow(provider, fast_withdrawal),
+            fast_withdrawal.payout_withdrawal(withdrawal, provider),
+        ).send()
+        self.bake_block()
+        assert token.get_balance(provider) == provider_balance - 400_000
+        assert token.get_balance(withdrawer) == 400_000
+
+        status = fast_withdrawal.get_status_view(withdrawal)
+        assert status.unwrap() == PaidOut(provider)
+
+        # Creating wrapped token (ticket) for smart_rollup:
+        ticket = self.make_fa12_ticket(test_env, 500_000)
+        self.finalize_withdrawal(test_env, withdrawal, ticket)
+
+        # Checking that status is now Cemented:
+        status = fast_withdrawal.get_status_view(withdrawal)
+        assert status.unwrap() == Cemented()
+
+        # Checking that the provider received the token:
+        assert token.get_balance(provider) == provider_balance - 400_000 + 500_000
+
     def test_user_receives_fa12_withdrawal_when_no_purchase_made(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
         withdrawal = test_env.fa12_withdrawal

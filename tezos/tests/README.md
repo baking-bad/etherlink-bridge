@@ -105,7 +105,7 @@
     - check provider balance increases by full withdrawal amount
     - check withdrawal status is `Cemented` after payout
 
-- [ ] test_provider_receives_fa12_withdrawal_after_purchase
+- [x] test_provider_receives_fa12_withdrawal_after_purchase
     - check provider FA1.2 token balance increases by full withdrawal amount
     - check withdrawal status is `Cemented` after payout
 
@@ -119,7 +119,7 @@
 - [x] test_user_receives_fa12_withdrawal_when_no_purchase_made
     - check user FA1.2 token balance increases by full withdrawal amount
 
-- [ ] test_user_receives_fa2_withdrawal_when_no_purchase_made
+- [x] test_user_receives_fa2_withdrawal_when_no_purchase_made
     - check user FA2 token balance increases by full withdrawal amount
 
 - [x] test_should_reject_xtz_withdrawal_purchase_with_wrong_xtz_amount

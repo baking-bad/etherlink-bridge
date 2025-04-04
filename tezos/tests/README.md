@@ -155,3 +155,9 @@
     - check that `payout_withdrawal` emits the correct event
     - check that `default` (finalization) emits the correct event for a paid withdrawal
     - check that `default` (finalization) emits the correct event for an unpaid withdrawal
+
+- [ ] test_rejects_invalid_payload
+- [ ] test_rejects_if_l2_caller_is_not_20_bytes_long
+- [ ] test_rejects_with_invalid_ticketer_contract
+    - test rejects with `GET_TOKEN_VIEW_FAILED` error when the contract lacks the required `get_token` view
+    - testing rejection with `GET_CONTENT_VIEW_FAILED` might be more complex, as it requires a contract that has a `get_token` view but lacks a `get_content` view

@@ -9,11 +9,10 @@ from scripts.helpers.utility import (
     get_etherlink_account,
     get_etherlink_web3,
 )
-from scripts.helpers.contracts import (
-    TokenBridgeHelper,
-    TokenHelper,
-    Ticketer,
-)
+
+from scripts.helpers.contracts.token_bridge_helper import TokenBridgeHelper
+from scripts.helpers.contracts.tokens.token import TokenHelper
+from scripts.helpers.contracts.ticketer import Ticketer
 from scripts.helpers.addressable import (
     get_address,
     Addressable,

@@ -140,8 +140,6 @@
 - [x] test_should_allow_fa2_withdrawal_purchase_at_full_price_after_timestamp_expired
 
 - [x] test_rejects_xtz_withdrawal_purchase_at_discounted_price_if_expired
-- [ ] test_rejects_fa12_withdrawal_purchase_at_discounted_price_if_expired
-- [ ] test_rejects_fa2_withdrawal_purchase_at_discounted_price_if_expired
 
 - [x] test_rejects_xtz_withdrawal_purchase_with_wrong_ticket_content
     - check `token_id` wrong

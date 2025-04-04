@@ -746,12 +746,12 @@ class FastWithdrawalTestCase(BaseTestCase):
     def test_should_reject_settlement_from_wrong_rollup_address(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
         unauthorized_tester = self.deploy_ticket_router_tester()
-        wrong_sender = self.bootstrap_account()
+        arbitrary_account = self.bootstrap_account()
 
-        ticket = self.make_xtz_ticket(test_env, 99, wrong_sender)
+        ticket = self.make_xtz_ticket(test_env, 99, arbitrary_account)
 
         with self.assertRaises(MichelsonError) as err:
-            wrong_sender.bulk(
+            arbitrary_account.bulk(
                 unauthorized_tester.set_settle_withdrawal(
                     target=test_env.fast_withdrawal,
                     withdrawal=test_env.xtz_withdrawal,

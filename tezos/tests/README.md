@@ -79,10 +79,6 @@
     - check key is added to `withdrawals` big_map
     - check ticketer content is `(0, None)`
 
-- [x] test_should_create_withdrawal_record_after_fa_withdrawal_purchased
-    - check key is added to `withdrawals` big_map
-    - check both for FA1.2 and FA2 cases
-
 - [x] test_should_accept_different_payloads_for_different_ticket_amounts
     - check key is added for ticket amount = `1`
     - check key is added for ticket amount = `17`
@@ -93,8 +89,6 @@
     - check new key is added for transaction with different `base_withdrawer`
     - check new key is added for transaction with different `payload` and ticket amount
     - check new key is added for transaction with different `l2_caller`
-    - check new key is added for transaction with different `ticketer`
-    - check new key is added for transaction with different ticket `content`
 
 - [x] test_should_reject_duplicate_withdrawal
     - check rejection when initiated by the same provider
@@ -105,28 +99,12 @@
     - check provider balance increases by full withdrawal amount
     - check withdrawal status is `Cemented` after payout
 
-- [x] test_provider_receives_fa12_withdrawal_after_purchase
-    - check provider FA1.2 token balance increases by full withdrawal amount
-    - check withdrawal status is `Cemented` after payout
-
-- [x] test_provider_receives_fa2_withdrawal_after_purchase
-    - check provider FA2 token balance increases by full withdrawal amount
-    - check withdrawal status is `Cemented` after payout
-
 - [x] test_user_receives_xtz_withdrawal_when_no_purchase_made
     - check user balance increases by full withdrawal amount
-
-- [x] test_user_receives_fa12_withdrawal_when_no_purchase_made
-    - check user FA1.2 token balance increases by full withdrawal amount
-
-- [x] test_user_receives_fa2_withdrawal_when_no_purchase_made
-    - check user FA2 token balance increases by full withdrawal amount
 
 - [x] test_should_reject_xtz_withdrawal_purchase_with_wrong_xtz_amount
     - check transaction rejected if provided xtz amount is not equal amount in payout (and withdrawal is not expired yet)
 
-- [x] test_should_reject_fa12_withdrawal_purchase_with_attached_xtz
-- [x] test_should_reject_fa2_withdrawal_purchase_with_attached_xtz
 - [x] test_should_reject_settlement_with_attached_xtz
 - [x] test_should_reject_settlement_from_wrong_rollup_address
 
@@ -136,16 +114,12 @@
     - check for XTZ, FA1.2 and FA2
 
 - [x] test_should_allow_xtz_withdrawal_purchase_at_full_price_after_timestamp_expired
-- [x] test_should_allow_fa12_withdrawal_purchase_at_full_price_after_timestamp_expired
-- [x] test_should_allow_fa2_withdrawal_purchase_at_full_price_after_timestamp_expired
 
 - [x] test_rejects_xtz_withdrawal_purchase_at_discounted_price_if_expired
 
 - [x] test_rejects_xtz_withdrawal_purchase_with_wrong_ticket_content
     - check `token_id` wrong
     - check `payload` is Some(bytes)
-- [x] test_rejects_fa12_withdrawal_purchase_with_wrong_ticket_content
-- [x] test_rejects_fa2_withdrawal_purchase_with_wrong_ticket_content
 - [x] test_rejects_future_timestamp
 - [x] test_should_return_config_on_get_config_view
 
@@ -156,5 +130,5 @@
 
 - [x] test_rejects_invalid_payload
 - [x] test_rejects_if_l2_caller_is_not_20_bytes_long
-- [x] test_rejects_with_invalid_ticketer_contract
-    - test rejects with `GET_CONTENT_VIEW_FAILED` error when the contract lacks the required `get_content` view
+- [x] test_fa_withdrawals_not_supported_on_payout
+- [x] test_fa_withdrawals_not_supported_on_settle

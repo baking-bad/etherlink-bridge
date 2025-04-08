@@ -33,9 +33,7 @@
              (address %smart_rollup)
              (int %expiration_seconds))
           (big_map %metadata string bytes)) ;
-  code { PUSH string "FA_WITHDRAWALS_NOT_SUPPORTED" ;
-         SWAP ;
-         UNPAIR ;
+  code { UNPAIR ;
          IF_LEFT
            { UNPAIR 6 ;
              SWAP ;
@@ -81,31 +79,22 @@
              GET 5 ;
              COMPARE ;
              EQ ;
-             IF { DIG 5 ;
-                  DROP ;
-                  LAMBDA
-                    (pair (pair nat nat address (pair nat (option bytes)) timestamp address bytes bytes)
-                          (pair address (ticket (pair nat (option bytes)))))
-                    operation
-                    { UNPAIR ;
-                      GET 5 ;
-                      CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;
-                      IF_NONE { PUSH string "INVALID_XTZ_TKTR" ; FAILWITH } {} ;
-                      SWAP ;
-                      UNPAIR ;
-                      DIG 2 ;
-                      PUSH mutez 0 ;
-                      DIG 3 ;
-                      DIG 3 ;
-                      PAIR ;
-                      TRANSFER_TOKENS } ;
-                  DUP 5 ;
-                  APPLY }
-                { DIG 5 ; FAILWITH } ;
-             DIG 3 ;
-             DUP 3 ;
-             PAIR ;
-             EXEC ;
+             IF { DUP 4 ;
+                  GET 5 ;
+                  CONTRACT %burn (pair address (ticket (pair nat (option bytes)))) ;
+                  IF_NONE { PUSH string "INVALID_XTZ_TKTR" ; FAILWITH } {} ;
+                  PUSH mutez 0 ;
+                  DIG 4 ;
+                  DUP 4 ;
+                  PAIR ;
+                  TRANSFER_TOKENS }
+                { DUP 4 ;
+                  GET 11 ;
+                  CONTRACT (ticket (pair nat (option bytes))) ;
+                  IF_NONE { PUSH string "FAILED_TO_GET_TKT_ENTRYPOINT" ; FAILWITH } {} ;
+                  PUSH mutez 0 ;
+                  DIG 4 ;
+                  TRANSFER_TOKENS } ;
              SWAP ;
              DUP 4 ;
              PAIR ;
@@ -168,9 +157,7 @@
              GET 5 ;
              COMPARE ;
              EQ ;
-             IF { DIG 4 ;
-                  DROP ;
-                  NONE bytes ;
+             IF { NONE bytes ;
                   PUSH nat 0 ;
                   PAIR ;
                   DUP 3 ;
@@ -194,7 +181,7 @@
                   MUL ;
                   UNIT ;
                   TRANSFER_TOKENS }
-                { DIG 4 ; FAILWITH } ;
+                { PUSH string "ONLY_XTZ_WITHDRAWALS_ARE_SUPPORTED" ; FAILWITH } ;
              DUP 4 ;
              LEFT unit ;
              DIG 2 ;

@@ -98,18 +98,6 @@ let assert_no_xtz_deposit
     else unit
 
 [@inline]
-let get_ticketer_dispatch_func
-        (withdrawal : FastWithdrawal.t)
-        (storage : Storage.t) : XtzTicketerBurnEntry.t -> operation =
-    (*
-        Determines the ticketer type and sends it to the contract.
-    *)
-    if Storage.is_xtz_ticketer withdrawal storage then
-        XtzTicketerBurnEntry.send withdrawal.ticketer
-    else
-        failwith Errors.fa_withdrawals_not_supported
-
-[@inline]
 let send_xtz_op
         (amount : nat)
         (receiver : address) : operation =
@@ -153,7 +141,7 @@ let payout_withdrawal
         send_xtz_op payout_amount receiver
     else
         (* Service provider payout of an FA withdrawal. *)
-        failwith Errors.fa_withdrawals_not_supported in
+        failwith Errors.only_xtz_withdrawals_are_supported in
 
     let storage = Storage.add_withdrawal withdrawal service_provider storage in
     let event_params = { withdrawal; service_provider; payout_amount } in
@@ -192,8 +180,11 @@ let default
     let receiver = match provider_opt with
     | None -> withdrawal.base_withdrawer
     | Some provider -> provider in
-    let make_ticket_transfer = get_ticketer_dispatch_func withdrawal storage in
-    let finalize_operation = make_ticket_transfer { receiver; ticket } in
+    (* Non-XTZ tickets received on settlement are sent to base_withdrawer *)
+    let finalize_operation = if Storage.is_xtz_ticketer withdrawal storage then
+        XtzTicketerBurnEntry.send withdrawal.ticketer { receiver; ticket }
+    else
+        Ticket.send ticket withdrawal.base_withdrawer in
     let finalize_event = Events.settle_withdrawal { withdrawal; receiver } in
     let storage = Storage.finalize_withdrawal withdrawal provider_opt storage in
     [finalize_operation; finalize_event], storage

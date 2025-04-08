@@ -616,7 +616,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             self.bake_block()
         assert "PAYLOAD_UNPACK_FAILED" in str(err.exception)
 
-    def test_fa_withdrawals_not_supported_on_payout(self) -> None:
+    def test_non_native_tickets_not_supported_for_payout(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
         provider = test_env.service_provider
         fast_withdrawal = test_env.fast_withdrawal
@@ -628,23 +628,34 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         with self.assertRaises(MichelsonError) as err:
             fast_withdrawal.payout_withdrawal(withdrawal, provider).send()
-        assert "FA_WITHDRAWALS_NOT_SUPPORTED" in str(err.exception)
+        assert "ONLY_XTZ_WITHDRAWALS_ARE_SUPPORTED" in str(err.exception)
 
-    def test_fa_withdrawals_not_supported_on_settle(self) -> None:
+    def test_non_xtz_tickets_redirected_to_withdrawer_on_settlement(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
         withdrawal = test_env.xtz_withdrawal.override(
-            full_amount=1_000,
-            payload=pack(1_000, 'nat'),
-            ticketer=self.bootstrap_account(),
+            full_amount=471,
+            payload=pack(471, 'nat'),
+            ticketer=test_env.tester,
+            content=TicketContent(0, "some-ticket-content".encode()),
         )
 
-        with self.assertRaises(MichelsonError) as err:
-            test_env.smart_rollup.bulk(
-                test_env.tester.set_settle_withdrawal(
-                    target=test_env.fast_withdrawal,
-                    withdrawal=withdrawal,
-                ),
-                test_env.tester.mint(content=TicketContent(0, bytes(20)), amount=1),
-            ).send()
-            self.bake_block()
-        assert "FA_WITHDRAWALS_NOT_SUPPORTED" in str(err.exception)
+        test_env.smart_rollup.bulk(
+            test_env.tester.set_settle_withdrawal(
+                target=test_env.fast_withdrawal,
+                withdrawal=withdrawal,
+            ),
+            test_env.tester.mint(
+                content=TicketContent(0, "some-ticket-content".encode()),
+                amount=471,
+            ),
+        ).send()
+        self.bake_block()
+
+        # Checking that the withdrawer received the ticket:
+        ticket = Ticket.create(
+            client=test_env.withdrawer,
+            owner=test_env.withdrawer,
+            ticketer=get_address(test_env.tester),
+            content=TicketContent(0, "some-ticket-content".encode()),
+        )
+        assert ticket.amount == 471

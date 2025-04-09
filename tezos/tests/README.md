@@ -132,3 +132,4 @@
 - [x] test_rejects_if_l2_caller_is_not_20_bytes_long
 - [x] test_non_native_tickets_not_supported_for_payout
 - [x] test_non_xtz_tickets_redirected_on_settlement
+- [x] test_reject_cemented_withdrawal

@@ -65,11 +65,12 @@ let assert_withdrawal_was_not_paid_before
     then failwith Errors.duplicate_withdrawal_payout
 
 [@inline]
-let unwrap_provider_opt
-        (status : status) : address option =
+let provider_of_paid_out
+        (status : status) : address =
     match status with
-    | Paid_out service_provider -> Some service_provider
-    | Cemented -> None
+    | Paid_out service_provider -> service_provider
+    (* Unexpected state: possible duplicate execution of withdrawal outbox *)
+    | Cemented -> failwith Errors.unexpected_cemented_withdrawal
 
 [@inline]
 let get_provider_opt
@@ -77,7 +78,7 @@ let get_provider_opt
         (storage : t) : address option =
     let status_opt = Big_map.find_opt withdrawal storage.withdrawals in
     match status_opt with
-    | Some status -> unwrap_provider_opt status
+    | Some status -> Some (provider_of_paid_out status)
     | None -> None
 
 [@inline]

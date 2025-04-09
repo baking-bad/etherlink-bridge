@@ -69,7 +69,10 @@
              GET ;
              IF_NONE
                { NONE address }
-               { IF_LEFT { SOME } { DROP ; NONE address } } ;
+               { IF_LEFT
+                   {}
+                   { DROP ; PUSH string "UNEXPECTED_CEMENTED_WITHDRAWAL" ; FAILWITH } ;
+                 SOME } ;
              DUP ;
              IF_NONE { DUP 3 ; GET 11 } {} ;
              DUP 5 ;

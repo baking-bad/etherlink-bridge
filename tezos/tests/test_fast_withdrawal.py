@@ -659,3 +659,32 @@ class FastWithdrawalTestCase(BaseTestCase):
             content=TicketContent(0, "some-ticket-content".encode()),
         )
         assert ticket.amount == 471
+
+        # Checking that no withdrawal record was created:
+        assert test_env.fast_withdrawal.get_status_view(withdrawal).is_none()
+
+    def test_reject_cemented_withdrawal(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        provider = test_env.service_provider
+        fast_withdrawal = test_env.fast_withdrawal
+        withdrawal = test_env.xtz_withdrawal.override(
+            full_amount=1991,
+            payload=pack(1991, 'nat'),
+        )
+
+        fast_withdrawal.payout_withdrawal(
+            withdrawal,
+            provider,
+            xtz_amount=1991,
+        ).send()
+        self.bake_block()
+
+        ticket = self.make_xtz_ticket(test_env, 1991)
+        self.finalize_withdrawal(test_env, withdrawal, ticket)
+        assert fast_withdrawal.get_status_view(withdrawal).unwrap() == Cemented()
+
+        # Executing same withdrawal finalization for the second time:
+        with self.assertRaises(MichelsonError) as err:
+            ticket = self.make_xtz_ticket(test_env, 1991)
+            self.finalize_withdrawal(test_env, withdrawal, ticket)
+        assert "UNEXPECTED_CEMENTED_WITHDRAWAL" in str(err.exception)

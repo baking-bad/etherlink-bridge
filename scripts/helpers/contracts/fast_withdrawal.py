@@ -79,6 +79,9 @@ class Status:
             "Invalid status data: expected a 'paid_out' or 'cemented' object."
         )
 
+    def is_none(self) -> bool:
+        return self.value is None
+
 
 class FastWithdrawal(ContractHelper):
     @staticmethod

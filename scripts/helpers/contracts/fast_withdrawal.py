@@ -96,8 +96,7 @@ class FastWithdrawal(ContractHelper):
         metadata = Metadata.make_default(
             name="Fast Withdrawal",
             description="Fast Withdrawal is a component of the Etherlink Bridge that allows service providers to make fast payouts for user withdrawals and receive funds from Etherlink after outbox message settlement.",
-            # TODO: don't forget to update the version
-            version='0.1.0',
+            version='1.0.0',
         )
 
         return {

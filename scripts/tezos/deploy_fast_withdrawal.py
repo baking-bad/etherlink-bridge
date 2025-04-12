@@ -4,6 +4,7 @@ from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal
 from scripts.helpers.utility import get_tezos_client
 from scripts.helpers.formatting import (
     accent,
+    format_int,
     wrap,
     echo_variable,
 )
@@ -20,8 +21,13 @@ from scripts import cli_options
     help='The address of the Native XTZ Ticketer contract that wraps XTZ on Tezos side.',
     show_default=True,
 )
-# TODO: add expiration_seconds parameter
 @cli_options.smart_rollup_address
+@click.option(
+    '--expiration-seconds',
+    default=60 * 90,
+    help='Number of seconds during which a withdrawal can be purchased at a discount',
+    show_default=True,
+)
 @cli_options.tezos_private_key
 @cli_options.tezos_rpc_url
 @cli_options.skip_confirm
@@ -29,6 +35,7 @@ from scripts import cli_options
 def deploy_fast_withdrawal(
     xtz_ticketer_address: str,
     smart_rollup_address: str,
+    expiration_seconds: int,
     tezos_private_key: str,
     tezos_rpc_url: str,
     skip_confirm: bool = True,
@@ -45,14 +52,14 @@ def deploy_fast_withdrawal(
         click.echo('  - Params:')
         echo_variable('      * ', 'Native XTZ Ticketer address', xtz_ticketer_address)
         echo_variable('      * ', 'Smart Rollup address', smart_rollup_address)
+        echo_variable('      * ', 'Expiration Seconds', format_int(expiration_seconds))
     if not skip_confirm:
         click.confirm('Do you want to proceed?', abort=True, default=True)
 
     opg = FastWithdrawal.originate(
         client=manager,
         xtz_ticketer=xtz_ticketer_address,
-        # TODO: expiration seconds to the parameter:
-        expiration_seconds=60 * 60 * 24,
+        expiration_seconds=expiration_seconds,
         smart_rollup=smart_rollup_address,
     ).send()
     manager.wait(opg)

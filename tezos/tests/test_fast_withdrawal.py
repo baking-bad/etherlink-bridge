@@ -688,3 +688,19 @@ class FastWithdrawalTestCase(BaseTestCase):
             ticket = self.make_xtz_ticket(test_env, 1991)
             self.finalize_withdrawal(test_env, withdrawal, ticket)
         assert "UNEXPECTED_CEMENTED_WITHDRAWAL" in str(err.exception)
+
+    def test_reject_if_payout_exceeds_full_amount(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        provider = test_env.service_provider
+        fast_withdrawal = test_env.fast_withdrawal
+        withdrawal = test_env.xtz_withdrawal.override(
+            full_amount=1_000,
+            payload=pack(1_001, 'nat'),
+        )
+        with self.assertRaises(MichelsonError) as err:
+            fast_withdrawal.payout_withdrawal(
+                withdrawal,
+                provider,
+                xtz_amount=1_001,
+            ).send()
+        assert "PAYOUT_EXCEEDS_FULL_AMOUNT" in str(err.exception)

@@ -83,6 +83,14 @@ let assert_attached_amount_is_valid
     else unit
 
 [@inline]
+let assert_payout_at_most_full_amount
+        (payout_amount : nat)
+        (withdrawal : FastWithdrawal.t) : unit =
+    if payout_amount > withdrawal.full_amount
+    then failwith Errors.payout_exceeds_full_amount
+    else unit
+
+[@inline]
 let assert_ticket_content_is_valid_for_xtz
         (withdrawal : FastWithdrawal.t) : unit =
     let valid_xtz_content : Ticket.content_t = (0n, None) in
@@ -134,6 +142,8 @@ let payout_withdrawal
         if is_withdrawal_expired withdrawal expiration_seconds
         then withdrawal.full_amount
         else unpack_payload withdrawal.payload in
+    let _ = assert_payout_at_most_full_amount payout_amount withdrawal in
+
     let payout_operation = if Storage.is_xtz_ticketer withdrawal storage then
         (* Service provider payout of an XTZ withdrawal. *)
         let _ = assert_ticket_content_is_valid_for_xtz withdrawal in

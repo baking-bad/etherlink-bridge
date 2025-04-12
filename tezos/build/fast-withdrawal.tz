@@ -153,6 +153,12 @@
                   GET 13 ;
                   UNPACK nat ;
                   IF_NONE { PUSH string "PAYLOAD_UNPACK_FAILED" ; FAILWITH } {} } ;
+             DUP 2 ;
+             GET 3 ;
+             DUP 2 ;
+             COMPARE ;
+             GT ;
+             IF { PUSH string "PAYOUT_EXCEEDS_FULL_AMOUNT" ; FAILWITH } {} ;
              DUP 4 ;
              GET 3 ;
              CAR ;

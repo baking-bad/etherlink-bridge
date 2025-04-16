@@ -6,6 +6,10 @@ def accent(msg: str) -> str:
     return click.style(msg, fg='bright_cyan')
 
 
+def error(msg: str) -> str:
+    return click.style(msg, fg='red')
+
+
 def wrap(msg: str, symbol: str = '`') -> str:
     return symbol + msg + symbol
 

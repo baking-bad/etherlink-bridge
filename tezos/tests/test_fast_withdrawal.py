@@ -4,7 +4,6 @@ from typing import Optional, cast
 from pytezos.client import PyTezosClient
 from pytezos.operation.group import OperationGroup
 from pytezos.rpc.errors import MichelsonError
-from scripts.helpers.contracts.ticketer import Ticketer
 from scripts.helpers.contracts.xtz_ticketer import XtzTicketer
 from scripts.helpers.contracts.fast_withdrawal import (
     PaidOut,
@@ -13,7 +12,6 @@ from scripts.helpers.contracts.fast_withdrawal import (
     Withdrawal,
 )
 from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
-from scripts.helpers.contracts.tokens.token import TokenHelper
 from scripts.helpers.ticket import Ticket
 from scripts.helpers.ticket_content import TicketContent
 from scripts.helpers.utility import pack
@@ -35,12 +33,6 @@ class FastWithdrawalTestEnvironment:
     future_timestamp: int
     xtz_ticketer: XtzTicketer
     xtz_withdrawal: Withdrawal
-    fa12_withdrawal: Withdrawal
-    fa12_token: TokenHelper
-    fa12_ticketer: Ticketer
-    fa2_withdrawal: Withdrawal
-    fa2_token: TokenHelper
-    fa2_ticketer: Ticketer
 
 
 class FastWithdrawalTestCase(BaseTestCase):
@@ -110,25 +102,6 @@ class FastWithdrawalTestCase(BaseTestCase):
             l2_caller=bytes(20),
         )
 
-        token_balances: dict[Addressable, int] = {
-            service_provider: 1_000_000,
-            smart_rollup: 1_000_000,
-        }
-
-        fa12_token = self.deploy_fa12(token_balances)
-        fa12_ticketer = self.deploy_ticketer(fa12_token, {})
-        fa12_withdrawal = xtz_withdrawal.override(
-            ticketer=fa12_ticketer,
-            content=fa12_ticketer.read_content(),
-        )
-
-        fa2_token = self.deploy_fa2(token_balances, token_id=77)
-        fa2_ticketer = self.deploy_ticketer(fa2_token, {})
-        fa2_withdrawal = xtz_withdrawal.override(
-            ticketer=fa2_ticketer,
-            content=fa2_ticketer.read_content(),
-        )
-
         return FastWithdrawalTestEnvironment(
             manager=self.manager,
             withdrawer=withdrawer,
@@ -141,12 +114,6 @@ class FastWithdrawalTestCase(BaseTestCase):
             expired_timestamp=self.manager.now() - one_day - 1,
             future_timestamp=self.manager.now() + one_day,
             xtz_withdrawal=xtz_withdrawal,
-            fa12_withdrawal=fa12_withdrawal,
-            fa2_withdrawal=fa2_withdrawal,
-            fa12_token=fa12_token,
-            fa2_token=fa2_token,
-            fa12_ticketer=fa12_ticketer,
-            fa2_ticketer=fa2_ticketer,
         )
 
     def make_xtz_ticket(
@@ -161,40 +128,6 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
         ticket = test_env.xtz_ticketer.read_ticket(account)
         return ticket
-
-    def make_fa12_ticket(
-        self,
-        test_env: FastWithdrawalTestEnvironment,
-        amount: int,
-        account: Optional[PyTezosClient] = None,
-    ) -> Ticket:
-        # NOTE: account should have FA1.2 tokens on their balance
-        account = account or test_env.smart_rollup
-
-        # Creating FA1.2 ticket for receiver
-        account.bulk(
-            test_env.fa12_token.allow(account, test_env.fa12_ticketer),
-            test_env.fa12_ticketer.deposit(amount),
-        ).send()
-        self.bake_block()
-        return test_env.fa12_ticketer.read_ticket(account)
-
-    def make_fa2_ticket(
-        self,
-        test_env: FastWithdrawalTestEnvironment,
-        amount: int,
-        account: Optional[PyTezosClient] = None,
-    ) -> Ticket:
-        # NOTE: account should have FA2 tokens on their balance
-        account = account or test_env.smart_rollup
-
-        # Creating FA2 ticket for receiver
-        account.bulk(
-            test_env.fa2_token.allow(account, test_env.fa2_ticketer),
-            test_env.fa2_ticketer.deposit(amount),
-        ).send()
-        self.bake_block()
-        return test_env.fa2_ticketer.read_ticket(account)
 
     def finalize_withdrawal(
         self,
@@ -231,28 +164,6 @@ class FastWithdrawalTestCase(BaseTestCase):
 
         status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == PaidOut(provider)
-
-    def test_should_create_withdrawal_record_after_fa_withdrawal_purchased(
-        self,
-    ) -> None:
-        test_env = self.setup_fast_withdrawal_test_environment()
-        provider = test_env.service_provider
-        fast_withdrawal = test_env.fast_withdrawal
-        fa12_withdrawal = test_env.fa12_withdrawal
-        fa2_withdrawal = test_env.fa2_withdrawal
-
-        provider.bulk(
-            test_env.fa12_token.allow(provider, fast_withdrawal),
-            test_env.fa2_token.allow(provider, fast_withdrawal),
-            fast_withdrawal.payout_withdrawal(fa12_withdrawal, provider),
-            fast_withdrawal.payout_withdrawal(fa2_withdrawal, provider),
-        ).send()
-        self.bake_block()
-
-        fa12_status = fast_withdrawal.get_status_view(fa12_withdrawal)
-        fa2_status = fast_withdrawal.get_status_view(fa2_withdrawal)
-        assert fa12_status.unwrap() == PaidOut(provider)
-        assert fa2_status.unwrap() == PaidOut(provider)
 
     def test_should_accept_different_payloads_for_different_ticket_amounts(
         self,
@@ -335,19 +246,6 @@ class FastWithdrawalTestCase(BaseTestCase):
         status = fast_withdrawal.get_status_view(withdrawal)
         assert status.unwrap() == PaidOut(provider)
 
-        # Changing ticketer and content and paying the sixth withdrawal:
-        withdrawal.ticketer = test_env.fa12_withdrawal.ticketer
-        withdrawal.content = test_env.fa12_withdrawal.content
-
-        provider.bulk(
-            test_env.fa12_token.allow(provider, fast_withdrawal),
-            test_env.fast_withdrawal.payout_withdrawal(withdrawal, provider),
-        ).send()
-        self.bake_block()
-
-        status = test_env.fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == PaidOut(provider)
-
     def test_should_reject_duplicate_withdrawal(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
         provider = test_env.service_provider
@@ -428,97 +326,6 @@ class FastWithdrawalTestCase(BaseTestCase):
         # Checking that withdrawer received the xtz (full withdrawal amount):
         assert withdrawer.balance() == withdrawer_balance + Decimal('0.000333')
 
-    def test_provider_receives_fa2_withdrawal_after_purchase(self) -> None:
-        test_env = self.setup_fast_withdrawal_test_environment()
-        fast_withdrawal = test_env.fast_withdrawal
-        provider = test_env.service_provider
-        withdrawer = test_env.withdrawer
-        token = test_env.fa2_token
-        provider_balance = token.get_balance(provider)
-
-        withdrawal = test_env.fa2_withdrawal.override(
-            full_amount=50,
-            payload=pack(30, 'nat'),
-        )
-        provider.bulk(
-            token.allow(provider, fast_withdrawal),
-            fast_withdrawal.payout_withdrawal(withdrawal, provider),
-        ).send()
-        self.bake_block()
-        assert token.get_balance(provider) == provider_balance - 30
-        assert token.get_balance(withdrawer) == 30
-
-        status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == PaidOut(provider)
-
-        # Creating wrapped token (ticket) for smart_rollup:
-        ticket = self.make_fa2_ticket(test_env, 50)
-        self.finalize_withdrawal(test_env, withdrawal, ticket)
-
-        # Checking that status is now Cemented:
-        status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Cemented()
-
-        # Checking that the provider received the token:
-        assert token.get_balance(provider) == provider_balance - 30 + 50
-
-    def test_user_receives_fa2_withdrawal_when_no_purchase_made(self) -> None:
-        test_env = self.setup_fast_withdrawal_test_environment()
-        withdrawer = test_env.withdrawer
-
-        ticket = self.make_fa2_ticket(test_env, 73)
-        self.finalize_withdrawal(test_env, test_env.fa2_withdrawal, ticket)
-
-        # Checking that withdrawer received the token (full withdrawal amount):
-        assert test_env.fa2_token.get_balance(withdrawer) == 73
-
-    def test_provider_receives_fa12_withdrawal_after_purchase(self) -> None:
-        test_env = self.setup_fast_withdrawal_test_environment()
-        fast_withdrawal = test_env.fast_withdrawal
-        provider = test_env.service_provider
-        withdrawer = test_env.withdrawer
-        token = test_env.fa12_token
-        provider_balance = token.get_balance(provider)
-
-        withdrawal = test_env.fa12_withdrawal.override(
-            full_amount=500_000,
-            payload=pack(400_000, 'nat'),
-        )
-        provider.bulk(
-            token.allow(provider, fast_withdrawal),
-            fast_withdrawal.payout_withdrawal(withdrawal, provider),
-        ).send()
-        self.bake_block()
-        assert token.get_balance(provider) == provider_balance - 400_000
-        assert token.get_balance(withdrawer) == 400_000
-
-        status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == PaidOut(provider)
-
-        # Creating wrapped token (ticket) for smart_rollup:
-        ticket = self.make_fa12_ticket(test_env, 500_000)
-        self.finalize_withdrawal(test_env, withdrawal, ticket)
-
-        # Checking that status is now Cemented:
-        status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == Cemented()
-
-        # Checking that the provider received the token:
-        assert token.get_balance(provider) == provider_balance - 400_000 + 500_000
-
-    def test_user_receives_fa12_withdrawal_when_no_purchase_made(self) -> None:
-        test_env = self.setup_fast_withdrawal_test_environment()
-        withdrawal = test_env.fa12_withdrawal
-        withdrawer = test_env.withdrawer
-        token = test_env.fa12_token
-
-        # No one purchased the withdrawal, ticket received from the smart rollup:
-        ticket = self.make_fa12_ticket(test_env, 3)
-        self.finalize_withdrawal(test_env, withdrawal, ticket)
-
-        # Checking that withdrawer received the token (full withdrawal amount):
-        assert token.get_balance(withdrawer) == 3
-
     def test_should_allow_xtz_withdrawal_purchase_at_full_price_after_timestamp_expired(
         self,
     ) -> None:
@@ -551,58 +358,6 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.finalize_withdrawal(test_env, withdrawal, ticket)
 
         assert provider.balance() == provider_balance + Decimal('0.001000')
-
-    def test_should_allow_fa12_withdrawal_purchase_at_full_price_after_timestamp_expired(
-        self,
-    ) -> None:
-        test_env = self.setup_fast_withdrawal_test_environment()
-        provider = test_env.service_provider
-        fast_withdrawal = test_env.fast_withdrawal
-        provider_balance = test_env.fa12_token.get_balance(provider)
-
-        withdrawal = test_env.fa12_withdrawal.override(
-            full_amount=333_777,
-            payload=pack(300_000, 'nat'),
-            timestamp=test_env.expired_timestamp,
-        )
-
-        provider.bulk(
-            test_env.fa12_token.allow(provider, fast_withdrawal),
-            fast_withdrawal.payout_withdrawal(withdrawal, provider),
-        ).send()
-        self.bake_block()
-
-        status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == PaidOut(provider)
-
-        # Provider paid expired withdrawal - contract withdraws full_amount:
-        assert test_env.fa12_token.get_balance(provider) == provider_balance - 333_777
-
-    def test_should_allow_fa2_withdrawal_purchase_at_full_price_after_timestamp_expired(
-        self,
-    ) -> None:
-        test_env = self.setup_fast_withdrawal_test_environment()
-        provider = test_env.service_provider
-        fast_withdrawal = test_env.fast_withdrawal
-        provider_balance = test_env.fa2_token.get_balance(provider)
-
-        withdrawal = test_env.fa2_withdrawal.override(
-            full_amount=2,
-            payload=pack(1, 'nat'),
-            timestamp=test_env.expired_timestamp,
-        )
-
-        provider.bulk(
-            test_env.fa2_token.allow(provider, fast_withdrawal),
-            fast_withdrawal.payout_withdrawal(withdrawal, provider),
-        ).send()
-        self.bake_block()
-
-        status = fast_withdrawal.get_status_view(withdrawal)
-        assert status.unwrap() == PaidOut(provider)
-
-        # Provider paid expired withdrawal - contract withdraws full_amount:
-        assert test_env.fa2_token.get_balance(provider) == provider_balance - 2
 
     def test_rejects_xtz_withdrawal_purchase_at_discounted_price_if_expired(
         self,
@@ -672,60 +427,6 @@ class FastWithdrawalTestCase(BaseTestCase):
             ).send()
         assert "WRONG_XTZ_CONTENT" in str(err.exception)
 
-    def test_rejects_fa12_withdrawal_purchase_with_wrong_ticket_content(self) -> None:
-        test_env = self.setup_fast_withdrawal_test_environment()
-        provider = test_env.service_provider
-        fast_withdrawal = test_env.fast_withdrawal
-        wrong_content_withdrawal = test_env.fa12_withdrawal.override(
-            content=TicketContent(42, None),
-        )
-
-        with self.assertRaises(MichelsonError) as err:
-            fast_withdrawal.payout_withdrawal(
-                withdrawal=wrong_content_withdrawal,
-                service_provider=provider,
-            ).send()
-        assert "WRONG_FA_CONTENT" in str(err.exception)
-
-    def test_rejects_fa2_withdrawal_purchase_with_wrong_ticket_content(self) -> None:
-        test_env = self.setup_fast_withdrawal_test_environment()
-        provider = test_env.service_provider
-        fast_withdrawal = test_env.fast_withdrawal
-        wrong_content_withdrawal = test_env.fa2_withdrawal.override(
-            content=TicketContent(0, bytes(5)),
-        )
-
-        with self.assertRaises(MichelsonError) as err:
-            fast_withdrawal.payout_withdrawal(
-                withdrawal=wrong_content_withdrawal,
-                service_provider=provider,
-            ).send()
-        assert "WRONG_FA_CONTENT" in str(err.exception)
-
-    def test_should_reject_fa12_withdrawal_purchase_with_attached_xtz(self) -> None:
-        test_env = self.setup_fast_withdrawal_test_environment()
-
-        with self.assertRaises(MichelsonError) as err:
-            test_env.fast_withdrawal.payout_withdrawal(
-                withdrawal=test_env.fa12_withdrawal,
-                service_provider=test_env.service_provider,
-                xtz_amount=1,
-            ).send()
-            self.bake_block()
-        assert "XTZ_DEPOSIT_DISALLOWED" in str(err.exception)
-
-    def test_should_reject_fa2_withdrawal_purchase_with_attached_xtz(self) -> None:
-        test_env = self.setup_fast_withdrawal_test_environment()
-
-        with self.assertRaises(MichelsonError) as err:
-            test_env.fast_withdrawal.payout_withdrawal(
-                withdrawal=test_env.fa2_withdrawal,
-                service_provider=test_env.service_provider,
-                xtz_amount=1,
-            ).send()
-            self.bake_block()
-        assert "XTZ_DEPOSIT_DISALLOWED" in str(err.exception)
-
     def test_should_reject_settlement_with_attached_xtz(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
         smart_rollup = test_env.smart_rollup
@@ -771,27 +472,9 @@ class FastWithdrawalTestCase(BaseTestCase):
             full_amount=123,
             payload=pack(123, 'nat'),
         )
-        fa12_withdrawal = test_env.fa12_withdrawal.override(
-            full_amount=300,
-            payload=pack(270, 'nat'),
-        )
-        fa2_withdrawal = test_env.fa2_withdrawal.override(
-            full_amount=500,
-            payload=pack(450, 'nat'),
-        )
 
         # Calling payout_withdrawal from the service provider for the custom provider:
         provider.bulk(
-            test_env.fa12_token.allow(provider, fast_withdrawal),
-            test_env.fa2_token.allow(provider, fast_withdrawal),
-            fast_withdrawal.payout_withdrawal(
-                withdrawal=fa12_withdrawal,
-                service_provider=custom_provider,
-            ),
-            fast_withdrawal.payout_withdrawal(
-                withdrawal=fa2_withdrawal,
-                service_provider=custom_provider,
-            ),
             fast_withdrawal.payout_withdrawal(
                 withdrawal=xtz_withdrawal,
                 service_provider=custom_provider,
@@ -801,12 +484,8 @@ class FastWithdrawalTestCase(BaseTestCase):
         self.bake_block()
 
         xtz_status = fast_withdrawal.get_status_view(xtz_withdrawal)
-        fa12_status = fast_withdrawal.get_status_view(fa12_withdrawal)
-        fa2_status = fast_withdrawal.get_status_view(fa2_withdrawal)
 
         assert xtz_status.unwrap() == PaidOut(custom_provider)
-        assert fa12_status.unwrap() == PaidOut(custom_provider)
-        assert fa2_status.unwrap() == PaidOut(custom_provider)
 
         # Finalizing the xtz withdrawal:
         ticket = self.make_xtz_ticket(test_env, 123)
@@ -816,18 +495,6 @@ class FastWithdrawalTestCase(BaseTestCase):
         updated_balance = custom_provider.balance()
         assert updated_balance == custom_provider_balance + Decimal('0.000123')
         assert fast_withdrawal.get_status_view(xtz_withdrawal).unwrap() == Cemented()
-
-        # Finalizing the FA1.2 withdrawal:
-        ticket = self.make_fa12_ticket(test_env, 300)
-        self.finalize_withdrawal(test_env, fa12_withdrawal, ticket)
-        assert test_env.fa12_token.get_balance(custom_provider) == 300
-        assert fast_withdrawal.get_status_view(fa12_withdrawal).unwrap() == Cemented()
-
-        # Finalizing the FA2 withdrawal:
-        ticket = self.make_fa2_ticket(test_env, 500)
-        self.finalize_withdrawal(test_env, fa2_withdrawal, ticket)
-        assert test_env.fa2_token.get_balance(custom_provider) == 500
-        assert fast_withdrawal.get_status_view(fa2_withdrawal).unwrap() == Cemented()
 
     def test_should_return_config_on_get_config_view(self) -> None:
         xtz_ticketer = self.bootstrap_account()
@@ -949,7 +616,7 @@ class FastWithdrawalTestCase(BaseTestCase):
             self.bake_block()
         assert "PAYLOAD_UNPACK_FAILED" in str(err.exception)
 
-    def test_rejects_with_invalid_ticketer_contract(self) -> None:
+    def test_non_native_tickets_not_supported_for_payout(self) -> None:
         test_env = self.setup_fast_withdrawal_test_environment()
         provider = test_env.service_provider
         fast_withdrawal = test_env.fast_withdrawal
@@ -960,10 +627,80 @@ class FastWithdrawalTestCase(BaseTestCase):
         )
 
         with self.assertRaises(MichelsonError) as err:
+            fast_withdrawal.payout_withdrawal(withdrawal, provider).send()
+        assert "ONLY_XTZ_WITHDRAWALS_ARE_SUPPORTED" in str(err.exception)
+
+    def test_non_xtz_tickets_redirected_to_withdrawer_on_settlement(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        withdrawal = test_env.xtz_withdrawal.override(
+            full_amount=471,
+            payload=pack(471, 'nat'),
+            ticketer=test_env.tester,
+            content=TicketContent(0, "some-ticket-content".encode()),
+        )
+
+        test_env.smart_rollup.bulk(
+            test_env.tester.set_settle_withdrawal(
+                target=test_env.fast_withdrawal,
+                withdrawal=withdrawal,
+            ),
+            test_env.tester.mint(
+                content=TicketContent(0, "some-ticket-content".encode()),
+                amount=471,
+            ),
+        ).send()
+        self.bake_block()
+
+        # Checking that the withdrawer received the ticket:
+        ticket = Ticket.create(
+            client=test_env.withdrawer,
+            owner=test_env.withdrawer,
+            ticketer=get_address(test_env.tester),
+            content=TicketContent(0, "some-ticket-content".encode()),
+        )
+        assert ticket.amount == 471
+
+        # Checking that no withdrawal record was created:
+        assert test_env.fast_withdrawal.get_status_view(withdrawal).is_none()
+
+    def test_reject_cemented_withdrawal(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        provider = test_env.service_provider
+        fast_withdrawal = test_env.fast_withdrawal
+        withdrawal = test_env.xtz_withdrawal.override(
+            full_amount=1991,
+            payload=pack(1991, 'nat'),
+        )
+
+        fast_withdrawal.payout_withdrawal(
+            withdrawal,
+            provider,
+            xtz_amount=1991,
+        ).send()
+        self.bake_block()
+
+        ticket = self.make_xtz_ticket(test_env, 1991)
+        self.finalize_withdrawal(test_env, withdrawal, ticket)
+        assert fast_withdrawal.get_status_view(withdrawal).unwrap() == Cemented()
+
+        # Executing same withdrawal finalization for the second time:
+        with self.assertRaises(MichelsonError) as err:
+            ticket = self.make_xtz_ticket(test_env, 1991)
+            self.finalize_withdrawal(test_env, withdrawal, ticket)
+        assert "UNEXPECTED_CEMENTED_WITHDRAWAL" in str(err.exception)
+
+    def test_reject_if_payout_exceeds_full_amount(self) -> None:
+        test_env = self.setup_fast_withdrawal_test_environment()
+        provider = test_env.service_provider
+        fast_withdrawal = test_env.fast_withdrawal
+        withdrawal = test_env.xtz_withdrawal.override(
+            full_amount=1_000,
+            payload=pack(1_001, 'nat'),
+        )
+        with self.assertRaises(MichelsonError) as err:
             fast_withdrawal.payout_withdrawal(
                 withdrawal,
                 provider,
-                xtz_amount=1_000,
+                xtz_amount=1_001,
             ).send()
-            self.bake_block()
-        assert "GET_CONTENT_VIEW_FAILED" in str(err.exception)
+        assert "PAYOUT_EXCEEDS_FULL_AMOUNT" in str(err.exception)

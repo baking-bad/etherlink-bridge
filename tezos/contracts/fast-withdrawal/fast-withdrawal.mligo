@@ -4,9 +4,7 @@
 
 #import "../common/entrypoints/settle-withdrawal.mligo" "SettleWithdrawalEntry"
 #import "../common/entrypoints/xtz-ticketer-burn.mligo" "XtzTicketerBurnEntry"
-#import "../common/entrypoints/router-withdraw.mligo" "RouterWithdrawEntry"
 #import "../common/types/ticket.mligo" "Ticket"
-#import "../common/tokens/tokens.mligo" "Tokens"
 #import "../common/types/fast-withdrawal.mligo" "FastWithdrawal"
 #import "../common/errors.mligo" "CommonErrors"
 #import "./storage.mligo" "Storage"
@@ -21,13 +19,10 @@
 
     Supported withdrawal types:
     - XTZ withdrawals (requires exchanger to implement the `burn` entrypoint)
-    - FA bridge withdrawals (requires ticketer to implement the `withdraw`
-      entrypoint and `get_token` and `get_content` views)
 
     Workflow:
     1. Providers initiate withdrawal claims by calling `payout_withdrawal`.
     2. For native withdrawals, providers must attach the required XTZ amount.
-       For FA withdrawals, providers must approve the required tokens.
     3. The payout amount is determined based on withdrawal expiration:
         - If the withdrawal has not expired, a discounted amount (encoded in
           the payload as Michelson nat) applies.
@@ -61,20 +56,6 @@ let unpack_payload
     | None -> failwith Errors.payload_unpack_failed
 
 [@inline]
-let get_token_view
-        (ticketer : address) : Tokens.t =
-    match Tezos.Next.View.call "get_token" unit ticketer with
-    | Some token -> token
-    | None -> failwith Errors.get_token_view_failed
-
-[@inline]
-let get_content_view
-        (ticketer : address) : Ticket.content_t =
-    match Tezos.Next.View.call "get_content" unit ticketer with
-    | Some token -> token
-    | None -> failwith Errors.get_content_view_failed
-
-[@inline]
 let is_withdrawal_expired
         (withdrawal : FastWithdrawal.t)
         (expiration_seconds : int) : bool =
@@ -102,19 +83,19 @@ let assert_attached_amount_is_valid
     else unit
 
 [@inline]
+let assert_payout_at_most_full_amount
+        (payout_amount : nat)
+        (withdrawal : FastWithdrawal.t) : unit =
+    if payout_amount > withdrawal.full_amount
+    then failwith Errors.payout_exceeds_full_amount
+    else unit
+
+[@inline]
 let assert_ticket_content_is_valid_for_xtz
         (withdrawal : FastWithdrawal.t) : unit =
     let valid_xtz_content : Ticket.content_t = (0n, None) in
     if withdrawal.content <> valid_xtz_content
     then failwith Errors.wrong_xtz_content
-    else unit
-
-[@inline]
-let assert_ticket_content_is_valid_for_fa
-        (withdrawal : FastWithdrawal.t) : unit =
-    let valid_content = get_content_view withdrawal.ticketer in
-    if valid_content <> withdrawal.content
-    then failwith Errors.wrong_fa_content
     else unit
 
 [@inline]
@@ -125,33 +106,11 @@ let assert_no_xtz_deposit
     else unit
 
 [@inline]
-let get_ticketer_dispatch_func
-        (withdrawal : FastWithdrawal.t)
-        (storage : Storage.t) : XtzTicketerBurnEntry.t -> operation =
-    (*
-        Determines the ticketer type and sends it to the contract.
-        Both FA (RouterWithdrawEntry) and XTZ ticketers share the same type
-        but have different entrypoint names.
-    *)
-    if Storage.is_xtz_ticketer withdrawal storage then
-        XtzTicketerBurnEntry.send withdrawal.ticketer
-    else
-        RouterWithdrawEntry.send withdrawal.ticketer
-
-[@inline]
 let send_xtz_op
         (amount : nat)
         (receiver : address) : operation =
     let entry = Tezos.get_contract receiver in
     Tezos.Next.Operation.transaction unit (amount * 1mutez) entry
-
-[@inline]
-let send_tokens_op
-        (token: Tokens.t)
-        (amount : nat)
-        (receiver : address) : operation =
-    let sender = Tezos.get_sender () in
-    Tokens.send_transfer token amount sender receiver
 
 [@entry]
 let payout_withdrawal
@@ -183,6 +142,8 @@ let payout_withdrawal
         if is_withdrawal_expired withdrawal expiration_seconds
         then withdrawal.full_amount
         else unpack_payload withdrawal.payload in
+    let _ = assert_payout_at_most_full_amount payout_amount withdrawal in
+
     let payout_operation = if Storage.is_xtz_ticketer withdrawal storage then
         (* Service provider payout of an XTZ withdrawal. *)
         let _ = assert_ticket_content_is_valid_for_xtz withdrawal in
@@ -190,10 +151,7 @@ let payout_withdrawal
         send_xtz_op payout_amount receiver
     else
         (* Service provider payout of an FA withdrawal. *)
-        let _ = assert_ticket_content_is_valid_for_fa withdrawal in
-        let _ = assert_no_xtz_deposit () in
-        let token = get_token_view withdrawal.ticketer in
-        send_tokens_op token payout_amount receiver in
+        failwith Errors.only_xtz_withdrawals_are_supported in
 
     let storage = Storage.add_withdrawal withdrawal service_provider storage in
     let event_params = { withdrawal; service_provider; payout_amount } in
@@ -232,8 +190,11 @@ let default
     let receiver = match provider_opt with
     | None -> withdrawal.base_withdrawer
     | Some provider -> provider in
-    let make_ticket_transfer = get_ticketer_dispatch_func withdrawal storage in
-    let finalize_operation = make_ticket_transfer { receiver; ticket } in
+    (* Non-XTZ tickets received on settlement are sent to base_withdrawer *)
+    let finalize_operation = if Storage.is_xtz_ticketer withdrawal storage then
+        XtzTicketerBurnEntry.send withdrawal.ticketer { receiver; ticket }
+    else
+        Ticket.send ticket withdrawal.base_withdrawer in
     let finalize_event = Events.settle_withdrawal { withdrawal; receiver } in
     let storage = Storage.finalize_withdrawal withdrawal provider_opt storage in
     [finalize_operation; finalize_event], storage

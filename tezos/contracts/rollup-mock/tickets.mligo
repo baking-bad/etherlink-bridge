@@ -19,7 +19,7 @@ let read_id
         (ticket : Ticket.t)
         : id_t * Ticket.t =
     (* Reads ticket and returns its id and the ticket itself *)
-    let (ticketer, (payload, _amt)), ticket = Tezos.read_ticket ticket in
+    let (ticketer, (payload, _amt)), ticket = Tezos.Next.Ticket.read ticket in
     let token_id = payload.0 in
     let id = { ticketer; token_id } in
     id, ticket
@@ -33,8 +33,8 @@ let save
     let ticket_opt, tickets = Big_map.get_and_update id None tickets in
     let ticket : Ticket.t = match ticket_opt with
         | Some stored_ticket ->
-            let ticket = Tezos.join_tickets (ticket, stored_ticket) in
-            Option.unopt ticket
+            let ticket_opt = Tezos.Next.Ticket.join (ticket, stored_ticket) in
+            Option.value_with_error Errors.ticket_join_error ticket_opt
         | None -> ticket in
     Big_map.update id (Some ticket) tickets
 
@@ -44,7 +44,7 @@ let pop
         : Ticket.t * t =
     (* Pops a ticket from the big_map, returning it and the updated big_map *)
     let ticket_opt, tickets = Big_map.get_and_update id None tickets in
-    let ticket = Option.unopt_with_error ticket_opt Errors.ticket_not_found in
+    let ticket = Option.value_with_error Errors.ticket_not_found ticket_opt in
     ticket, tickets
 
 let get

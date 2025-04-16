@@ -7,8 +7,8 @@ from pytezos.operation.group import OperationGroup
 
 from scripts.helpers.addressable import Addressable
 from scripts.helpers.contracts.contract import ContractHelper
-from scripts.helpers.contracts.tokens import TokenHelper
-from scripts.helpers.contracts.tokens import TokenInfo
+from scripts.helpers.contracts.tokens.token import TokenHelper
+from scripts.helpers.contracts.tokens.token import TokenInfo
 from scripts.helpers.metadata import Metadata
 from scripts.helpers.ticket import Ticket
 from scripts.helpers.ticket_content import TicketContent
@@ -16,7 +16,7 @@ from scripts.helpers.utility import get_build_dir
 from scripts.helpers.utility import originate_from_file
 
 
-# TODO: consider renaming to TicketerHelper:
+# TODO: consider renaming to FaTicketer:
 class Ticketer(ContractHelper):
     @staticmethod
     def make_storage(

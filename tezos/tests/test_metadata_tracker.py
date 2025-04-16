@@ -1,5 +1,5 @@
 from tezos.tests.base import BaseTestCase
-from scripts.helpers.contracts import MetadataTracker
+from scripts.helpers.contracts.metadata_tracker import MetadataTracker
 from scripts.helpers.utility import find_op_by_hash
 
 

@@ -1,13 +1,17 @@
 import click
-from scripts.helpers.contracts import TokenHelper
+from scripts.helpers.contracts.tokens.token import TokenHelper
 
 
 def accent(msg: str) -> str:
     return click.style(msg, fg='bright_cyan')
 
 
+def error(msg: str) -> str:
+    return click.style(msg, fg='red')
+
+
 def wrap(msg: str, symbol: str = '`') -> str:
-    return '`' + msg + '`'
+    return symbol + msg + symbol
 
 
 def echo_variable(prefix: str, name: str, value: str) -> None:

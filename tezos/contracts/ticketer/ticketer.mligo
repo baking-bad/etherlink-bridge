@@ -25,7 +25,7 @@ module Ticketer = struct
     let assert_content_is_expected
         (content : Ticket.content_t)
         (expected : Ticket.content_t) : unit =
-            assert_with_error
+            Assert.Error.assert
                 (content = expected)
                 Errors.unexpected_content
 
@@ -64,7 +64,7 @@ module Ticketer = struct
         *)
 
         let { ticket; receiver } = params in
-        let (ticketer, (content, amount)), _ = Tezos.read_ticket ticket in
+        let (ticketer, (content, amount)), _ = Tezos.Next.Ticket.read ticket in
         let () = assert_content_is_expected content store.content in
         let () = Assertions.address_is_self ticketer in
         let () = Assertions.no_xtz_deposit () in

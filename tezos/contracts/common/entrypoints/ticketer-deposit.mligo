@@ -17,4 +17,4 @@ let send
         (amount : t)
         : operation =
     let entry = get ticketer in
-    Tezos.transaction amount 0mutez entry
+    Tezos.Next.Operation.transaction amount 0mutez entry

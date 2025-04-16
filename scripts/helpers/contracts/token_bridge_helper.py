@@ -2,11 +2,9 @@ from scripts.helpers.utility import (
     originate_from_file,
     get_build_dir,
 )
-from scripts.helpers.contracts import (
-    ContractHelper,
-    TokenHelper,
-    Ticketer,
-)
+from scripts.helpers.contracts.contract import ContractHelper
+from scripts.helpers.contracts.tokens.token import TokenHelper
+from scripts.helpers.contracts.ticketer import Ticketer
 from pytezos.client import PyTezosClient
 from pytezos.operation.group import OperationGroup
 from os.path import join

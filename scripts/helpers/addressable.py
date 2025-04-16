@@ -1,13 +1,13 @@
 from typing import Union
-from scripts.helpers.contracts.contract import ContractHelper
 from pytezos.client import PyTezosClient
 from eth_account.signers.local import LocalAccount
 from scripts.helpers.etherlink import EvmContractHelper
 from scripts.helpers.utility import pack
+from scripts.helpers.contracts.contract import ContractHelper
 
 
 # TODO: consider renaming to TezosAddressable?
-Addressable = Union[ContractHelper, PyTezosClient, str]
+Addressable = Union['ContractHelper', PyTezosClient, str]
 EtherlinkAddressable = Union[LocalAccount, EvmContractHelper, str]
 
 

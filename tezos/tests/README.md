@@ -73,3 +73,64 @@
 - [x] test_should_redirect_ticket_to_the_ticketer_on_withdraw
     - check ticket will be redirected to the ticketer in the storage
     - check ticket will be redirected to the ticketer even its address differs from the stored ticketer address
+
+## FastWithdrawal tests [(code)](test_fast_withdrawal.py):
+- [x] test_should_create_withdrawal_record_after_xtz_withdrawal_purchased
+    - check key is added to `withdrawals` big_map
+    - check ticketer content is `(0, None)`
+
+- [x] test_should_accept_different_payloads_for_different_ticket_amounts
+    - check key is added for ticket amount = `1`
+    - check key is added for ticket amount = `17`
+    - check key is added for ticket amount = `1_000_000_000_000`
+
+- [x] test_should_create_different_withdrawal_records
+    - check new key is added for transaction with different `timestamp`
+    - check new key is added for transaction with different `base_withdrawer`
+    - check new key is added for transaction with different `payload` and ticket amount
+    - check new key is added for transaction with different `l2_caller`
+
+- [x] test_should_reject_duplicate_withdrawal
+    - check rejection when initiated by the same provider
+    - check rejection when initiated by a different provider
+    - check rejection if the withdrawal was already finalized
+
+- [x] test_provider_receives_xtz_withdrawal_after_purchase
+    - check provider balance increases by full withdrawal amount
+    - check withdrawal status is `Cemented` after payout
+
+- [x] test_user_receives_xtz_withdrawal_when_no_purchase_made
+    - check user balance increases by full withdrawal amount
+
+- [x] test_should_reject_xtz_withdrawal_purchase_with_wrong_xtz_amount
+    - check transaction rejected if provided xtz amount is not equal amount in payout (and withdrawal is not expired yet)
+
+- [x] test_should_reject_settlement_with_attached_xtz
+- [x] test_should_reject_settlement_from_wrong_rollup_address
+
+- [x] test_should_pay_custom_provider_when_specified
+    - check specified alternative provider receives withdrawal payout
+    - check withdrawal status is `Cemented` after payout
+    - check for XTZ, FA1.2 and FA2
+
+- [x] test_should_allow_xtz_withdrawal_purchase_at_full_price_after_timestamp_expired
+
+- [x] test_rejects_xtz_withdrawal_purchase_at_discounted_price_if_expired
+
+- [x] test_rejects_xtz_withdrawal_purchase_with_wrong_ticket_content
+    - check `token_id` wrong
+    - check `payload` is Some(bytes)
+- [x] test_rejects_future_timestamp
+- [x] test_should_return_config_on_get_config_view
+
+- [x] test_should_emit_events_on_payout_withdrawal_and_finalization
+    - check that `payout_withdrawal` emits the correct event
+    - check that `default` (finalization) emits the correct event for a paid withdrawal
+    - check that `default` (finalization) emits the correct event for an unpaid withdrawal
+
+- [x] test_rejects_invalid_payload
+- [x] test_rejects_if_l2_caller_is_not_20_bytes_long
+- [x] test_non_native_tickets_not_supported_for_payout
+- [x] test_non_xtz_tickets_redirected_on_settlement
+- [x] test_reject_cemented_withdrawal
+- [x] test_reject_if_payout_exceeds_full_amount

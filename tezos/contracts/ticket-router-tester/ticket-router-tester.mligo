@@ -2,6 +2,8 @@
 #import "../common/entrypoints/rollup-deposit.mligo" "RollupDepositEntry"
 #import "../common/entrypoints/router-withdraw.mligo" "RouterWithdrawEntry"
 #import "../common/entrypoints/ticketer-deposit.mligo" "TicketerDepositEntry"
+#import "../common/entrypoints/settle-withdrawal.mligo" "SettleWithdrawalEntry"
+#import "../common/types/fast-withdrawal.mligo" "FastWithdrawal"
 #import "../common/types/ticket.mligo" "Ticket"
 
 
@@ -39,6 +41,7 @@ module TicketRouterTester = struct
         | Default of unit
         | RouterWithdraw of address
         | RollupDeposit of RoutingInfo.l1_to_l2_t
+        | SettleWithdrawal of FastWithdrawal.t
 
     type internal_call_t = [@layout:comb] {
         target : address;
@@ -74,16 +77,20 @@ module TicketRouterTester = struct
         match entrypoint with
         | Default () ->
             let entry = Ticket.get target in
-            Tezos.transaction ticket xtz_amount entry
+            Tezos.Next.Operation.transaction ticket xtz_amount entry
         | RouterWithdraw (receiver) ->
             let withdraw = { receiver; ticket } in
             let entry = RouterWithdrawEntry.get target in
-            Tezos.transaction withdraw xtz_amount entry
+            Tezos.Next.Operation.transaction withdraw xtz_amount entry
         | RollupDeposit (routing_info) ->
             let deposit = { routing_info; ticket } in
             let deposit_wrap = RollupDepositEntry.wrap deposit in
             let entry = RollupDepositEntry.get target in
-            Tezos.transaction deposit_wrap xtz_amount entry
+            Tezos.Next.Operation.transaction deposit_wrap xtz_amount entry
+        | SettleWithdrawal (fast_withdrawal) ->
+            let data = SettleWithdrawalEntry.from_key ticket fast_withdrawal in
+            let entry = SettleWithdrawalEntry.get target in
+            Tezos.Next.Operation.transaction data xtz_amount entry
 
     [@entry] let default
             (ticket : Ticket.t)

@@ -9,11 +9,10 @@ from scripts.helpers.utility import (
     get_etherlink_account,
     get_etherlink_web3,
 )
-from scripts.helpers.contracts import (
-    TokenBridgeHelper,
-    TokenHelper,
-    Ticketer,
-)
+
+from scripts.helpers.contracts.token_bridge_helper import TokenBridgeHelper
+from scripts.helpers.contracts.tokens.token import TokenHelper
+from scripts.helpers.contracts.ticketer import Ticketer
 from scripts.helpers.addressable import (
     get_address,
     Addressable,
@@ -47,6 +46,10 @@ from scripts.defaults import (
     XTZ_WITHDRAWAL_PRECOMPILE,
     ETHERLINK_ROLLUP_NODE_URL,
     PRINT_DEBUG_LOG,
+    XTZ_TICKETER_ADDRESS,
+    FAST_WITHDRAWAL_CONTRACT,
+    BLOCKSCOUT_EXPLORER_URL,
+    TZKT_EXPLORER_URL,
 )
 
 

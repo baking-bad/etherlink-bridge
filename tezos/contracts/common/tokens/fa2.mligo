@@ -27,7 +27,7 @@ let send_transfer
         : operation =
     let params = [{ from_; txs }] in
     let entry = get_transfer token_address in
-    Tezos.transaction params 0mutez entry
+    Tezos.Next.Operation.transaction params 0mutez entry
 
 type operator_param_t = [@layout:comb] {
     owner: address;
@@ -55,4 +55,4 @@ let send_approve
     let operator_param = { operator; token_id; owner } in
     let params = [Add_operator(operator_param)] in
     let entry = get_approve contract_address in
-    Tezos.transaction params 0mutez entry
+    Tezos.Next.Operation.transaction params 0mutez entry

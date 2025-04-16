@@ -27,6 +27,7 @@ def xtz_deposit(
     """Deposits given amount of XTZ to the receiver on the Etherlink side"""
 
     receiver_bytes = bytes.fromhex(receiver_address.replace('0x', ''))
+    # TODO: consider reusing XtzTicketer contract helper
     manager = get_tezos_client(tezos_rpc_url, tezos_private_key)
     helper = manager.contract(xtz_ticket_helper)
 

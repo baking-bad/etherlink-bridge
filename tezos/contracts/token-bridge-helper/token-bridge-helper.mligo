@@ -130,7 +130,7 @@ module TokenBridgeHelper = struct
             @param ticket: provided ticket to be burned.
         *)
         let { ticket; receiver } = params in
-        let (ticketer, (_, _)), ticket = Tezos.read_ticket ticket in
+        let (ticketer, (_, _)), ticket = Tezos.Next.Ticket.read ticket in
         let withdraw = { receiver; ticket } in
         let withdraw_op = RouterWithdrawEntry.send ticketer withdraw in
         [withdraw_op], s

@@ -58,4 +58,4 @@ let send
         : operation =
     let payload = wrap deposit in
     let entry = get rollup in
-    Tezos.transaction payload 0mutez entry
+    Tezos.Next.Operation.transaction payload 0mutez entry

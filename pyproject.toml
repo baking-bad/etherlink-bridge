@@ -10,7 +10,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-pytezos = "^3.13.2"
+pytezos = "3.15.0"
 python-dotenv = "^1.0.0"
 click = "^8.1.7"
 eth-abi = "^5.1.0"

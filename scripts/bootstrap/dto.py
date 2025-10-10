@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 from scripts.bootstrap.const import DEFAULT_TOKEN_ID
-from scripts.helpers.contracts import Ticketer
+from scripts.helpers.contracts.ticketer import Ticketer
 
 
 class TicketerParamsDTO(BaseModel):

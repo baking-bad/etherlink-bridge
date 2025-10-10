@@ -4,7 +4,7 @@ from typing import Any
 import click
 import requests
 import survey
-from pytezos import PyTezosClient
+from pytezos.client import PyTezosClient
 from pytezos import pytezos
 from pytezos.rpc import RpcError
 
@@ -21,7 +21,8 @@ from scripts.bootstrap.dto import TokenInfoDTO
 from scripts.bootstrap.dto import TokenMetadataDTO
 from scripts.bootstrap.dto import UserInputDTO
 from scripts.etherlink import deploy_erc20
-from scripts.helpers.contracts import TokenHelper
+from scripts.helpers.addressable import Addressable
+from scripts.helpers.contracts.tokens.token import TokenHelper, TokenInfo
 from scripts.tezos import deploy_ticketer
 from scripts.tezos import deploy_token_bridge_helper
 from scripts.tezos import get_ticketer_params
@@ -46,7 +47,7 @@ class EtherlinkBootstrapClient:
             kernel_address=KERNEL_ADDRESS,
             etherlink_private_key=self._private_key,
             etherlink_rpc_url=self._rpc_url,
-        )
+        )  # type: ignore
         return erc20.address
 
 
@@ -162,13 +163,13 @@ class TokenBootstrap:
             supply = self._token_info.supply
             round_mask = 10 ** (len(str(supply)) - 2)
             test_amount = int(supply * self._test_amount_multiplier / round_mask) * round_mask
-            balances = {
+            balances: dict[Addressable, int] = {
                 self._tezos_client.key.public_key_hash(): abs(supply - test_amount),
                 self._l1_testrunner_account: test_amount,
             }
 
             metadata_encoded = {k: str(v).encode() for k, v in self._token_info.metadata.model_dump().items()}
-            opg = token.originate(self._tezos_client, balances, int(token_id), metadata_encoded).send()
+            opg = token.originate(self._tezos_client, balances, int(token_id), metadata_encoded).send()  # type: ignore
             self._tezos_client.wait(opg)
             deployed_token = token.from_opg(self._tezos_client, opg)
 
@@ -198,14 +199,14 @@ class TokenBootstrap:
                 token_symbol=self._token_info.metadata.symbol,
                 tezos_private_key=self._tezos_client.context.key,
                 tezos_rpc_url=self._tezos_client.context.shell,
-            )
+            )  # type: ignore
 
             state = ' fetching ticketer params...'
             ticketer_params_dict = get_ticketer_params.callback(
                 ticketer_address=ticketer.address,
                 tezos_private_key=self._tezos_client.context.key,
                 tezos_rpc_url=self._tezos_client.context.shell,
-            )
+            )  # type: ignore
 
             ticket_hash = ticketer.read_ticket().hash()
 
@@ -254,7 +255,7 @@ class TokenBootstrap:
                 tezos_private_key=self._tezos_client.context.key,
                 tezos_rpc_url=self._tezos_client.context.shell,
                 token_symbol=self._token_info.metadata.symbol,
-            )
+            )  # type: ignore
 
         survey.printers.done(
             f'Token Bridge Helper Contract deployed for Token `{self._token_info.metadata.name}`: {helper.address}.',
@@ -310,14 +311,14 @@ class BootstrapSurvey:
             index=0,
         )
 
-        self._defaults = self._network_defaults[network_index]
+        self._defaults = self._network_defaults[network_index]  # type: ignore
 
     def _get_l1_rpc_url(self) -> str:
         while True:
             l1_rpc_url = survey.routines.input(
                 'Enter the address of your RPC Node\n',
                 value=self._defaults.get('l1_rpc_url', ''),
-            ).rstrip('/')
+            ).rstrip('/')  # type: ignore
             try:
                 survey.printers.text('', end='\r')
                 url = f'{l1_rpc_url}/chains/main/blocks/head'
@@ -340,7 +341,7 @@ class BootstrapSurvey:
             return tzkt_api_url
 
         while True:
-            tzkt_api_url = survey.routines.input('Enter Tzkt API Url\n').rstrip('/')
+            tzkt_api_url = survey.routines.input('Enter Tzkt API Url\n').rstrip('/')  # type: ignore
             survey.printers.text('', end='\r')
             try:
                 survey.printers.text('', end='\r')
@@ -379,7 +380,7 @@ class BootstrapSurvey:
                 survey.printers.fail('Could not retrieve the specified Smart Rollup address. Please try again.', re=True)
             else:
                 survey.printers.text('', end='\r', re=True)
-                return smart_rollup_address
+                return smart_rollup_address  # type: ignore
 
     def _get_l1_private_key(self) -> str:
         while True:
@@ -404,7 +405,7 @@ class BootstrapSurvey:
 
                     state = ' check if account is revealed...'
                     try:
-                        client.reveal().autofill().sign().inject()
+                        client.reveal().autofill().sign().inject()  # type: ignore
                     except RpcError:
                         pass
 
@@ -414,28 +415,28 @@ class BootstrapSurvey:
                 survey.printers.fail('Account has insufficient balance to contracts origination. Please try again.', re=True)
             else:
                 survey.printers.text('', end='\r', re=True)
-                return l1_private_key
+                return l1_private_key  # type: ignore
 
     def _get_l2_rpc_url(self) -> str:
         l2_rpc_url = survey.routines.input(
             f'Enter Etherlink RPC Endpoint for your Rollup on the {self._defaults["name"]}\n',
             value=self._defaults.get('l2_rpc_url', ''),
         )
-        return l2_rpc_url
+        return l2_rpc_url  # type: ignore
 
     def _get_l2_private_key(self) -> str:
         l2_private_key = survey.routines.input(
             'Enter the Private Key of Account for contracts origination on the Etherlink network\n',
             value=self._defaults.get('l2_private_key', ''),
         )
-        return l2_private_key
+        return l2_private_key  # type: ignore
 
     def _get_l1_testrunner_account(self) -> str:
         l1_testrunner_account = survey.routines.input(
             'Enter the Public Key Hash of Tezos Account for running integration tests\n',
             value=self._defaults.get('l1_testrunner_account', ''),
         )
-        return l1_testrunner_account
+        return l1_testrunner_account  # type: ignore
 
     @staticmethod
     def _get_use_test_prefix() -> bool:

@@ -40,4 +40,4 @@ def survey_table(
         options=table.split('\n'),
         index=default,
     )
-    return index, options[index]
+    return index, options[index]  # type: ignore

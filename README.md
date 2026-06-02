@@ -252,12 +252,39 @@ The Etherlink contract tests use the [Foundry](https://book.getfoundry.sh/gettin
 poetry run etherlink_tests
 ```
 
+#### 3. Integration tests (indexer):
+The tests under [`scripts/tests`](scripts/tests/) are **integration** tests: they run a full deposit / withdrawal flow against a **live** Tezos + Etherlink network and a running bridge **indexer**, signing real on-chain operations with the funded account configured in [`scripts/tests/conftest.py`](scripts/tests/conftest.py).
+
+Because they need live infrastructure (and cost testnet funds), they are gated behind the `integration` marker and **deselected by default** — the plain `poetry run pytest` above runs only the offline contract tests.
+
+These tests are **stateful and ordered** (see `function_order` in `conftest.py`): they run as a chain — indexer health check → asset whitelist checks → deposit → create withdrawal → finish withdrawal. Run them **together**, not individually; e.g. the finish step looks up a pending withdrawal that an earlier step created. The health check is marked `critical`: if it fails, the run aborts immediately.
+
+The withdrawal **completion** step needs the rollup challenge (refutation) window to elapse before the outbox message can be executed. That window is long on shadownet (~2 weeks), so the finish test carries its own `cementation` marker and is excluded from the normal integration run.
+
+```shell
+# Offline contract tests only (default — no network needed):
+poetry run pytest
+
+# Integration flow without the long wait (deposit + create withdrawal):
+poetry run pytest -m "integration and not cementation"
+
+# Full flow including withdrawal completion — only on a network with a SHORT
+# challenge window, where cementation happens quickly:
+poetry run pytest -m integration
+
+# On shadownet (~2-week window) the completion can't finish in one run.
+# First run the integration flow above to CREATE the withdrawal, wait for the
+# window to pass, then finalize it (it finds the now-cemented pending
+# withdrawal in the indexer and executes the outbox message):
+poetry run pytest -m cementation
+```
+
 ## Linting
 To perform linting, execute the following commands:
 
 ```shell
 poetry run mypy .
-poetry run ruff .
+poetry run ruff check .
 poetry run black .
 ```
 

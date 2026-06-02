@@ -34,5 +34,5 @@ class Token(BaseModel):
 
 
 class Native(Token):
-    l1_asset_id: str = Literal['xtz']
-    l2_token_address: str = Literal['xtz']
+    l1_asset_id: Literal['xtz'] = 'xtz'
+    l2_token_address: Literal['xtz'] = 'xtz'

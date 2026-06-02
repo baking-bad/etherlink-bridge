@@ -1,16 +1,28 @@
+from collections.abc import Generator, Iterator
+from typing import Any
+
 import pytest
 from _pytest.fixtures import SubRequest
 from gql import Client
 from gql.client import SyncClientSession
 from gql.transport.requests import RequestsHTTPTransport
+from pytezos import pytezos
+from pytezos.client import PyTezosClient
 
+from scripts.helpers.contracts.contract import ContractHelper
 from scripts.tests.dto import Bridge
 from scripts.tests.dto import Native
 from scripts.tests.dto import Token
 from scripts.tests.dto import Wallet
 
 
-def pytest_collection_modifyitems(items):
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    # Every test under scripts/tests/ hits a live network/indexer and signs
+    # real operations, so mark them all `integration` (deselected by default).
+    for item in items:
+        if item.nodeid.startswith('scripts/tests/'):
+            item.add_marker('integration')
+
     function_order = {
         "test_indexer_is_healthy": 1,
         "test_l1_asset_whitelisted": 2,
@@ -23,15 +35,21 @@ def pytest_collection_modifyitems(items):
     function_mapping = {}
     for item in items:
         item_name = item.name.split('[', 1)[0]
-        function_mapping[item] = function_order[item_name] if item_name in function_order else 50
+        function_mapping[item] = (
+            function_order[item_name] if item_name in function_order else 50
+        )
 
-    function_mapping = {k: v for k, v in sorted(function_mapping.items(), key=lambda x: x[1])}
+    function_mapping = {
+        k: v for k, v in sorted(function_mapping.items(), key=lambda x: x[1])
+    }
 
     items[:] = [item for item in function_mapping]
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
+def pytest_runtest_makereport(
+    item: pytest.Item, call: pytest.CallInfo[Any]
+) -> Generator[None, Any, None]:
     outcome = yield
     if 'critical' in [mark.name for mark in item.own_markers]:
         result = outcome.get_result()
@@ -41,10 +59,8 @@ def pytest_runtest_makereport(item, call):
             pytest.exit('Exiting pytest due to critical test failure', 1)
 
 
-def pytest_configure(config):
-    config.addinivalue_line(
-        'markers', 'critical: mark test as critical'
-    )
+def pytest_configure(config: pytest.Config) -> None:
+    config.addinivalue_line('markers', 'critical: mark test as critical')
 
 
 token_bridge_data_collection: dict[str, Token] = {
@@ -90,6 +106,21 @@ def native_asset() -> Native:
 
 
 @pytest.fixture
+def tezos_client(bridge: Bridge, wallet: Wallet) -> PyTezosClient:
+    client: PyTezosClient = pytezos.using(
+        shell=bridge.l1_rpc_url, key=wallet.l1_private_key
+    )
+    return client
+
+
+@pytest.fixture
+def native_asset_helper(tezos_client: PyTezosClient) -> ContractHelper:
+    return ContractHelper.from_address(
+        tezos_client, xtz_bridge_data.l1_ticket_helper_address
+    )
+
+
+@pytest.fixture
 def fa1_2_token() -> Token:
     return token_bridge_data_collection['FA1.2']
 
@@ -100,12 +131,17 @@ def fa2_token() -> Token:
 
 
 @pytest.fixture(params=[token for token in token_bridge_data_collection.values()])
-def token(request: SubRequest) -> Token:
+def token(request: SubRequest) -> Iterator[Token]:
     yield request.param
 
 
-@pytest.fixture(params=[asset for asset in (token_bridge_data_collection | {'xtz': xtz_bridge_data}).values()])
-def asset(request: SubRequest) -> Token | Native:
+@pytest.fixture(
+    params=[
+        asset
+        for asset in (token_bridge_data_collection | {'xtz': xtz_bridge_data}).values()
+    ]
+)
+def asset(request: SubRequest) -> Iterator[Token | Native]:
     yield request.param
 
 
@@ -142,7 +178,7 @@ def wallet() -> Wallet:
 
 
 @pytest.fixture(scope='session', autouse=True)
-def indexer() -> SyncClientSession:
+def indexer() -> Iterator[SyncClientSession]:
     transport = RequestsHTTPTransport(
         url='https://etherlink-bridge-indexer.dipdup.net/v1/graphql'
     )

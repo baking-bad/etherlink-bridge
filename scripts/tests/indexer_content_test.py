@@ -39,7 +39,7 @@ class TestIndexerContent:
                 tezos_ticket(where: {hash: {_eq: $ticket_hash}}) {
                     ticketer_address
                     token_id
-                    etherlink_tokens { id }
+                    etherlink_token { id }
                 }
             }
             '''
@@ -50,8 +50,8 @@ class TestIndexerContent:
         self,
         bridge: Bridge,
         indexer: SyncClientSession,
-        indexer_query: gql,
-    ):
+        indexer_query: DocumentNode,
+    ) -> None:
         test_level_count = 3
         test_level_count = 1  # fixme: remove
         index_level: dict[str, list[int]] = {}
@@ -87,35 +87,44 @@ class TestIndexerContent:
         self,
         indexer: SyncClientSession,
         asset: Native | Token,
-        indexer_query: gql,
-    ):
+        indexer_query: DocumentNode,
+    ) -> None:
         query_params = {'asset_id': asset.l1_asset_id}
 
-        response = indexer.execute(indexer_query, variable_values=query_params, operation_name='TezosToken')
+        response = indexer.execute(
+            indexer_query, variable_values=query_params, operation_name='TezosToken'
+        )
         assert response['tezos_token_aggregate']['aggregate']['count'] == 1
 
     def test_l2_asset_whitelisted(
         self,
         indexer: SyncClientSession,
         asset: Native | Token,
-        indexer_query: gql,
-    ):
+        indexer_query: DocumentNode,
+    ) -> None:
         query_params = {'token_address': asset.l2_token_address.lower()}
 
-        response = indexer.execute(indexer_query, variable_values=query_params, operation_name='EtherlinkToken')
+        response = indexer.execute(
+            indexer_query, variable_values=query_params, operation_name='EtherlinkToken'
+        )
         assert response['etherlink_token_aggregate']['aggregate']['count'] == 1
 
     def test_asset_ticket_whitelisted(
         self,
         indexer: SyncClientSession,
         asset: Native | Token,
-        indexer_query: gql,
-    ):
+        indexer_query: DocumentNode,
+    ) -> None:
         query_params = {'ticket_hash': str(asset.ticket_hash)}
 
-        response = indexer.execute(indexer_query, variable_values=query_params, operation_name='TokenTicket')
+        response = indexer.execute(
+            indexer_query, variable_values=query_params, operation_name='TokenTicket'
+        )
         assert len(response['tezos_ticket']) == 1
         indexer_ticket_data = response['tezos_ticket'][0]
         assert indexer_ticket_data['token_id'] == asset.l1_asset_id
         assert indexer_ticket_data['ticketer_address'] == asset.l1_ticketer_address
-        assert indexer_ticket_data['etherlink_tokens'][0]['id'] == asset.l2_token_address.lower()
+        assert (
+            indexer_ticket_data['etherlink_token']['id']
+            == asset.l2_token_address.lower()
+        )

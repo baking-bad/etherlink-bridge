@@ -70,8 +70,15 @@ class NetworkConfig:
     native: NativeConfig
     tokens: list[TokenConfig]
 
-    def default_token_config(self) -> TokenConfig:
-        return next(t for t in self.tokens if t.symbol == self.default_token)
+    def default_token_config(self) -> TokenConfig | None:
+        # None on a freshly bootstrapped network with no FA tokens whitelisted yet.
+        return next((t for t in self.tokens if t.symbol == self.default_token), None)
+
+
+def available_networks() -> list[str]:
+    """Names (toml stems) of the configs under ``networks/``."""
+
+    return sorted(p.stem for p in NETWORKS_DIR.glob('*.toml'))
 
 
 def load_network(name: str | None = None) -> NetworkConfig:
@@ -85,9 +92,11 @@ def load_network(name: str | None = None) -> NetworkConfig:
 
     return NetworkConfig(
         name=data['name'],
-        default_token=data['default_token'],
+        # default_token / tokens are absent on a network bootstrapped before its
+        # FA tokens are deployed.
+        default_token=data.get('default_token', ''),
         network=NetworkParams(**data['network']),
         accounts=Accounts(**data['accounts']),
         native=NativeConfig(**data['native']),
-        tokens=[TokenConfig(**token) for token in data['tokens']],
+        tokens=[TokenConfig(**token) for token in data.get('tokens', [])],
     )

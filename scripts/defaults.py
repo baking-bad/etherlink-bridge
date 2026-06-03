@@ -23,12 +23,14 @@ ETHERLINK_ROLLUP_NODE_URL = _network.network.rollup_rpc_url
 # Testing scenarios:
 PRINT_DEBUG_LOG = False
 
-# Default token + bridge setup:
-TEZOS_TOKEN_ADDRESS = _token.l1_token_address
-TEZOS_TOKEN_TYPE = _token.token_type
-TICKETER_ADDRESS = _token.l1_ticketer_address
-ERC20_PROXY_ADDRESS = to_checksum_address('0x' + _token.l2_token_address)
-TOKEN_BRIDGE_HELPER_ADDRESS = _token.l1_ticket_helper_address
+# Default token + bridge setup (empty until the network's FA tokens are deployed):
+TEZOS_TOKEN_ADDRESS = _token.l1_token_address if _token else ''
+TEZOS_TOKEN_TYPE = _token.token_type if _token else ''
+TICKETER_ADDRESS = _token.l1_ticketer_address if _token else ''
+ERC20_PROXY_ADDRESS = (
+    to_checksum_address('0x' + _token.l2_token_address) if _token else ''
+)
+TOKEN_BRIDGE_HELPER_ADDRESS = _token.l1_ticket_helper_address if _token else ''
 TICKET_ROUTER_TESTER_ADDRESS = _network.network.ticket_router_tester_address
 XTZ_TICKETER_ADDRESS = _network.native.l1_ticketer_address
 FAST_WITHDRAWAL_CONTRACT = _network.network.fast_withdrawal_contract

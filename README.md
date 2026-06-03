@@ -282,6 +282,10 @@ poetry run pytest -m integration
 poetry run pytest -m cementation
 ```
 
+## Bootstrapping a new network
+
+`poetry run bootstrap` deploys a fresh token set (Token + Ticketer + ERC20 proxy + Bridge Helper) for each `MAINNET_WHITELIST` token. It's interactive — pick a config from `networks/*.toml` (or *Custom*). Copy the printed contract addresses into that config's `[[tokens]]`.
+
 ## Linting
 To perform linting, execute the following commands:
 

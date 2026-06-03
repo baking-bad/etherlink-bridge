@@ -14,7 +14,6 @@ from scripts.bootstrap.cli import survey_table
 from scripts.bootstrap.const import KERNEL_ADDRESS
 from scripts.bootstrap.const import MAINNET_TZKT_API_URL
 from scripts.bootstrap.const import MAINNET_WHITELIST
-from scripts.bootstrap.const import NETWORK_DEFAULTS
 from scripts.bootstrap.dto import TicketerDTO
 from scripts.bootstrap.dto import TicketerParamsDTO
 from scripts.bootstrap.dto import TokenInfoDTO
@@ -23,6 +22,7 @@ from scripts.bootstrap.dto import UserInputDTO
 from scripts.etherlink import deploy_erc20
 from scripts.helpers.addressable import Addressable
 from scripts.helpers.contracts.tokens.token import TokenHelper
+from scripts.networks import NetworkConfig, available_networks, load_network
 from scripts.tezos import deploy_ticketer
 from scripts.tezos import deploy_token_bridge_helper
 from scripts.tezos import get_ticketer_params
@@ -270,7 +270,7 @@ class TokenBootstrap:
             )
 
         survey.printers.done(
-            f'Etherlink ERC20 Proxy Contract deployed for Token `{self._token_info.metadata.name}`: 0x{erc20_proxy_address}.',
+            f'Etherlink ERC20 Proxy Contract deployed for Token `{self._token_info.metadata.name}`: {erc20_proxy_address}.',
             re=True,
         )
         return erc20_proxy_address.lower()
@@ -316,9 +316,23 @@ class RollupBootstrap:
             token_bootstrap.run(index + 1)
 
 
+def _network_prefill(cfg: NetworkConfig) -> dict[str, Any]:
+    """Maps a network config onto the survey's prefill fields."""
+
+    return {
+        'name': cfg.name,
+        'l1_rpc_url': cfg.network.l1_rpc_url,
+        'smart_rollup_address': cfg.network.smart_rollup_address,
+        'l1_private_key': cfg.accounts.l1_private_key,
+        'l2_rpc_url': cfg.network.l2_rpc_url,
+        'l2_private_key': cfg.accounts.l2_private_key,
+        'l1_testrunner_account': cfg.accounts.l1_public_key_hash,
+    }
+
+
 class BootstrapSurvey:
-    def __init__(self, network_defaults: list[dict[str, Any]]):
-        self._network_defaults = network_defaults
+    def __init__(self) -> None:
+        self._networks = available_networks()
         self._defaults: dict[str, Any] = {}
         self._l1_rpc_url: str
 
@@ -337,13 +351,17 @@ class BootstrapSurvey:
         )
 
     def _get_network(self) -> None:
-        network_index = survey.routines.select(
-            'Choose which Tezos Network Smart Rollup for your Bridge is deployed to?\n',
-            options=[network['name'] for network in NETWORK_DEFAULTS],
+        custom = 'Custom (enter everything manually)'
+        index = survey.routines.select(
+            'Choose the bridge network config to bootstrap:\n',
+            options=[*self._networks, custom],
             index=0,
         )
 
-        self._defaults = self._network_defaults[network_index]
+        if index < len(self._networks):
+            self._defaults = _network_prefill(load_network(self._networks[index]))
+        else:
+            self._defaults = {'name': 'custom network'}
 
     def _get_l1_rpc_url(self) -> str:
         while True:
@@ -501,7 +519,7 @@ class BootstrapSurvey:
 @click.command()
 def rollout() -> None:
     notice_echo('This command will help you to deploy all contracts for a new rollup.')
-    bootstrap_survey = BootstrapSurvey(network_defaults=NETWORK_DEFAULTS)
+    bootstrap_survey = BootstrapSurvey()
     user_input = bootstrap_survey.perform()
 
     rollup_bootstrap_service = RollupBootstrapFactory.build(user_input)

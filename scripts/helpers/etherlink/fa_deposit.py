@@ -1,41 +1,14 @@
+import json
+from os.path import dirname, join
+
 from eth_account.signers.local import LocalAccount
 from web3 import Web3
 from web3.types import TxReceipt
 
-# TODO: 0xff..02 is the FA bridge precompile — the same contract that
-# FaWithdrawalPrecompileHelper (fa_withdrawal_precompile.py) wraps for
-# withdrawals. Consider consolidating this claim / QueuedDeposit logic into a
-# single FaBridgePrecompileHelper. Blocker: that helper uses the KernelMock build
-# ABI (no claim / QueuedDeposit), so merging means giving it the real FA-bridge
-# ABI. May not be trivial — can be done as a separate refactor.
-#
-# The FA bridge precompile (0xff..02) is kernel-implemented and has no Solidity
-# build artifact, so we use a minimal ABI: the `claim` function and the
-# `QueuedDeposit` event the kernel emits when an FA deposit is queued (new-kernel
-# DOS protection — FA deposits no longer auto-complete and must be claimed).
-_FA_BRIDGE_ABI = [
-    {
-        'type': 'function',
-        'name': 'claim',
-        'stateMutability': 'nonpayable',
-        'inputs': [{'name': 'nonce', 'type': 'uint256'}],
-        'outputs': [],
-    },
-    {
-        'type': 'event',
-        'name': 'QueuedDeposit',
-        'anonymous': False,
-        'inputs': [
-            {'name': 'ticketHash', 'type': 'uint256', 'indexed': True},
-            {'name': 'proxy', 'type': 'address', 'indexed': True},
-            {'name': 'nonce', 'type': 'uint256', 'indexed': False},
-            {'name': 'receiver', 'type': 'address', 'indexed': False},
-            {'name': 'amount', 'type': 'uint256', 'indexed': False},
-            {'name': 'inboxLevel', 'type': 'uint256', 'indexed': False},
-            {'name': 'inboxMsgId', 'type': 'uint256', 'indexed': False},
-        ],
-    },
-]
+# 0xff..02 FA bridge precompile (ABI shared at abi/fa_bridge.json).
+# TODO: merge with FaWithdrawalPrecompileHelper — both wrap this precompile.
+with open(join(dirname(__file__), 'abi', 'fa_bridge.json')) as _abi_file:
+    _FA_BRIDGE_ABI = json.load(_abi_file)['abi']
 
 
 class FaBridgeDepositClaimer:

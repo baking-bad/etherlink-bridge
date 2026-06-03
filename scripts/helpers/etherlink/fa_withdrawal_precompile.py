@@ -1,13 +1,12 @@
+from os.path import dirname, join
+
 from web3.types import TxReceipt
-from scripts.helpers.etherlink.contract import (
-    EvmContractHelper,
-    make_filename,
-)
+from scripts.helpers.etherlink.contract import EvmContractHelper
 
 
 class FaWithdrawalPrecompileHelper(EvmContractHelper):
-    # TODO: consider adding FaWithdrawalPrecompile ABI to the repo
-    filename = make_filename('KernelMock')
+    # FA bridge precompile (0xff..02); only the `withdraw` entrypoint is used.
+    filename = join(dirname(__file__), 'abi', 'fa_bridge.json')
 
     def withdraw(
         self,

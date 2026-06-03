@@ -265,7 +265,10 @@ The withdrawal **completion** step needs the rollup challenge (refutation) windo
 # Offline contract tests only (default — no network needed):
 poetry run pytest
 
-# Integration flow without the long wait (deposit + create withdrawal):
+# Fast iteration — single token, no long wait, verbose:
+poetry run pytest -m "integration and not cementation" -k "USDt or healthy" -v
+
+# Integration flow without the long wait (deposit + create withdrawal, all tokens):
 poetry run pytest -m "integration and not cementation"
 
 # Full flow including withdrawal completion — only on a network with a SHORT

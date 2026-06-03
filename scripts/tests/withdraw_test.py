@@ -109,7 +109,9 @@ class TestWithdraw:
 
         query_params = {'transaction_hash': transaction_hash}
         indexed_operations = []
-        for _ in range(20):
+        # The pending outbox_message can take a few min to index on shadownet;
+        # generous ceiling, the loop breaks as soon as it shows up.
+        for _ in range(100):
             response = indexer.execute(
                 bridge_withdrawal_query, variable_values=query_params
             )

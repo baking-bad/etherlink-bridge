@@ -1,4 +1,5 @@
 import json
+from collections.abc import Iterator
 from os.path import dirname, join
 
 from eth_account.signers.local import LocalAccount
@@ -12,7 +13,7 @@ with open(join(dirname(__file__), 'abi', 'fa_bridge.json')) as _abi_file:
 
 
 class FaBridgeDepositClaimer:
-    """Finds queued FA deposits and claims them on the FA bridge precompile."""
+    """Finds queued FA deposits by their `QueuedDeposit` nonce and claims them."""
 
     def __init__(self, web3: Web3, account: LocalAccount, precompile_address: str):
         self.web3 = web3
@@ -22,39 +23,55 @@ class FaBridgeDepositClaimer:
             abi=_FA_BRIDGE_ABI,
         )
 
-    def find_queued_nonces(
+    def _iter_nonces(
         self,
         ticket_hash: int,
         erc20_proxy: str,
         receiver: str,
-        block_window: int = 10_000,
         chunk: int = 100,
-    ) -> list[int]:
-        """Returns the nonces of `QueuedDeposit` events matching the given ticket,
-        proxy and receiver, scanning the last `block_window` L2 blocks in `chunk`-
-        sized windows (the node caps the getLogs block range)."""
+        max_blocks: int = 2_000,
+    ) -> Iterator[int]:
+        """Yields matching nonces newest-first, scanning the L2 head backward in
+        `chunk`-sized windows (the node caps the getLogs range). Lazy: the caller
+        stops it once satisfied, so the common lookup is a single getLogs call."""
 
-        receiver_address = Web3.to_checksum_address(receiver)
-        head = int(self.web3.eth.block_number)
-        floor = max(head - block_window, 0)
-        nonces: list[int] = []
-        hi = head
-        while hi > floor:
+        receiver = Web3.to_checksum_address(receiver)
+        proxy = Web3.to_checksum_address(erc20_proxy)
+        hi = int(self.web3.eth.block_number)
+        floor = max(hi - max_blocks, 0)
+        while hi >= floor:
             lo = max(hi - chunk + 1, floor)
             events = self.contract.events.QueuedDeposit().get_logs(  # type: ignore[attr-defined]
                 fromBlock=lo,
                 toBlock=hi,
-                argument_filters={
-                    'ticketHash': ticket_hash,
-                    'proxy': Web3.to_checksum_address(erc20_proxy),
-                },
+                argument_filters={'ticketHash': ticket_hash, 'proxy': proxy},
             )
-            for event in events:
+            # get_logs returns ascending; reverse for newest-first within the chunk.
+            for event in reversed(events):
                 args = event['args']
-                if Web3.to_checksum_address(args['receiver']) == receiver_address:
-                    nonces.append(int(args['nonce']))
+                if Web3.to_checksum_address(args['receiver']) == receiver:
+                    yield int(args['nonce'])
             hi = lo - 1
-        return nonces
+
+    def latest_queued_nonce(
+        self, ticket_hash: int, erc20_proxy: str, receiver: str
+    ) -> int:
+        """The newest nonce for the token/receiver, or -1 if none."""
+
+        return next(self._iter_nonces(ticket_hash, erc20_proxy, receiver), -1)
+
+    def queued_nonces_since(
+        self, ticket_hash: int, erc20_proxy: str, receiver: str, since_nonce: int
+    ) -> list[int]:
+        """Nonces greater than `since_nonce` (ascending); stops at the first one
+        <= it, since nonces are monotonic."""
+
+        fresh: list[int] = []
+        for nonce in self._iter_nonces(ticket_hash, erc20_proxy, receiver):
+            if nonce <= since_nonce:
+                break
+            fresh.append(nonce)
+        return sorted(fresh)
 
     def claim(self, nonce: int) -> TxReceipt:
         """Claims a single queued deposit by its nonce, finalising the L2 mint."""

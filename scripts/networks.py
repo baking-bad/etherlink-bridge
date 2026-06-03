@@ -22,9 +22,13 @@ class NetworkParams:
     rollup_rpc_url: str
     indexer_graphql_url: str
     smart_rollup_address: str
+    fast_withdrawal_contract: str
+    ticket_router_tester_address: str
     l2_kernel_address: str
     l2_withdraw_precompile_address: str
     l2_native_withdraw_precompile_address: str
+    tzkt_explorer_url: str
+    blockscout_explorer_url: str
 
 
 @dataclass
@@ -39,9 +43,11 @@ class Accounts:
 @dataclass
 class TokenConfig:
     symbol: str
+    token_type: str
+    l1_token_address: str
     l1_ticketer_address: str
-    l2_token_address: str
     l1_ticket_helper_address: str
+    l2_token_address: str
 
     def __post_init__(self) -> None:
         # Accept the L2 address in any form (checksummed / 0x / lowercase) and
@@ -58,10 +64,14 @@ class NativeConfig:
 @dataclass
 class NetworkConfig:
     name: str
+    default_token: str
     network: NetworkParams
     accounts: Accounts
     native: NativeConfig
     tokens: list[TokenConfig]
+
+    def default_token_config(self) -> TokenConfig:
+        return next(t for t in self.tokens if t.symbol == self.default_token)
 
 
 def load_network(name: str | None = None) -> NetworkConfig:
@@ -75,6 +85,7 @@ def load_network(name: str | None = None) -> NetworkConfig:
 
     return NetworkConfig(
         name=data['name'],
+        default_token=data['default_token'],
         network=NetworkParams(**data['network']),
         accounts=Accounts(**data['accounts']),
         native=NativeConfig(**data['native']),

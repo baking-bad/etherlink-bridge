@@ -1,5 +1,6 @@
 # Tezos shadownet (L1) <-> Etherlink (L2). Selected via the NETWORK env var.
 name = "shadownet-etherlink"
+default_token = "USDt"
 
 [network]
 l1_rpc_url = "https://rpc.tzkt.io/shadownet"
@@ -7,9 +8,13 @@ l2_rpc_url = "https://node.shadownet.etherlink.com"
 rollup_rpc_url = "https://shadownet-smart.tzkt.io/"
 indexer_graphql_url = "https://etherlink-bridge-shadownet.dipdup.net/v1/graphql"
 smart_rollup_address = "sr19fMYrr5C4qqvQqQrDSjtP31GcrWjodzvg"
+fast_withdrawal_contract = "KT1R3rjKandvSgnq8PBpoeVCyDKCyBV2aNL2"
+ticket_router_tester_address = ""  # TODO: deploy on shadownet, then set
 l2_kernel_address = "0x0000000000000000000000000000000000000000"
 l2_withdraw_precompile_address = "0xff00000000000000000000000000000000000002"
 l2_native_withdraw_precompile_address = "0xff00000000000000000000000000000000000001"
+tzkt_explorer_url = "https://shadownet.tzkt.io"
+blockscout_explorer_url = "https://shadownet.explorer.etherlink.com"
 
 [accounts]
 l1_private_key = "edsk4XG4QyAj19dr78NNGH6dpXBtTnkmMdAkM9w5tUTCHaUP1pJaD5"
@@ -24,18 +29,24 @@ l1_ticket_helper_address = "KT19aBsSWvWtvEkbiqReJnD8UzQMWcD8SHUD"
 
 [[tokens]]
 symbol = "tzBTC"
+token_type = "FA1.2"
+l1_token_address = "KT1U4STPScz56FXLig4rsDUJoxNAgkPbQoo7"
 l1_ticketer_address = "KT1XMMCQuJFd7KRxoPd8FZda39dATPay1nZA"
+l1_ticket_helper_address = "KT1XRX6BUXzbNZvqYFHvXXkQeUE9YxHw5XfJ"
 l2_token_address = "0x03E39FF2b379FBcd9284Ab457113D82fF4daBBF4"
-l1_ticket_helper_address = ""  # TODO: resolve for deposit/withdraw
 
 [[tokens]]
 symbol = "SIRS"
+token_type = "FA1.2"
+l1_token_address = "KT1PHHdG5XQtSuF4NZ4XKB6USii1pJzEWGHw"
 l1_ticketer_address = "KT1FLeK36Ghijo1eYstijYSj3wsDZFhk2vUo"
+l1_ticket_helper_address = "KT1Hzq7Vnc8mV3JQ2LRrBZDYT6H8Q9JRX2Sd"
 l2_token_address = "0x22565c35Ad439cbb8399bfC733c56C9F5A10E3a6"
-l1_ticket_helper_address = ""  # TODO: resolve for deposit/withdraw
 
 [[tokens]]
 symbol = "USDt"
+token_type = "FA2"
+l1_token_address = "KT1Wc7sXjpCkzYEDertxRc9snwgutFX8Mmqv"
 l1_ticketer_address = "KT1LdyznoJDzUqsgE8zpM242W1BBi42S8img"
-l2_token_address = "0x3dFF505A2A69e6e0b05fDB71b5F6DDd514fDaF47"
 l1_ticket_helper_address = "KT1Ejrkzge6GoqUc7rWRT6kQKD5FYueKyjvH"
+l2_token_address = "0x3dFF505A2A69e6e0b05fDB71b5F6DDd514fDaF47"

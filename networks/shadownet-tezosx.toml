@@ -1,0 +1,58 @@
+# Tezos shadownet (L1) <-> Tezos X EVM L2 (previewnet). Selected via NETWORK env var.
+# L1 is the same shadownet as shadownet-etherlink; only the L2 (rollup + EVM node) differs.
+name = "shadownet-tezosx"
+default_token = "USDt"
+
+[network]
+l1_rpc_url = "https://rpc.tzkt.io/shadownet"
+l2_rpc_url = "https://evm.previewnet.tezosx.nomadic-labs.com"
+rollup_rpc_url = "https://previewnet-smart.tzkt.io/"
+indexer_graphql_url = "https://tezosx-bridge-shadownet.dipdup.net/v1/graphql"
+smart_rollup_address = "sr1TCYofXUuJjmQvZ26XE4YAwXdfetQfZ6rR"
+fast_withdrawal_contract = "KT1AWvK8wyMKqkH3vjiyG48eTPUGADh8tWwe"
+ticket_router_tester_address = "KT1JwVXuYqHKPMunatrXGswW8WDYaLzaABiB"
+l2_kernel_address = "0x0000000000000000000000000000000000000000"
+l2_withdraw_precompile_address = "0xff00000000000000000000000000000000000002"
+l2_native_withdraw_precompile_address = "0xff00000000000000000000000000000000000001"
+tzkt_explorer_url = "https://shadownet.tzkt.io"
+blockscout_explorer_url = "https://blockscout.previewnet.tezosx.nomadic-labs.com"
+
+[accounts]
+# Same accounts as shadownet-etherlink (L1 is the same shadownet, so tz1ekkz is
+# funded). NOTE: the L2 EVM EOA must also be funded on the Tezos X EVM node for
+# contract origination / gas.
+l1_private_key = "edsk4XG4QyAj19dr78NNGH6dpXBtTnkmMdAkM9w5tUTCHaUP1pJaD5"
+l1_public_key_hash = "tz1ekkzEN2LB1cpf7dCaonKt6x9KVd9YVydc"
+l2_private_key = "f463e320ed1bd1cd833e29efc383878f34abe6b596e5d163f51bb8581de6f8b8"
+l2_public_key = "0x7e6f6CCFe485a087F0F819eaBfDBfb1a49b97677"
+l2_master_key = "f463e320ed1bd1cd833e29efc383878f34abe6b596e5d163f51bb8581de6f8b8"
+
+[native]
+l1_ticketer_address = "KT1FcWeWiEC7Ve5JMdZpKyvaFdsJv7n4GFzi"
+l1_ticket_helper_address = "KT1DUaf49SNALJRSB8R45TvEtgVi2xZnCh8B"
+
+# Tokens deployed via `bootstrap` (test copies of mainnet tzBTC/Sirius/USDt; on-chain
+# metadata carries TEST_ prefixes, but the symbol here is just our label).
+[[tokens]]
+symbol = "tzBTC"
+token_type = "FA1.2"
+l1_token_address = "KT1TBTqgZMY1XHFNV4tju3fm3GbztAkcB96h"
+l1_ticketer_address = "KT1PCQgXdEvSHUnkFfe3KAdvczqJHNiw4WWA"
+l1_ticket_helper_address = "KT1MakUNhfUEYJDfvGjPMLj9UJN2twfxbCnS"
+l2_token_address = "0x03E39FF2b379FBcd9284Ab457113D82fF4daBBF4"
+
+[[tokens]]
+symbol = "SIRS"
+token_type = "FA1.2"
+l1_token_address = "KT1LxVz3Xv7ST2ShWYX3Qyk9m1v6p48Mdr9N"
+l1_ticketer_address = "KT1WCou3hUPRdjzKsAsSMmPMqu9wjtzoAJrU"
+l1_ticket_helper_address = "KT1V8YdHgvWhd6r1anHs1qELWXwrk1b2fy3f"
+l2_token_address = "0x22565c35Ad439cbb8399bfC733c56C9F5A10E3a6"
+
+[[tokens]]
+symbol = "USDt"
+token_type = "FA2"
+l1_token_address = "KT1HqKmsV5Pse4ts67s1sruYTLvYMRfjGJQo"
+l1_ticketer_address = "KT1HtANsgibousngx6e1zQvE2WppNTuDZxV2"
+l1_ticket_helper_address = "KT1SEhympa2gx6c6VuJx6frHkwVNc1t4Qr3P"
+l2_token_address = "0x3dFF505A2A69e6e0b05fDB71b5F6DDd514fDaF47"

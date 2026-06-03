@@ -176,5 +176,4 @@ def asset(request: SubRequest, tezos_client: PyTezosClient) -> Token | Native:
 
 @pytest.fixture
 def ticket_router_tester_address() -> str:
-    # TODO: move to per-network config (only used by the deposit/withdraw tests).
-    return 'KT1KKHDuPeZ4KptN591TZ9UiCeKhHpKqaE3Y'
+    return _NETWORK.network.ticket_router_tester_address

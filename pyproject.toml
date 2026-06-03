@@ -67,6 +67,7 @@ markers = [
 [tool.poetry.scripts]
 deploy_token = "scripts.tezos:deploy_token"
 deploy_ticketer = "scripts.tezos:deploy_ticketer"
+deploy_router = "scripts.tezos:deploy_router"
 deploy_token_bridge_helper = "scripts.tezos:deploy_token_bridge_helper"
 get_ticketer_params = "scripts.tezos:get_ticketer_params"
 deploy_erc20 = "scripts.etherlink:deploy_erc20"

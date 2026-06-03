@@ -1,0 +1,41 @@
+# Tezos shadownet (L1) <-> Etherlink (L2). Selected via the NETWORK env var.
+name = "shadownet-etherlink"
+
+[network]
+l1_rpc_url = "https://rpc.tzkt.io/shadownet"
+l2_rpc_url = "https://node.shadownet.etherlink.com"
+rollup_rpc_url = "https://shadownet-smart.tzkt.io/"
+indexer_graphql_url = "https://etherlink-bridge-shadownet.dipdup.net/v1/graphql"
+smart_rollup_address = "sr19fMYrr5C4qqvQqQrDSjtP31GcrWjodzvg"
+l2_kernel_address = "0x0000000000000000000000000000000000000000"
+l2_withdraw_precompile_address = "0xff00000000000000000000000000000000000002"
+l2_native_withdraw_precompile_address = "0xff00000000000000000000000000000000000001"
+
+[accounts]
+l1_private_key = "edsk4XG4QyAj19dr78NNGH6dpXBtTnkmMdAkM9w5tUTCHaUP1pJaD5"
+l1_public_key_hash = "tz1ekkzEN2LB1cpf7dCaonKt6x9KVd9YVydc"
+l2_private_key = "f463e320ed1bd1cd833e29efc383878f34abe6b596e5d163f51bb8581de6f8b8"
+l2_public_key = "0x7e6f6CCFe485a087F0F819eaBfDBfb1a49b97677"
+l2_master_key = "f463e320ed1bd1cd833e29efc383878f34abe6b596e5d163f51bb8581de6f8b8"
+
+[native]
+l1_ticketer_address = "KT1JYZsawXmeArts18nn4uT79tUJc4AGTYgc"
+l1_ticket_helper_address = "KT19aBsSWvWtvEkbiqReJnD8UzQMWcD8SHUD"
+
+[[tokens]]
+symbol = "tzBTC"
+l1_ticketer_address = "KT1XMMCQuJFd7KRxoPd8FZda39dATPay1nZA"
+l2_token_address = "0x03E39FF2b379FBcd9284Ab457113D82fF4daBBF4"
+l1_ticket_helper_address = ""  # TODO: resolve for deposit/withdraw
+
+[[tokens]]
+symbol = "SIRS"
+l1_ticketer_address = "KT1FLeK36Ghijo1eYstijYSj3wsDZFhk2vUo"
+l2_token_address = "0x22565c35Ad439cbb8399bfC733c56C9F5A10E3a6"
+l1_ticket_helper_address = ""  # TODO: resolve for deposit/withdraw
+
+[[tokens]]
+symbol = "USDt"
+l1_ticketer_address = "KT1LdyznoJDzUqsgE8zpM242W1BBi42S8img"
+l2_token_address = "0x3dFF505A2A69e6e0b05fDB71b5F6DDd514fDaF47"
+l1_ticket_helper_address = "KT1Ejrkzge6GoqUc7rWRT6kQKD5FYueKyjvH"

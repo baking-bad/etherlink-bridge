@@ -19,8 +19,8 @@ class TestIndexerContent:
                 dipdup_index(where: {type: {_neq: "tezos.operations"}}) {
                     name
                     level
+                    status
                 }
-                dipdup_head_status { status }
             }
             
             query TezosToken($asset_id: String) {
@@ -60,9 +60,11 @@ class TestIndexerContent:
             count += 1
             assert count <= bridge.l1_time_between_blocks * test_level_count
             response = indexer.execute(indexer_query, operation_name='IndexerStatus')
-            assert response['dipdup_head_status'][0]['status'] == 'OK'
             collected_index_count = 0
             for index_data in response['dipdup_index']:
+                # DipDup 8.x: no `dipdup_head_status` view; health is per-index
+                # status (syncing/realtime are fine, failed/disabled are not).
+                assert index_data['status'] not in ('failed', 'disabled')
                 index_name = index_data['name']
                 if index_name not in index_level:
                     index_level[index_name] = []

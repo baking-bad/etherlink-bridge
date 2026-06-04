@@ -286,6 +286,15 @@ poetry run pytest -m cementation
 
 `poetry run bootstrap` deploys a fresh token set (Token + Ticketer + ERC20 proxy + Bridge Helper) for each `MAINNET_WHITELIST` token. It's interactive — pick a config from `networks/*.toml` (or *Custom*). Copy the printed contract addresses into that config's `[[tokens]]`.
 
+## Monitoring
+
+`monitor_deposits` / `monitor_withdrawals` print bridge stats from the active network's indexer (`NETWORK` env), broken down by token, status, and — for withdrawals — kind (regular vs the fast-withdrawal variants). They sample the most recent `--limit` operations (newest first) and report whether older ones were left out.
+
+```shell
+NETWORK=shadownet-tezosx poetry run monitor_deposits --limit 500
+NETWORK=shadownet-tezosx poetry run monitor_withdrawals --limit 500
+```
+
 ## Linting
 To perform linting, execute the following commands:
 

@@ -29,6 +29,14 @@ class TestIndexerContent:
                 }
             }
 
+            query TokenMetadata($asset_id: String) {
+                tezos_token(where: {id: {_eq: $asset_id}}) {
+                    symbol
+                    name
+                    decimals
+                }
+            }
+
             query EtherlinkToken($token_address: String) {
                 etherlink_token_aggregate(where: {id: {_eq: $token_address}}) {
                     aggregate { count }
@@ -110,6 +118,25 @@ class TestIndexerContent:
             indexer_query, variable_values=query_params, operation_name='EtherlinkToken'
         )
         assert response['etherlink_token_aggregate']['aggregate']['count'] == 1
+
+    def test_asset_has_metadata(
+        self,
+        indexer: SyncClientSession,
+        asset: Native | Token,
+        indexer_query: DocumentNode,
+    ) -> None:
+        query_params = {'asset_id': asset.l1_asset_id}
+
+        response = indexer.execute(
+            indexer_query, variable_values=query_params, operation_name='TokenMetadata'
+        )
+        tokens = response['tezos_token']
+        assert len(tokens) == 1
+        # Symbol/name come from the metadata service at registration; missing them
+        # means a metadata-datasource misconfig (e.g. wrong network for the L1).
+        assert tokens[0]['symbol']
+        assert tokens[0]['name']
+        assert tokens[0]['decimals'] is not None
 
     def test_asset_ticket_whitelisted(
         self,

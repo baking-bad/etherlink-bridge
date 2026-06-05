@@ -1,30 +1,39 @@
-# Default values for CLI and scenarios:
-SMART_ROLLUP_ADDRESS = 'sr18wx6ezkeRjt1SZSeZ2UQzQN3Uc3YLMLqg'
-XTZ_TICKET_HELPER = 'KT1VEjeQfDBSfpDH5WeBM5LukHPGM2htYEh3'
-TEZOS_PRIVATE_KEY = 'edsk4XG4QyAj19dr78NNGH6dpXBtTnkmMdAkM9w5tUTCHaUP1pJaD5'
-TEZOS_RPC_URL = 'https://rpc.tzkt.io/ghostnet/'
-ETHERLINK_RPC_URL = 'https://node.ghostnet.etherlink.com'
-ETHERLINK_PRIVATE_KEY = (
-    'f463e320ed1bd1cd833e29efc383878f34abe6b596e5d163f51bb8581de6f8b8'
-)
-KERNEL_ADDRESS = '0x0000000000000000000000000000000000000000'
-FA_WITHDRAWAL_PRECOMPILE = '0xff00000000000000000000000000000000000002'
-XTZ_WITHDRAWAL_PRECOMPILE = '0xff00000000000000000000000000000000000001'
-ETHERLINK_ROLLUP_NODE_URL = 'https://ghostnet-smart.tzkt.io/'
+# Flat CLI / notebook default constants, sourced from the active network config
+# (networks/{NETWORK}.toml). Interim shape — the target is consumers importing
+# the config object directly; see memory/cli-config-object-refactor.md.
+from eth_utils import to_checksum_address  # type: ignore[attr-defined]
 
+from scripts.networks import load_network
 
-# Default values for testing scenarios:
+_network = load_network()
+_token = _network.default_token_config()
+
+# Network / accounts:
+SMART_ROLLUP_ADDRESS = _network.network.smart_rollup_address
+XTZ_TICKET_HELPER = _network.native.l1_ticket_helper_address
+TEZOS_PRIVATE_KEY = _network.accounts.l1_private_key
+TEZOS_RPC_URL = _network.network.l1_rpc_url
+ETHERLINK_RPC_URL = _network.network.l2_rpc_url
+ETHERLINK_PRIVATE_KEY = _network.accounts.l2_private_key
+KERNEL_ADDRESS = _network.network.l2_kernel_address
+FA_WITHDRAWAL_PRECOMPILE = _network.network.l2_withdraw_precompile_address
+XTZ_WITHDRAWAL_PRECOMPILE = _network.network.l2_native_withdraw_precompile_address
+ETHERLINK_ROLLUP_NODE_URL = _network.network.rollup_rpc_url
+
+# Testing scenarios:
 PRINT_DEBUG_LOG = False
 
-# Bridge setup:
-TEZOS_TOKEN_ADDRESS = 'KT1V2ak1MfNd3w4oyKD64ehYU7K4CrpUcDGR'
-TEZOS_TOKEN_TYPE = 'FA2'
-TICKETER_ADDRESS = 'KT1S6Nf9MnafAgSUWLKcsySPNFLUxxqSkQCw'
-ERC20_PROXY_ADDRESS = '0xf68997eCC03751cb99B5B36712B213f11342452b'
-TOKEN_BRIDGE_HELPER_ADDRESS = 'KT1JLZe4qTa76y6Us2aDoRNUgZyssSDUr6F5'
-TICKET_ROUTER_TESTER_ADDRESS = 'KT1KKHDuPeZ4KptN591TZ9UiCeKhHpKqaE3Y'
-XTZ_TICKETER_ADDRESS = 'KT1Bp9YUvUBJgXxf5UrYTM2CGRUPixURqx4m'
-FAST_WITHDRAWAL_CONTRACT = 'KT1P2oxosjbWD3LfH3hsz7DE6Bjjimr51Dkm'
-INDEXER_GRAPHQL_URL = "https://etherlink-bridge-ghostnet.dipdup.net/v1/graphql"
-BLOCKSCOUT_EXPLORER_URL = 'https://testnet.explorer.etherlink.com'
-TZKT_EXPLORER_URL = 'https://ghostnet.tzkt.io'
+# Default token + bridge setup (empty until the network's FA tokens are deployed):
+TEZOS_TOKEN_ADDRESS = _token.l1_token_address if _token else ''
+TEZOS_TOKEN_TYPE = _token.token_type if _token else ''
+TICKETER_ADDRESS = _token.l1_ticketer_address if _token else ''
+ERC20_PROXY_ADDRESS = (
+    to_checksum_address('0x' + _token.l2_token_address) if _token else ''
+)
+TOKEN_BRIDGE_HELPER_ADDRESS = _token.l1_ticket_helper_address if _token else ''
+TICKET_ROUTER_TESTER_ADDRESS = _network.network.ticket_router_tester_address
+XTZ_TICKETER_ADDRESS = _network.native.l1_ticketer_address
+FAST_WITHDRAWAL_CONTRACT = _network.network.fast_withdrawal_contract
+INDEXER_GRAPHQL_URL = _network.network.indexer_graphql_url
+BLOCKSCOUT_EXPLORER_URL = _network.network.blockscout_explorer_url
+TZKT_EXPLORER_URL = _network.network.tzkt_explorer_url

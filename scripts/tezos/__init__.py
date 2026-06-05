@@ -2,6 +2,7 @@ from scripts.tezos.build_contracts import build_contracts
 from scripts.tezos.build_contracts import build_fast_withdrawal
 from scripts.tezos.deploy_token import deploy_token
 from scripts.tezos.deploy_ticketer import deploy_ticketer
+from scripts.tezos.deploy_router import deploy_router
 from scripts.tezos.deploy_token_bridge_helper import deploy_token_bridge_helper
 from scripts.tezos.deposit import deposit
 from scripts.tezos.execute_outbox_message import execute_outbox_message
@@ -17,6 +18,7 @@ __all__ = [
     'build_fast_withdrawal',
     'deploy_token',
     'deploy_ticketer',
+    'deploy_router',
     'deploy_token_bridge_helper',
     'deposit',
     'execute_outbox_message',

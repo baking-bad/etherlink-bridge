@@ -16,6 +16,8 @@ click = "^8.1.7"
 eth-abi = "^5.1.0"
 web3 = "^6.20.0"
 survey = "^5.3.0"
+tabulate = "^0.9.0"
+gql = "^3.5.0"
 testcontainers = "^3.7.1"
 
 [tool.poetry.group.dev.dependencies]
@@ -25,7 +27,6 @@ pytest = "^8.0.0"
 black = "^24.2.0"
 types-requests = "^2.31.0.20240125"
 ruff = "^0.2.1"
-gql = "^3.5.0"
 pydantic = "^2.6.1"
 requests-toolbelt = "^1.0.0"
 
@@ -37,12 +38,37 @@ build-backend = "poetry.core.masonry.api"
 strict = true
 disallow_any_generics = false
 
+[[tool.mypy.overrides]]
+# These third-party libs ship no type stubs / py.typed marker.
+module = ["survey.*", "tabulate"]
+ignore_missing_imports = true
+
 [tool.black]
 skip-string-normalization = true
+
+[tool.ruff.lint.per-file-ignores]
+# This scenario module is a re-export hub for the notebooks, which do
+# `from docs.scenarios.setup import *`; its imports are intentional, not unused.
+"docs/scenarios/setup.py" = ["F401"]
+
+[tool.pytest.ini_options]
+# By default run only offline/sandbox tests (tezos/tests). The integration
+# tests under scripts/tests/ hit a live network + indexer and sign real
+# operations — opt in with `pytest -m integration`.
+addopts = "-m 'not integration'"
+# Only scan the actual test dirs — keeps pytest out of scripts/etherlink, whose
+# `test_contracts` click command would otherwise trigger a collection warning.
+testpaths = ["tezos/tests", "scripts/tests"]
+markers = [
+    "integration: hits a live network/indexer and signs real ops; deselected by default",
+    "cementation: integration test that also waits for the rollup challenge/refutation window to elapse (long on shadownet)",
+    "critical: abort the whole run if this test fails",
+]
 
 [tool.poetry.scripts]
 deploy_token = "scripts.tezos:deploy_token"
 deploy_ticketer = "scripts.tezos:deploy_ticketer"
+deploy_router = "scripts.tezos:deploy_router"
 deploy_token_bridge_helper = "scripts.tezos:deploy_token_bridge_helper"
 get_ticketer_params = "scripts.tezos:get_ticketer_params"
 deploy_erc20 = "scripts.etherlink:deploy_erc20"
@@ -63,3 +89,5 @@ xtz_deposit = "scripts.tezos:xtz_deposit"
 xtz_withdraw = "scripts.etherlink:xtz_withdraw"
 deploy_fast_withdrawal = "scripts.tezos:deploy_fast_withdrawal"
 xtz_fast_withdraw = "scripts.etherlink:xtz_fast_withdraw"
+monitor_deposits = "scripts.monitoring.deposits:monitor_deposits"
+monitor_withdrawals = "scripts.monitoring.withdrawals:monitor_withdrawals"

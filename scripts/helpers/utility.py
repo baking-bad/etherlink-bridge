@@ -137,4 +137,5 @@ def decode_event(event: dict) -> dict:
     michelson_type = MichelsonType.match(event['type'])
     value = michelson_type.from_micheline_value(event['payload'])
 
-    return value.to_python_object()
+    result: dict = value.to_python_object()
+    return result

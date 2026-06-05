@@ -1,0 +1,39 @@
+{
+  "abi": [
+    {
+      "type": "function",
+      "name": "withdraw",
+      "stateMutability": "nonpayable",
+      "inputs": [
+        { "name": "ticketOwner", "type": "address" },
+        { "name": "routingInfo", "type": "bytes" },
+        { "name": "amount", "type": "uint256" },
+        { "name": "ticketer", "type": "bytes22" },
+        { "name": "content", "type": "bytes" }
+      ],
+      "outputs": []
+    },
+    {
+      "type": "function",
+      "name": "claim",
+      "stateMutability": "nonpayable",
+      "inputs": [{ "name": "nonce", "type": "uint256" }],
+      "outputs": []
+    },
+    {
+      "type": "event",
+      "name": "QueuedDeposit",
+      "anonymous": false,
+      "inputs": [
+        { "name": "ticketHash", "type": "uint256", "indexed": true },
+        { "name": "proxy", "type": "address", "indexed": true },
+        { "name": "nonce", "type": "uint256", "indexed": false },
+        { "name": "receiver", "type": "address", "indexed": false },
+        { "name": "amount", "type": "uint256", "indexed": false },
+        { "name": "inboxLevel", "type": "uint256", "indexed": false },
+        { "name": "inboxMsgId", "type": "uint256", "indexed": false }
+      ]
+    }
+  ],
+  "bytecode": { "object": "0x" }
+}

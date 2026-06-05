@@ -17,15 +17,7 @@ class XtzWithdrawalPrecompileHelper(EvmContractHelper):
     ) -> TxReceipt:
         """Calls XTZ withdrawal precompile which allows to withdraw XTZ from L2 to L1"""
 
+        transaction = self._tx_params()
+        transaction['value'] = self.web3.to_wei(wei_amount, 'wei')
         call = self.contract.functions.withdraw_base58(receiver)
-        transaction = call.build_transaction(
-            {
-                'from': self.account.address,
-                'value': self.web3.to_wei(wei_amount, 'wei'),
-                'nonce': self.web3.eth.get_transaction_count(self.account.address),
-                'chainId': self.web3.eth.chain_id,
-            }
-        )
-
-        txn_receipt = self.legacy_send(transaction)
-        return txn_receipt
+        return self.legacy_send(call.build_transaction(transaction))

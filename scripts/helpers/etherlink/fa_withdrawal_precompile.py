@@ -2,7 +2,7 @@ from collections.abc import Iterator
 from os.path import dirname, join
 
 from web3 import Web3
-from web3.types import TxParams, TxReceipt
+from web3.types import TxReceipt
 
 from scripts.helpers.etherlink.contract import EvmContractHelper
 
@@ -58,13 +58,6 @@ class FaWithdrawalPrecompileHelper(EvmContractHelper):
                 break
             fresh.append(nonce)
         return sorted(fresh)
-
-    def _tx_params(self) -> TxParams:
-        return {
-            'from': self.account.address,
-            'nonce': self.web3.eth.get_transaction_count(self.account.address),
-            'chainId': self.web3.eth.chain_id,
-        }
 
     def _iter_nonces(
         self,

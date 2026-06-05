@@ -95,6 +95,15 @@ class EvmContractHelper:
         contract = web3.eth.contract(address=address, abi=contract_type.abi)  # type: ignore
         return cls(contract=contract, web3=web3, account=account, address=address)
 
+    def _tx_params(self) -> TxParams:
+        """Common transaction params (sender, nonce, chain id) for this account."""
+
+        return {
+            'from': self.account.address,
+            'nonce': self.web3.eth.get_transaction_count(self.account.address),
+            'chainId': self.web3.eth.chain_id,
+        }
+
     def legacy_send(self, params: TxParams) -> TxReceipt:
         signed_txn = self.web3.eth.account.sign_transaction(params, self.account.key)
         txn_hash = self.web3.eth.send_raw_transaction(signed_txn.rawTransaction)

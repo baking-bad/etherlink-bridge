@@ -57,8 +57,10 @@ def withdrawal_token(operation: dict) -> str:
 
 
 def withdrawal_kind(operation: dict) -> str:
+    # None -> "regular" is already in KIND_LABELS; the fallback only surfaces an
+    # unmapped (future) non-null kind as its raw string.
     kind = operation.get('kind')
-    return KIND_LABELS.get(kind, kind or 'regular')
+    return KIND_LABELS.get(kind, kind or 'unknown')
 
 
 @click.command()

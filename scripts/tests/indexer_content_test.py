@@ -1,13 +1,17 @@
-from time import sleep
-
 import pytest
 from gql import gql
 from gql.client import SyncClientSession
 from graphql import DocumentNode
 
+from scripts.helpers.utility import get_etherlink_web3
 from scripts.tests.dto import Bridge
 from scripts.tests.dto import Native
 from scripts.tests.dto import Token
+
+# An index may sit a little behind the chain head and still be healthy; only a
+# large gap means the indexer can't keep up and fresh ops won't be indexed.
+# Tune up if it false-positives on a healthy-but-busy indexer.
+INDEXER_MAX_LAG_BLOCKS = 1000
 
 
 class TestIndexerContent:
@@ -16,10 +20,14 @@ class TestIndexerContent:
         return gql(
             '''
             query IndexerStatus {
-                dipdup_index(where: {type: {_neq: "tezos.operations"}}) {
+                dipdup_head(where: {name: {_eq: "tzkt"}}) {
+                    level
+                }
+                dipdup_index {
                     name
                     level
                     status
+                    type
                 }
             }
             
@@ -60,38 +68,28 @@ class TestIndexerContent:
         indexer: SyncClientSession,
         indexer_query: DocumentNode,
     ) -> None:
-        test_level_count = 3
-        test_level_count = 1  # fixme: remove
-        index_level: dict[str, list[int]] = {}
-        count = 0
-        while True:
-            count += 1
-            assert count <= bridge.l1_time_between_blocks * test_level_count
-            response = indexer.execute(indexer_query, operation_name='IndexerStatus')
-            collected_index_count = 0
-            for index_data in response['dipdup_index']:
-                # DipDup 8.x: no `dipdup_head_status` view; health is per-index
-                # status (syncing/realtime are fine, failed/disabled are not).
-                assert index_data['status'] not in ('failed', 'disabled')
-                index_name = index_data['name']
-                if index_name not in index_level:
-                    index_level[index_name] = []
+        # An index reports the block level it has processed; compare it to the
+        # chain head (L1 for `tezos.*` indexes, L2 for `etherlink_*`). A `status`
+        # check alone is not enough — DipDup keeps EVM indexes at `syncing` even
+        # when they are caught up, so the real health signal is the gap to head.
+        l2_head = get_etherlink_web3(bridge.l2_rpc_url).eth.block_number
 
-                if len(index_level[index_name]) == test_level_count:
-                    collected_index_count += 1
-                    continue
-                level = index_data['level']
-                assert isinstance(level, int)
-                if level not in index_level[index_name]:
-                    index_level[index_name].append(level)
-            if collected_index_count == len(response['dipdup_index']):
-                break
+        response = indexer.execute(indexer_query, operation_name='IndexerStatus')
+        l1_head = response['dipdup_head'][0]['level']
 
-            sleep(1)
+        for index in response['dipdup_index']:
+            name, status = index['name'], index['status']
+            assert status not in ('failed', 'disabled'), f"Index '{name}': {status}"
 
-        for level_list in index_level.values():
-            assert len(level_list) == test_level_count
-            assert level_list == sorted(level_list)
+            head = l1_head if index['type'].startswith('tezos') else l2_head
+            lag = head - index['level']
+            assert lag < INDEXER_MAX_LAG_BLOCKS, (
+                f"Index '{name}' is {lag} blocks behind the chain head "
+                f"(limit {INDEXER_MAX_LAG_BLOCKS}). Either the indexer is genuinely "
+                f"lagging — no point testing fresh operations against it — or the "
+                f"limit is too tight: raise INDEXER_MAX_LAG_BLOCKS if this is a false "
+                f"positive."
+            )
 
     def test_l1_asset_whitelisted(
         self,

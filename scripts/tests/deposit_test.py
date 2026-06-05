@@ -14,7 +14,7 @@ from scripts.helpers.contracts.contract import ContractHelper
 from scripts.helpers.contracts.token_bridge_helper import TokenBridgeHelper
 from scripts.helpers.contracts.ticket_router_tester import TicketRouterTester
 from scripts.helpers.contracts.ticketer import Ticketer
-from scripts.helpers.etherlink.fa_deposit import FaBridgeDepositClaimer
+from scripts.helpers.etherlink import FaWithdrawalPrecompileHelper
 from scripts.tests.dto import Bridge
 from scripts.tests.dto import Native
 from scripts.tests.dto import Token
@@ -23,7 +23,7 @@ from scripts.tezos import deposit
 
 
 def _claim_fa_deposit(
-    claimer: FaBridgeDepositClaimer,
+    claimer: FaWithdrawalPrecompileHelper,
     token: Token,
     receiver: str,
     baseline_nonce: int,
@@ -47,10 +47,12 @@ def _claim_fa_deposit(
 
 class TestDeposit:
     @pytest.fixture
-    def fa_claimer(self, bridge: Bridge, wallet: Wallet) -> FaBridgeDepositClaimer:
+    def fa_claimer(
+        self, bridge: Bridge, wallet: Wallet
+    ) -> FaWithdrawalPrecompileHelper:
         web3 = Web3(Web3.HTTPProvider(bridge.l2_rpc_url))
         account = web3.eth.account.from_key(wallet.l2_private_key)
-        return FaBridgeDepositClaimer(
+        return FaWithdrawalPrecompileHelper.from_address(
             web3, account, bridge.l2_withdraw_precompile_address
         )
 
@@ -126,7 +128,7 @@ class TestDeposit:
         bridge: Bridge,
         wallet: Wallet,
         token: Token,
-        fa_claimer: FaBridgeDepositClaimer,
+        fa_claimer: FaWithdrawalPrecompileHelper,
         indexer: SyncClientSession,
         bridge_deposit_query: DocumentNode,
     ) -> None:
@@ -192,7 +194,7 @@ class TestDeposit:
         bridge: Bridge,
         wallet: Wallet,
         token: Token,
-        fa_claimer: FaBridgeDepositClaimer,
+        fa_claimer: FaWithdrawalPrecompileHelper,
         indexer: SyncClientSession,
         bridge_deposit_query: DocumentNode,
         batch_operations_matching_order_query: DocumentNode,
@@ -297,7 +299,7 @@ class TestDeposit:
         bridge: Bridge,
         wallet: Wallet,
         token: Token,
-        fa_claimer: FaBridgeDepositClaimer,
+        fa_claimer: FaWithdrawalPrecompileHelper,
         ticket_router_tester_address: str,
         indexer: SyncClientSession,
         bridge_operation_query: DocumentNode,

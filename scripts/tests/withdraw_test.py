@@ -109,8 +109,9 @@ class TestWithdraw:
 
         query_params = {'transaction_hash': transaction_hash}
         indexed_operations = []
-        # The pending outbox_message can take a few min to index on shadownet;
-        # generous ceiling, the loop breaks as soon as it shows up.
+        # The pending outbox_message comes from the rollup node and lags the L2
+        # withdraw by minutes; the loop breaks as soon as it shows up. NOTE: 100*5s
+        # (~500s) SEEMS to not always be enough (seen ~6-8 min) — consider increasing.
         for _ in range(100):
             response = indexer.execute(
                 bridge_withdrawal_query, variable_values=query_params
@@ -121,7 +122,7 @@ class TestWithdraw:
                 and indexed_operations[0]['outbox_message'] is not None
             ):
                 break
-            sleep(3)
+            sleep(5)
 
         assert indexed_operations == [
             {

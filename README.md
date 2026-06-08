@@ -52,10 +52,10 @@ You can run the tool directly or build a Docker container that runs it.
 
 ### Local installation
 
-1. Install [Poetry](https://python-poetry.org/) if it is not already installed by running this command:
+1. Install [uv](https://docs.astral.sh/uv/) if it is not already installed by running this command:
 
    ```shell
-   curl -sSL https://install.python-poetry.org | python3 -
+   curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
 2. Clone this repository and go into its directory.
@@ -63,12 +63,12 @@ You can run the tool directly or build a Docker container that runs it.
 3. Install the tool's dependencies by running this command:
 
    ```shell
-   poetry install
+   uv sync
    ```
 
 4. Optional: Rebuild and test the contracts locally as described in [compilation and running tests](#compilation-and-running-tests).
 
-Then you can run commands by running `poetry run` followed by the command name, such as `poetry run bridge_token`.
+Then you can run commands by running `uv run` followed by the command name, such as `uv run bridge_token`.
 
 ### Docker installation
 
@@ -91,7 +91,7 @@ The tool also has separate commands for deploying the contracts individually if 
 Here is an example of the command to deploy the bridging contracts for an FA1.2 token:
 
 ```shell
-poetry run bridge_token \
+uv run bridge_token \
     --token-address KT1SekNYSaT3sWp55nhmratovWN4Mvfc6cfQ \
     --token-type FA1.2 \
     --token-id=0 \
@@ -108,7 +108,7 @@ poetry run bridge_token \
 Here is an example of the command to deploy the bridging contracts for an FA2 token:
 
 ```shell
-poetry run bridge_token \
+uv run bridge_token \
     --token-address KT19P1nbGzGnumMfRHcLNuyQUdcuwjpBfsCU \
     --token-type FA2 \
     --token-id=0 \
@@ -144,7 +144,7 @@ Save this information for use in depositing and withdrawing tokens.
 After you have set up bridging for a token, you can bridge tokens from Tezos to Etherlink with the `deposit` command, as in this example:
 
 ```shell
-poetry run deposit \
+uv run deposit \
     --token-bridge-helper-address KT1KiiUkGKFqNAK2BoAGi2conhGoGwiXcMTR \
     --amount 77 \
     --tezos-private-key ${TEZOS_WALLET_PRIVATE_KEY} \
@@ -172,7 +172,7 @@ You can see the bridged tokens by looking up the ERC-20 proxy contract or your E
 After you bridge tokens to Etherlink, you can withdraw them back to Tezos with the `withdraw` command, as in this example:
 
 ```shell
-poetry run withdraw \
+uv run withdraw \
     --erc20-proxy-address 0x8AaBCd16bA3346649709e4Ff93E5c6Df18D8c2Ed \
     --amount 1 \
     --tezos-side-router-address KT199szFcgpAc46ZwsDykNBCa2t6u32xUyY7 \
@@ -222,7 +222,7 @@ fd81a96f01cc42ef1c9a5399364968d0e07e9e90 etherlink/lib/openzeppelin-contracts (v
 #### 1. Tezos side:
 To compile Tezos-side contracts, the LIGO compiler must be installed. The most convenient method is to use the Docker version of the LIGO compiler. Compilation of all contracts using the dockerized LIGO compiler can be initiated with the following command:
 ```shell
-poetry run build_tezos_contracts
+uv run build_tezos_contracts
 ```
 
 > [!NOTE]
@@ -231,7 +231,7 @@ poetry run build_tezos_contracts
 #### 2. Etherlink side:
 To compile contracts on the Etherlink side, Foundry must be installed. To initiate the compilation, navigate to the [etherlink](etherlink/) directory and run `forge build`, or execute the following script from the root directory:
 ```shell
-poetry run build_etherlink_contracts
+uv run build_etherlink_contracts
 ```
 
 > [!NOTE]
@@ -239,23 +239,23 @@ poetry run build_etherlink_contracts
 
 ### Tests
 #### 1. Tezos side:
-The testing stack for Tezos contracts is based on Python and requires [poetry](https://python-poetry.org/), [pytezos](https://pytezos.org/), and [pytest](https://docs.pytest.org/en/7.4.x/) to be installed.
+The testing stack for Tezos contracts is based on Python and requires [uv](https://docs.astral.sh/uv/), [pytezos](https://pytezos.org/), and [pytest](https://docs.pytest.org/en/7.4.x/) to be installed.
 
 To run tests for the Tezos contracts, execute:
 ```shell
-poetry run pytest tezos/tests
+uv run pytest tezos/tests
 ```
 
 #### 2. Etherlink side:
 The Etherlink contract tests use the [Foundry](https://book.getfoundry.sh/getting-started/installation) stack and are implemented in Solidity. To run these tests, navigate to the [etherlink](etherlink/) directory and run `forge test`, or execute the following script from the root directory:
 ```shell
-poetry run etherlink_tests
+uv run etherlink_tests
 ```
 
 #### 3. Integration tests (indexer):
 The tests under [`scripts/tests`](scripts/tests/) are **integration** tests: they run a full deposit / withdrawal flow against a **live** Tezos + Etherlink network and a running bridge **indexer**, signing real on-chain operations with the funded account configured in [`scripts/tests/conftest.py`](scripts/tests/conftest.py).
 
-Because they need live infrastructure (and cost testnet funds), they are gated behind the `integration` marker and **deselected by default** — the plain `poetry run pytest` above runs only the offline contract tests.
+Because they need live infrastructure (and cost testnet funds), they are gated behind the `integration` marker and **deselected by default** — the plain `uv run pytest` above runs only the offline contract tests.
 
 These tests are **stateful and ordered** (see `function_order` in `conftest.py`): they run as a chain — indexer health check → asset whitelist checks → deposit → create withdrawal → finish withdrawal. Run them **together**, not individually; e.g. the finish step looks up a pending withdrawal that an earlier step created. The health check is marked `critical`: if it fails, the run aborts immediately.
 
@@ -263,45 +263,45 @@ The withdrawal **completion** step needs the rollup challenge (refutation) windo
 
 ```shell
 # Offline contract tests only (default — no network needed):
-poetry run pytest
+uv run pytest
 
 # Fast iteration — single token, no long wait, verbose:
-poetry run pytest -m "integration and not cementation" -k "USDt or healthy" -v
+uv run pytest -m "integration and not cementation" -k "USDt or healthy" -v
 
 # Integration flow without the long wait (deposit + create withdrawal, all tokens):
-poetry run pytest -m "integration and not cementation"
+uv run pytest -m "integration and not cementation"
 
 # Full flow including withdrawal completion — only on a network with a SHORT
 # challenge window, where cementation happens quickly:
-poetry run pytest -m integration
+uv run pytest -m integration
 
 # On shadownet (~2-week window) the completion can't finish in one run.
 # First run the integration flow above to CREATE the withdrawal, wait for the
 # window to pass, then finalize it (it finds the now-cemented pending
 # withdrawal in the indexer and executes the outbox message):
-poetry run pytest -m cementation
+uv run pytest -m cementation
 ```
 
 ## Bootstrapping a new network
 
-`poetry run bootstrap` deploys a fresh token set (Token + Ticketer + ERC20 proxy + Bridge Helper) for each `MAINNET_WHITELIST` token. It's interactive — pick a config from `networks/*.toml` (or *Custom*). Copy the printed contract addresses into that config's `[[tokens]]`.
+`uv run bootstrap` deploys a fresh token set (Token + Ticketer + ERC20 proxy + Bridge Helper) for each `MAINNET_WHITELIST` token. It's interactive — pick a config from `networks/*.toml` (or *Custom*). Copy the printed contract addresses into that config's `[[tokens]]`.
 
 ## Monitoring
 
 `monitor_deposits` / `monitor_withdrawals` print bridge stats from the active network's indexer (`NETWORK` env), broken down by token, status, and — for withdrawals — kind (regular vs the fast-withdrawal variants). They sample the most recent `--limit` operations (newest first) and report whether older ones were left out.
 
 ```shell
-NETWORK=shadownet-tezosx poetry run monitor_deposits --limit 500
-NETWORK=shadownet-tezosx poetry run monitor_withdrawals --limit 500
+NETWORK=shadownet-tezosx uv run monitor_deposits --limit 500
+NETWORK=shadownet-tezosx uv run monitor_withdrawals --limit 500
 ```
 
 ## Linting
 To perform linting, execute the following commands:
 
 ```shell
-poetry run mypy .
-poetry run ruff check .
-poetry run black .
+uv run mypy .
+uv run ruff check .
+uv run black .
 ```
 
 ## Example commands

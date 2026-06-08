@@ -125,26 +125,26 @@ Therefore, it is **critical** to supply data that exactly matches what the Ether
 ## Compilation, Testing, and Deployment
 
 > [!NOTE]
-> See the [Setup instructions](../../../README.md#setup) to configure dependencies and enable Poetry-based commands.
+> See the [Setup instructions](../../../README.md#setup) to configure dependencies and enable uv-based commands.
 
 Once you have set up the environment:
 
 1. **Compile the Fast Withdrawal contract**:
    ```bash
-   poetry run build_fast_withdrawal
+   uv run build_fast_withdrawal
    ```
 2. **Run tests**:
    ```bash
-   poetry run pytest tezos/tests/test_fast_withdrawal.py
+   uv run pytest tezos/tests/test_fast_withdrawal.py
    ```
 3. **Deploy the contract**:
    - Via CLI script:
      ```bash
-     poetry run deploy_fast_withdrawal
+     uv run deploy_fast_withdrawal
      ```
-   - Or using the Jupyter notebook [scenario](../../../docs/scenarios/fast_withdrawals.ipynb) for a more guided approach:
+   - Or using the Jupyter notebook [scenario](../../../docs/scenarios/fast_withdrawals.ipynb) for a more guided approach (the `notebooks` extra brings the Jupyter stack):
      ```bash
-     poetry run jupyter notebook docs/scenarios/fast_withdrawals.ipynb
+     uv run --extra notebooks jupyter notebook docs/scenarios/fast_withdrawals.ipynb
      ```
 
 ## Additional Notes

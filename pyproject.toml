@@ -3,10 +3,9 @@ name = "etherlink-bridge"
 version = "1.0.0"
 description = "This repository showcases smart contracts for an FA tokens bridge between Tezos and Etherlink, aligned with the TZIP-029 standard."
 authors = [{ name = "Stepan Naumov", email = "ztepler@baking-bad.org" }]
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.11,<3.14"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",

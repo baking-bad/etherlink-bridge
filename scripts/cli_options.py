@@ -1,23 +1,35 @@
+from typing import Any, Callable, Optional, Sequence
+
 import click
-from typing import Optional
 from click.core import (
     Context,
     Option,
 )
-from scripts.defaults import (
-    SMART_ROLLUP_ADDRESS,
-    XTZ_TICKET_HELPER,
-    TEZOS_PRIVATE_KEY,
-    TEZOS_RPC_URL,
-    ETHERLINK_RPC_URL,
-    ETHERLINK_PRIVATE_KEY,
-    KERNEL_ADDRESS,
-    FA_WITHDRAWAL_PRECOMPILE,
-    XTZ_WITHDRAWAL_PRECOMPILE,
-    ETHERLINK_ROLLUP_NODE_URL,
-)
+
+# Network/account defaults come from the `bridge` group's per-network
+# default_map (scripts/cli.py), so the options below carry no baked-in default.
 
 # TODO: add validation to options? (reuse logic from bootstrap?)
+
+
+def command(
+    core: Callable[..., Any],
+    *,
+    name: str,
+    options: Sequence[Callable[..., Any]],
+) -> click.Command:
+    """Builds a Click command from a plain typed `core` function and a list of
+    option decorators. The thin wrapper forwards parsed options to `core`, so
+    callers can invoke the fully typed `core` directly."""
+
+    def wrapper(**kwargs: Any) -> Any:
+        return core(**kwargs)
+
+    wrapper.__doc__ = core.__doc__
+    cmd = click.command(name=name)(wrapper)
+    for option in options:
+        option(cmd)
+    return cmd
 
 
 skip_confirm = click.option(
@@ -36,21 +48,14 @@ silent = click.option(
 
 tezos_private_key = click.option(
     '--tezos-private-key',
-    default=TEZOS_PRIVATE_KEY,
     required=True,
-    prompt='Tezos private key',
-    envvar='TEZOS_PRIVATE_KEY',
     help='Private key that would be used to deploy contracts on the Tezos network.',
-    hide_input=True,
 )
 
 # TODO: consider renaming to `--tezos-rpc-node-url`
 tezos_rpc_url = click.option(
     '--tezos-rpc-url',
-    default=TEZOS_RPC_URL,
     help='Tezos RPC shell URL',
-    prompt='Tezos RPC shell URL',
-    envvar='TEZOS_RPC_URL',
     show_default=True,
 )
 
@@ -103,50 +108,35 @@ token_bridge_helper_address = click.option(
 
 smart_rollup_address = click.option(
     '--smart-rollup-address',
-    default=SMART_ROLLUP_ADDRESS,
     required=True,
-    prompt='Smart Rollup contract address',
-    envvar='SMART_ROLLUP_ADDRESS',
-    help='The address of the Smart Rollup contract.',
     show_default=True,
+    help='The address of the Smart Rollup contract.',
 )
 
 etherlink_private_key = click.option(
     '--etherlink-private-key',
-    default=ETHERLINK_PRIVATE_KEY,
-    prompt='Etherlink private key',
-    envvar='ETHERLINK_PRIVATE_KEY',
     help='Private key that would be used to deploy contract on the Etherlink network.',
-    hide_input=True,
 )
 
 # TODO: consider renaming to `--etherlink-rpc-node-url`
 etherlink_rpc_url = click.option(
     '--etherlink-rpc-url',
-    default=ETHERLINK_RPC_URL,
     required=True,
-    envvar='ETHERLINK_RPC_URL',
-    prompt='Etherlink RPC shell URL',
-    help='Etherlink RPC shell URL.',
     show_default=True,
+    help='Etherlink RPC shell URL.',
 )
 
 etherlink_rollup_node_url = click.option(
     '--etherlink-rollup-node-url',
-    default=ETHERLINK_ROLLUP_NODE_URL,
     required=True,
-    envvar='ETHERLINK_ROLLUP_NODE_URL',
-    prompt='Etherlink operator rollup node URL',
-    help='Etherlink operator rollup node URL.',
     show_default=True,
+    help='Etherlink operator rollup node URL.',
 )
 
 kernel_address = click.option(
     '--kernel-address',
-    default=KERNEL_ADDRESS,
-    envvar='KERNEL_ADDRESS',
-    help='The address of the Etherlink kernel which manages (mints and burns) bridged tokens.',
     show_default=True,
+    help='The address of the Etherlink kernel which manages (mints and burns) bridged tokens.',
 )
 
 ticketer_address = click.option(
@@ -177,22 +167,16 @@ ticket_content_bytes = click.option(
     help='The content of the ticket as micheline expression is in its forged form, **legacy optimized mode**. See also `get_ticket_params` command that helps with requesting and formatting this param for a given ticket address.',
 )
 
-# TODO: rename to fa_withdrawal_precompile:
 withdraw_precompile = click.option(
     '--withdraw-precompile',
-    default=FA_WITHDRAWAL_PRECOMPILE,
-    envvar='FA_WITHDRAWAL_PRECOMPILE',
-    help='The address of the FA Withdrawal Precompile contract.',
     show_default=True,
+    help='The address of the FA Withdrawal Precompile contract.',
 )
 
-# TODO: rename to xtz_withdrawal_precompile:
 xtz_withdraw_precompile = click.option(
     '--xtz-withdraw-precompile',
-    default=XTZ_WITHDRAWAL_PRECOMPILE,
-    envvar='XTZ_WITHDRAWAL_PRECOMPILE',
-    help='The address of the XTZ Withdrawal Precompile contract.',
     show_default=True,
+    help='The address of the XTZ Withdrawal Precompile contract.',
 )
 
 erc20_proxy_address = click.option(
@@ -249,8 +233,6 @@ receiver_address = click.option(
 
 xtz_ticket_helper = click.option(
     '--xtz-ticket-helper',
-    default=XTZ_TICKET_HELPER,
-    envvar='XTZ_TICKET_HELPER',
-    help='The address of the xtz ticket helper used in xtz bridge.',
     show_default=True,
+    help='The address of the xtz ticket helper used in xtz bridge.',
 )

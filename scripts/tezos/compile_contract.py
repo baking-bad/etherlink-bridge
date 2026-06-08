@@ -7,28 +7,6 @@ from scripts.helpers.formatting import accent, wrap
 from scripts.helpers.utility import get_build_dir
 
 
-@click.command()
-@click.option(
-    '--ligo-version',
-    default='1.3.0',
-    help='LIGO compiler version used to compile Tezos side contracts',
-    show_default=True,
-)
-@click.option(
-    '--contract-path',
-    help='Path to the contract file to compile.',
-    required=True,
-)
-@click.option(
-    '--module-name',
-    help='Optional name of the contract module to compile.',
-    default=None,
-)
-@click.option(
-    '--output-path',
-    help='Path to the output compiled `.tz` contract.',
-    default=None,
-)
 def compile_contract(
     ligo_version: str,
     contract_path: str,

@@ -71,22 +71,21 @@ def make_fast_withdrawal(
     return txn_receipt
 
 
-@click.command()
-@click.option(
+target_option = click.option(
     '--target',
     required=True,
     prompt='Target receiver address',
     help='The address of the recipient receiving the tokens on the Tezos side.',
 )
-@click.option(
+fast_withdrawal_contract_option = click.option(
     '--fast-withdrawal-contract',
     required=True,
-    prompt='Fast Withdrawal contract address on the Tezos side',
+    show_default=True,
     help='The address of the Fast Withdrawal contract that routes tickets from the Smart Rollup on the Tezos side',
 )
 # TODO: this is duplicated copy from xtz_withdraw.py, probably should be moved to a common place:
 # TODO: consider providing amount in mutez too?
-@click.option(
+amount_wei_option = click.option(
     '--amount',
     required=True,
     type=int,
@@ -94,22 +93,21 @@ def make_fast_withdrawal(
     prompt='Amount (wei)',
     help='The amount of xtz to withdraw in wei. Note that 1 xtz on Etherlink side is 10**18 wei. NOTE: it is impossible to withdraw values that have residuals less than 1 mutez (10**12 wei).',
 )
-@click.option(
+discounted_amount_option = click.option(
     '--discounted-amount',
     required=True,
     prompt='Discounted withdrawal amount (mutez)',
     help='The discounted amount of the Fast Withdrawal that the Service Provider on the Tezos side can accept. Measured in mutez (1 mutez = 10**12 wei), it is included in the Fast Withdrawal payload.',
 )
-@cli_options.xtz_withdraw_precompile
-@cli_options.etherlink_private_key
-@cli_options.etherlink_rpc_url
+
+
 # TODO: consider changing name to some verb
 def xtz_fast_withdraw(
     target: str,
     fast_withdrawal_contract: str,
     amount: int,
     discounted_amount: int,
-    withdraw_precompile: str,
+    xtz_withdraw_precompile: str,
     etherlink_private_key: str,
     etherlink_rpc_url: str,
 ) -> str:
@@ -133,7 +131,7 @@ def xtz_fast_withdraw(
     echo_variable('      * ', 'Discounted amt (mutez)', format_int(discounted_amount))
     echo_variable('      * ', 'Fee (mutez)', format_int(fee))
 
-    checksum_addr = Web3.to_checksum_address(withdraw_precompile)
+    checksum_addr = Web3.to_checksum_address(xtz_withdraw_precompile)
     precompile_contract = load_withdraw_precompile(checksum_addr, web3)
     receipt = make_fast_withdrawal(
         etherlink_account=account,
@@ -151,3 +149,18 @@ def xtz_fast_withdraw(
         + wrap(accent(tx_hash.hex()))
     )
     return tx_hash.hex()
+
+
+xtz_fast_withdraw_command = cli_options.command(
+    xtz_fast_withdraw,
+    name='xtz_fast_withdraw',
+    options=[
+        target_option,
+        fast_withdrawal_contract_option,
+        amount_wei_option,
+        discounted_amount_option,
+        cli_options.xtz_withdraw_precompile,
+        cli_options.etherlink_private_key,
+        cli_options.etherlink_rpc_url,
+    ],
+)

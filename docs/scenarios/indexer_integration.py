@@ -10,13 +10,7 @@ from pytezos.operation.group import OperationGroup
 from scripts.helpers.addressable import get_address
 from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal
 from scripts.etherlink import xtz_fast_withdraw
-from scripts.defaults import (
-    XTZ_WITHDRAWAL_PRECOMPILE,
-    ETHERLINK_RPC_URL,
-    SMART_ROLLUP_ADDRESS,
-    TEZOS_PRIVATE_KEY,
-    TEZOS_RPC_URL,
-)
+from scripts.networks import load_network
 from pytezos import MichelsonType  # type: ignore
 from scripts.helpers.contracts.fast_withdrawal import Withdrawal
 from scripts.helpers.formatting import accent, error, wrap
@@ -24,6 +18,8 @@ from scripts.helpers.ticket_content import TicketContent
 from scripts.helpers.timer import Timer
 from scripts.tezos.execute_outbox_message import execute_outbox_message
 from datetime import datetime
+
+_config = load_network()
 
 
 def random_pkh(client: PyTezosClient) -> str:
@@ -73,15 +69,15 @@ class IndexerTestEnvironment:
         full_amount_wei = full_amount * 10**12
         discounted_amount = int(full_amount * self.discount_rate)
 
-        tx_hash: str = xtz_fast_withdraw.callback(
+        tx_hash: str = xtz_fast_withdraw(
             target=self.withdrawer_pkh,
             fast_withdrawal_contract=self.fast_withdrawal.address,
             amount=full_amount_wei,
             discounted_amount=discounted_amount,
-            withdraw_precompile=XTZ_WITHDRAWAL_PRECOMPILE,
+            xtz_withdraw_precompile=_config.network.l2_native_withdraw_precompile_address,
             etherlink_private_key=self.l2_caller.key,
-            etherlink_rpc_url=ETHERLINK_RPC_URL,
-        )  # type: ignore
+            etherlink_rpc_url=_config.network.l2_rpc_url,
+        )
         return tx_hash.split('0x')[1]
 
     def make_payout_withdrawal(self, withdrawal: Withdrawal) -> OperationGroup:
@@ -94,15 +90,15 @@ class IndexerTestEnvironment:
             xtz_amount=xtz_amount,
         ).send()
 
-    def make_withdrawal_settlement(self, outbox_message: dict) -> OperationGroup:
-        opg: OperationGroup = execute_outbox_message.callback(
+    def make_withdrawal_settlement(self, outbox_message: dict) -> str:
+        operation_hash: str = execute_outbox_message(
             commitment=outbox_message['commitment']['hash'],
             proof=outbox_message['proof'],
-            smart_rollup_address=SMART_ROLLUP_ADDRESS,
-            tezos_private_key=TEZOS_PRIVATE_KEY,
-            tezos_rpc_url=TEZOS_RPC_URL,
-        )  # type: ignore
-        return opg
+            smart_rollup_address=_config.network.smart_rollup_address,
+            tezos_private_key=_config.accounts.l1_private_key,
+            tezos_rpc_url=_config.network.l1_rpc_url,
+        )
+        return operation_hash
 
 
 def fast_withdrawal_bridge_operation_query() -> DocumentNode:

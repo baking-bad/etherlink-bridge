@@ -10,15 +10,7 @@ from scripts.helpers.formatting import (
 from scripts import cli_options
 
 
-@click.command()
-@cli_options.token_bridge_helper_address
-@cli_options.amount
-@cli_options.receiver_address
-@cli_options.smart_rollup_address
-@cli_options.tezos_private_key
-@cli_options.tezos_rpc_url
-# TODO: consider renaming to fa_deposit
-def deposit(
+def fa_deposit(
     token_bridge_helper_address: str,
     amount: int,
     receiver_address: str,
@@ -61,3 +53,17 @@ def deposit(
         'Successfully executed Deposit, tx hash: ' + wrap(accent(operation_hash))
     )
     return operation_hash
+
+
+fa_deposit_command = cli_options.command(
+    fa_deposit,
+    name='fa_deposit',
+    options=[
+        cli_options.token_bridge_helper_address,
+        cli_options.amount,
+        cli_options.receiver_address,
+        cli_options.smart_rollup_address,
+        cli_options.tezos_private_key,
+        cli_options.tezos_rpc_url,
+    ],
+)

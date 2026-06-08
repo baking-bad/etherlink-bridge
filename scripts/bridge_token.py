@@ -12,20 +12,6 @@ from scripts.helpers.formatting import (
 )
 
 
-@click.command()
-@cli_options.token_address
-# TODO: consider auto-determine token type by token entrypoints
-@cli_options.token_type
-@cli_options.token_id
-@cli_options.token_decimals
-@cli_options.token_symbol
-@cli_options.token_name
-@cli_options.tezos_private_key
-@cli_options.tezos_rpc_url
-@cli_options.etherlink_private_key
-@cli_options.etherlink_rpc_url
-@cli_options.kernel_address
-@cli_options.skip_confirm
 def bridge_token(
     token_address: str,
     token_type: str,
@@ -56,7 +42,7 @@ def bridge_token(
         click.confirm('Do you want to proceed?', abort=True, default=True)
     click.echo('')
 
-    ticketer = deploy_ticketer.callback(
+    ticketer = deploy_ticketer(
         token_address=token_address,
         token_type=token_type,
         token_id=token_id,
@@ -67,14 +53,14 @@ def bridge_token(
         tezos_rpc_url=tezos_rpc_url,
         skip_confirm=True,
         silent=False,
-    )  # type: ignore
+    )
     click.echo('')
 
-    ticketer_params = get_ticketer_params.callback(
+    ticketer_params = get_ticketer_params(
         ticketer.address, tezos_private_key, tezos_rpc_url, silent=True
-    )  # type: ignore
+    )
 
-    erc20 = deploy_erc20.callback(
+    erc20 = deploy_erc20(
         ticketer_address_bytes=ticketer_params['address_bytes'],
         ticket_content_bytes=ticketer_params['content_bytes'],
         token_name=token_name,
@@ -85,10 +71,10 @@ def bridge_token(
         etherlink_rpc_url=etherlink_rpc_url,
         skip_confirm=True,
         silent=False,
-    )  # type: ignore
+    )
     click.echo('')
 
-    token_bridge_helper = deploy_token_bridge_helper.callback(
+    token_bridge_helper = deploy_token_bridge_helper(
         ticketer_address=ticketer.address,
         erc20_proxy_address=erc20.address,
         tezos_private_key=tezos_private_key,
@@ -96,7 +82,7 @@ def bridge_token(
         token_symbol=token_symbol,
         skip_confirm=True,
         silent=False,
-    )  # type: ignore
+    )
     click.echo('')
 
     click.echo('Successfully deployed FA Bridge contracts for ' + accent(token_symbol))
@@ -105,3 +91,24 @@ def bridge_token(
         'erc20': erc20,
         'token_bridge_helper': token_bridge_helper,
     }
+
+
+bridge_token_command = cli_options.command(
+    bridge_token,
+    name='bridge_token',
+    options=[
+        cli_options.token_address,
+        # TODO: consider auto-determine token type by token entrypoints
+        cli_options.token_type,
+        cli_options.token_id,
+        cli_options.token_decimals,
+        cli_options.token_symbol,
+        cli_options.token_name,
+        cli_options.tezos_private_key,
+        cli_options.tezos_rpc_url,
+        cli_options.etherlink_private_key,
+        cli_options.etherlink_rpc_url,
+        cli_options.kernel_address,
+        cli_options.skip_confirm,
+    ],
+)

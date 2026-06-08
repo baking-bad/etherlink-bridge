@@ -8,11 +8,13 @@ from gql.client import SyncClientSession
 from graphql import DocumentNode
 from pytezos import pytezos
 
-from scripts.etherlink import withdraw
+from scripts.etherlink import fa_withdraw
 from scripts.helpers.utility import make_address_bytes
 from scripts.tests.dto import Bridge
 from scripts.tests.dto import Token
 from scripts.tests.dto import Wallet
+
+pytestmark = pytest.mark.integration
 
 
 class TestWithdraw:
@@ -92,7 +94,7 @@ class TestWithdraw:
     ) -> None:
         amount = randint(3, 10)
 
-        transaction_hash = withdraw.callback(  # type: ignore[misc]
+        transaction_hash = fa_withdraw(
             erc20_proxy_address=to_checksum_address(token.l2_token_address.lower()),
             tezos_side_router_address=token.l1_ticketer_address,
             amount=amount,

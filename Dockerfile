@@ -8,5 +8,7 @@ ARG BRANCH=main
 WORKDIR /bridge
 COPY . /bridge
 RUN uv sync
-ENTRYPOINT ["uv", "run"]
-CMD ["bash"]
+# Bake in the `bridge` group so `docker run <image> <subcommand> ...` works;
+# with no arguments it prints the command list. Use `--entrypoint bash` for a shell.
+ENTRYPOINT ["uv", "run", "bridge"]
+CMD ["--help"]

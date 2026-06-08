@@ -15,20 +15,6 @@ from scripts.helpers.etherlink import (
 from scripts import cli_options
 
 
-@click.command()
-# TODO: consider replacing two bytes options with one ticketer_address option
-@cli_options.ticketer_address_bytes
-@cli_options.ticket_content_bytes
-# TODO: consider extracting token name from the ticketer content bytes
-@cli_options.token_name
-@cli_options.token_symbol
-@cli_options.token_decimals
-@cli_options.kernel_address
-@cli_options.etherlink_private_key
-@cli_options.etherlink_rpc_url
-@cli_options.skip_confirm
-@cli_options.silent
-# TODO: consider adding gas price and gas limit here as parameters?
 def deploy_erc20(
     ticketer_address_bytes: str,
     ticket_content_bytes: str,
@@ -82,3 +68,23 @@ def deploy_erc20(
             + wrap(accent(erc20.address))
         )
     return erc20
+
+
+deploy_erc20_command = cli_options.command(
+    deploy_erc20,
+    name='deploy_erc20',
+    options=[
+        # TODO: consider replacing two bytes options with one ticketer_address option
+        cli_options.ticketer_address_bytes,
+        cli_options.ticket_content_bytes,
+        # TODO: consider extracting token name from the ticketer content bytes
+        cli_options.token_name,
+        cli_options.token_symbol,
+        cli_options.token_decimals,
+        cli_options.kernel_address,
+        cli_options.etherlink_private_key,
+        cli_options.etherlink_rpc_url,
+        cli_options.skip_confirm,
+        cli_options.silent,
+    ],
+)

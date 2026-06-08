@@ -11,14 +11,6 @@ from scripts import cli_options
 
 
 # TODO: add logic from the bootstrap branch
-@click.command()
-@cli_options.token_type
-@cli_options.token_id
-@cli_options.total_supply
-@cli_options.tezos_private_key
-@cli_options.tezos_rpc_url
-@cli_options.skip_confirm
-@cli_options.silent
 def deploy_token(
     token_type: str,
     token_id: int,
@@ -59,3 +51,18 @@ def deploy_token(
             + wrap(accent(token.address))
         )
     return token
+
+
+deploy_token_command = cli_options.command(
+    deploy_token,
+    name='deploy_token',
+    options=[
+        cli_options.token_type,
+        cli_options.token_id,
+        cli_options.total_supply,
+        cli_options.tezos_private_key,
+        cli_options.tezos_rpc_url,
+        cli_options.skip_confirm,
+        cli_options.silent,
+    ],
+)

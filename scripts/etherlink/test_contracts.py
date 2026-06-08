@@ -1,8 +1,8 @@
-import click
 import subprocess
 
+from scripts import cli_options
 
-@click.command()
+
 def test_contracts() -> None:
     """Runs tests for contracts"""
 
@@ -17,3 +17,10 @@ def test_contracts() -> None:
 
     print(result.stdout)
     print('Done')
+
+
+test_contracts_command = cli_options.command(
+    test_contracts,
+    name='etherlink_tests',
+    options=[],
+)

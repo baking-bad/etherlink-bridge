@@ -15,20 +15,7 @@ from scripts.helpers.etherlink import FaWithdrawalPrecompileHelper
 from scripts import cli_options
 
 
-@click.command()
-@cli_options.erc20_proxy_address
-@cli_options.tezos_side_router_address
-@cli_options.amount
-# TODO: consider get ticketer address bytes and content from the ticketer address?
-#       However, the tezos rpc node is required to get the ticketer params.
-@cli_options.ticketer_address_bytes
-@cli_options.ticket_content_bytes
-@cli_options.receiver_address
-@cli_options.withdraw_precompile
-@cli_options.etherlink_private_key
-@cli_options.etherlink_rpc_url
-# TODO: consider renaming to fa_withdraw
-def withdraw(
+def fa_withdraw(
     erc20_proxy_address: str,
     tezos_side_router_address: str,
     amount: int,
@@ -86,3 +73,22 @@ def withdraw(
         'Successfully initiated FA withdrawal, tx hash: ' + wrap(accent(tx_hash.hex()))
     )
     return tx_hash.hex()
+
+
+fa_withdraw_command = cli_options.command(
+    fa_withdraw,
+    name='fa_withdraw',
+    options=[
+        cli_options.erc20_proxy_address,
+        cli_options.tezos_side_router_address,
+        cli_options.amount,
+        # TODO: get ticketer address bytes and content from the ticketer address?
+        #       However, the tezos rpc node is required to get the ticketer params.
+        cli_options.ticketer_address_bytes,
+        cli_options.ticket_content_bytes,
+        cli_options.receiver_address,
+        cli_options.withdraw_precompile,
+        cli_options.etherlink_private_key,
+        cli_options.etherlink_rpc_url,
+    ],
+)

@@ -8,11 +8,6 @@ from scripts.helpers.formatting import accent
 from scripts import cli_options
 
 
-@click.command()
-@cli_options.ticketer_address
-@cli_options.tezos_private_key
-@cli_options.tezos_rpc_url
-@cli_options.silent
 def get_ticketer_params(
     ticketer_address: str,
     tezos_private_key: str,
@@ -39,3 +34,15 @@ def get_ticketer_params(
         'content_bytes': content_bytes,
         'ticket_hash': str(ticket_hash),
     }
+
+
+get_ticketer_params_command = cli_options.command(
+    get_ticketer_params,
+    name='get_ticketer_params',
+    options=[
+        cli_options.ticketer_address,
+        cli_options.tezos_private_key,
+        cli_options.tezos_rpc_url,
+        cli_options.silent,
+    ],
+)

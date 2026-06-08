@@ -68,7 +68,7 @@ You can run the tool directly or build a Docker container that runs it.
 
 4. Optional: Rebuild and test the contracts locally as described in [compilation and running tests](#compilation-and-running-tests).
 
-Then you can run commands by running `uv run` followed by the command name, such as `uv run bridge_token`.
+All commands are subcommands of the `bridge` CLI, so you run them as `uv run bridge <command>`, e.g. `uv run bridge bridge_token`. Run `uv run bridge --help` to list them.
 
 ### Docker installation
 
@@ -91,7 +91,7 @@ The tool also has separate commands for deploying the contracts individually if 
 Here is an example of the command to deploy the bridging contracts for an FA1.2 token:
 
 ```shell
-uv run bridge_token \
+uv run bridge bridge_token \
     --token-address KT1SekNYSaT3sWp55nhmratovWN4Mvfc6cfQ \
     --token-type FA1.2 \
     --token-id=0 \
@@ -108,7 +108,7 @@ uv run bridge_token \
 Here is an example of the command to deploy the bridging contracts for an FA2 token:
 
 ```shell
-uv run bridge_token \
+uv run bridge bridge_token \
     --token-address KT19P1nbGzGnumMfRHcLNuyQUdcuwjpBfsCU \
     --token-type FA2 \
     --token-id=0 \
@@ -144,7 +144,7 @@ Save this information for use in depositing and withdrawing tokens.
 After you have set up bridging for a token, you can bridge tokens from Tezos to Etherlink with the `deposit` command, as in this example:
 
 ```shell
-uv run deposit \
+uv run bridge fa_deposit \
     --token-bridge-helper-address KT1KiiUkGKFqNAK2BoAGi2conhGoGwiXcMTR \
     --amount 77 \
     --tezos-private-key ${TEZOS_WALLET_PRIVATE_KEY} \
@@ -172,7 +172,7 @@ You can see the bridged tokens by looking up the ERC-20 proxy contract or your E
 After you bridge tokens to Etherlink, you can withdraw them back to Tezos with the `withdraw` command, as in this example:
 
 ```shell
-uv run withdraw \
+uv run bridge fa_withdraw \
     --erc20-proxy-address 0x8AaBCd16bA3346649709e4Ff93E5c6Df18D8c2Ed \
     --amount 1 \
     --tezos-side-router-address KT199szFcgpAc46ZwsDykNBCa2t6u32xUyY7 \
@@ -222,7 +222,7 @@ fd81a96f01cc42ef1c9a5399364968d0e07e9e90 etherlink/lib/openzeppelin-contracts (v
 #### 1. Tezos side:
 To compile Tezos-side contracts, the LIGO compiler must be installed. The most convenient method is to use the Docker version of the LIGO compiler. Compilation of all contracts using the dockerized LIGO compiler can be initiated with the following command:
 ```shell
-uv run build_tezos_contracts
+uv run bridge build_tezos_contracts
 ```
 
 > [!NOTE]
@@ -231,7 +231,7 @@ uv run build_tezos_contracts
 #### 2. Etherlink side:
 To compile contracts on the Etherlink side, Foundry must be installed. To initiate the compilation, navigate to the [etherlink](etherlink/) directory and run `forge build`, or execute the following script from the root directory:
 ```shell
-uv run build_etherlink_contracts
+uv run bridge build_etherlink_contracts
 ```
 
 > [!NOTE]
@@ -249,7 +249,7 @@ uv run pytest tezos/tests
 #### 2. Etherlink side:
 The Etherlink contract tests use the [Foundry](https://book.getfoundry.sh/getting-started/installation) stack and are implemented in Solidity. To run these tests, navigate to the [etherlink](etherlink/) directory and run `forge test`, or execute the following script from the root directory:
 ```shell
-uv run etherlink_tests
+uv run bridge etherlink_tests
 ```
 
 #### 3. Integration tests (indexer):
@@ -284,15 +284,15 @@ uv run pytest -m cementation
 
 ## Bootstrapping a new network
 
-`uv run bootstrap` deploys a fresh token set (Token + Ticketer + ERC20 proxy + Bridge Helper) for each `MAINNET_WHITELIST` token. It's interactive — pick a config from `networks/*.toml` (or *Custom*). Copy the printed contract addresses into that config's `[[tokens]]`.
+`uv run bridge bootstrap` deploys a fresh token set (Token + Ticketer + ERC20 proxy + Bridge Helper) for each `MAINNET_WHITELIST` token. It's interactive — pick a config from `networks/*.toml` (or *Custom*). Copy the printed contract addresses into that config's `[[tokens]]`.
 
 ## Monitoring
 
 `monitor_deposits` / `monitor_withdrawals` print bridge stats from the active network's indexer (`NETWORK` env), broken down by token, status, and — for withdrawals — kind (regular vs the fast-withdrawal variants). They sample the most recent `--limit` operations (newest first) and report whether older ones were left out.
 
 ```shell
-NETWORK=shadownet-tezosx uv run monitor_deposits --limit 500
-NETWORK=shadownet-tezosx uv run monitor_withdrawals --limit 500
+NETWORK=shadownet-tezosx uv run bridge monitor_deposits --limit 500
+NETWORK=shadownet-tezosx uv run bridge monitor_withdrawals --limit 500
 ```
 
 ## Linting
@@ -325,7 +325,7 @@ docker run --rm etherlink-bridge bridge_token \
 ### Bridge tokens from Tezos to Etherlink
 
 ```shell
-docker run --rm etherlink-bridge deposit \
+docker run --rm etherlink-bridge fa_deposit \
     --token-bridge-helper-address KT1KiiUkGKFqNAK2BoAGi2conhGoGwiXcMTR \
     --amount 77 \
     --receiver-address 0x7e6f6CCFe485a087F0F819eaBfDBfb1a49b97677 \
@@ -337,7 +337,7 @@ docker run --rm etherlink-bridge deposit \
 ### Bridge tokens from Etherlink to Tezos
 
 ```shell
-docker run --rm etherlink-bridge withdraw \
+docker run --rm etherlink-bridge fa_withdraw \
     --erc20-proxy-address 0x8AaBCd16bA3346649709e4Ff93E5c6Df18D8c2Ed \
     --amount 17 \
     --tezos-side-router-address KT199szFcgpAc46ZwsDykNBCa2t6u32xUyY7 \

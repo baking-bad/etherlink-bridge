@@ -8,6 +8,8 @@ from scripts.tests.dto import Bridge
 from scripts.tests.dto import Native
 from scripts.tests.dto import Token
 
+pytestmark = pytest.mark.integration
+
 # An index may sit a little behind the chain head and still be healthy; only a
 # large gap means the indexer can't keep up and fresh ops won't be indexed.
 # Tune up if it false-positives on a healthy-but-busy indexer.

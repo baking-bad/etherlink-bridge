@@ -4,23 +4,21 @@ from scripts.helpers.formatting import accent
 from scripts import cli_options
 
 
-@click.command()
 # TODO: consider simplifying by providing --level and --index instead?
-@click.option(
+commitment_option = click.option(
     '--commitment',
     required=True,
     prompt='Commitment with the outbox message',
     help='Commitment with the outbox message.',
 )
-@click.option(
+proof_option = click.option(
     '--proof',
     required=True,
     prompt='The proof of the outbox message',
     help='The proof of the outbox message.',
 )
-@cli_options.smart_rollup_address
-@cli_options.tezos_private_key
-@cli_options.tezos_rpc_url
+
+
 def execute_outbox_message(
     commitment: str,
     proof: str,
@@ -49,3 +47,16 @@ def execute_outbox_message(
         + '`'
     )
     return operation_hash
+
+
+execute_outbox_message_command = cli_options.command(
+    execute_outbox_message,
+    name='execute_outbox_message',
+    options=[
+        commitment_option,
+        proof_option,
+        cli_options.smart_rollup_address,
+        cli_options.tezos_private_key,
+        cli_options.tezos_rpc_url,
+    ],
+)

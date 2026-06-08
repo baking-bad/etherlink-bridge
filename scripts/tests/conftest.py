@@ -22,12 +22,9 @@ _NETWORK = load_network()
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
-    # Every test under scripts/tests/ hits a live network/indexer and signs
-    # real operations, so mark them all `integration` (deselected by default).
-    for item in items:
-        if item.nodeid.startswith('scripts/tests/'):
-            item.add_marker('integration')
-
+    # Order the integration suite into a sensible sequence (health checks first,
+    # deposit before withdraw, cementation last). Integration tests opt in with a
+    # module-level `pytestmark = pytest.mark.integration`.
     function_order = {
         "test_indexer_is_healthy": 1,
         "test_l1_asset_whitelisted": 2,

@@ -5,34 +5,32 @@ from scripts.helpers.formatting import accent
 import time
 import json
 
-
-@click.command()
-@click.option(
+level_from_option = click.option(
     '--level-from',
     required=True,
     type=int,
     help='The initial level of the outbox from which the messages will be scanned.',
 )
-@click.option(
+max_levels_option = click.option(
     '--max-levels',
     default=100,
     help='Max number of levels to scan.',
     show_default=True,
 )
-@click.option(
+echo_content_option = click.option(
     '--echo-content',
     default=True,
     help='If set to True - the messages content will be shown, if set to False - only messages count per block will be shown.',
     show_default=True,
 )
-@click.option(
+sleep_time_option = click.option(
     '--sleep-time',
     default=1,
     help='Time between requests in seconds.',
     show_default=True,
 )
-@cli_options.etherlink_rollup_node_url
-@cli_options.silent
+
+
 def scan_outbox(
     level_from: int,
     max_levels: int,
@@ -56,3 +54,17 @@ def scan_outbox(
         info = json.dumps(messages, indent=2) if echo_content else str(len(messages))
         click.echo(accent(str(level)) + ': ' + info)
         time.sleep(sleep_time)
+
+
+scan_outbox_command = cli_options.command(
+    scan_outbox,
+    name='scan_outbox',
+    options=[
+        level_from_option,
+        max_levels_option,
+        echo_content_option,
+        sleep_time_option,
+        cli_options.etherlink_rollup_node_url,
+        cli_options.silent,
+    ],
+)

@@ -6,6 +6,7 @@ from collections import Counter
 import click
 from gql import gql
 
+from scripts import cli_options
 from scripts.monitoring.common import (
     make_client,
     print_breakdown,
@@ -63,13 +64,14 @@ def withdrawal_kind(operation: dict) -> str:
     return KIND_LABELS.get(kind, kind or 'unknown')
 
 
-@click.command()
-@click.option(
+limit_option = click.option(
     '--limit',
     default=1000,
     show_default=True,
     help='How many of the most recent withdrawals to sample (newest first).',
 )
+
+
 def monitor_withdrawals(limit: int) -> None:
     """Prints withdrawal stats from the active network's indexer (NETWORK env)."""
 
@@ -84,3 +86,10 @@ def monitor_withdrawals(limit: int) -> None:
     print_breakdown('Withdrawals by status', Counter(op['status'] for op in operations))
     print_breakdown('Withdrawals by kind', Counter(map(withdrawal_kind, operations)))
     print_coverage(len(operations), total, limit)
+
+
+monitor_withdrawals_command = cli_options.command(
+    monitor_withdrawals,
+    name='monitor_withdrawals',
+    options=[limit_option],
+)

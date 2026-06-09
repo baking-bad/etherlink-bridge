@@ -5,6 +5,7 @@ from collections import Counter
 import click
 from gql import gql
 
+from scripts import cli_options
 from scripts.monitoring.common import (
     make_client,
     print_breakdown,
@@ -43,13 +44,14 @@ def deposit_token(operation: dict) -> str:
     return token.get('symbol') or token.get('id') or 'unknown'
 
 
-@click.command()
-@click.option(
+limit_option = click.option(
     '--limit',
     default=1000,
     show_default=True,
     help='How many of the most recent deposits to sample (newest first).',
 )
+
+
 def monitor_deposits(limit: int) -> None:
     """Prints deposit stats from the active network's indexer (NETWORK env)."""
 
@@ -63,3 +65,10 @@ def monitor_deposits(limit: int) -> None:
     print_breakdown('Deposits by token', Counter(map(deposit_token, operations)))
     print_breakdown('Deposits by status', Counter(op['status'] for op in operations))
     print_coverage(len(operations), total, limit)
+
+
+monitor_deposits_command = cli_options.command(
+    monitor_deposits,
+    name='monitor_deposits',
+    options=[limit_option],
+)

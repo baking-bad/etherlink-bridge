@@ -1,0 +1,6 @@
+# Keep the image's Python determined by the base image, not a dev's local pin,
+# and out of the build context (uv recreates the venv via `uv sync`).
+.python-version
+.venv
+.git
+**/__pycache__

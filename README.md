@@ -68,7 +68,7 @@ You can run the tool directly or build a Docker container that runs it.
 
 4. Optional: Rebuild and test the contracts locally as described in [compilation and running tests](#compilation-and-running-tests).
 
-Then you can run commands by running `uv run` followed by the command name, such as `uv run bridge_token`.
+All commands are subcommands of the `bridge` CLI, so you run them as `uv run bridge <command>`, e.g. `uv run bridge bridge_token`. Run `uv run bridge --help` to list them.
 
 ### Docker installation
 
@@ -91,7 +91,7 @@ The tool also has separate commands for deploying the contracts individually if 
 Here is an example of the command to deploy the bridging contracts for an FA1.2 token:
 
 ```shell
-uv run bridge_token \
+uv run bridge bridge_token \
     --token-address KT1SekNYSaT3sWp55nhmratovWN4Mvfc6cfQ \
     --token-type FA1.2 \
     --token-id=0 \
@@ -99,16 +99,16 @@ uv run bridge_token \
     --token-symbol "TST12" \
     --token-name "Test FA1.2 Token" \
     --tezos-private-key ${TEZOS_WALLET_PRIVATE_KEY} \
-    --tezos-rpc-url "https://rpc.ghostnet.teztnets.com" \
+    --tezos-rpc-url "https://rpc.tzkt.io/shadownet" \
     --etherlink-private-key ${ETHERLINK_WALLET_PRIVATE_KEY} \
-    --etherlink-rpc-url "https://node.ghostnet.etherlink.com" \
+    --etherlink-rpc-url "https://node.shadownet.etherlink.com" \
     --skip-confirm
 ```
 
 Here is an example of the command to deploy the bridging contracts for an FA2 token:
 
 ```shell
-uv run bridge_token \
+uv run bridge bridge_token \
     --token-address KT19P1nbGzGnumMfRHcLNuyQUdcuwjpBfsCU \
     --token-type FA2 \
     --token-id=0 \
@@ -116,9 +116,9 @@ uv run bridge_token \
     --token-symbol "TST" \
     --token-name "TST Token" \
     --tezos-private-key ${TEZOS_WALLET_PRIVATE_KEY} \
-    --tezos-rpc-url "https://rpc.ghostnet.teztnets.com" \
+    --tezos-rpc-url "https://rpc.tzkt.io/shadownet" \
     --etherlink-private-key ${ETHERLINK_WALLET_PRIVATE_KEY} \
-    --etherlink-rpc-url "https://node.ghostnet.etherlink.com" \
+    --etherlink-rpc-url "https://node.shadownet.etherlink.com" \
     --skip-confirm
 ```
 
@@ -141,55 +141,54 @@ Save this information for use in depositing and withdrawing tokens.
 
 ## Depositing tokens
 
-After you have set up bridging for a token, you can bridge tokens from Tezos to Etherlink with the `deposit` command, as in this example:
+After you have set up bridging for a token, you can bridge tokens from Tezos to Etherlink with the `fa_deposit` command, as in this example:
 
 ```shell
-uv run deposit \
-    --token-bridge-helper-address KT1KiiUkGKFqNAK2BoAGi2conhGoGwiXcMTR \
+uv run bridge fa_deposit \
+    --token-bridge-helper-address KT1Ejrkzge6GoqUc7rWRT6kQKD5FYueKyjvH \
     --amount 77 \
     --tezos-private-key ${TEZOS_WALLET_PRIVATE_KEY} \
-    --tezos-rpc-url "https://rpc.ghostnet.teztnets.com" \
+    --tezos-rpc-url "https://rpc.tzkt.io/shadownet" \
     --receiver-address 0x7e6f6CCFe485a087F0F819eaBfDBfb1a49b97677 \
-    --smart-rollup-address sr18wx6ezkeRjt1SZSeZ2UQzQN3Uc3YLMLqg
+    --smart-rollup-address sr19fMYrr5C4qqvQqQrDSjtP31GcrWjodzvg
 ```
 
-The `deposit` command takes these parameters:
+The `fa_deposit` command takes these parameters:
 
 - `--token-bridge-helper-address`: The address of the token bridge helper contract, from the output of the `bridge_token` command
 - `--amount`: The amount of tokens to bridge
 - `--tezos-private-key`: The private key for the Tezos account that is depositing the tokens
 - `--tezos-rpc-url`: The URL to a Tezos RPC server to send the transactions to; for RPC servers on test networks, see https://teztnets.com
 - `--receiver-address`: The Etherlink account address of the account to send the tokens to
-- `--smart-rollup-address`: The address of the Etherlink Smart Rollup, which is `sr1Ghq66tYK9y3r8CC1Tf8i8m5nxh8nTvZEf` for Mainnet and `sr18wx6ezkeRjt1SZSeZ2UQzQN3Uc3YLMLqg` for Testnet
+- `--smart-rollup-address`: The address of the Etherlink Smart Rollup, which is `sr1Ghq66tYK9y3r8CC1Tf8i8m5nxh8nTvZEf` for Mainnet and `sr19fMYrr5C4qqvQqQrDSjtP31GcrWjodzvg` for Testnet (Shadownet)
 
 If the deposit transaction is successful, the command returns the hash of the transaction, which you can look up on a Tezos block explorer.
 
-After the deposit transaction, the tokens are available immediately on Etherlink.
-You can see the bridged tokens by looking up the ERC-20 proxy contract or your Etherlink account on the Etherlink block explorer.
+The deposit is not immediately usable on Etherlink: the kernel **queues** the FA deposit (emitting a `QueuedDeposit` event), and the ERC-20 tokens are minted only once the deposit is **claimed** on the Etherlink side. (Native XTZ deposits complete automatically and need no claim.) For whitelisted tokens a **Watchtower** service submits the claim. Once claimed, you can see the bridged tokens by looking up the ERC-20 proxy contract or your Etherlink account on the Etherlink block explorer.
 
 ## Withdrawing tokens
 
-After you bridge tokens to Etherlink, you can withdraw them back to Tezos with the `withdraw` command, as in this example:
+After you bridge tokens to Etherlink, you can withdraw them back to Tezos with the `fa_withdraw` command, as in this example:
 
 ```shell
-uv run withdraw \
-    --erc20-proxy-address 0x8AaBCd16bA3346649709e4Ff93E5c6Df18D8c2Ed \
+uv run bridge fa_withdraw \
+    --erc20-proxy-address 0x3dFF505A2A69e6e0b05fDB71b5F6DDd514fDaF47 \
     --amount 1 \
-    --tezos-side-router-address KT199szFcgpAc46ZwsDykNBCa2t6u32xUyY7 \
-    --ticketer-address-bytes 0x0106431674bc137dcfe537765838b1864759d6f79200 \
-    --ticket-content-bytes 0x0707000005090a000000a505020000009f07040100000010636f6e74726163745f616464726573730a000000244b54313950316e62477a476e756d4d665248634c4e75795155646375776a70426673435507040100000008646563696d616c730a0000000138070401000000046e616d650a0000000a5465737420546f6b656e0704010000000673796d626f6c0a000000035453540704010000000a746f6b656e5f747970650a000000054641312e32 \
+    --tezos-side-router-address KT1LdyznoJDzUqsgE8zpM242W1BBi42S8img \
+    --ticketer-address-bytes 0x01843d2272438cbe9bdc32423c41cb9cfc785e381c00 \
+    --ticket-content-bytes 0x0707000005090a000000b90502000000b307040100000010636f6e74726163745f616464726573730a000000244b543157633773586a70436b7a59454465727478526339736e776775744658384d6d717607040100000008646563696d616c730a0000000136070401000000046e616d650a0000000a546574686572205553440704010000000673796d626f6c0a000000045553447407040100000008746f6b656e5f69640a00000001300704010000000a746f6b656e5f747970650a00000003464132 \
     --receiver-address tz1ekkzEN2LB1cpf7dCaonKt6x9KVd9YVydc \
     --etherlink-private-key ${ETHERLINK_WALLET_PRIVATE_KEY} \
-    --etherlink-rpc-url "https://node.ghostnet.etherlink.com"
+    --etherlink-rpc-url "https://node.shadownet.etherlink.com"
 ```
 
-The `withdraw` command accepts these arguments:
+The `fa_withdraw` command accepts these arguments:
 
 - `--erc20-proxy-address`: The address of the ERC-20 proxy contract on Etherlink
 - `--amount`: The amount of tokens to withdraw
 - `--tezos-side-router-address`: The address of the ticketer contract on Tezos or a separate router contract if the token uses a router for bridging
-- `--ticketer-address-bytes`: The address of the ticketer contract as a series of bytes, which you can get from the output of the `bridge_token` command or the `get_ticketer_command` command
-- `--ticket-content-bytes`: The content of the ticket as a series of bytes, which you can get from the output of the `bridge_token` command or the `get_ticketer_command` command
+- `--ticketer-address-bytes`: The address of the ticketer contract as a series of bytes, which you can get from the output of the `bridge_token` command or the `get_ticketer_params` command
+- `--ticket-content-bytes`: The content of the ticket as a series of bytes, which you can get from the output of the `bridge_token` command or the `get_ticketer_params` command
 - `--receiver-address`: The Tezos address of the account to send the tokens to
 - `--etherlink-private-key`: The private key for the EVM-compatible wallet that is connected to Etherlink
 - `--etherlink-rpc-url`: The URL to the Etherlink RPC server to send the transactions to; see [Network information](https://docs.etherlink.com/get-started/network-information) on docs.etherlink.com
@@ -199,6 +198,18 @@ The output of the command includes the hash of the Etherlink transaction that in
 The withdrawn tokens are not usable on Tezos until after the commitment with the withdrawal transaction is cemented, which takes two weeks.
 After the commitment is cemented, you can run the transaction to release the tokens on Tezos.
 See [Withdrawal process](docs/README.md#withdrawal-process).
+
+## Selecting a network
+
+The CLI reads its network parameters (RPC URLs, the Smart Rollup address, the withdrawal precompiles, the indexer URL) and a funded test account from a per-network config file under [`networks/`](networks/), selected with the `NETWORK` environment variable:
+
+```shell
+NETWORK=shadownet-tezosx uv run bridge monitor_deposits
+```
+
+If `NETWORK` is unset it defaults to `shadownet-etherlink`. The available networks are the `*.toml` file stems under `networks/` (e.g. `shadownet-etherlink`, `shadownet-tezosx`); add a new one by dropping a config file there.
+
+Any option passed on the command line **overrides** the value from the config, so the example commands above spell out `--tezos-rpc-url`, `--smart-rollup-address`, the private keys, etc. to be self-contained; on a configured network you can omit those and let the config fill them in.
 
 ## Compilation and Running Tests
 1. Install Foundry by following the [installation guide](https://book.getfoundry.sh/getting-started/installation)
@@ -222,7 +233,7 @@ fd81a96f01cc42ef1c9a5399364968d0e07e9e90 etherlink/lib/openzeppelin-contracts (v
 #### 1. Tezos side:
 To compile Tezos-side contracts, the LIGO compiler must be installed. The most convenient method is to use the Docker version of the LIGO compiler. Compilation of all contracts using the dockerized LIGO compiler can be initiated with the following command:
 ```shell
-uv run build_tezos_contracts
+uv run bridge build_tezos_contracts
 ```
 
 > [!NOTE]
@@ -231,7 +242,7 @@ uv run build_tezos_contracts
 #### 2. Etherlink side:
 To compile contracts on the Etherlink side, Foundry must be installed. To initiate the compilation, navigate to the [etherlink](etherlink/) directory and run `forge build`, or execute the following script from the root directory:
 ```shell
-uv run build_etherlink_contracts
+uv run bridge build_etherlink_contracts
 ```
 
 > [!NOTE]
@@ -249,7 +260,7 @@ uv run pytest tezos/tests
 #### 2. Etherlink side:
 The Etherlink contract tests use the [Foundry](https://book.getfoundry.sh/getting-started/installation) stack and are implemented in Solidity. To run these tests, navigate to the [etherlink](etherlink/) directory and run `forge test`, or execute the following script from the root directory:
 ```shell
-uv run etherlink_tests
+uv run bridge etherlink_tests
 ```
 
 #### 3. Integration tests (indexer):
@@ -284,15 +295,15 @@ uv run pytest -m cementation
 
 ## Bootstrapping a new network
 
-`uv run bootstrap` deploys a fresh token set (Token + Ticketer + ERC20 proxy + Bridge Helper) for each `MAINNET_WHITELIST` token. It's interactive — pick a config from `networks/*.toml` (or *Custom*). Copy the printed contract addresses into that config's `[[tokens]]`.
+`uv run bridge bootstrap` deploys a fresh token set (Token + Ticketer + ERC20 proxy + Bridge Helper) for each `MAINNET_WHITELIST` token. It's interactive — pick a config from `networks/*.toml` (or *Custom*). Copy the printed contract addresses into that config's `[[tokens]]`.
 
 ## Monitoring
 
 `monitor_deposits` / `monitor_withdrawals` print bridge stats from the active network's indexer (`NETWORK` env), broken down by token, status, and — for withdrawals — kind (regular vs the fast-withdrawal variants). They sample the most recent `--limit` operations (newest first) and report whether older ones were left out.
 
 ```shell
-NETWORK=shadownet-tezosx uv run monitor_deposits --limit 500
-NETWORK=shadownet-tezosx uv run monitor_withdrawals --limit 500
+NETWORK=shadownet-tezosx uv run bridge monitor_deposits --limit 500
+NETWORK=shadownet-tezosx uv run bridge monitor_withdrawals --limit 500
 ```
 
 ## Linting
@@ -316,34 +327,34 @@ docker run --rm etherlink-bridge bridge_token \
     --token-symbol "TST" \
     --token-name "Test Token" \
     --tezos-private-key edsk4XG4QyAj19dr78NNGH6dpXBtTnkmMdAkM9w5tUTCHaUP1pJaD5 \
-    --tezos-rpc-url "https://rpc.tzkt.io/parisnet/" \
+    --tezos-rpc-url "https://rpc.tzkt.io/shadownet" \
     --etherlink-private-key f463e320ed1bd1cd833e29efc383878f34abe6b596e5d163f51bb8581de6f8b8 \
-    --etherlink-rpc-url "https://etherlink.dipdup.net" \
+    --etherlink-rpc-url "https://node.shadownet.etherlink.com" \
     --skip-confirm
 ```
 
 ### Bridge tokens from Tezos to Etherlink
 
 ```shell
-docker run --rm etherlink-bridge deposit \
-    --token-bridge-helper-address KT1KiiUkGKFqNAK2BoAGi2conhGoGwiXcMTR \
+docker run --rm etherlink-bridge fa_deposit \
+    --token-bridge-helper-address KT1Ejrkzge6GoqUc7rWRT6kQKD5FYueKyjvH \
     --amount 77 \
     --receiver-address 0x7e6f6CCFe485a087F0F819eaBfDBfb1a49b97677 \
-    --smart-rollup-address sr1HpyqJ662dWTY8GWffhHYgN2U26funbT1H \
+    --smart-rollup-address sr19fMYrr5C4qqvQqQrDSjtP31GcrWjodzvg \
     --tezos-private-key edsk4XG4QyAj19dr78NNGH6dpXBtTnkmMdAkM9w5tUTCHaUP1pJaD5 \
-    --tezos-rpc-url "https://rpc.tzkt.io/parisnet/"
+    --tezos-rpc-url "https://rpc.tzkt.io/shadownet"
 ```
 
 ### Bridge tokens from Etherlink to Tezos
 
 ```shell
-docker run --rm etherlink-bridge withdraw \
-    --erc20-proxy-address 0x8AaBCd16bA3346649709e4Ff93E5c6Df18D8c2Ed \
+docker run --rm etherlink-bridge fa_withdraw \
+    --erc20-proxy-address 0x3dFF505A2A69e6e0b05fDB71b5F6DDd514fDaF47 \
     --amount 17 \
-    --tezos-side-router-address KT199szFcgpAc46ZwsDykNBCa2t6u32xUyY7 \
-    --ticketer-address-bytes 0x0106431674bc137dcfe537765838b1864759d6f79200 \
-    --ticket-content-bytes 0x0707000005090a000000a505020000009f07040100000010636f6e74726163745f616464726573730a000000244b54313950316e62477a476e756d4d665248634c4e75795155646375776a70426673435507040100000008646563696d616c730a0000000138070401000000046e616d650a0000000a5465737420546f6b656e0704010000000673796d626f6c0a000000035453540704010000000a746f6b656e5f747970650a000000054641312e32 \
+    --tezos-side-router-address KT1LdyznoJDzUqsgE8zpM242W1BBi42S8img \
+    --ticketer-address-bytes 0x01843d2272438cbe9bdc32423c41cb9cfc785e381c00 \
+    --ticket-content-bytes 0x0707000005090a000000b90502000000b307040100000010636f6e74726163745f616464726573730a000000244b543157633773586a70436b7a59454465727478526339736e776775744658384d6d717607040100000008646563696d616c730a0000000136070401000000046e616d650a0000000a546574686572205553440704010000000673796d626f6c0a000000045553447407040100000008746f6b656e5f69640a00000001300704010000000a746f6b656e5f747970650a00000003464132 \
     --receiver-address tz1ekkzEN2LB1cpf7dCaonKt6x9KVd9YVydc \
     --etherlink-private-key f463e320ed1bd1cd833e29efc383878f34abe6b596e5d163f51bb8581de6f8b8 \
-    --etherlink-rpc-url "https://etherlink.dipdup.net"
+    --etherlink-rpc-url "https://node.shadownet.etherlink.com"
 ```

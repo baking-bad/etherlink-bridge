@@ -34,35 +34,19 @@ from scripts.helpers.formatting import (
 )
 from scripts.tezos import xtz_deposit
 from getpass import getpass
-from scripts.defaults import (
-    SMART_ROLLUP_ADDRESS,
-    XTZ_TICKET_HELPER,
-    TEZOS_PRIVATE_KEY,
-    TEZOS_RPC_URL,
-    ETHERLINK_RPC_URL,
-    ETHERLINK_PRIVATE_KEY,
-    KERNEL_ADDRESS,
-    FA_WITHDRAWAL_PRECOMPILE,
-    XTZ_WITHDRAWAL_PRECOMPILE,
-    ETHERLINK_ROLLUP_NODE_URL,
-    PRINT_DEBUG_LOG,
-    XTZ_TICKETER_ADDRESS,
-    FAST_WITHDRAWAL_CONTRACT,
-    BLOCKSCOUT_EXPLORER_URL,
-    TZKT_EXPLORER_URL,
-)
+from scripts.networks import load_network
 
-
-if PRINT_DEBUG_LOG:
-    import logging
-
-    logging.basicConfig(level=logging.DEBUG)
+# Active network config (selected by NETWORK=); notebooks read params off it,
+# e.g. `config.network.smart_rollup_address`.
+config = load_network()
 
 
 def setup() -> tuple[Web3, LocalAccount, PyTezosClient]:
-    web3 = get_etherlink_web3(ETHERLINK_RPC_URL)
-    etherlink_account = get_etherlink_account(web3, ETHERLINK_PRIVATE_KEY)
-    tezos_account = get_tezos_client(TEZOS_RPC_URL, TEZOS_PRIVATE_KEY)
+    web3 = get_etherlink_web3(config.network.l2_rpc_url)
+    etherlink_account = get_etherlink_account(web3, config.accounts.l2_private_key)
+    tezos_account = get_tezos_client(
+        config.network.l1_rpc_url, config.accounts.l1_private_key
+    )
 
     wa_tezos_address = wrap(accent(tezos_account.key.public_key_hash()))
     wa_tezos_balance = wrap(accent(f'{tezos_account.balance():.6f} ꜩ'))

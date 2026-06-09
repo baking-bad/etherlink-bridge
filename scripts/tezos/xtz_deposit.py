@@ -9,13 +9,6 @@ from scripts.helpers.formatting import (
 from scripts import cli_options
 
 
-@click.command()
-@cli_options.xtz_ticket_helper
-@cli_options.amount
-@cli_options.receiver_address
-@cli_options.smart_rollup_address
-@cli_options.tezos_private_key
-@cli_options.tezos_rpc_url
 def xtz_deposit(
     xtz_ticket_helper: str,
     amount: int,
@@ -57,3 +50,17 @@ def xtz_deposit(
         'Successfully executed XTZ deposit, tx hash: ' + wrap(accent(operation_hash))
     )
     return operation_hash
+
+
+xtz_deposit_command = cli_options.command(
+    xtz_deposit,
+    name='xtz_deposit',
+    options=[
+        cli_options.xtz_ticket_helper,
+        cli_options.amount,
+        cli_options.receiver_address,
+        cli_options.smart_rollup_address,
+        cli_options.tezos_private_key,
+        cli_options.tezos_rpc_url,
+    ],
+)

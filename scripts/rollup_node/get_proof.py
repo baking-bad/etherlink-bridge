@@ -3,12 +3,14 @@ from scripts.helpers.rollup_node import get_proof as get_proof_from_rpc, Proof
 from scripts import cli_options
 from scripts.helpers.formatting import accent
 
+level_option = click.option(
+    '--level', required=True, type=int, help='The level of the outbox.'
+)
+index_option = click.option(
+    '--index', required=True, type=int, help='The index of the message.'
+)
 
-@click.command()
-@click.option('--level', required=True, type=int, help='The level of the outbox.')
-@click.option('--index', required=True, type=int, help='The index of the message.')
-@cli_options.etherlink_rollup_node_url
-@cli_options.silent
+
 def get_proof(
     level: int,
     index: int,
@@ -27,3 +29,15 @@ def get_proof(
         return proof
 
     click.echo('Failed to get proof for outbox message at ' + level_and_index + '.')
+
+
+get_proof_command = cli_options.command(
+    get_proof,
+    name='get_proof',
+    options=[
+        level_option,
+        index_option,
+        cli_options.etherlink_rollup_node_url,
+        cli_options.silent,
+    ],
+)

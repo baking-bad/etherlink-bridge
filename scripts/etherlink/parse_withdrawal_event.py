@@ -6,15 +6,14 @@ import requests
 from scripts import cli_options
 
 
-@click.command()
-@click.option(
+tx_hash_option = click.option(
     '--tx-hash',
     required=True,
     prompt='Transaction hash',
     help='The hash of the transaction which called withdraw function.',
 )
-@cli_options.etherlink_rpc_url
-@cli_options.kernel_address
+
+
 def parse_withdrawal_event(
     tx_hash: str, etherlink_rpc_url: str, kernel_address: str
 ) -> dict[str, Any]:
@@ -64,3 +63,14 @@ def parse_withdrawal_event(
         'outbox_level': outbox_level,
         'outbox_index': outbox_index,
     }
+
+
+parse_withdrawal_event_command = cli_options.command(
+    parse_withdrawal_event,
+    name='parse_withdrawal_event',
+    options=[
+        tx_hash_option,
+        cli_options.etherlink_rpc_url,
+        cli_options.kernel_address,
+    ],
+)

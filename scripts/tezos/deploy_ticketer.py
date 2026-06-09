@@ -32,17 +32,6 @@ def make_extra_metadata(
     return extra_metadata
 
 
-@click.command()
-@cli_options.token_address
-@cli_options.token_type
-@cli_options.token_id
-@cli_options.token_decimals
-@cli_options.token_symbol
-@cli_options.token_name
-@cli_options.tezos_private_key
-@cli_options.tezos_rpc_url
-@cli_options.skip_confirm
-@cli_options.silent
 def deploy_ticketer(
     token_address: str,
     token_type: str,
@@ -88,3 +77,21 @@ def deploy_ticketer(
         )
 
     return ticketer
+
+
+deploy_ticketer_command = cli_options.command(
+    deploy_ticketer,
+    name='deploy_ticketer',
+    options=[
+        cli_options.token_address,
+        cli_options.token_type,
+        cli_options.token_id,
+        cli_options.token_decimals,
+        cli_options.token_symbol,
+        cli_options.token_name,
+        cli_options.tezos_private_key,
+        cli_options.tezos_rpc_url,
+        cli_options.skip_confirm,
+        cli_options.silent,
+    ],
+)

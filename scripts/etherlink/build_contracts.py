@@ -1,8 +1,8 @@
-import click
 import subprocess
 
+from scripts import cli_options
 
-@click.command()
+
 def build_contracts() -> None:
     """Compiles contracts"""
 
@@ -18,3 +18,10 @@ def build_contracts() -> None:
 
     print(result.stdout)
     print('Done')
+
+
+build_contracts_command = cli_options.command(
+    build_contracts,
+    name='build_etherlink_contracts',
+    options=[],
+)

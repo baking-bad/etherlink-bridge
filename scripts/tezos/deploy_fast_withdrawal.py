@@ -1,5 +1,4 @@
 import click
-from scripts.defaults import XTZ_TICKETER_ADDRESS
 from scripts.helpers.contracts.fast_withdrawal import FastWithdrawal
 from scripts.helpers.utility import get_tezos_client
 from scripts.helpers.formatting import (
@@ -10,28 +9,20 @@ from scripts.helpers.formatting import (
 )
 from scripts import cli_options
 
-
-@click.command()
-@click.option(
+xtz_ticketer_address_option = click.option(
     '--xtz-ticketer-address',
-    default=XTZ_TICKETER_ADDRESS,
-    envvar='XTZ_TICKETER_ADDRESS',
     required=True,
-    prompt='Native XTZ Ticketer contract (exchanger) address',
-    help='The address of the Native XTZ Ticketer contract that wraps XTZ on Tezos side.',
     show_default=True,
+    help='The address of the Native XTZ Ticketer contract that wraps XTZ on Tezos side.',
 )
-@cli_options.smart_rollup_address
-@click.option(
+expiration_seconds_option = click.option(
     '--expiration-seconds',
     default=60 * 90,
     help='Number of seconds during which a withdrawal can be purchased at a discount',
     show_default=True,
 )
-@cli_options.tezos_private_key
-@cli_options.tezos_rpc_url
-@cli_options.skip_confirm
-@cli_options.silent
+
+
 def deploy_fast_withdrawal(
     xtz_ticketer_address: str,
     smart_rollup_address: str,
@@ -71,3 +62,18 @@ def deploy_fast_withdrawal(
         )
 
     return fast_withdrawal
+
+
+deploy_fast_withdrawal_command = cli_options.command(
+    deploy_fast_withdrawal,
+    name='deploy_fast_withdrawal',
+    options=[
+        xtz_ticketer_address_option,
+        cli_options.smart_rollup_address,
+        expiration_seconds_option,
+        cli_options.tezos_private_key,
+        cli_options.tezos_rpc_url,
+        cli_options.skip_confirm,
+        cli_options.silent,
+    ],
+)

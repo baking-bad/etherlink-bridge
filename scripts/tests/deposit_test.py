@@ -19,7 +19,9 @@ from scripts.tests.dto import Bridge
 from scripts.tests.dto import Native
 from scripts.tests.dto import Token
 from scripts.tests.dto import Wallet
-from scripts.tezos import deposit
+from scripts.tezos import fa_deposit
+
+pytestmark = pytest.mark.integration
 
 
 def _claim_fa_deposit(
@@ -140,7 +142,7 @@ class TestDeposit:
             wallet.l2_public_key,
         )
 
-        operation_hash = deposit.callback(  # type: ignore[misc]
+        operation_hash = fa_deposit(
             token_bridge_helper_address=token.l1_ticket_helper_address,
             amount=amount,
             receiver_address=wallet.l2_public_key,

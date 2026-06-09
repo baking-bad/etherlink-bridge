@@ -10,14 +10,6 @@ from scripts.helpers.formatting import (
 from scripts import cli_options
 
 
-@click.command()
-@cli_options.ticketer_address
-@cli_options.erc20_proxy_address
-@cli_options.tezos_private_key
-@cli_options.tezos_rpc_url
-@cli_options.token_symbol
-@cli_options.skip_confirm
-@cli_options.silent
 def deploy_token_bridge_helper(
     ticketer_address: str,
     erc20_proxy_address: str,
@@ -60,3 +52,18 @@ def deploy_token_bridge_helper(
         )
 
     return token_bridge_helper
+
+
+deploy_token_bridge_helper_command = cli_options.command(
+    deploy_token_bridge_helper,
+    name='deploy_token_bridge_helper',
+    options=[
+        cli_options.ticketer_address,
+        cli_options.erc20_proxy_address,
+        cli_options.tezos_private_key,
+        cli_options.tezos_rpc_url,
+        cli_options.token_symbol,
+        cli_options.skip_confirm,
+        cli_options.silent,
+    ],
+)

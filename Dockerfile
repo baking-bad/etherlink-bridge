@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 RUN apt-get update && \
     apt-get install -y curl git gcc libsodium-dev libsecp256k1-dev libgmp-dev make && \
@@ -8,5 +8,7 @@ ARG BRANCH=main
 WORKDIR /bridge
 COPY . /bridge
 RUN uv sync
-ENTRYPOINT ["uv", "run"]
-CMD ["bash"]
+# Bake in the `bridge` group so `docker run <image> <subcommand> ...` works;
+# with no arguments it prints the command list. Use `--entrypoint bash` for a shell.
+ENTRYPOINT ["uv", "run", "bridge"]
+CMD ["--help"]

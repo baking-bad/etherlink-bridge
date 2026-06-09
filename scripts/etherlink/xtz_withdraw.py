@@ -13,9 +13,7 @@ from scripts.helpers.formatting import (
 from scripts.helpers.etherlink import XtzWithdrawalPrecompileHelper
 from scripts import cli_options
 
-
-@click.command()
-@click.option(
+amount_wei_option = click.option(
     '--amount',
     required=True,
     type=int,
@@ -23,10 +21,8 @@ from scripts import cli_options
     prompt='Amount (wei)',
     help='The amount of xtz to withdraw in wei. Note that 1 xtz on Etherlink side is 10**18 wei. NOTE: it is impossible to withdraw values that have residuals less than 1 mutez (10**12 wei).',
 )
-@cli_options.receiver_address
-@cli_options.xtz_withdraw_precompile
-@cli_options.etherlink_private_key
-@cli_options.etherlink_rpc_url
+
+
 def xtz_withdraw(
     amount: int,
     receiver_address: str,
@@ -60,3 +56,16 @@ def xtz_withdraw(
         'Successfully initiated XTZ withdrawal, tx hash: ' + wrap(accent(tx_hash.hex()))
     )
     return tx_hash.hex()
+
+
+xtz_withdraw_command = cli_options.command(
+    xtz_withdraw,
+    name='xtz_withdraw',
+    options=[
+        amount_wei_option,
+        cli_options.receiver_address,
+        cli_options.xtz_withdraw_precompile,
+        cli_options.etherlink_private_key,
+        cli_options.etherlink_rpc_url,
+    ],
+)

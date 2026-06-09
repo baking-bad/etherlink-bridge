@@ -6,11 +6,6 @@ from scripts.helpers.formatting import accent, echo_variable, wrap
 from scripts.helpers.utility import get_tezos_client
 
 
-@click.command()
-@cli_options.tezos_private_key
-@cli_options.tezos_rpc_url
-@cli_options.skip_confirm
-@cli_options.silent
 def deploy_router(
     tezos_private_key: str,
     tezos_rpc_url: str,
@@ -38,3 +33,15 @@ def deploy_router(
         )
 
     return tester
+
+
+deploy_router_command = cli_options.command(
+    deploy_router,
+    name='deploy_router',
+    options=[
+        cli_options.tezos_private_key,
+        cli_options.tezos_rpc_url,
+        cli_options.skip_confirm,
+        cli_options.silent,
+    ],
+)

@@ -19,6 +19,7 @@ from scripts.bootstrap.dto import TicketerParamsDTO
 from scripts.bootstrap.dto import TokenInfoDTO
 from scripts.bootstrap.dto import TokenMetadataDTO
 from scripts.bootstrap.dto import UserInputDTO
+from scripts import cli_options
 from scripts.etherlink import deploy_erc20
 from scripts.helpers.addressable import Addressable
 from scripts.helpers.contracts.tokens.token import TokenHelper
@@ -40,7 +41,7 @@ class EtherlinkBootstrapClient:
     def deploy_erc20_proxy(
         self, ticketer_params: TicketerParamsDTO, metadata: TokenMetadataDTO
     ) -> str:
-        erc20 = deploy_erc20.callback(
+        erc20 = deploy_erc20(
             ticketer_address_bytes=ticketer_params.address_bytes_hex,
             ticket_content_bytes=ticketer_params.content_bytes_hex,
             token_name=metadata.name,
@@ -49,7 +50,7 @@ class EtherlinkBootstrapClient:
             kernel_address=KERNEL_ADDRESS,
             etherlink_private_key=self._private_key,
             etherlink_rpc_url=self._rpc_url,
-        )  # type: ignore
+        )
         return str(erc20.address)
 
 
@@ -94,6 +95,8 @@ class TokenBootstrap:
         testrunner_account: str,
         use_test_prefix: bool,
         test_version: int,
+        l1_rpc_url: str,
+        l1_private_key: str,
     ):
         self._mainnet_asset_id = mainnet_asset_id
         self._is_mainnet = is_mainnet
@@ -103,6 +106,8 @@ class TokenBootstrap:
         self._test_amount_multiplier = 0.2
         self._use_test_prefix = use_test_prefix
         self._test_version = test_version
+        self._l1_rpc_url = l1_rpc_url
+        self._l1_private_key = l1_private_key
         self._token_info: TokenInfoDTO
 
     def run(self, whitelist_counter: int) -> None:
@@ -214,23 +219,23 @@ class TokenBootstrap:
             suffix=lambda x: state,
         ):
             state = ' processing transaction...'
-            ticketer = deploy_ticketer.callback(
+            ticketer = deploy_ticketer(
                 token_address=contract_address,
                 token_type=self._token_info.standard,
                 token_id=token_id,
                 token_name=self._token_info.metadata.name,
                 token_decimals=self._token_info.metadata.decimals,
                 token_symbol=self._token_info.metadata.symbol,
-                tezos_private_key=self._tezos_client.context.key,
-                tezos_rpc_url=self._tezos_client.context.shell,
-            )  # type: ignore
+                tezos_private_key=self._l1_private_key,
+                tezos_rpc_url=self._l1_rpc_url,
+            )
 
             state = ' fetching ticketer params...'
-            ticketer_params_dict = get_ticketer_params.callback(
+            ticketer_params_dict = get_ticketer_params(
                 ticketer_address=ticketer.address,
-                tezos_private_key=self._tezos_client.context.key,
-                tezos_rpc_url=self._tezos_client.context.shell,
-            )  # type: ignore
+                tezos_private_key=self._l1_private_key,
+                tezos_rpc_url=self._l1_rpc_url,
+            )
 
             ticket_hash = ticketer.read_ticket().hash()
 
@@ -281,13 +286,13 @@ class TokenBootstrap:
             prefix='Token Bridge Helper Contract Origination ',
             suffix=' processing transaction...',
         ):
-            helper = deploy_token_bridge_helper.callback(
+            helper = deploy_token_bridge_helper(
                 ticketer_address=ticketer_address,
                 erc20_proxy_address=erc20_proxy_address,
-                tezos_private_key=self._tezos_client.context.key,
-                tezos_rpc_url=self._tezos_client.context.shell,
+                tezos_private_key=self._l1_private_key,
+                tezos_rpc_url=self._l1_rpc_url,
                 token_symbol=self._token_info.metadata.symbol,
-            )  # type: ignore
+            )
 
         survey.printers.done(
             f'Token Bridge Helper Contract deployed for Token `{self._token_info.metadata.name}`: {helper.address}.',
@@ -516,7 +521,6 @@ class BootstrapSurvey:
         return {'Yes': True, 'No': False}[use_test_prefix]
 
 
-@click.command()
 def rollout() -> None:
     notice_echo('This command will help you to deploy all contracts for a new rollup.')
     bootstrap_survey = BootstrapSurvey()
@@ -525,6 +529,13 @@ def rollout() -> None:
     rollup_bootstrap_service = RollupBootstrapFactory.build(user_input)
     notice_echo('Starting Bridge Application Bootstrap process.')
     rollup_bootstrap_service.run()
+
+
+rollout_command = cli_options.command(
+    rollout,
+    name='bootstrap',
+    options=[],
+)
 
 
 class RollupBootstrapFactory:
@@ -553,6 +564,8 @@ class RollupBootstrapFactory:
                 testrunner_account=user_input.l1_testrunner_account,
                 use_test_prefix=user_input.use_test_prefix,
                 test_version=test_version,
+                l1_rpc_url=user_input.l1_rpc_url,
+                l1_private_key=user_input.l1_private_key,
             )
             tokens.append(token_bootstrap)
 

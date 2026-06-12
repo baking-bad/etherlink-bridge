@@ -47,11 +47,16 @@ from scripts.tezos.execute_outbox_message import execute_outbox_message_command
 from scripts.tezos.fa_deposit import fa_deposit_command
 from scripts.tezos.get_ticketer_params import get_ticketer_params_command
 from scripts.tezos.xtz_deposit import xtz_deposit_command
+from scripts.tezos.xtz_deposit_michelson import (
+    michelson_routing_data,
+    xtz_deposit_michelson_command,
+)
 
 COMMANDS = [
     fa_deposit_command,
     fa_withdraw_command,
     xtz_deposit_command,
+    xtz_deposit_michelson_command,
     xtz_withdraw_command,
     xtz_fast_withdraw_command,
     bridge_token_command,
@@ -106,3 +111,17 @@ def test_private_key_default_not_leaked() -> None:
     result = CliRunner().invoke(fa_deposit_command, ['--help'])
     assert '--tezos-private-key' in result.output
     assert load_network().accounts.l1_private_key not in result.output
+
+
+def test_michelson_routing_data() -> None:
+    # Known-good vector: byte-reproduces the routing data of a real on-chain
+    # Tezos X deposit.
+    assert (
+        michelson_routing_data('tz1KqTpEZ7Yob7QbPE4Hy4Wo8fHG8LhKxZSx').hex()
+        == '01dad80196000002298c03ed7d454a101eb7022bc95f7e5f41ac78c0'
+    )
+
+
+def test_michelson_routing_data_rejects_originated() -> None:
+    with pytest.raises(click.BadParameter):
+        michelson_routing_data('KT1DUaf49SNALJRSB8R45TvEtgVi2xZnCh8B')

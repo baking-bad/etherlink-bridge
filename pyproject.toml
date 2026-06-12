@@ -20,6 +20,7 @@ dependencies = [
     "gql[requests]>=3.5.0,<4",
     "requests>=2.28.2,<3",
     "pydantic>=2.6.1,<3",
+    "rlp>=4.1.0,<5",
 ]
 
 [project.optional-dependencies]
@@ -58,7 +59,7 @@ disallow_any_generics = false
 
 [[tool.mypy.overrides]]
 # These third-party libs ship no type stubs / py.typed marker.
-module = ["survey.*", "tabulate"]
+module = ["survey.*", "tabulate", "rlp"]
 ignore_missing_imports = true
 
 [tool.black]

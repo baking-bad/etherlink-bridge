@@ -1,5 +1,6 @@
 from collections.abc import Iterator
 from os.path import dirname, join
+from typing import Any
 
 from web3 import Web3
 from web3.types import TxReceipt
@@ -44,7 +45,16 @@ class FaWithdrawalPrecompileHelper(EvmContractHelper):
     ) -> int:
         """The newest queued-deposit nonce for the token/receiver, or -1 if none."""
 
-        return next(self._iter_nonces(ticket_hash, erc20_proxy, receiver), -1)
+        return next(self._iter_nonces(erc20_proxy, ticket_hash, receiver), -1)
+
+    def latest_queued_nonce_by_proxy(
+        self, erc20_proxy: str, receiver: str | None = None
+    ) -> int:
+        """Newest queued-deposit nonce for a token (proxy), optionally narrowed to
+        a receiver; -1 if none. Unlike `latest_queued_nonce`, needs no ticket hash
+        — `proxy` alone is an indexed filter."""
+
+        return next(self._iter_nonces(erc20_proxy, receiver=receiver), -1)
 
     def queued_nonces_since(
         self, ticket_hash: int, erc20_proxy: str, receiver: str, since_nonce: int
@@ -53,7 +63,7 @@ class FaWithdrawalPrecompileHelper(EvmContractHelper):
         <= it, since nonces are monotonic."""
 
         fresh: list[int] = []
-        for nonce in self._iter_nonces(ticket_hash, erc20_proxy, receiver):
+        for nonce in self._iter_nonces(erc20_proxy, ticket_hash, receiver):
             if nonce <= since_nonce:
                 break
             fresh.append(nonce)
@@ -61,18 +71,24 @@ class FaWithdrawalPrecompileHelper(EvmContractHelper):
 
     def _iter_nonces(
         self,
-        ticket_hash: int,
         erc20_proxy: str,
-        receiver: str,
+        ticket_hash: int | None = None,
+        receiver: str | None = None,
         chunk: int = 100,
         max_blocks: int = 2_000,
     ) -> Iterator[int]:
         """Yields matching nonces newest-first, scanning the L2 head backward in
         `chunk`-sized windows (the node caps the getLogs range). Lazy: the caller
-        stops it once satisfied, so the common lookup is a single getLogs call."""
+        stops it once satisfied, so the common lookup is a single getLogs call.
 
-        receiver = Web3.to_checksum_address(receiver)
+        Filters on the indexed `proxy`; `ticket_hash` (also indexed) and
+        `receiver` narrow further only when given."""
+
         proxy = Web3.to_checksum_address(erc20_proxy)
+        receiver_cs = Web3.to_checksum_address(receiver) if receiver else None
+        filters: dict[str, Any] = {'proxy': proxy}
+        if ticket_hash is not None:
+            filters['ticketHash'] = ticket_hash
         hi = int(self.web3.eth.block_number)
         floor = max(hi - max_blocks, 0)
         while hi >= floor:
@@ -80,11 +96,13 @@ class FaWithdrawalPrecompileHelper(EvmContractHelper):
             events = self.contract.events.QueuedDeposit().get_logs(  # type: ignore[attr-defined]
                 fromBlock=lo,
                 toBlock=hi,
-                argument_filters={'ticketHash': ticket_hash, 'proxy': proxy},
+                argument_filters=filters,
             )
             # get_logs returns ascending; reverse for newest-first within the chunk.
             for event in reversed(events):
                 args = event['args']
-                if Web3.to_checksum_address(args['receiver']) == receiver:
+                if receiver_cs is None or (
+                    Web3.to_checksum_address(args['receiver']) == receiver_cs
+                ):
                     yield int(args['nonce'])
             hi = lo - 1

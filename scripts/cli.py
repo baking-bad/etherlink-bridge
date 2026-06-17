@@ -13,12 +13,14 @@ import click
 from scripts.networks import NetworkConfig, load_network
 
 from scripts.tezos.fa_deposit import fa_deposit_command
+from scripts.tezos.fa_deposit_alias import fa_deposit_alias_command
 from scripts.tezos.get_ticketer_params import get_ticketer_params_command
 from scripts.tezos.deploy_ticketer import deploy_ticketer_command
 from scripts.tezos.deploy_token import deploy_token_command
 from scripts.tezos.deploy_router import deploy_router_command
 from scripts.tezos.deploy_token_bridge_helper import deploy_token_bridge_helper_command
 from scripts.tezos.xtz_deposit import xtz_deposit_command
+from scripts.tezos.xtz_deposit_alias import xtz_deposit_alias_command
 from scripts.tezos.xtz_deposit_michelson import xtz_deposit_michelson_command
 from scripts.tezos.execute_outbox_message import execute_outbox_message_command
 from scripts.tezos.deploy_fast_withdrawal import deploy_fast_withdrawal_command
@@ -45,8 +47,10 @@ from scripts.bridge_token import bridge_token_command
 # Every subcommand, registered flat under `bridge`.
 ALL_COMMANDS: list[click.Command] = [
     fa_deposit_command,
+    fa_deposit_alias_command,
     fa_withdraw_command,
     xtz_deposit_command,
+    xtz_deposit_alias_command,
     xtz_deposit_michelson_command,
     xtz_withdraw_command,
     xtz_fast_withdraw_command,

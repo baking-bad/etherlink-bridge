@@ -74,6 +74,12 @@ class NetworkConfig:
         # None on a freshly bootstrapped network with no FA tokens whitelisted yet.
         return next((t for t in self.tokens if t.symbol == self.default_token), None)
 
+    def default_erc20_proxy(self) -> str | None:
+        # 0x-prefixed L2 proxy of the default token (TokenConfig stores it bare);
+        # None when the network has no default token.
+        token = self.default_token_config()
+        return '0x' + token.l2_token_address if token else None
+
 
 def available_networks() -> list[str]:
     """Names (toml stems) of the configs under ``networks/``."""

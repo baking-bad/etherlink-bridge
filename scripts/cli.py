@@ -29,6 +29,7 @@ from scripts.tezos.build_contracts import (
 )
 from scripts.tezos.build_contracts import build_fast_withdrawal_command
 from scripts.etherlink.fa_withdraw import fa_withdraw_command
+from scripts.etherlink.fa_deposit_claim import fa_deposit_claim_command
 from scripts.etherlink.xtz_withdraw import xtz_withdraw_command
 from scripts.etherlink.xtz_fast_withdraw import xtz_fast_withdraw_command
 from scripts.etherlink.deploy_erc20 import deploy_erc20_command
@@ -48,6 +49,7 @@ from scripts.bridge_token import bridge_token_command
 ALL_COMMANDS: list[click.Command] = [
     fa_deposit_command,
     fa_deposit_alias_command,
+    fa_deposit_claim_command,
     fa_withdraw_command,
     xtz_deposit_command,
     xtz_deposit_alias_command,

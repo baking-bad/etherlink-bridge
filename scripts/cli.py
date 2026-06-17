@@ -22,6 +22,8 @@ from scripts.tezos.deploy_token_bridge_helper import deploy_token_bridge_helper_
 from scripts.tezos.xtz_deposit import xtz_deposit_command
 from scripts.tezos.xtz_deposit_alias import xtz_deposit_alias_command
 from scripts.tezos.xtz_deposit_michelson import xtz_deposit_michelson_command
+from scripts.tezos.xtz_withdraw_michelson import xtz_withdraw_michelson_command
+from scripts.tezos.fa_withdraw_michelson import fa_withdraw_michelson_command
 from scripts.tezos.execute_outbox_message import execute_outbox_message_command
 from scripts.tezos.deploy_fast_withdrawal import deploy_fast_withdrawal_command
 from scripts.tezos.build_contracts import (
@@ -51,9 +53,11 @@ ALL_COMMANDS: list[click.Command] = [
     fa_deposit_alias_command,
     fa_deposit_claim_command,
     fa_withdraw_command,
+    fa_withdraw_michelson_command,
     xtz_deposit_command,
     xtz_deposit_alias_command,
     xtz_deposit_michelson_command,
+    xtz_withdraw_michelson_command,
     xtz_withdraw_command,
     xtz_fast_withdraw_command,
     bridge_token_command,
@@ -86,6 +90,7 @@ def _network_defaults(config: NetworkConfig) -> dict[str, Any]:
     return {
         'tezos_private_key': config.accounts.l1_private_key,
         'tezos_rpc_url': config.network.l1_rpc_url,
+        'tezos_michelson_rpc_url': config.network.l2_michelson_rpc_url,
         'smart_rollup_address': config.network.smart_rollup_address,
         'etherlink_private_key': config.accounts.l2_private_key,
         'etherlink_rpc_url': config.network.l2_rpc_url,

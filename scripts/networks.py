@@ -29,6 +29,7 @@ class NetworkParams:
     l2_native_withdraw_precompile_address: str
     tzkt_explorer_url: str
     blockscout_explorer_url: str
+    l2_michelson_rpc_url: str = ''
 
 
 @dataclass

@@ -6,6 +6,7 @@ default_token = "USDt"
 [network]
 l1_rpc_url = "https://rpc.tzkt.io/shadownet"
 l2_rpc_url = "https://evm.previewnet.tezosx.nomadic-labs.com"
+l2_michelson_rpc_url = "https://michelson.previewnet.tezosx.nomadic-labs.com"
 rollup_rpc_url = "https://previewnet-smart.tzkt.io/"
 indexer_graphql_url = "https://tezosx-bridge-shadownet.dipdup.net/v1/graphql"
 smart_rollup_address = "sr1TCYofXUuJjmQvZ26XE4YAwXdfetQfZ6rR"

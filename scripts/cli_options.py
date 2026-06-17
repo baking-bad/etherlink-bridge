@@ -59,6 +59,12 @@ tezos_rpc_url = click.option(
     show_default=True,
 )
 
+tezos_michelson_rpc_url = click.option(
+    '--tezos-michelson-rpc-url',
+    help='Tezos X Michelson L2 RPC URL, where NAC withdrawals originate.',
+    show_default=True,
+)
+
 token_address = click.option(
     '--token-address',
     required=True,

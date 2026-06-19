@@ -35,4 +35,5 @@ class Token(BaseModel):
 
 class Native(Token):
     l1_asset_id: Literal['xtz'] = 'xtz'
-    l2_token_address: Literal['xtz'] = 'xtz'
+    # Etherlink-side id of native XTZ on the EVM L2 (Michelson L2 uses 'xtz_michelson').
+    l2_token_address: Literal['xtz_evm'] = 'xtz_evm'

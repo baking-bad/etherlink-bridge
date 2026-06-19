@@ -72,10 +72,10 @@ class TestDeposit:
                     }
                 ) {
                     l1_transaction {
-                        operation_hash, l1_account, l2_account, ticket_hash, amount, ticket {token_id}
+                        operation_hash, l1_account, l2_account_id, ticket_hash, amount, ticket {token_id}
                     }
                     l2_transaction {
-                        l2_account, ticket_hash, amount, l2_token {id}
+                        l2_account_id, ticket_hash, amount, l2_token {id}
                     }
                 }
             }
@@ -117,7 +117,7 @@ class TestDeposit:
                     }) {
                     deposit {
                         l1_transaction {
-                            l1_account, l2_account, amount, ticket {token_id}
+                            l1_account, l2_account_id, amount, ticket {token_id}
                         }
                     }, is_completed, is_successful, status
                 }
@@ -176,13 +176,13 @@ class TestDeposit:
                 'l1_transaction': {
                     'operation_hash': operation_hash,
                     'l1_account': wallet.l1_public_key_hash,
-                    'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
+                    'l2_account_id': wallet.l2_public_key.removeprefix('0x').lower(),
                     'ticket_hash': str(token.ticket_hash),
                     'amount': str(amount),
                     'ticket': {'token_id': token.l1_asset_id},
                 },
                 'l2_transaction': {
-                    'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
+                    'l2_account_id': wallet.l2_public_key.removeprefix('0x').lower(),
                     'ticket_hash': str(token.ticket_hash),
                     'amount': str(amount),
                     'l2_token': {'id': token.l2_token_address.lower()},
@@ -257,13 +257,13 @@ class TestDeposit:
                 'l1_transaction': {
                     'operation_hash': operation_hash,
                     'l1_account': wallet.l1_public_key_hash,
-                    'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
+                    'l2_account_id': wallet.l2_public_key.removeprefix('0x').lower(),
                     'ticket_hash': str(token.ticket_hash),
                     'amount': str(amount),
                     'ticket': {'token_id': token.l1_asset_id},
                 },
                 'l2_transaction': {
-                    'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
+                    'l2_account_id': wallet.l2_public_key.removeprefix('0x').lower(),
                     'ticket_hash': str(token.ticket_hash),
                     'amount': str(amount),
                     'l2_token': {'id': token.l2_token_address.lower()},
@@ -378,7 +378,7 @@ class TestDeposit:
         indexed_operation = indexed_operations[0]
         assert indexed_operation['deposit']['l1_transaction'] == {
             'l1_account': wallet.l1_public_key_hash,
-            'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
+            'l2_account_id': wallet.l2_public_key.removeprefix('0x').lower(),
             'amount': str(amount),
             'ticket': {
                 'token_id': token.l1_asset_id,
@@ -437,13 +437,13 @@ class TestDeposit:
                 'l1_transaction': {
                     'operation_hash': operation_hash,
                     'l1_account': wallet.l1_public_key_hash,
-                    'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
+                    'l2_account_id': wallet.l2_public_key.removeprefix('0x').lower(),
                     'ticket_hash': str(native_asset.ticket_hash),
                     'amount': str(amount),
                     'ticket': {'token_id': native_asset.l1_asset_id},
                 },
                 'l2_transaction': {
-                    'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
+                    'l2_account_id': wallet.l2_public_key.removeprefix('0x').lower(),
                     'ticket_hash': str(native_asset.ticket_hash),
                     'amount': str(amount) + '0' * 12,
                     'l2_token': {'id': native_asset.l2_token_address},
@@ -505,13 +505,13 @@ class TestDeposit:
                 'l1_transaction': {
                     'operation_hash': operation_hash,
                     'l1_account': wallet.l1_public_key_hash,
-                    'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
+                    'l2_account_id': wallet.l2_public_key.removeprefix('0x').lower(),
                     'ticket_hash': str(native_asset.ticket_hash),
                     'amount': str(amount),
                     'ticket': {'token_id': native_asset.l1_asset_id},
                 },
                 'l2_transaction': {
-                    'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
+                    'l2_account_id': wallet.l2_public_key.removeprefix('0x').lower(),
                     'ticket_hash': str(native_asset.ticket_hash),
                     'amount': str(amount) + '0' * 12,
                     'l2_token': {'id': native_asset.l2_token_address},

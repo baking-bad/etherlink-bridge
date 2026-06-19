@@ -27,7 +27,7 @@ class TestWithdraw:
                     l2_transaction {
                         transaction_hash
                         l1_account
-                        l2_account
+                        l2_account_id
                         ticket_hash
                         l2_token {
                             id
@@ -55,7 +55,7 @@ class TestWithdraw:
                     where: {
                         l1_transaction_id: {_is_null: true}
                         l2_transaction: {
-                            l2_account: {_eq: $l2_account}
+                            l2_account_id: {_eq: $l2_account}
                             ticket_hash: {_eq: $ticket_hash},
                         }
                     },
@@ -131,7 +131,7 @@ class TestWithdraw:
                 'l2_transaction': {
                     'transaction_hash': transaction_hash,
                     'l1_account': wallet.l1_public_key_hash,
-                    'l2_account': wallet.l2_public_key.removeprefix('0x').lower(),
+                    'l2_account_id': wallet.l2_public_key.removeprefix('0x').lower(),
                     'ticket_hash': str(token.ticket_hash),
                     'l2_token': {
                         'id': token.l2_token_address.lower(),

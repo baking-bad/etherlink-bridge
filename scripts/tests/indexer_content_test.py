@@ -57,7 +57,7 @@ class TestIndexerContent:
                 tezos_ticket(where: {hash: {_eq: $ticket_hash}}) {
                     ticketer_address
                     token_id
-                    etherlink_token { id }
+                    etherlink_tokens { id }
                 }
             }
             '''
@@ -71,9 +71,11 @@ class TestIndexerContent:
         indexer_query: DocumentNode,
     ) -> None:
         # An index reports the block level it has processed; compare it to the
-        # chain head (L1 for `tezos.*` indexes, L2 for `etherlink_*`). A `status`
-        # check alone is not enough — DipDup keeps EVM indexes at `syncing` even
-        # when they are caught up, so the real health signal is the gap to head.
+        # chain head. Most `tezos.*` indexes track L1, but the Tezos X Michelson L2
+        # index also carries a `tezos.*` type while indexing the L2 chain — classify
+        # it as L2 by name, else its L1-vs-L2 level gap reads as a huge bogus lag. A
+        # `status` check alone is not enough — DipDup keeps EVM indexes at `syncing`
+        # even when caught up, so the real health signal is the gap to head.
         l2_head = get_etherlink_web3(bridge.l2_rpc_url).eth.block_number
 
         response = indexer.execute(indexer_query, operation_name='IndexerStatus')
@@ -83,7 +85,8 @@ class TestIndexerContent:
             name, status = index['name'], index['status']
             assert status not in ('failed', 'disabled'), f"Index '{name}': {status}"
 
-            head = l1_head if index['type'].startswith('tezos') else l2_head
+            is_l2 = index['type'].startswith('evm') or 'michelson' in name
+            head = l2_head if is_l2 else l1_head
             lag = head - index['level']
             assert lag < INDEXER_MAX_LAG_BLOCKS, (
                 f"Index '{name}' is {lag} blocks behind the chain head "
@@ -153,7 +156,6 @@ class TestIndexerContent:
         indexer_ticket_data = response['tezos_ticket'][0]
         assert indexer_ticket_data['token_id'] == asset.l1_asset_id
         assert indexer_ticket_data['ticketer_address'] == asset.l1_ticketer_address
-        assert (
-            indexer_ticket_data['etherlink_token']['id']
-            == asset.l2_token_address.lower()
-        )
+        # A ticket can map to several Etherlink tokens, so check membership.
+        etherlink_token_ids = [t['id'] for t in indexer_ticket_data['etherlink_tokens']]
+        assert asset.l2_token_address.lower() in etherlink_token_ids

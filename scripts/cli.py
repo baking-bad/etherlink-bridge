@@ -23,6 +23,9 @@ from scripts.tezos.xtz_deposit import xtz_deposit_command
 from scripts.tezos.xtz_deposit_alias import xtz_deposit_alias_command
 from scripts.tezos.xtz_deposit_michelson import xtz_deposit_michelson_command
 from scripts.tezos.xtz_withdraw_michelson import xtz_withdraw_michelson_command
+from scripts.tezos.xtz_fast_withdraw_michelson import (
+    xtz_fast_withdraw_michelson_command,
+)
 from scripts.tezos.fa_withdraw_michelson import fa_withdraw_michelson_command
 from scripts.tezos.execute_outbox_message import execute_outbox_message_command
 from scripts.tezos.deploy_fast_withdrawal import deploy_fast_withdrawal_command
@@ -58,6 +61,7 @@ ALL_COMMANDS: list[click.Command] = [
     xtz_deposit_alias_command,
     xtz_deposit_michelson_command,
     xtz_withdraw_michelson_command,
+    xtz_fast_withdraw_michelson_command,
     xtz_withdraw_command,
     xtz_fast_withdraw_command,
     bridge_token_command,
